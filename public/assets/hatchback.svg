@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 160" width="100%" height="100%">
+  <defs>
+    <linearGradient id="hatchGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="glassGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#e0f2fe" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#bae6fd" stop-opacity="0.6"/>
+    </linearGradient>
+  </defs>
+  <!-- Shadow -->
+  <ellipse cx="160" cy="142" rx="130" ry="10" fill="#cbd5e1" opacity="0.6"/>
+  <!-- Car Body -->
+  <path d="M 45 110 L 60 75 C 65 65 78 50 110 44 L 180 44 C 205 44 225 60 245 75 L 285 85 C 295 88 300 96 300 108 L 300 116 C 300 120 295 122 288 122 L 260 122 C 255 105 235 105 230 122 L 95 122 C 90 105 70 105 65 122 L 35 122 C 30 122 25 116 25 110 L 45 110 Z" fill="url(#hatchGrad)"/>
+  <!-- Windows -->
+  <path d="M 112 50 L 165 50 L 165 76 L 75 76 C 85 62 98 52 112 50 Z" fill="url(#glassGrad)"/>
+  <path d="M 173 50 L 210 50 C 224 55 236 65 244 76 L 173 76 Z" fill="url(#glassGrad)"/>
+  <!-- Headlight & Taillight -->
+  <path d="M 285 88 L 300 92 L 298 98 L 282 96 Z" fill="#fef08a"/>
+  <path d="M 27 100 L 38 100 L 37 108 L 26 106 Z" fill="#ef4444"/>
+  <!-- Door Handles & Trim -->
+  <rect x="145" y="82" width="14" height="4" rx="2" fill="#075985"/>
+  <rect x="195" y="82" width="14" height="4" rx="2" fill="#075985"/>
+  <line x1="169" y1="50" x2="169" y2="118" stroke="#075985" stroke-width="2"/>
+  <!-- Wheels -->
+  <circle cx="80" cy="122" r="22" fill="#1e293b"/>
+  <circle cx="80" cy="122" r="14" fill="#94a3b8"/>
+  <circle cx="80" cy="122" r="6" fill="#475569"/>
+  <circle cx="245" cy="122" r="22" fill="#1e293b"/>
+  <circle cx="245" cy="122" r="14" fill="#94a3b8"/>
+  <circle cx="245" cy="122" r="6" fill="#475569"/>
+</svg>

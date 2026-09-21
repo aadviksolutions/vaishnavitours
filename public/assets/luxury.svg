@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 350 160" width="100%" height="100%">
+  <defs>
+    <linearGradient id="luxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090e17" />
+      <stop offset="50%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+    <linearGradient id="glassLux" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="chromeGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#94a3b8"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </linearGradient>
+  </defs>
+  <!-- Shadow -->
+  <ellipse cx="175" cy="144" rx="150" ry="10" fill="#cbd5e1" opacity="0.6"/>
+  <!-- Luxury Saloon Body -->
+  <path d="M 28 112 L 40 88 L 78 86 L 115 46 C 128 36 150 32 180 32 L 230 32 C 255 32 272 44 286 62 L 322 80 L 340 92 C 345 98 344 110 340 116 L 298 116 C 292 98 268 98 262 116 L 115 116 C 109 98 85 98 79 116 L 24 116 C 20 116 18 112 28 112 Z" fill="url(#luxGrad)"/>
+  <!-- Windows with Chrome Bezel -->
+  <path d="M 120 42 L 180 42 L 180 72 L 86 72 C 96 56 108 44 120 42 Z" fill="url(#glassLux)" stroke="url(#chromeGlow)" stroke-width="1.5"/>
+  <path d="M 188 42 L 230 42 C 248 42 262 52 274 72 L 188 72 Z" fill="url(#glassLux)" stroke="url(#chromeGlow)" stroke-width="1.5"/>
+  <!-- Chrome Trim along body -->
+  <path d="M 38 90 L 332 94" stroke="url(#chromeGlow)" stroke-width="2"/>
+  <!-- Headlights with LED glow -->
+  <path d="M 326 84 L 342 92 L 338 100 L 322 94 Z" fill="#93c5fd"/>
+  <!-- Rear LED strip -->
+  <path d="M 22 96 L 36 94 L 34 102 L 20 100 Z" fill="#ef4444"/>
+  <!-- Chrome wheels -->
+  <circle cx="97" cy="116" r="24" fill="#0f172a"/>
+  <circle cx="97" cy="116" r="16" fill="url(#chromeGlow)"/>
+  <circle cx="97" cy="116" r="8" fill="#1e293b"/>
+  <circle cx="280" cy="116" r="24" fill="#0f172a"/>
+  <circle cx="280" cy="116" r="16" fill="url(#chromeGlow)"/>
+  <circle cx="280" cy="116" r="8" fill="#1e293b"/>
+</svg>

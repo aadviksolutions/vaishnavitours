@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 170" width="100%" height="100%">
+  <defs>
+    <linearGradient id="innovaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="50%" stop-color="#334155" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="glassInnova" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#cbd5e1" stop-opacity="0.6"/>
+    </linearGradient>
+    <linearGradient id="goldAccent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#fbbf24" />
+    </linearGradient>
+  </defs>
+  <!-- Shadow -->
+  <ellipse cx="180" cy="154" rx="160" ry="11" fill="#cbd5e1" opacity="0.6"/>
+  <!-- Roof Rails -->
+  <rect x="90" y="32" width="145" height="4" rx="2" fill="#94a3b8"/>
+  <rect x="105" y="36" width="12" height="6" fill="#475569"/>
+  <rect x="215" y="36" width="12" height="6" fill="#475569"/>
+  <!-- Innova Crysta Body -->
+  <path d="M 32 122 L 40 76 L 82 38 L 245 38 C 265 38 278 52 292 68 L 335 84 C 346 90 350 100 350 114 L 350 124 L 306 124 C 300 104 274 104 268 124 L 122 124 C 116 104 90 104 84 124 L 26 124 C 22 124 20 120 20 114 L 32 122 Z" fill="url(#innovaGrad)"/>
+  <!-- Windows -->
+  <path d="M 88 44 L 148 44 L 148 72 L 58 72 C 68 58 76 46 88 44 Z" fill="url(#glassInnova)"/>
+  <path d="M 155 44 L 215 44 L 215 72 L 155 72 Z" fill="url(#glassInnova)"/>
+  <path d="M 222 44 L 250 44 C 264 48 276 58 286 72 L 222 72 Z" fill="url(#glassInnova)"/>
+  <!-- Front Grille Chrome -->
+  <path d="M 335 94 L 348 98 L 344 112 L 330 108 Z" fill="#e2e8f0"/>
+  <path d="M 336 90 L 349 95 L 346 102 L 332 98 Z" fill="#fef08a"/>
+  <!-- Rear LED -->
+  <path d="M 24 88 L 36 86 L 34 104 L 22 102 Z" fill="#dc2626"/>
+  <!-- Door Handles & Trims (Chrome/Gold) -->
+  <line x1="151" y1="44" x2="151" y2="120" stroke="#475569" stroke-width="2"/>
+  <line x1="218" y1="44" x2="218" y2="120" stroke="#475569" stroke-width="2"/>
+  <rect x="128" y="80" width="16" height="4" rx="2" fill="#e2e8f0"/>
+  <rect x="195" y="80" width="16" height="4" rx="2" fill="#e2e8f0"/>
+  <!-- Premium Badge Strip -->
+  <rect x="50" y="114" width="280" height="2" fill="url(#goldAccent)"/>
+  <!-- Wheels -->
+  <circle cx="103" cy="124" r="26" fill="#090e17"/>
+  <circle cx="103" cy="124" r="17" fill="#cbd5e1"/>
+  <circle cx="103" cy="124" r="8" fill="#475569"/>
+  <circle cx="287" cy="124" r="26" fill="#090e17"/>
+  <circle cx="287" cy="124" r="17" fill="#cbd5e1"/>
+  <circle cx="287" cy="124" r="8" fill="#475569"/>
+</svg>

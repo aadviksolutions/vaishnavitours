@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 180" width="100%" height="100%">
+  <defs>
+    <linearGradient id="tempoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="40%" stop-color="#f8fafc" />
+      <stop offset="100%" stop-color="#e2e8f0" />
+    </linearGradient>
+    <linearGradient id="glassTempo" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0.3"/>
+    </linearGradient>
+  </defs>
+  <!-- Shadow -->
+  <ellipse cx="190" cy="162" rx="170" ry="12" fill="#cbd5e1" opacity="0.6"/>
+  <!-- Main High-roof Van Body -->
+  <path d="M 30 130 L 30 50 C 30 36 42 25 56 25 L 290 25 C 310 25 325 35 335 55 L 360 85 C 368 95 370 108 370 120 L 370 134 L 325 134 C 318 114 290 114 284 134 L 125 134 C 118 114 90 114 84 134 L 25 134 C 20 134 20 130 30 130 Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+  <!-- Decorative Tourist graphics stripe -->
+  <path d="M 32 96 Q 160 88 362 96 L 366 110 Q 160 102 32 110 Z" fill="#0284c7"/>
+  <path d="M 32 108 Q 160 100 366 108 L 367 114 Q 160 106 32 114 Z" fill="#f97316"/>
+  <!-- Windows -->
+  <rect x="50" y="38" width="50" height="42" rx="4" fill="url(#glassTempo)"/>
+  <rect x="110" y="38" width="50" height="42" rx="4" fill="url(#glassTempo)"/>
+  <rect x="170" y="38" width="50" height="42" rx="4" fill="url(#glassTempo)"/>
+  <rect x="230" y="38" width="50" height="42" rx="4" fill="url(#glassTempo)"/>
+  <path d="M 290 38 L 325 38 C 334 38 342 46 348 58 L 356 75 L 290 75 Z" fill="url(#glassTempo)"/>
+  <!-- Front windshield & Headlight -->
+  <path d="M 358 100 L 370 105 L 366 114 L 354 110 Z" fill="#fef08a"/>
+  <!-- Wheels -->
+  <circle cx="105" cy="134" r="26" fill="#1e293b"/>
+  <circle cx="105" cy="134" r="17" fill="#94a3b8"/>
+  <circle cx="105" cy="134" r="8" fill="#475569"/>
+  <circle cx="304" cy="134" r="26" fill="#1e293b"/>
+  <circle cx="304" cy="134" r="17" fill="#94a3b8"/>
+  <circle cx="304" cy="134" r="8" fill="#475569"/>
+</svg>
