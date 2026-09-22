@@ -18,19 +18,19 @@
 
 @if(session('success'))
     <div class="alert alert-success mb-3">
-        ✓ {{ session('success') }}
+        <x-icon name="circle-check" size="18" style="vertical-align: middle; margin-right: 4px;" /> {{ session('success') }}
     </div>
 @endif
 
 @if(session('error'))
     <div class="alert alert-danger mb-3">
-        ⚠️ {{ session('error') }}
+        <x-icon name="alert-circle" size="18" style="vertical-align: middle; margin-right: 4px;" /> {{ session('error') }}
     </div>
 @endif
 
 @if($errors->any())
     <div class="alert alert-danger mb-3">
-        <strong>⚠️ Please correct the following errors:</strong>
+        <strong style="display: flex; align-items: center; gap: 6px;"><x-icon name="alert-circle" size="18" /><span>Please correct the following errors:</span></strong>
         <ul style="margin: 0.5rem 0 0 1.25rem; padding: 0;">
             @foreach($errors->all() as $err)
                 <li>{{ $err }}</li>
@@ -201,14 +201,14 @@
                                 <!-- Assign Vehicle Trigger -->
                                 @if(in_array($booking->booking_status, ['Confirmed', 'Vehicle Assigned']) && $availableVehicles->isNotEmpty())
                                     <button type="button" class="btn btn-outline btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="openModal('vehicleModal{{ $booking->id }}')" title="Assign Vehicle">
-                                        🚗 Cab
+                                        <x-icon name="car-front" size="14" style="margin-right: 4px;" /> Cab
                                     </button>
                                 @endif
 
                                 <!-- Assign Driver Trigger -->
                                 @if(in_array($booking->booking_status, ['Vehicle Assigned', 'Driver Assigned']) && $availableDrivers->isNotEmpty())
                                     <button type="button" class="btn btn-outline btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="openModal('driverModal{{ $booking->id }}')" title="Assign Driver">
-                                        👨‍✈️ Driver
+                                        <x-icon name="user" size="14" style="margin-right: 4px;" /> Driver
                                     </button>
                                 @endif
 
@@ -220,20 +220,20 @@
                                 <!-- Update Payment Trigger -->
                                 @if($booking->balance_amount > 0)
                                     <button type="button" class="btn btn-outline btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="openModal('paymentModal{{ $booking->id }}')" title="Record Payment">
-                                        💳 Pay
+                                        <x-icon name="credit-card" size="14" style="margin-right: 4px;" /> Pay
                                     </button>
                                 @endif
 
                                 <!-- Update Status Trigger -->
                                 @if(!in_array($booking->booking_status, ['Completed', 'Cancelled']))
                                     <button type="button" class="btn btn-outline btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="openModal('statusModal{{ $booking->id }}')" title="Update Status">
-                                        ⚡ Status
+                                        <x-icon name="zap" size="14" style="margin-right: 4px;" /> Status
                                     </button>
                                 @endif
 
                                 <!-- Invoice -->
                                 <a href="{{ route('invoice.show', $booking->id) }}" class="btn btn-outline btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" title="Tax Invoice">
-                                    🧾 Inv
+                                    <x-icon name="receipt" size="14" style="margin-right: 4px;" /> Inv
                                 </a>
 
                                 <!-- Cancel Trigger -->
@@ -435,7 +435,7 @@
                 @empty
                     <tr>
                         <td colspan="16" style="text-align: center; padding: 3rem 1rem; color: var(--slate-500);">
-                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🚖</div>
+                            <div class="icon-box icon-box-lg icon-box-primary" style="margin: 0 auto 0.75rem;"><x-icon name="car-front" size="32" /></div>
                             <strong>No cab bookings found matching criteria.</strong>
                         </td>
                     </tr>

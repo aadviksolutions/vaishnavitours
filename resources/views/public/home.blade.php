@@ -12,7 +12,7 @@
                 <!-- Hero Left Content -->
                 <div>
                     <div class="hero-badge">
-                        <span>🚖</span> 24/7 Bilaspur & Chhattisgarh Travel
+                        <x-icon name="car-front" size="14" class="text-primary" style="margin-right: 4px;" /> 24/7 Bilaspur & Chhattisgarh Travel
                     </div>
                     <h1 class="hero-title">
                         24/7 Cab <span>Service</span>
@@ -23,10 +23,10 @@
 
                     <div class="d-flex gap-3 flex-wrap align-center">
                         <a href="#booking-card-section" class="btn btn-primary btn-lg">
-                            🚖 Book Your Taxi
+                            <x-icon name="calendar-check" size="18" style="margin-right: 6px;" /> Book Your Taxi
                         </a>
                         <a href="#vehicles-fleet" class="btn btn-dark btn-lg" style="border: 1px solid rgba(255,255,255,0.2);">
-                            🚗 View Vehicles
+                            <x-icon name="car" size="18" style="margin-right: 6px;" /> View Vehicles
                         </a>
                     </div>
                 </div>
@@ -55,7 +55,7 @@
                         <p style="font-size: 0.875rem; color: var(--slate-500); margin-top: 2px;">Instant doorstep reservation with verified chauffeur dispatch.</p>
                     </div>
                     <span class="badge badge-available" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
-                        ⚡ Instant Booking
+                        <x-icon name="zap" size="14" style="margin-right: 4px;" /> Instant Booking
                     </span>
                 </div>
 
@@ -119,7 +119,7 @@
                     </div>
 
                     <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 0.5rem;">
-                        🚖 Book Now
+                        Book Now <x-icon name="arrow-right" size="16" style="margin-left: 4px;" />
                     </button>
                 </form>
             </div>
@@ -137,7 +137,7 @@
 
             <div class="grid grid-4 gap-3">
                 <div class="why-card">
-                    <div class="why-icon">⏱️</div>
+                    <div class="icon-box icon-box-lg icon-box-primary" style="margin-bottom: 1.25rem;"><x-icon name="clock-3" size="28" /></div>
                     <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem;">24/7 Service</h3>
                     <p style="font-size: 0.885rem; color: var(--slate-600); line-height: 1.6;">
                         Around-the-clock taxi availability for midnight arrivals, early morning airport transfers, and emergency trips.
@@ -145,7 +145,7 @@
                 </div>
 
                 <div class="why-card">
-                    <div class="why-icon">👨‍✈️</div>
+                    <div class="icon-box icon-box-lg icon-box-primary" style="margin-bottom: 1.25rem;"><x-icon name="badge-check" size="28" /></div>
                     <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem;">Experienced Drivers</h3>
                     <p style="font-size: 0.885rem; color: var(--slate-600); line-height: 1.6;">
                         Polite, route-knowledgeable chauffeurs thoroughly trained for highway and city driving throughout Chhattisgarh.
@@ -153,7 +153,7 @@
                 </div>
 
                 <div class="why-card">
-                    <div class="why-icon">✨</div>
+                    <div class="icon-box icon-box-lg icon-box-primary" style="margin-bottom: 1.25rem;"><x-icon name="shield-check" size="28" /></div>
                     <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem;">Clean Vehicles</h3>
                     <p style="font-size: 0.885rem; color: var(--slate-600); line-height: 1.6;">
                         Impeccably maintained, sanitized, and comfortable air-conditioned cabs ready for pleasant journeys.
@@ -161,7 +161,7 @@
                 </div>
 
                 <div class="why-card">
-                    <div class="why-icon">🧾</div>
+                    <div class="icon-box icon-box-lg icon-box-primary" style="margin-bottom: 1.25rem;"><x-icon name="receipt" size="28" /></div>
                     <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem;">Transparent Pricing</h3>
                     <p style="font-size: 0.885rem; color: var(--slate-600); line-height: 1.6;">
                         Clear rates with no hidden charges or unexpected peak surge costs. Verified distance and rate calculation.
@@ -223,7 +223,7 @@
                     <h2 style="font-size: 2.25rem; margin-top: 0.25rem;">Available Vehicles</h2>
                 </div>
                 <a href="{{ route('vehicles') }}" class="btn btn-outline btn-sm">
-                    View Complete Fleet →
+                    View Complete Fleet <x-icon name="arrow-right" size="16" style="margin-left: 4px;" />
                 </a>
             </div>
 
@@ -243,9 +243,9 @@
 
                             <div style="display: flex; gap: 0.75rem; font-size: 0.825rem; color: var(--slate-600); margin-bottom: 0.75rem; flex-wrap: wrap;">
                                 <span class="badge badge-outline" style="font-weight: 700;">{{ $vehicle->vehicle_type }}</span>
-                                <span>👥 {{ $vehicle->seating_capacity }} Seats</span>
+                                <span><x-icon name="users" size="14" style="margin-right: 4px;" /> {{ $vehicle->seating_capacity }} Seats</span>
                                 <span>•</span>
-                                <span>❄️ {{ $vehicle->ac_non_ac }}</span>
+                                <span><x-icon name="snowflake" size="14" style="margin-right: 4px;" /> {{ $vehicle->ac_non_ac }}</span>
                             </div>
 
                             <p style="font-size: 0.85rem; color: var(--slate-600); margin-bottom: 1.25rem; flex: 1; line-height: 1.5;">
@@ -276,7 +276,7 @@
             <div class="grid grid-2 gap-4 align-center">
                 <div>
                     <div style="background: rgba(245, 158, 11, 0.2); display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 700; color: var(--primary); margin-bottom: 1rem;">
-                        🚨 Standby Road Assistance
+                        <x-icon name="life-buoy" size="16" style="margin-right: 4px;" /> Standby Road Assistance
                     </div>
                     <h2 style="color: #FFFFFF; font-size: 2.25rem; margin-bottom: 1rem;">
                         Emergency & Ambulance Service
@@ -285,16 +285,16 @@
                         Priority patient transport and urgent hospital transfers from Bilaspur to medical centers, Apollo Bilaspur, CIMS, and AIIMS Raipur. Dedicated dispatch on active standby.
                     </p>
                     <ul style="color: var(--slate-300); font-size: 0.95rem; margin-bottom: 2rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                        <li>✓ Rapid medical hospital pick and drop service</li>
-                        <li>✓ Direct highway connectivity between Bilaspur and Raipur hospitals</li>
-                        <li>✓ Patient-friendly, careful chauffeurs available 24/7</li>
+                        <li style="display: flex; align-items: center; gap: 8px;"><x-icon name="circle-check" size="16" class="text-primary" style="flex-shrink: 0;" /><span>Rapid medical hospital pick and drop service</span></li>
+                        <li style="display: flex; align-items: center; gap: 8px;"><x-icon name="circle-check" size="16" class="text-primary" style="flex-shrink: 0;" /><span>Direct highway connectivity between Bilaspur and Raipur hospitals</span></li>
+                        <li style="display: flex; align-items: center; gap: 8px;"><x-icon name="circle-check" size="16" class="text-primary" style="flex-shrink: 0;" /><span>Patient-friendly, careful chauffeurs available 24/7</span></li>
                     </ul>
                     <div class="d-flex gap-2 flex-wrap">
                         <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" class="btn btn-primary btn-lg">
-                            📞 Call Us: {{ config('vaishnavi.phone_primary') }}
+                            <x-icon name="phone" size="18" style="margin-right: 6px;" /> Call Us: {{ config('vaishnavi.phone_primary') }}
                         </a>
                         <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" class="btn btn-outline btn-lg" style="color: #fff; border-color: rgba(255,255,255,0.4); text-decoration: none;">
-                            💬 Chat on WhatsApp
+                            <x-icon.whatsapp size="20" style="margin-right: 6px;" /> Chat on WhatsApp
                         </a>
                     </div>
                 </div>
@@ -338,7 +338,7 @@
                     </div>
 
                     <a href="{{ route('about') }}" class="btn btn-outline">
-                        Learn More About Us →
+                        Learn More About Us <x-icon name="arrow-right" size="16" style="margin-left: 4px;" />
                     </a>
                 </div>
             </div>
@@ -358,7 +358,9 @@
                     @foreach($feedbacks as $fb)
                         <div class="card" style="padding: 1.5rem;">
                             <div style="color: #F59E0B; font-size: 1rem; margin-bottom: 0.5rem;">
-                                {{ str_repeat('★', $fb->rating) }}{{ str_repeat('☆', 5 - $fb->rating) }}
+                                @for($i = 1; $i <= 5; $i++)
+                                        <x-icon name="star" size="16" style="fill: {{ $i <= $fb->rating ? '#F59E0B' : 'none' }}; color: {{ $i <= $fb->rating ? '#F59E0B' : '#CBD5E1' }};" />
+                                    @endfor
                             </div>
                             <p style="font-size: 0.9rem; color: var(--slate-700); line-height: 1.6; margin-bottom: 1rem;">
                                 "{{ $fb->comment }}"

@@ -31,45 +31,45 @@
             <form action="{{ route('admin.bookings.confirm', $booking->id) }}" method="POST">
                 @csrf
                 <button type="submit" class="btn btn-success btn-sm" style="background: #059669; color: #fff;">
-                    ✓ Confirm Booking
+                    <x-icon name="circle-check" size="16" style="margin-right: 6px;" /> Confirm Booking
                 </button>
             </form>
         @endif
 
         <!-- Invoice -->
         <a href="{{ route('invoice.show', $booking->id) }}" class="btn btn-outline btn-sm" target="_blank">
-            🧾 Print / View Tax Invoice
+            <x-icon name="printer" size="16" style="margin-right: 6px;" /> Print / View Tax Invoice
         </a>
 
         <!-- Edit -->
         <a href="{{ route('admin.bookings.edit', $booking->id) }}" class="btn btn-outline btn-sm">
-            ✏️ Edit Booking
+            <x-icon name="edit" size="16" style="margin-right: 6px;" /> Edit Booking
         </a>
 
         <!-- Delete -->
         <form action="{{ route('admin.bookings.destroy', $booking->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete this booking?');">
             @csrf
             @method('DELETE')
-            <button type="submit" class="btn btn-danger btn-sm">🗑️ Delete</button>
+            <button type="submit" class="btn btn-danger btn-sm"><x-icon name="trash-2" size="14" style="margin-right: 4px;" /> Delete</button>
         </form>
     </div>
 </div>
 
 @if(session('success'))
     <div class="alert alert-success mb-3">
-        ✓ {{ session('success') }}
+        <x-icon name="circle-check" size="18" style="vertical-align: middle; margin-right: 4px;" /> {{ session('success') }}
     </div>
 @endif
 
 @if(session('error'))
     <div class="alert alert-danger mb-3">
-        ⚠️ {{ session('error') }}
+        <x-icon name="alert-circle" size="18" style="vertical-align: middle; margin-right: 4px;" /> {{ session('error') }}
     </div>
 @endif
 
 @if($errors->any())
     <div class="alert alert-danger mb-3">
-        <strong>⚠️ Please address the following issues:</strong>
+        <strong style="display: flex; align-items: center; gap: 6px;"><x-icon name="alert-circle" size="18" /><span>Please address the following issues:</span></strong>
         <ul style="margin: 0.5rem 0 0 1.25rem; padding: 0;">
             @foreach($errors->all() as $err)
                 <li>{{ $err }}</li>
@@ -109,7 +109,7 @@
             <div class="card">
                 <div class="d-flex justify-between align-center mb-3">
                     <h3 style="font-size: 1rem; font-weight: 800; color: var(--dark-950); margin: 0;">
-                        👤 Customer Information
+                        <x-icon name="user" size="20" class="text-primary" style="margin-right: 6px;" /> Customer Information
                     </h3>
                     <span class="badge badge-outline" style="font-size: 0.75rem;">Account</span>
                 </div>
@@ -121,12 +121,12 @@
 
                     <div><span style="color: var(--slate-500); font-size: 0.8rem; text-transform: uppercase; font-weight: 700;">Mobile:</span></div>
                     <div style="font-weight: 700; color: var(--dark-900); margin-bottom: 0.5rem;">
-                        📞 {{ $booking->customer->phone ?? 'N/A' }}
+                        <x-icon name="phone" size="14" style="margin-right: 4px;" /> {{ $booking->customer->phone ?? 'N/A' }}
                     </div>
 
                     <div><span style="color: var(--slate-500); font-size: 0.8rem; text-transform: uppercase; font-weight: 700;">Email:</span></div>
                     <div style="font-weight: 600; color: var(--slate-600);">
-                        ✉️ {{ $booking->customer->email ?? 'N/A' }}
+                        <x-icon name="mail" size="14" style="margin-right: 4px;" /> {{ $booking->customer->email ?? 'N/A' }}
                     </div>
 
                     <!-- Read-Only Legal Acceptance Record -->
@@ -134,7 +134,7 @@
                         <div class="d-flex justify-between align-center mb-1">
                             <span style="color: var(--slate-500); font-weight: 700; text-transform: uppercase; font-size: 0.75rem;">Terms Accepted:</span>
                             @if($booking->terms_accepted)
-                                <span class="badge badge-sm badge-success">✓ Yes (v{{ $booking->terms_version ?? '1.0' }})</span>
+                                <span class="badge badge-sm badge-success"><x-icon name="circle-check" size="14" style="margin-right: 4px;" /> Yes (v{{ $booking->terms_version ?? '1.0' }})</span>
                             @else
                                 <span class="badge badge-sm" style="background: var(--slate-200); color: var(--slate-600);">Recorded with Booking</span>
                             @endif
@@ -146,7 +146,7 @@
                             </span>
                         </div>
                         <div style="font-size: 0.75rem; color: var(--slate-400); margin-top: 0.25rem;">
-                            🔒 Read-only legal record agreed at booking creation.
+                            <x-icon name="lock" size="14" style="margin-right: 4px;" /> Read-only legal record agreed at booking creation.
                         </div>
                     </div>
                 </div>
@@ -156,7 +156,7 @@
             <div class="card">
                 <div class="d-flex justify-between align-center mb-3">
                     <h3 style="font-size: 1rem; font-weight: 800; color: var(--dark-950); margin: 0;">
-                        🚖 Trip Information
+                        <x-icon name="route" size="20" class="text-primary" style="margin-right: 6px;" /> Trip Information
                     </h3>
                     <span class="badge" style="background: var(--slate-200); color: var(--dark-800); font-size: 0.75rem;">
                         {{ $booking->trip_type }}
@@ -165,12 +165,12 @@
                 <div style="font-size: 0.925rem; line-height: 1.6;">
                     <div><span style="color: var(--slate-500); font-size: 0.8rem; text-transform: uppercase; font-weight: 700;">Pickup Location:</span></div>
                     <div style="font-weight: 800; color: var(--dark-950); margin-bottom: 0.5rem;">
-                        📍 {{ $booking->pickup_location }}
+                        <x-icon name="map-pin" size="16" class="text-primary" style="margin-right: 4px;" /> {{ $booking->pickup_location }}
                     </div>
 
                     <div><span style="color: var(--slate-500); font-size: 0.8rem; text-transform: uppercase; font-weight: 700;">Destination:</span></div>
                     <div style="font-weight: 800; color: var(--dark-950); margin-bottom: 0.5rem;">
-                        🏁 {{ $booking->destination }}
+                        <x-icon name="map-pinned" size="16" class="text-primary" style="margin-right: 4px;" /> {{ $booking->destination }}
                     </div>
 
                     <div class="grid grid-2 gap-2 mt-2 pt-2" style="border-top: 1px dashed var(--slate-200);">
@@ -193,7 +193,7 @@
             <div class="card" style="border-top: 3px solid var(--primary);">
                 <div class="d-flex justify-between align-center mb-3">
                     <h3 style="font-size: 1rem; font-weight: 800; color: var(--dark-950); margin: 0;">
-                        🚗 Vehicle Information
+                        <x-icon name="car-front" size="20" class="text-primary" style="margin-right: 6px;" /> Vehicle Information
                     </h3>
                     @if($booking->vehicle)
                         <span class="badge badge-success">{{ $booking->vehicle->status }}</span>
@@ -253,7 +253,7 @@
             <div class="card" style="border-top: 3px solid var(--dark-900);">
                 <div class="d-flex justify-between align-center mb-3">
                     <h3 style="font-size: 1rem; font-weight: 800; color: var(--dark-950); margin: 0;">
-                        👨‍✈️ Driver Information
+                        <x-icon name="award" size="20" class="text-primary" style="margin-right: 6px;" /> Driver Information
                     </h3>
                     @if($booking->driver)
                         <span class="badge badge-success">{{ $booking->driver->status }}</span>
@@ -314,7 +314,7 @@
         <div class="card mb-4" style="border-top: 4px solid var(--primary);">
             <div class="d-flex justify-between align-center mb-3">
                 <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--dark-950); margin: 0;">
-                    ⚡ Controlled Status Workflow
+                    <x-icon name="zap" size="20" class="text-primary" style="margin-right: 6px;" /> Controlled Status Workflow
                 </h3>
                 <span class="badge badge-lg badge-primary">
                     Current: {{ $booking->booking_status }}
@@ -359,7 +359,7 @@
         <!-- 4. Status History Table: Section 6 -->
         <div class="card mb-4">
             <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--dark-950); margin-bottom: 1rem;">
-                📋 Booking Status History (Audit Trail)
+                <x-icon name="clipboard-list" size="20" class="text-primary" style="margin-right: 6px;" /> Booking Status History (Audit Trail)
             </h3>
 
             <div class="table-responsive">
@@ -423,7 +423,7 @@
         <div class="card mb-4" style="border-top: 4px solid #10B981;">
             <div class="d-flex justify-between align-center mb-3">
                 <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--dark-950); margin: 0;">
-                    💳 Financial Information
+                    <x-icon name="credit-card" size="20" class="text-primary" style="margin-right: 6px;" /> Financial Information
                 </h3>
                 <span class="badge badge-lg {{ $booking->payment_status === 'Paid' ? 'badge-paid' : ($booking->payment_status === 'Partial' ? 'badge-warning' : 'badge-pending') }}">
                     {{ $booking->payment_status }}
@@ -450,7 +450,7 @@
             <!-- Update Amount Form (Section 16) -->
             <div style="margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px dashed var(--slate-200);">
                 <h4 style="font-size: 0.9rem; font-weight: 800; color: var(--dark-900); margin-bottom: 0.75rem;">
-                    ✏️ Update Total / Paid Amount
+                    <x-icon name="edit" size="16" style="margin-right: 6px;" /> Update Total / Paid Amount
                 </h4>
                 <form action="{{ route('admin.bookings.amount', $booking->id) }}" method="POST">
                     @csrf
@@ -473,7 +473,7 @@
             @if($booking->balance_amount > 0)
                 <div>
                     <h4 style="font-size: 0.9rem; font-weight: 800; color: var(--dark-900); margin-bottom: 0.75rem;">
-                        💰 Record Payment
+                        <x-icon name="credit-card" size="16" style="margin-right: 6px;" /> Record Payment
                     </h4>
                     <form action="{{ route('admin.bookings.payment', $booking->id) }}" method="POST">
                         @csrf
@@ -506,7 +506,7 @@
         @if(!in_array($booking->booking_status, ['Completed', 'Cancelled']))
             <div class="card" style="border-top: 3px solid #dc2626;">
                 <h4 style="font-size: 0.95rem; font-weight: 800; color: #dc2626; margin-bottom: 0.5rem;">
-                    🚫 Cancel Booking
+                    <x-icon name="circle-x" size="16" style="margin-right: 6px;" /> Cancel Booking
                 </h4>
                 <p style="font-size: 0.8rem; color: var(--slate-500); margin-bottom: 1rem;">
                     Cancelling releases any assigned vehicle & driver back to Available.

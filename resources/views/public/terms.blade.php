@@ -593,7 +593,7 @@
         <div class="mobile-toc-wrapper">
             <button type="button" class="mobile-toc-btn" id="mobileTocBtn" aria-expanded="false">
                 <span class="mobile-toc-btn-text">
-                    <span>📋</span> On This Page
+                    <x-icon name="clipboard-list" size="18" style="margin-right: 6px;" /> On This Page
                 </span>
                 <span class="mobile-toc-indicator" id="mobileTocIndicator">▼</span>
             </button>
@@ -608,7 +608,7 @@
                 <a href="#driver-payment-communication" class="mobile-toc-item">8. Driver &amp; Payment Communication</a>
                 <a href="#unavoidable-circumstances" class="mobile-toc-item">9. Unavoidable Circumstances</a>
                 <a href="#general-terms" class="mobile-toc-item">10. General Terms</a>
-                <a href="#privacy-policy" class="mobile-toc-item" style="border-top: 1px dashed var(--slate-200); margin-top: 0.25rem; padding-top: 0.6rem;">🔒 Privacy Policy</a>
+                <a href="#privacy-policy" class="mobile-toc-item" style="border-top: 1px dashed var(--slate-200); margin-top: 0.25rem; padding-top: 0.6rem;"><x-icon name="shield" size="15" style="margin-right: 6px;" /> Privacy Policy</a>
             </div>
         </div>
 
@@ -618,7 +618,7 @@
             <div class="desktop-toc-sidebar">
                 <div class="desktop-toc-card">
                     <h3 class="desktop-toc-title">
-                        <span>📋</span> Table of Contents
+                        <x-icon name="clipboard-list" size="18" style="margin-right: 6px;" /> Table of Contents
                     </h3>
                     <nav class="desktop-toc-links">
                         <a href="#booking-confirmation" class="desktop-toc-link">1. Booking Confirmation</a>
@@ -631,12 +631,12 @@
                         <a href="#driver-payment-communication" class="desktop-toc-link">8. Driver &amp; Payment Communication</a>
                         <a href="#unavoidable-circumstances" class="desktop-toc-link">9. Unavoidable Circumstances</a>
                         <a href="#general-terms" class="desktop-toc-link">10. General Terms</a>
-                        <a href="#privacy-policy" class="desktop-toc-link" style="border-top: 1px dashed var(--slate-200); margin-top: 0.25rem; padding-top: 0.6rem;">🔒 Privacy Policy</a>
+                        <a href="#privacy-policy" class="desktop-toc-link" style="border-top: 1px dashed var(--slate-200); margin-top: 0.25rem; padding-top: 0.6rem;"><x-icon name="shield" size="15" style="margin-right: 6px;" /> Privacy Policy</a>
                     </nav>
 
                     <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--slate-200); text-align: center;">
                         <a href="{{ route('booking') }}" class="btn btn-primary btn-block btn-sm" style="font-weight: 700; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; width: 100%;">
-                            Book a Cab Now →
+                            Book a Cab Now <x-icon name="arrow-right" size="16" style="margin-left: 4px;" />
                         </a>
                         <a href="{{ route('cancellation-refund-policy') }}" style="display: inline-block; margin-top: 0.6rem; font-size: 0.8rem; color: var(--slate-500); text-decoration: underline;">
                             View Standalone Cancellation Policy
@@ -975,7 +975,7 @@
                 <div id="privacy-policy" class="terms-card terms-privacy-card">
                     <div class="terms-card-header" data-target="body-privacy-policy" role="button" tabindex="0" aria-expanded="false">
                         <div class="terms-header-left">
-                            <span class="terms-num-badge" style="background: var(--dark-900); color: #fff;">🔒</span>
+                            <span class="terms-num-badge" style="background: var(--dark-900); color: #fff;"><x-icon name="lock" size="14" /></span>
                             <h2 class="terms-card-title">Privacy Policy &amp; Passenger Data Protection</h2>
                         </div>
                         <span class="accordion-toggle-icon" aria-hidden="true">+</span>
@@ -1004,7 +1004,7 @@
                 <!-- Support Card (Requirement 9: Need Help? with official contact details) -->
                 <div class="terms-support-card">
                     <div class="terms-support-header">
-                        <span class="terms-support-icon">📞</span>
+                        <div class="icon-box icon-box-md icon-box-primary"><x-icon name="phone" size="22" /></div>
                         <div>
                             <h3 class="terms-support-title">Need Help?</h3>
                             <p class="terms-support-subtitle">Our booking dispatch team is ready to assist you 24/7</p>
@@ -1015,10 +1015,10 @@
                             <span class="terms-support-label">Call Us:</span>
                             <div class="terms-support-actions">
                                 <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" class="btn btn-outline terms-call-btn">
-                                    📞 {{ config('vaishnavi.phone_primary') }}
+                                    <x-icon name="phone" size="16" style="margin-right: 4px;" /> {{ config('vaishnavi.phone_primary') }}
                                 </a>
                                 <a href="tel:{{ config('vaishnavi.phone_secondary_tel') }}" class="btn btn-outline terms-call-btn">
-                                    📞 {{ config('vaishnavi.phone_secondary') }}
+                                    <x-icon name="phone" size="16" style="margin-right: 4px;" /> {{ config('vaishnavi.phone_secondary') }}
                                 </a>
                             </div>
                         </div>
@@ -1026,13 +1026,13 @@
                             <span class="terms-support-label">WhatsApp:</span>
                             <div class="terms-support-actions">
                                 <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" class="btn terms-wa-btn">
-                                    💬 Chat on WhatsApp ({{ config('vaishnavi.whatsapp') }})
+                                    <x-icon.whatsapp size="18" style="margin-right: 6px;" /> Chat on WhatsApp ({{ config('vaishnavi.whatsapp') }})
                                 </a>
                             </div>
                         </div>
                         <div class="terms-support-item">
                             <span class="terms-support-label">Address:</span>
-                            <span class="terms-support-address">📍 {{ config('vaishnavi.address') }}</span>
+                            <span class="terms-support-address"><x-icon name="map-pin" size="16" class="text-primary" style="margin-right: 4px;" /> {{ config('vaishnavi.address') }}</span>
                         </div>
                     </div>
                 </div>
@@ -1048,7 +1048,7 @@
                             Contact Our Team
                         </a>
                         <a href="{{ route('booking') }}" class="btn btn-outline" style="border-color: #fff; color: #fff; font-weight: 700;">
-                            Book a Cab Now →
+                            Book a Cab Now <x-icon name="arrow-right" size="16" style="margin-left: 4px;" />
                         </a>
                     </div>
                 </div>

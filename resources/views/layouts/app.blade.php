@@ -34,18 +34,18 @@
     <div class="top-bar">
         <div class="container d-flex align-center justify-between flex-wrap gap-1">
             <div class="d-flex align-center gap-2 flex-wrap">
-                <span>📍 {{ config('vaishnavi.address') }}</span>
-                <span>📞 <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" style="color: var(--primary); font-weight: 700;">{{ config('vaishnavi.phone_primary') }}</a></span>
+                <span><x-icon name="map-pin" size="14" class="text-primary" style="margin-right: 4px;" /> {{ config('vaishnavi.address') }}</span>
+                <span><x-icon name="phone" size="14" class="text-primary" style="margin-right: 4px;" /><a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" style="color: var(--primary); font-weight: 700;">{{ config('vaishnavi.phone_primary') }}</a></span>
             </div>
             <div class="d-flex align-center gap-2 flex-wrap">
                 <a href="{{ route('contact') }}#emergency" class="top-badge-emergency">
-                    🚨 24/7 Ambulance & Emergency
+                    <x-icon name="life-buoy" size="14" style="margin-right: 4px;" /> 24/7 Road Assistance & Emergency
                 </a>
                 @auth
                     @if(Auth::user()->isAdmin())
-                        <a href="{{ route('admin.dashboard') }}" style="font-weight: 700; color: var(--primary);">⚙️ Admin Panel</a>
+                        <a href="{{ route('admin.dashboard') }}" style="font-weight: 700; color: var(--primary);"><x-icon name="settings" size="14" style="margin-right: 4px;" /> Admin Panel</a>
                     @else
-                        <a href="{{ route('customer.dashboard') }}" style="font-weight: 700; color: var(--primary);">👤 My Account</a>
+                        <a href="{{ route('customer.dashboard') }}" style="font-weight: 700; color: var(--primary);"><x-icon name="user" size="14" style="margin-right: 4px;" /> My Account</a>
                     @endif
                     <form action="{{ route('logout') }}" method="POST" style="display: inline;">
                         @csrf
@@ -98,9 +98,9 @@
 
                 <div class="nav-actions d-flex align-center gap-2">
                     <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" class="btn btn-outline btn-sm" style="color: var(--dark-950); font-weight: 700; border-color: var(--primary); text-decoration: none;">
-                        📞 {{ config('vaishnavi.phone_primary') }}
+                        <x-icon name="phone" size="15" style="margin-right: 6px;" /> {{ config('vaishnavi.phone_primary') }}
                     </a>
-                    <a href="{{ route('booking') }}" class="btn btn-primary btn-sm">🚖 Book Taxi</a>
+                    <a href="{{ route('booking') }}" class="btn btn-primary btn-sm"><x-icon name="car-front" size="15" style="margin-right: 6px;" /> Book Taxi</a>
                 </div>
             </div>
         </div>
@@ -109,13 +109,13 @@
     <!-- Flash Alerts -->
     <div class="container" style="margin-top: 1rem;">
         @if(session('success'))
-            <div class="alert alert-success">✅ {{ session('success') }}</div>
+            <div class="alert alert-success"><x-icon name="circle-check" size="18" style="margin-right: 6px;" /> {{ session('success') }}</div>
         @endif
         @if(session('error'))
-            <div class="alert alert-danger">⚠️ {{ session('error') }}</div>
+            <div class="alert alert-danger"><x-icon name="alert-triangle" size="18" style="margin-right: 6px;" /> {{ session('error') }}</div>
         @endif
         @if(session('info'))
-            <div class="alert alert-info">ℹ️ {{ session('info') }}</div>
+            <div class="alert alert-info"><x-icon name="info" size="18" style="margin-right: 6px;" /> {{ session('info') }}</div>
         @endif
     </div>
 
@@ -139,8 +139,22 @@
                     <p style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--slate-400);">
                         Chhattisgarh's premier chauffeur-driven taxi service. Reliable outstation cabs, hourly rentals, airport transfers, and 24/7 road emergency dispatch.
                     </p>
-                    <div style="font-size: 0.85rem; color: var(--slate-300);">
+                    <div style="font-size: 0.85rem; color: var(--slate-300); margin-bottom: 1.25rem;">
                         <strong>Location:</strong> {{ config('vaishnavi.address') }}
+                    </div>
+                    <div style="display: flex; gap: 0.65rem; align-items: center;">
+                        <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" class="social-link-btn social-wa" aria-label="WhatsApp" title="WhatsApp">
+                            <x-icon.whatsapp size="18" />
+                        </a>
+                        <a href="https://instagram.com" target="_blank" class="social-link-btn" aria-label="Instagram" title="Instagram">
+                            <x-icon.instagram size="18" />
+                        </a>
+                        <a href="https://facebook.com" target="_blank" class="social-link-btn" aria-label="Facebook" title="Facebook">
+                            <x-icon.facebook size="18" />
+                        </a>
+                        <a href="https://youtube.com" target="_blank" class="social-link-btn" aria-label="YouTube" title="YouTube">
+                            <x-icon.youtube size="18" />
+                        </a>
                     </div>
                 </div>
 
@@ -183,7 +197,7 @@
                     </p>
                     <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">
                         <strong>WhatsApp:</strong><br>
-                        <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" style="color: #25D366; font-weight: 700; text-decoration: none;">💬 {{ config('vaishnavi.whatsapp') }}</a>
+                        <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" style="color: #25D366; font-weight: 700; text-decoration: none;"><x-icon.whatsapp size="16" style="margin-right: 6px;" /> {{ config('vaishnavi.whatsapp') }}</a>
                     </p>
                     <p style="font-size: 0.9rem;">
                         <strong>Email:</strong><br>
@@ -224,7 +238,7 @@
     @stack('scripts')
     <!-- Floating WhatsApp Action -->
     <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" class="floating-whatsapp-btn" style="position: fixed; bottom: 24px; right: 24px; z-index: 999; background: #25D366; color: #ffffff; padding: 10px 18px; border-radius: 50px; font-weight: 700; font-size: 0.925rem; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4); text-decoration: none; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-        <span style="font-size: 1.25rem;">💬</span>
+        <x-icon.whatsapp size="20" />
         <span>Chat on WhatsApp</span>
     </a>
 </body>

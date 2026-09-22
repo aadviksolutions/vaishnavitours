@@ -21,7 +21,7 @@
                 <div class="card" style="padding: 2rem; margin-bottom: 2rem;">
                     <div style="display: flex; flex-direction: column; gap: 1.25rem; font-size: 1rem;">
                         <div style="display: flex; gap: 1rem; align-items: flex-start;">
-                            <div style="font-size: 1.5rem; color: var(--primary-dark);">📍</div>
+                            <div class="icon-box icon-box-md icon-box-maroon"><x-icon name="map-pin" size="22" /></div>
                             <div>
                                 <strong style="display: block; margin-bottom: 0.25rem;">Address:</strong>
                                 {{ config('vaishnavi.address') }}
@@ -29,7 +29,7 @@
                         </div>
 
                         <div style="display: flex; gap: 1rem; align-items: flex-start;">
-                            <div style="font-size: 1.5rem; color: var(--primary-dark);">📞</div>
+                            <div class="icon-box icon-box-md icon-box-maroon"><x-icon name="phone" size="22" /></div>
                             <div>
                                 <strong style="display: block; margin-bottom: 0.25rem;">Calling Numbers:</strong>
                                 <div>
@@ -42,17 +42,17 @@
                         </div>
 
                         <div style="display: flex; gap: 1rem; align-items: flex-start;">
-                            <div style="font-size: 1.5rem; color: #25D366;">💬</div>
+                            <div class="icon-box icon-box-md icon-box-whatsapp"><x-icon.whatsapp size="24" /></div>
                             <div>
                                 <strong style="display: block; margin-bottom: 0.25rem; color: #166534;">WhatsApp:</strong>
                                 <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" class="btn btn-sm" style="background: #25D366; color: #fff; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; margin-top: 2px;">
-                                    <span>Chat on WhatsApp ({{ config('vaishnavi.whatsapp') }})</span>
+                                    <x-icon.whatsapp size="18" style="margin-right: 6px;" /><span>Chat on WhatsApp ({{ config('vaishnavi.whatsapp') }})</span>
                                 </a>
                             </div>
                         </div>
 
                         <div style="display: flex; gap: 1rem; align-items: flex-start;" id="emergency">
-                            <div style="font-size: 1.5rem; color: var(--primary-dark);">🚗</div>
+                            <div class="icon-box icon-box-md icon-box-maroon"><x-icon name="car-front" size="22" /></div>
                             <div>
                                 <strong style="display: block; margin-bottom: 0.25rem;">24/7 Road Assistance & Booking:</strong>
                                 <span style="color: var(--dark-900); font-weight: 600;">Direct Dispatch / Calling: </span>
@@ -61,7 +61,7 @@
                         </div>
 
                         <div style="display: flex; gap: 1rem; align-items: flex-start;">
-                            <div style="font-size: 1.5rem; color: #25D366;">🚖</div>
+                            <div class="icon-box icon-box-md icon-box-primary"><x-icon name="calendar-check" size="22" /></div>
                             <div>
                                 <strong style="display: block; margin-bottom: 0.25rem;">Online Cab Reservation:</strong>
                                 <a href="{{ route('booking') }}" style="color: #059669; font-weight: 700;">Book a Cab Online</a>
@@ -69,7 +69,7 @@
                         </div>
 
                         <div style="display: flex; gap: 1rem; align-items: flex-start;">
-                            <div style="font-size: 1.5rem; color: var(--info);">✉️</div>
+                            <div class="icon-box icon-box-md icon-box-info"><x-icon name="mail" size="22" /></div>
                             <div>
                                 <strong style="display: block; margin-bottom: 0.25rem;">Email Support:</strong>
                                 <a href="mailto:info@vaishnavitours.com">info@vaishnavitours.com</a> / <a href="mailto:support@vaishnavitours.com">support@vaishnavitours.com</a>
@@ -78,11 +78,32 @@
                     </div>
                 </div>
 
-                <div class="card" style="background: var(--slate-100);">
-                    <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Corporate & Long-term Contracts</h3>
-                    <p style="font-size: 0.9rem; color: var(--slate-600);">
-                        For regular business transfers, monthly billing accounts, or multi-car event logistics for weddings in Bilaspur and Raipur, submit our <a href="{{ route('enquiry') }}" style="font-weight: 700;">corporate enquiry form</a>.
-                    </p>
+                <div class="card" style="background: var(--slate-100); margin-bottom: 1.5rem;">
+                    <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+                        <div class="icon-box icon-box-sm icon-box-primary" style="margin-top: 2px;">
+                            <x-icon name="clock-3" size="18" />
+                        </div>
+                        <div>
+                            <h3 style="font-size: 1.1rem; margin-bottom: 0.25rem;">Operating Hours & Control Room</h3>
+                            <p style="font-size: 0.9rem; color: var(--slate-600); margin: 0; line-height: 1.5;">
+                                <strong>24 Hours / 7 Days a Week:</strong> Always operational for cab dispatch, airport drops, and night pickups across Chhattisgarh.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="background: #ffffff; border: 1.5px solid var(--slate-200);">
+                    <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+                        <div class="icon-box icon-box-sm icon-box-maroon" style="margin-top: 2px;">
+                            <x-icon name="briefcase" size="18" />
+                        </div>
+                        <div>
+                            <h3 style="font-size: 1.1rem; margin-bottom: 0.25rem;">Corporate & Group Fleet Contracts</h3>
+                            <p style="font-size: 0.9rem; color: var(--slate-600); margin: 0; line-height: 1.5;">
+                                For regular business transfers, monthly corporate billing, or wedding convoy bookings in Bilaspur and Raipur, submit our <a href="{{ route('enquiry') }}" style="font-weight: 700; color: var(--primary-dark);">corporate enquiry form</a>.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -131,8 +152,9 @@
                             <textarea name="message" class="form-control" rows="4" placeholder="Mention travel dates, passenger count, preferred car..." required></textarea>
                         </div>
 
-                        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
-                            Submit Inquiry
+                        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                            <x-icon name="send" size="18" />
+                            <span>Submit Inquiry</span>
                         </button>
                     </form>
                 </div>

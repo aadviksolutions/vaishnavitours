@@ -39,9 +39,9 @@
 
                         <div style="display: flex; gap: 0.75rem; font-size: 0.85rem; color: var(--slate-600); margin-bottom: 1rem; flex-wrap: wrap;">
                             <span class="badge badge-outline" style="font-weight: 700; color: var(--dark-900);">{{ $vehicle->vehicle_type }}</span>
-                            <span>👥 {{ $vehicle->seating_capacity }} Seats</span>
+                            <span><x-icon name="users" size="14" style="margin-right: 4px;" /> {{ $vehicle->seating_capacity }} Seats</span>
                             <span>•</span>
-                            <span>❄️ {{ $vehicle->ac_non_ac }}</span>
+                            <span><x-icon name="snowflake" size="14" style="margin-right: 4px;" /> {{ $vehicle->ac_non_ac }}</span>
                         </div>
 
                         <p style="font-size: 0.875rem; color: var(--slate-600); margin-bottom: 1.25rem; flex: 1; line-height: 1.5;">
@@ -60,7 +60,7 @@
                         </div>
 
                         <a href="{{ route('booking') }}?vehicle_id={{ $vehicle->id }}" class="btn btn-primary" style="width: 100%;">
-                            🚖 Book Now
+                            Book Now <x-icon name="arrow-right" size="16" style="margin-left: 4px;" />
                         </a>
                     </div>
                 </div>

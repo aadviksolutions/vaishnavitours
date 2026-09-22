@@ -998,3 +998,101 @@ ul {
   .brand-logo-badge { width: 38px; height: 38px; }
   .card { padding: 1.15rem; }
 }
+
+/* ===================================================
+   VAISHNAVI TOURS — PREMIUM ICON SYSTEM TOKENS
+   =================================================== */
+.icon-base, svg.lucide {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    vertical-align: -0.15em;
+}
+
+/* Sizing Tokens */
+.icon-xs { width: 14px; height: 14px; }
+.icon-sm { width: 16px; height: 16px; }
+.icon-md { width: 20px; height: 20px; }
+.icon-lg { width: 24px; height: 24px; }
+.icon-xl { width: 28px; height: 28px; }
+
+/* Subtle Icon Containers (Requirement 4) */
+.icon-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+}
+.icon-box-circle {
+    border-radius: 50%;
+}
+.icon-box-sm {
+    width: 38px;
+    height: 38px;
+}
+.icon-box-md {
+    width: 46px;
+    height: 46px;
+}
+.icon-box-lg {
+    width: 54px;
+    height: 54px;
+}
+
+/* Color System (Requirement 3) */
+.icon-box-primary {
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--primary-dark);
+}
+.icon-box-maroon {
+    background: #FAF4F5;
+    color: #800020;
+}
+.icon-box-dark {
+    background: rgba(255, 255, 255, 0.08);
+    color: #FFFFFF;
+}
+.icon-box-whatsapp {
+    background: rgba(37, 211, 102, 0.12);
+    color: #25D366;
+}
+.icon-box-info {
+    background: var(--info-bg);
+    color: var(--info);
+}
+
+/* Social Media Brands (Requirement 15) */
+.brand-icon {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+.brand-whatsapp { color: #25D366; }
+.brand-instagram { color: #E4405F; }
+.brand-facebook { color: #1877F2; }
+.brand-youtube { color: #FF0000; }
+
+.social-link-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    color: #CBD5E1;
+    transition: var(--transition);
+    text-decoration: none;
+}
+.social-link-btn:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.18);
+    color: #FFFFFF;
+}
+.social-link-btn.social-wa:hover {
+    background: #25D366;
+    color: #FFFFFF;
+}

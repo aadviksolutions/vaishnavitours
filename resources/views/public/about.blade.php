@@ -28,7 +28,7 @@
                         Whether you need a daily commute within the city, an airport transfer to Swami Vivekananda Airport in Raipur, an intercity business trip to Korba or Raigarh, or outstation family travel, we provide well-maintained vehicles and courteous service.
                     </p>
                     <div style="background: var(--slate-100); padding: 1rem 1.25rem; border-radius: var(--radius-md); border-left: 3px solid var(--primary); font-size: 0.875rem; color: var(--dark-900);">
-                        📍 <strong>Office Address:</strong><br>
+                        <x-icon name="map-pin" size="18" class="text-primary" style="margin-right: 6px;" /><strong>Office Address:</strong><br>
                         {{ config('vaishnavi.address') }}
                     </div>
                 </div>
@@ -44,7 +44,7 @@
         <!-- Pillars -->
         <div class="grid grid-3 gap-3">
             <div class="card" style="text-align: center; padding: 2rem 1.5rem;">
-                <div class="why-icon">🕒</div>
+                <div class="icon-box icon-box-lg icon-box-primary" style="margin-bottom: 1.25rem;"><x-icon name="clock-3" size="28" /></div>
                 <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem;">24/7 Cab Service</h3>
                 <p style="font-size: 0.885rem; color: var(--slate-600); line-height: 1.6;">
                     Active dispatch available all day and night for scheduled pickups, late night journeys, and emergency travel needs.
@@ -52,7 +52,7 @@
             </div>
 
             <div class="card" style="text-align: center; padding: 2rem 1.5rem;">
-                <div class="why-icon">👨‍✈️</div>
+                <div class="icon-box icon-box-lg icon-box-primary" style="margin-bottom: 1.25rem;"><x-icon name="award" size="28" /></div>
                 <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem;">Professional Drivers</h3>
                 <p style="font-size: 0.885rem; color: var(--slate-600); line-height: 1.6;">
                     Verified, skilled chauffeurs who understand passenger safety, regional highway conditions, and courteous service.
@@ -60,7 +60,7 @@
             </div>
 
             <div class="card" style="text-align: center; padding: 2rem 1.5rem;">
-                <div class="why-icon">🤝</div>
+                <div class="icon-box icon-box-lg icon-box-primary" style="margin-bottom: 1.25rem;"><x-icon name="shield-check" size="28" /></div>
                 <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem;">Customer-Focused Service</h3>
                 <p style="font-size: 0.885rem; color: var(--slate-600); line-height: 1.6;">
                     Clean, air-conditioned cars with clear transparent billing and dependable on-time doorstep arrival.

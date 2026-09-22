@@ -15,7 +15,7 @@
     <div class="container">
         <div class="grid grid-3 gap-3">
             <div class="card">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.75rem; color: var(--dark-900);">🏢 Bilaspur Central Corridor</h3>
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.75rem; color: var(--dark-900);"><x-icon name="building-2" size="20" class="text-primary" style="margin-right: 8px;" />Bilaspur Central Corridor</h3>
                 <p style="font-size: 0.875rem; color: var(--slate-500); margin-bottom: 1rem;">Daily on-demand city and peripheral cab services.</p>
                 <ul style="font-size: 0.9rem; color: var(--slate-700); line-height: 1.8;">
                     <li>• Mangal Chowk Hub</li>
@@ -27,7 +27,7 @@
             </div>
 
             <div class="card">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.75rem; color: var(--dark-900);">✈️ Raipur & Capital Region</h3>
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.75rem; color: var(--dark-900);"><x-icon name="plane" size="20" class="text-primary" style="margin-right: 8px;" />Raipur & Capital Region</h3>
                 <p style="font-size: 0.875rem; color: var(--slate-500); margin-bottom: 1rem;">Frequent expressway transfers with punctual flight pickups.</p>
                 <ul style="font-size: 0.9rem; color: var(--slate-700); line-height: 1.8;">
                     <li>• Swami Vivekananda Airport (RPR)</li>
@@ -39,7 +39,7 @@
             </div>
 
             <div class="card">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.75rem; color: var(--dark-900);">🏭 Industrial Coal & Power Belt</h3>
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.75rem; color: var(--dark-900);"><x-icon name="factory" size="20" class="text-primary" style="margin-right: 8px;" />Industrial Coal & Power Belt</h3>
                 <p style="font-size: 0.875rem; color: var(--slate-500); margin-bottom: 1rem;">Corporate car hires for power plants and mining executives.</p>
                 <ul style="font-size: 0.9rem; color: var(--slate-700); line-height: 1.8;">
                     <li>• Korba (NTPC & Balco)</li>
@@ -50,7 +50,7 @@
             </div>
 
             <div class="card">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.75rem; color: var(--dark-900);">🌲 North Chhattisgarh & Hills</h3>
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.75rem; color: var(--dark-900);"><x-icon name="trees" size="20" class="text-primary" style="margin-right: 8px;" />North Chhattisgarh & Hills</h3>
                 <p style="font-size: 0.875rem; color: var(--slate-500); margin-bottom: 1rem;">Senior hill chauffeurs for tourist and official visits.</p>
                 <ul style="font-size: 0.9rem; color: var(--slate-700); line-height: 1.8;">
                     <li>• Ambikapur City</li>
@@ -61,7 +61,7 @@
             </div>
 
             <div class="card">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.75rem; color: var(--dark-900);">🌊 Bastar & South Chhattisgarh</h3>
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.75rem; color: var(--dark-900);"><x-icon name="compass" size="20" class="text-primary" style="margin-right: 8px;" />Bastar & South Chhattisgarh</h3>
                 <p style="font-size: 0.875rem; color: var(--slate-500); margin-bottom: 1rem;">Safe, comfortable multi-day packages to the heart of Bastar.</p>
                 <ul style="font-size: 0.9rem; color: var(--slate-700); line-height: 1.8;">
                     <li>• Jagdalpur & Chitrakote Waterfalls</li>
@@ -72,7 +72,7 @@
             </div>
 
             <div class="card">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.75rem; color: var(--dark-900);">🐅 Wildlife & Pilgrimage Outstation</h3>
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.75rem; color: var(--dark-900);"><x-icon name="sparkles" size="20" class="text-primary" style="margin-right: 8px;" />Wildlife & Pilgrimage Outstation</h3>
                 <p style="font-size: 0.875rem; color: var(--slate-500); margin-bottom: 1rem;">Interstate tourist transfers to top national parks.</p>
                 <ul style="font-size: 0.9rem; color: var(--slate-700); line-height: 1.8;">
                     <li>• Amarkantak Narmada Udgam (~110 KM)</li>

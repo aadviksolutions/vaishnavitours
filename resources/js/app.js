@@ -1,11 +1,28 @@
-// Vaishnavi Tours — Client Application Entry Point
+import { createIcons, icons } from 'lucide';
+
+window.lucide = { createIcons, icons };
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize Lucide Icons
+    try {
+        createIcons({
+            icons,
+            attrs: {
+                'stroke-width': 2,
+                'stroke-linecap': 'round',
+                'stroke-linejoin': 'round'
+            }
+        });
+    } catch (e) {
+        console.error('Lucide init error:', e);
+    }
+
     // Mobile Navigation Toggle
     const mobileNavBtn = document.getElementById('mobile-nav-btn');
-    const mobileNavMenu = document.getElementById('mobile-nav-menu');
+    const mobileNavMenu = document.getElementById('nav-links-menu') || document.getElementById('mobile-nav-menu');
     if (mobileNavBtn && mobileNavMenu) {
         mobileNavBtn.addEventListener('click', () => {
+            mobileNavMenu.classList.toggle('show');
             mobileNavMenu.classList.toggle('active');
         });
     }

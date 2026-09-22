@@ -15,7 +15,7 @@
             <div class="card" style="padding: 2.5rem; border: 2px solid var(--primary); box-shadow: var(--shadow-lg);">
                 @if($errors->any())
                     <div class="alert alert-danger" style="margin-bottom: 1.5rem;">
-                        <strong>⚠️ Please correct the following errors:</strong>
+                        <strong style="display: flex; align-items: center; gap: 6px;"><x-icon name="alert-circle" size="18" /><span>Please correct the following errors:</span></strong>
                         <ul style="margin: 0.5rem 0 0 1.25rem; padding: 0;">
                             @foreach($errors->all() as $err)
                                 <li>{{ $err }}</li>
@@ -33,21 +33,21 @@
                         <div class="grid grid-4 gap-2" id="bookingTripTypes">
                             <label style="border: 1.5px solid var(--slate-300); padding: 0.85rem; border-radius: var(--radius-md); text-align: center; cursor: pointer; display: block;" class="trip-opt active">
                                 <input type="radio" name="trip_type" value="One-Way" checked style="display: none;">
-                                <div style="font-size: 1.25rem;">➡️</div>
+                                <div class="icon-box icon-box-sm icon-box-primary" style="margin: 0 auto 0.5rem;"><x-icon name="arrow-right" size="18" /></div>
                                 <div style="font-weight: 700; font-size: 0.95rem; margin-top: 0.25rem;">One-Way Drop</div>
                                 <div style="font-size: 0.75rem; color: var(--slate-400);">Pay only for 1 side</div>
                             </label>
 
                             <label style="border: 1.5px solid var(--slate-300); padding: 0.85rem; border-radius: var(--radius-md); text-align: center; cursor: pointer; display: block;" class="trip-opt">
                                 <input type="radio" name="trip_type" value="Round-Trip" style="display: none;">
-                                <div style="font-size: 1.25rem;">🔄</div>
+                                <div class="icon-box icon-box-sm icon-box-primary" style="margin: 0 auto 0.5rem;"><x-icon name="repeat" size="18" /></div>
                                 <div style="font-weight: 700; font-size: 0.95rem; margin-top: 0.25rem;">Round-Trip</div>
                                 <div style="font-size: 0.75rem; color: var(--slate-400);">Multi-day outstation</div>
                             </label>
 
                             <label style="border: 1.5px solid var(--slate-300); padding: 0.85rem; border-radius: var(--radius-md); text-align: center; cursor: pointer; display: block;" class="trip-opt">
                                 <input type="radio" name="trip_type" value="Airport Transfer" style="display: none;">
-                                <div style="font-size: 1.25rem;">✈️</div>
+                                <div class="icon-box icon-box-sm icon-box-primary" style="margin: 0 auto 0.5rem;"><x-icon name="plane" size="18" /></div>
                                 <div style="font-weight: 700; font-size: 0.95rem; margin-top: 0.25rem;">Airport Transfer</div>
                                 <div style="font-size: 0.75rem; color: var(--slate-400);">Raipur Airport Drop</div>
                             </label>
@@ -156,7 +156,7 @@
                         </label>
                         @error('terms_accepted')
                             <div style="color: #dc2626; font-size: 0.85rem; font-weight: 600; margin-top: 0.5rem; display: flex; align-items: center; gap: 0.35rem;">
-                                <span>⚠️</span> {{ $message }}
+                                <span style="display: inline-flex; align-items: center; gap: 4px;"><x-icon name="alert-circle" size="14" /> {{ $message }}</span>
                             </div>
                         @enderror
                     </div>

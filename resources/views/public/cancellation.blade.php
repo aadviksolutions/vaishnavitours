@@ -31,7 +31,7 @@
                 </div>
                 <div>
                     <a href="{{ route('terms-and-conditions') }}" class="btn btn-outline btn-sm" style="font-weight: 700; white-space: nowrap;">
-                        View Full Terms &amp; Conditions →
+                        View Full Terms &amp; Conditions <x-icon name="arrow-right" size="16" style="margin-left: 4px;" />
                     </a>
                 </div>
             </div>
@@ -48,7 +48,7 @@
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
                 
                 <div style="background: #F0FDF4; border: 1.5px solid #BBF7D0; border-radius: var(--radius-md); padding: 1.25rem; text-align: center;">
-                    <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">🟢</div>
+                    <div class="icon-box icon-box-sm" style="margin: 0 auto 0.5rem; background: #ECFDF5; color: #059669;"><x-icon name="circle-check" size="20" /></div>
                     <div style="font-weight: 800; color: #166534; font-size: 1rem;">≥ 24 Hours</div>
                     <div style="font-size: 0.75rem; color: var(--slate-500); margin-bottom: 0.5rem; text-transform: uppercase; font-weight: 700;">Before Pickup</div>
                     <div style="font-size: 0.875rem; font-weight: 700; color: #15803D;">No cancellation charge</div>
@@ -56,7 +56,7 @@
                 </div>
 
                 <div style="background: #FFFBEB; border: 1.5px solid #FDE68A; border-radius: var(--radius-md); padding: 1.25rem; text-align: center;">
-                    <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">🟡</div>
+                    <div class="icon-box icon-box-sm" style="margin: 0 auto 0.5rem; background: #FFFBEB; color: #D97706;"><x-icon name="clock" size="20" /></div>
                     <div style="font-weight: 800; color: #92400E; font-size: 1rem;">12 – 24 Hours</div>
                     <div style="font-size: 0.75rem; color: var(--slate-500); margin-bottom: 0.5rem; text-transform: uppercase; font-weight: 700;">Before Pickup</div>
                     <div style="font-size: 0.875rem; font-weight: 700; color: #B45309;">Up to 25%</div>
@@ -64,7 +64,7 @@
                 </div>
 
                 <div style="background: #FFF7ED; border: 1.5px solid #FFEDD5; border-radius: var(--radius-md); padding: 1.25rem; text-align: center;">
-                    <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">🟠</div>
+                    <div class="icon-box icon-box-sm" style="margin: 0 auto 0.5rem; background: #FFF7ED; color: #EA580C;"><x-icon name="clock-3" size="20" /></div>
                     <div style="font-weight: 800; color: #9A3412; font-size: 1rem;">6 – 12 Hours</div>
                     <div style="font-size: 0.75rem; color: var(--slate-500); margin-bottom: 0.5rem; text-transform: uppercase; font-weight: 700;">Before Pickup</div>
                     <div style="font-size: 0.875rem; font-weight: 700; color: #C2410C;">Up to 50%</div>
@@ -72,7 +72,7 @@
                 </div>
 
                 <div style="background: #FEF2F2; border: 1.5px solid #FECACA; border-radius: var(--radius-md); padding: 1.25rem; text-align: center;">
-                    <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">🔴</div>
+                    <div class="icon-box icon-box-sm" style="margin: 0 auto 0.5rem; background: #FEF2F2; color: #DC2626;"><x-icon name="alert-circle" size="20" /></div>
                     <div style="font-weight: 800; color: #991B1B; font-size: 1rem;">&lt; 6 Hours</div>
                     <div style="font-size: 0.75rem; color: var(--slate-500); margin-bottom: 0.5rem; text-transform: uppercase; font-weight: 700;">Before Pickup</div>
                     <div style="font-size: 0.875rem; font-weight: 700; color: #DC2626;">Non-Refundable</div>
@@ -122,7 +122,7 @@
             <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--dark-950); margin-bottom: 1rem;">How to Cancel or Reschedule Your Booking</h3>
             <div class="grid grid-2 gap-3">
                 <div style="background: var(--slate-50); padding: 1.25rem; border-radius: var(--radius-md);">
-                    <div style="font-weight: 700; color: var(--dark-900); margin-bottom: 0.25rem;">📱 Option 1: Customer Portal</div>
+                    <div style="font-weight: 700; color: var(--dark-900); margin-bottom: 0.25rem; display: flex; align-items: center; gap: 6px;"><x-icon name="user" size="18" class="text-primary" /><span>Option 1: Customer Portal</span></div>
                     <p style="font-size: 0.875rem; color: var(--slate-600); margin: 0 0 0.75rem 0;">
                         Log into your customer dashboard, select your active booking, and click "Request Cancellation" with your reason.
                     </p>
@@ -130,7 +130,7 @@
                 </div>
 
                 <div style="background: var(--slate-50); padding: 1.25rem; border-radius: var(--radius-md);">
-                    <div style="font-weight: 700; color: var(--dark-900); margin-bottom: 0.25rem;">📞 Option 2: 24/7 Dispatch Desk</div>
+                    <div style="font-weight: 700; color: var(--dark-900); margin-bottom: 0.25rem; display: flex; align-items: center; gap: 6px;"><x-icon name="phone" size="18" class="text-primary" /><span>Option 2: 24/7 Dispatch Desk</span></div>
                     <p style="font-size: 0.875rem; color: var(--slate-600); margin: 0 0 0.75rem 0;">
                         Contact our central support desk in Bilaspur directly with your Booking ID (e.g., VT-1006) for immediate assistance.
                     </p>

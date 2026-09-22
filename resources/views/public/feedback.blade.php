@@ -32,7 +32,7 @@
                                         <div style="font-size: 0.775rem; color: var(--slate-400);">Verified Journey • {{ $fb->created_at->diffForHumans() }}</div>
                                     </div>
                                     <div style="color: var(--primary); font-size: 1.15rem;">
-                                        @for($i = 1; $i <= $fb->rating; $i++) ★ @endfor
+                                        @for($i = 1; $i <= 5; $i++) <x-icon name="star" size="16" style="fill: {{ $i <= $fb->rating ? '#F59E0B' : 'none' }}; color: {{ $i <= $fb->rating ? '#F59E0B' : '#CBD5E1' }};" /> @endfor
                                     </div>
                                 </div>
                                 <p style="font-size: 0.925rem; color: var(--slate-700); line-height: 1.6;">

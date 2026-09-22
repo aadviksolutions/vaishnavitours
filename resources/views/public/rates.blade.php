@@ -93,7 +93,7 @@
         @else
             <!-- Empty state fallback required by section 11 -->
             <div class="rates-empty-state">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">📞</div>
+                <div class="icon-box icon-box-lg icon-box-primary" style="margin: 0 auto 1.25rem;"><x-icon name="phone" size="32" /></div>
                 <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--dark-900); margin-bottom: 0.5rem;">
                     Contact us for current service rates.
                 </h2>

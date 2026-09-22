@@ -41,7 +41,7 @@
                 <div class="grid grid-2 gap-3" style="font-size: 0.95rem;">
                     <div>
                         <span style="color: var(--slate-500); font-size: 0.8rem; font-weight: 600;">Customer:</span>
-                        <div style="font-weight: 700; color: var(--dark-900);">{{ $booking->customer?->name ?? 'Customer' }} (📞 {{ $booking->customer?->phone ?? 'Contact Number' }})</div>
+                        <div style="font-weight: 700; color: var(--dark-900);">{{ $booking->customer?->name ?? 'Customer' }} (<x-icon name="phone" size="14" style="margin-right: 4px;" /> {{ $booking->customer?->phone ?? 'Contact Number' }})</div>
                     </div>
                     <div>
                         <span style="color: var(--slate-500); font-size: 0.8rem; font-weight: 600;">Vehicle:</span>
@@ -74,7 +74,7 @@
 
                 <!-- Terms Agreement Notice -->
                 <div style="background: #F0FDF4; border: 1.5px solid #BBF7D0; border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-top: 1.25rem; text-align: left; display: flex; align-items: center; gap: 0.75rem;">
-                    <span style="font-size: 1.35rem; color: #16A34A; flex-shrink: 0;">✓</span>
+                    <x-icon name="circle-check" size="24" style="color: #16A34A; flex-shrink: 0;" />
                     <div style="font-size: 0.885rem; color: #166534; line-height: 1.5;">
                         <strong>Agreed Terms:</strong> By confirming this booking, you agreed to Vaishnavi Tour's 
                         <a href="{{ route('terms-and-conditions') }}" target="_blank" style="color: #15803D; font-weight: 700; text-decoration: underline;">Cancellation Policy &amp; Terms &amp; Conditions</a>
@@ -87,7 +87,7 @@
             @guest
                 <div style="background: #FFFBEB; border: 1.5px dashed #F59E0B; border-radius: var(--radius-md); padding: 1.5rem; text-align: left; margin-bottom: 2rem;">
                     <div class="d-flex align-start gap-3">
-                        <div style="font-size: 1.75rem;">👤</div>
+                        <div class="icon-box icon-box-md icon-box-primary"><x-icon name="user" size="24" /></div>
                         <div style="flex: 1;">
                             <h4 style="font-size: 1.05rem; font-weight: 800; color: var(--dark-950); margin-bottom: 0.25rem;">
                                 Create an Account for Real-Time Trip Tracking
@@ -109,7 +109,7 @@
             @else
                 <div style="margin-bottom: 2rem;">
                     <a href="{{ route('customer.bookings.show', $booking->id) }}" class="btn btn-primary">
-                        📍 Track Booking & View Journey Details →
+                        <span style="display: inline-flex; align-items: center; gap: 6px;"><x-icon name="map-pin" size="16" /><span>Track Booking & View Journey Details <x-icon name="arrow-right" size="16" style="margin-left: 4px;" /></span></span>
                     </a>
                 </div>
             @endguest
@@ -120,7 +120,7 @@
 
             <div class="d-flex justify-center gap-3 flex-wrap">
                 <a href="{{ route('home') }}" class="btn btn-outline">← Back to Home</a>
-                <a href="{{ route('contact') }}" class="btn btn-primary">💬 Contact Support</a>
+                <a href="{{ route('contact') }}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px;"><x-icon name="message-square" size="16" /><span>Contact Support</span></a>
             </div>
         </div>
     </div>

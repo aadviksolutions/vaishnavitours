@@ -71,7 +71,7 @@
             <div class="alert alert-success">✅ {{ session('success') }}</div>
         @endif
         @if(session('error'))
-            <div class="alert alert-danger">⚠️ {{ session('error') }}</div>
+            <div class="alert alert-danger" style="display: flex; align-items: center; gap: 8px;"><x-icon name="alert-circle" size="18" /><span>{{ session('error') }}</span></div>
         @endif
         @if(session('info'))
             <div class="alert alert-info">ℹ️ {{ session('info') }}</div>

@@ -17,21 +17,21 @@
 <!-- Customer Metrics -->
 <div class="grid grid-3 gap-4 mb-4">
     <div class="kpi-card">
-        <div class="kpi-icon" style="background: #eff6ff; color: #2563eb;">🚖</div>
+        <div class="kpi-icon" style="background: #eff6ff; color: #2563eb;"><x-icon name="car-front" size="24" /></div>
         <div class="kpi-label">Total Bookings</div>
         <div class="kpi-value">{{ $totalBookings }}</div>
         <div class="kpi-sub">Total trips created</div>
     </div>
 
     <div class="kpi-card">
-        <div class="kpi-icon" style="background: #f0fdf4; color: #16a34a;">✅</div>
+        <div class="kpi-icon" style="background: #f0fdf4; color: #16a34a;"><x-icon name="circle-check" size="24" /></div>
         <div class="kpi-label">Completed Trips</div>
         <div class="kpi-value">{{ $completedTrips }}</div>
         <div class="kpi-sub">Successfully fulfilled journeys</div>
     </div>
 
     <div class="kpi-card">
-        <div class="kpi-icon" style="background: #fef3c7; color: #d97706;">💰</div>
+        <div class="kpi-icon" style="background: #fef3c7; color: #d97706;"><x-icon name="wallet" size="24" /></div>
         <div class="kpi-label">Lifetime Spend</div>
         <div class="kpi-value">₹{{ number_format($totalSpent, 2) }}</div>
         <div class="kpi-sub">Successful payments recorded</div>
@@ -42,10 +42,10 @@
     <!-- Left 1 Col: Profile Card -->
     <div>
         <div class="card mb-4">
-            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem;">👤 Contact Details</h3>
+            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem;"><x-icon name="user" size="20" class="text-primary" style="margin-right: 6px;" /> Contact Details</h3>
 
             <div style="font-weight: 800; font-size: 1.15rem; color: var(--dark-900);">{{ $user->name }}</div>
-            <div style="margin-top: 6px; font-size: 0.9rem;">📞 <a href="tel:{{ $user->phone }}">{{ $user->phone }}</a></div>
+            <div style="margin-top: 6px; font-size: 0.9rem;"><x-icon name="phone" size="14" style="margin-right: 4px;" /><a href="tel:{{ $user->phone }}">{{ $user->phone }}</a></div>
             <div style="font-size: 0.9rem; color: var(--slate-600);">✉️ {{ $user->email }}</div>
 
             @if($user->customer)
