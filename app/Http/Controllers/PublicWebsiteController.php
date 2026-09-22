@@ -6,7 +6,6 @@ use App\Models\Booking;
 use App\Models\Enquiry;
 use App\Models\Feedback;
 use App\Models\Rate;
-use App\Models\Setting;
 use App\Models\Vehicle;
 use App\Services\BookingService;
 use Illuminate\Http\Request;
@@ -75,7 +74,7 @@ class PublicWebsiteController extends Controller
 
     public function storeBooking(Request $request, BookingService $bookingService)
     {
-        if (!$request->filled('trip_type')) {
+        if (! $request->filled('trip_type')) {
             $request->merge(['trip_type' => 'One-Way']);
         }
 
@@ -101,27 +100,10 @@ class PublicWebsiteController extends Controller
             'vehicle_id.required' => 'Please select a vehicle category for your booking.',
         ]);
 
-        try {
-            $booking = $bookingService->createBooking($data, Auth::user());
+        $booking = $bookingService->createBooking($data, Auth::user());
 
-            return redirect()->route('booking.success', $booking->id)
-                ->with('success', "Booking request received! Your Booking ID is #{$booking->booking_id}.");
-        } catch (\Throwable $e) {
-            report($e);
-            $mockBooking = new Booking();
-            $mockBooking->forceFill([
-                'id' => 9999,
-                'booking_id' => 'VT-' . strtoupper(bin2hex(random_bytes(4))),
-                'pickup_location' => $data['pickup_location'],
-                'destination' => $data['destination'],
-                'travel_date' => $data['travel_date'],
-                'travel_time' => $data['travel_time'],
-                'trip_type' => $data['trip_type'],
-                'booking_status' => 'Pending',
-            ]);
-            return view('public.booking-success', ['booking' => $mockBooking])
-                ->with('success', "Booking request received! We will contact you at {$data['mobile']}.");
-        }
+        return redirect()->route('booking.success', $booking->id)
+            ->with('success', "Booking request received! Your Booking ID is #{$booking->booking_id}.");
     }
 
     public function bookingSuccess(Booking $booking)
@@ -131,6 +113,7 @@ class PublicWebsiteController extends Controller
         } catch (\Throwable $e) {
             report($e);
         }
+
         return view('public.booking-success', compact('booking'));
     }
 
@@ -186,6 +169,7 @@ class PublicWebsiteController extends Controller
             report($e);
             $feedbacks = $this->getFallbackFeedbacks();
         }
+
         return view('public.feedback', compact('feedbacks'));
     }
 
@@ -315,9 +299,10 @@ class PublicWebsiteController extends Controller
         ];
 
         return collect($items)->map(function ($attributes) {
-            $vehicle = new Vehicle();
+            $vehicle = new Vehicle;
             $vehicle->forceFill($attributes);
             $vehicle->exists = true;
+
             return $vehicle;
         });
     }
@@ -343,9 +328,10 @@ class PublicWebsiteController extends Controller
         ];
 
         return collect($items)->map(function ($attributes) {
-            $feedback = new Feedback();
+            $feedback = new Feedback;
             $feedback->forceFill($attributes);
             $feedback->exists = true;
+
             return $feedback;
         });
     }

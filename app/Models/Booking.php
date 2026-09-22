@@ -54,18 +54,27 @@ class Booking extends Model
 
     public static function generateBookingId(): string
     {
-        $latest = static::where('booking_id', 'REGEXP', '^VT-[0-9]+$')
-            ->orderByRaw('CAST(SUBSTRING(booking_id, 4) AS UNSIGNED) DESC')
-            ->first();
+        $recentBookingIds = static::where('booking_id', 'like', 'VT-%')
+            ->orderBy('id', 'desc')
+            ->take(100)
+            ->pluck('booking_id');
 
-        if ($latest && preg_match('/^VT-(\d+)$/', $latest->booking_id, $matches)) {
-            $next = max(1001, (int)$matches[1] + 1);
-        } else {
-            $count = static::count();
-            $next = 1001 + $count;
+        $maxNumber = 1000;
+        foreach ($recentBookingIds as $bid) {
+            if (preg_match('/^VT-(\d+)$/', (string) $bid, $matches)) {
+                $num = (int) $matches[1];
+                if ($num > $maxNumber) {
+                    $maxNumber = $num;
+                }
+            }
         }
 
-        return 'VT-' . $next;
+        if ($maxNumber === 1000) {
+            $count = static::count();
+            $maxNumber = 1000 + $count;
+        }
+
+        return 'VT-'.($maxNumber + 1);
     }
 
     protected static function boot()
@@ -86,8 +95,8 @@ class Booking extends Model
 
     public function recalculateFinancials(): void
     {
-        $total = (float)$this->total_amount;
-        $paid = (float)$this->paid_amount;
+        $total = (float) $this->total_amount;
+        $paid = (float) $this->paid_amount;
         $this->balance_amount = max(0, $total - $paid);
 
         if ($this->payment_status !== 'Refunded') {
@@ -108,6 +117,7 @@ class Booking extends Model
         }
 
         $allowed = self::WORKFLOW_TRANSITIONS[$this->booking_status] ?? [];
+
         return in_array($targetStatus, $allowed, true);
     }
 

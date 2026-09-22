@@ -95,11 +95,11 @@
                     <div class="form-group" style="margin-bottom: 2rem;">
                         <label class="form-label">4. Select Vehicle Category</label>
                         <div class="grid grid-3 gap-2">
-                            @foreach($vehicles as $veh)
+                            @forelse($vehicles as $veh)
                                 <label style="border: 1.5px solid var(--slate-300); padding: 1rem; border-radius: var(--radius-md); cursor: pointer; display: flex; flex-direction: column; justify-content: space-between;" class="veh-opt {{ (request('vehicle_id') == $veh->id || $loop->first) ? 'active' : '' }}">
                                     <div>
                                         <div class="d-flex justify-between align-center" style="margin-bottom: 0.5rem;">
-                                            <input type="radio" name="vehicle_id" value="{{ $veh->id }}" {{ (request('vehicle_id') == $veh->id || $loop->first) ? 'checked' : '' }}>
+                                            <input type="radio" name="vehicle_id" value="{{ $veh->id }}" {{ (request('vehicle_id') == $veh->id || $loop->first) ? 'checked' : '' }} required>
                                             <span class="badge badge-available">{{ $veh->ac_non_ac }}</span>
                                         </div>
                                         <div style="font-weight: 800; font-size: 1rem; color: var(--dark-900);">{{ $veh->name }}</div>
@@ -109,7 +109,13 @@
                                         ₹{{ number_format($veh->per_km_rate, 0) }} <span style="font-size: 0.75rem; font-weight: 500; color: var(--slate-400);">/ km</span>
                                     </div>
                                 </label>
-                            @endforeach
+                            @empty
+                                <div style="grid-column: 1 / -1; padding: 1.75rem; background: var(--slate-100); border: 1.5px dashed var(--slate-300); border-radius: var(--radius-md); text-align: center; color: var(--slate-600);">
+                                    <p style="margin-bottom: 0.5rem; font-weight: 700; color: var(--dark-900); font-size: 1.05rem;">No vehicles currently available. Please contact us.</p>
+                                    <p style="font-size: 0.875rem; margin-bottom: 1rem; color: var(--slate-500);">No vehicles are currently configured. Please contact Vaishnavi Tours.</p>
+                                    <a href="{{ route('contact') }}" class="btn btn-primary btn-sm">Contact Vaishnavi Tours</a>
+                                </div>
+                            @endforelse
                         </div>
                     </div>
 

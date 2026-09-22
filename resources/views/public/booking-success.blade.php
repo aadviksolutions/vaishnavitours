@@ -15,7 +15,7 @@
             </span>
 
             <h1 style="font-size: 2.15rem; font-weight: 900; margin-bottom: 0.5rem; color: var(--dark-950);">
-                Thank You, {{ $booking->customer->name ?? 'Customer' }}!
+                Thank You, {{ $booking->customer?->name ?? 'Customer' }}!
             </h1>
             <p style="color: var(--slate-600); font-size: 1.05rem; margin-bottom: 2rem;">
                 Your cab booking request has been received by our Bilaspur dispatch team. We are assigning your vehicle & chauffeur.
@@ -41,7 +41,7 @@
                 <div class="grid grid-2 gap-3" style="font-size: 0.95rem;">
                     <div>
                         <span style="color: var(--slate-500); font-size: 0.8rem; font-weight: 600;">Customer:</span>
-                        <div style="font-weight: 700; color: var(--dark-900);">{{ $booking->customer->name }} (📞 {{ $booking->customer->phone }})</div>
+                        <div style="font-weight: 700; color: var(--dark-900);">{{ $booking->customer?->name ?? 'Customer' }} (📞 {{ $booking->customer?->phone ?? 'Contact Number' }})</div>
                     </div>
                     <div>
                         <span style="color: var(--slate-500); font-size: 0.8rem; font-weight: 600;">Vehicle:</span>
@@ -59,17 +59,17 @@
                     </div>
                     <div>
                         <span style="color: var(--slate-500); font-size: 0.8rem; font-weight: 600;">Travel Date:</span>
-                        <div style="font-weight: 700; color: var(--dark-900);">{{ $booking->travel_date->format('d M, Y') }}</div>
+                        <div style="font-weight: 700; color: var(--dark-900);">{{ $booking->travel_date ? (is_string($booking->travel_date) ? date('d M, Y', strtotime($booking->travel_date)) : $booking->travel_date->format('d M, Y')) : date('d M, Y') }}</div>
                     </div>
                     <div>
                         <span style="color: var(--slate-500); font-size: 0.8rem; font-weight: 600;">Travel Time:</span>
-                        <div style="font-weight: 700; color: var(--dark-900);">{{ date('h:i A', strtotime($booking->travel_time)) }}</div>
+                        <div style="font-weight: 700; color: var(--dark-900);">{{ $booking->travel_time ? date('h:i A', strtotime($booking->travel_time)) : 'Morning' }}</div>
                     </div>
                 </div>
 
                 <div class="d-flex justify-between align-center" style="border-top: 1.5px solid var(--slate-100); padding-top: 1rem; margin-top: 1.25rem;">
                     <span style="color: var(--slate-600); font-weight: 700;">Estimated Base Fare:</span>
-                    <strong style="font-size: 1.35rem; color: var(--dark-950);">₹{{ number_format($booking->total_amount, 2) }}</strong>
+                    <strong style="font-size: 1.35rem; color: var(--dark-950);">₹{{ number_format((float)($booking->total_amount ?? 0), 2) }}</strong>
                 </div>
             </div>
 
@@ -86,7 +86,7 @@
                                 An account lets you track chauffeur allocation live, monitor vehicle location, view payment receipts, and download GST tax invoices.
                             </p>
                             <div class="d-flex gap-2 flex-wrap">
-                                <a href="{{ route('register', ['phone' => $booking->customer->phone, 'name' => $booking->customer->name, 'email' => $booking->customer->email]) }}" class="btn btn-primary btn-sm">
+                                <a href="{{ route('register', ['phone' => $booking->customer?->phone, 'name' => $booking->customer?->name, 'email' => $booking->customer?->email]) }}" class="btn btn-primary btn-sm">
                                     Create My Account
                                 </a>
                                 <a href="{{ route('login') }}" class="btn btn-outline btn-sm">
@@ -105,7 +105,7 @@
             @endguest
 
             <p style="font-size: 0.875rem; color: var(--slate-500); margin-bottom: 2rem;">
-                Our central dispatch desk will contact you at <strong>{{ $booking->customer->phone }}</strong>. For urgent queries, reach out to our support team.
+                Our central dispatch desk will contact you at <strong>{{ $booking->customer?->phone ?? 'your registered phone' }}</strong>. For urgent queries, reach out to our support team.
             </p>
 
             <div class="d-flex justify-center gap-3 flex-wrap">
