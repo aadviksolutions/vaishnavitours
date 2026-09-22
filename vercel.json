@@ -33,6 +33,34 @@
             }
         },
         {
+            "src": "/images/(.*)",
+            "dest": "/images/$1",
+            "headers": {
+                "cache-control": "public, max-age=31536000, immutable"
+            }
+        },
+        {
+            "src": "/fonts/(.*)",
+            "dest": "/fonts/$1",
+            "headers": {
+                "cache-control": "public, max-age=31536000, immutable"
+            }
+        },
+        {
+            "src": "/js/(.*)",
+            "dest": "/js/$1",
+            "headers": {
+                "cache-control": "public, max-age=86400"
+            }
+        },
+        {
+            "src": "/storage/(.*)",
+            "dest": "/storage/$1",
+            "headers": {
+                "cache-control": "public, max-age=86400"
+            }
+        },
+        {
             "src": "/favicon(.*)",
             "dest": "/favicon$1"
         },
@@ -46,8 +74,11 @@
         }
     ],
     "env": {
+        "APP_NAME": "Vaishnavi Tours",
         "APP_ENV": "production",
         "APP_DEBUG": "false",
+        "APP_KEY": "base64:iu3vhq+8ihfTUUGzz5XkCyYRaCCeSKOTpsvJyc7RDjw=",
+        "APP_URL": "https://vaishnavitours.vercel.app",
         "LOG_CHANNEL": "stderr",
         "VERCEL": "1",
         "APP_STORAGE_PATH": "/tmp/storage",
