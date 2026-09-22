@@ -313,13 +313,13 @@
             </p>
             <div style="font-size: 0.9rem; margin-bottom: 0.5rem;">
                 <span style="color: var(--slate-400);">Direct Dispatch:</span><br>
-                <a href="tel:07752400000" style="color: #fff; font-weight: 700; font-size: 1.1rem; text-decoration: none;">+91 7752-400000</a>
+                <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" style="color: #fff; font-weight: 700; font-size: 1.1rem; text-decoration: none;">{{ config('vaishnavi.phone_primary') }}</a>
             </div>
             <div style="font-size: 0.9rem; margin-bottom: 1rem;">
                 <span style="color: var(--slate-400);">24/7 Mobile / WhatsApp:</span><br>
-                <a href="tel:+919826100000" style="color: var(--primary); font-weight: 700; font-size: 1.1rem; text-decoration: none;">+91 98261 00000</a>
+                <a href="tel:{{ config('vaishnavi.phone_secondary_tel') }}" style="color: var(--primary); font-weight: 700; font-size: 1.1rem; text-decoration: none;">{{ config('vaishnavi.phone_secondary') }}</a>
             </div>
-            <a href="https://wa.me/919826100000?text={{ urlencode('Hi Vaishnavi Tours, I need assistance regarding Booking #' . $booking->booking_id) }}" target="_blank" class="btn btn-primary btn-block btn-sm" style="text-align: center;">
+            <a href="https://wa.me/919244784443?text={{ urlencode('Hi Vaishnavi Tours, I need assistance regarding Booking #' . $booking->booking_id) }}" target="_blank" class="btn btn-primary btn-block btn-sm" style="text-align: center;">
                 💬 Chat on WhatsApp
             </a>
         </div>

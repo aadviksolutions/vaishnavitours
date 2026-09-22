@@ -81,7 +81,7 @@
                 <div class="grid grid-2 gap-3">
                     <div class="form-group">
                         <label for="phone" class="form-label">Primary Mobile Number *</label>
-                        <input type="text" name="phone" id="phone" class="form-control" value="{{ old('phone', $user->phone) }}" required placeholder="e.g. 9826100000">
+                        <input type="text" name="phone" id="phone" class="form-control" value="{{ old('phone', $user->phone) }}" required placeholder="e.g. 9244784443">
                     </div>
 
                     <div class="form-group">
@@ -97,7 +97,7 @@
 
                 <div class="form-group mb-3">
                     <label for="address" class="form-label">Street Address / House No. / Landmark</label>
-                    <input type="text" name="address" id="address" class="form-control" value="{{ old('address', $user->customer->address ?? '') }}" placeholder="e.g. Flat 302, B.N City Colony, Mangla">
+                    <input type="text" name="address" id="address" class="form-control" value="{{ old('address', $user->customer->address ?? '') }}" placeholder="e.g. Flat 302, Mangal Chowk, Bilaspur">
                 </div>
 
                 <div class="grid grid-3 gap-3">

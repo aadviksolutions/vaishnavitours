@@ -7,7 +7,7 @@
     <div class="container text-center">
         <span style="color: var(--primary); font-weight: 800; text-transform: uppercase; font-size: 0.85rem;">Get in Touch</span>
         <h1 style="color: #fff; font-size: 2.5rem; margin-top: 0.25rem;">Contact Vaishnavi Tours</h1>
-        <p style="color: var(--slate-300); max-width: 600px; margin: 0.5rem auto 0;">24/7 central booking desk, airport dispatch office, and emergency ambulance helpline.</p>
+        <p style="color: var(--slate-300); max-width: 600px; margin: 0.5rem auto 0;">24/7 central booking desk, airport dispatch office, and road travel assistance.</p>
     </div>
 </section>
 
@@ -24,25 +24,39 @@
                             <div style="font-size: 1.5rem; color: var(--primary-dark);">📍</div>
                             <div>
                                 <strong style="display: block; margin-bottom: 0.25rem;">Address:</strong>
-                                B.N City Colony, Jonki Road,<br>
-                                Mangla Chowk, Bilaspur,<br>
-                                Chhattisgarh - 495001
+                                {{ config('vaishnavi.address') }}
                             </div>
                         </div>
 
                         <div style="display: flex; gap: 1rem; align-items: flex-start;">
                             <div style="font-size: 1.5rem; color: var(--primary-dark);">📞</div>
                             <div>
-                                <strong style="display: block; margin-bottom: 0.25rem;">24/7 Booking & Dispatch:</strong>
-                                <span style="color: var(--primary-dark); font-weight: 700; font-size: 1.05rem;">Contact us for assistance</span>
+                                <strong style="display: block; margin-bottom: 0.25rem;">Calling Numbers:</strong>
+                                <div>
+                                    <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" style="color: var(--primary-dark); font-weight: 700; font-size: 1.1rem; text-decoration: none;">{{ config('vaishnavi.phone_primary') }}</a>
+                                </div>
+                                <div style="margin-top: 0.25rem;">
+                                    <a href="tel:{{ config('vaishnavi.phone_secondary_tel') }}" style="color: var(--dark-900); font-weight: 700; font-size: 1.05rem; text-decoration: none;">{{ config('vaishnavi.phone_secondary') }}</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                            <div style="font-size: 1.5rem; color: #25D366;">💬</div>
+                            <div>
+                                <strong style="display: block; margin-bottom: 0.25rem; color: #166534;">WhatsApp:</strong>
+                                <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" class="btn btn-sm" style="background: #25D366; color: #fff; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; margin-top: 2px;">
+                                    <span>Chat on WhatsApp ({{ config('vaishnavi.whatsapp') }})</span>
+                                </a>
                             </div>
                         </div>
 
                         <div style="display: flex; gap: 1rem; align-items: flex-start;" id="emergency">
-                            <div style="font-size: 1.5rem; color: var(--danger);">🚨</div>
+                            <div style="font-size: 1.5rem; color: var(--primary-dark);">🚗</div>
                             <div>
-                                <strong style="display: block; margin-bottom: 0.25rem; color: var(--danger);">Emergency & Ambulance Priority Desk:</strong>
-                                <span style="color: var(--dark-900); font-weight: 700;">Priority Standby Dispatch via Central Booking Desk</span>
+                                <strong style="display: block; margin-bottom: 0.25rem;">24/7 Road Assistance & Booking:</strong>
+                                <span style="color: var(--dark-900); font-weight: 600;">Direct Dispatch / Calling: </span>
+                                <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" style="color: var(--primary-dark); font-weight: 700;">{{ config('vaishnavi.phone_primary') }}</a>
                             </div>
                         </div>
 

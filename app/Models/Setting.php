@@ -17,8 +17,33 @@ class Setting extends Model
 
     public static function get(string $key, ?string $default = null): ?string
     {
-        $setting = static::where('key', $key)->first();
-        return $setting ? $setting->value : $default;
+        try {
+            $setting = static::where('key', $key)->first();
+            if ($setting && ! empty($setting->value)) {
+                return $setting->value;
+            }
+        } catch (\Throwable $e) {
+            // DB not reachable during build/testing
+        }
+
+        $configMap = [
+            'company_name' => 'vaishnavi.business_name',
+            'phone_primary' => 'vaishnavi.phone_primary',
+            'phone_secondary' => 'vaishnavi.phone_secondary',
+            'whatsapp_number' => 'vaishnavi.whatsapp',
+            'address' => 'vaishnavi.address',
+            'address_line_1' => 'vaishnavi.address',
+            'city' => 'vaishnavi.city',
+            'state' => 'vaishnavi.state',
+            'contact_email' => 'vaishnavi.contact_email',
+            'support_email' => 'vaishnavi.support_email',
+        ];
+
+        if (isset($configMap[$key])) {
+            return config($configMap[$key], $default);
+        }
+
+        return $default;
     }
 
     public static function set(string $key, ?string $value, string $group = 'general'): void

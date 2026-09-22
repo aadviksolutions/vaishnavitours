@@ -44,7 +44,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Locality / Address</label>
-                        <input type="text" name="address" class="form-control" placeholder="e.g. Mangla Chowk" value="{{ old('address') }}">
+                        <input type="text" name="address" class="form-control" placeholder="e.g. Mangal Chowk, Bilaspur" value="{{ old('address') }}">
                         @error('address') <div class="form-error">{{ $message }}</div> @enderror
                     </div>
                 </div>

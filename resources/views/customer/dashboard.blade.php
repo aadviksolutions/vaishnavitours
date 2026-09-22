@@ -264,8 +264,11 @@
 
                 <div style="margin-top: 1.5rem; border-top: 1px solid var(--slate-100); padding-top: 1rem;">
                     <div style="font-size: 0.85rem; font-weight: 700; color: var(--dark-900); margin-bottom: 0.25rem;">Need Assistance?</div>
-                    <div style="font-size: 0.8rem; color: var(--slate-500); margin-bottom: 0.75rem;">Our dispatch desk is always ready to help.</div>
-                    <a href="{{ route('contact') }}" class="btn btn-outline btn-sm" style="width: 100%;">Contact us for assistance</a>
+                    <div style="font-size: 0.8rem; color: var(--slate-500); margin-bottom: 0.75rem;">Our dispatch desk is always ready to help 24/7.</div>
+                    <div class="d-flex gap-2">
+                        <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" class="btn btn-primary btn-sm" style="flex: 1; text-align: center;">📞 Call: {{ config('vaishnavi.phone_primary') }}</a>
+                        <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" class="btn btn-outline btn-sm" style="flex: 1; text-align: center; border-color: #25D366; color: #166534;">💬 WhatsApp</a>
+                    </div>
                 </div>
             </div>
         </div>

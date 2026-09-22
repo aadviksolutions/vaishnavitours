@@ -29,7 +29,7 @@
                     </p>
                     <div style="background: var(--slate-100); padding: 1rem 1.25rem; border-radius: var(--radius-md); border-left: 3px solid var(--primary); font-size: 0.875rem; color: var(--dark-900);">
                         📍 <strong>Office Address:</strong><br>
-                        B.N City Colony, Jonki Road, Mangla Chowk, Bilaspur, Chhattisgarh - 495001
+                        {{ config('vaishnavi.address') }}
                     </div>
                 </div>
 

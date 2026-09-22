@@ -186,6 +186,6 @@ php artisan optimize:clear
 
 ## Brand Assets & Support
 
-- **Office Address**: B.N City Colony, Jonki Road, Mangla Chowk, Bilaspur, Chhattisgarh - 495001
-- **Direct Dispatch**: Contact us for assistance via website booking/enquiry desk
+- **Office Address**: Mangal Chowk, Bilaspur
+- **Direct Dispatch**: 9244784443 / 9179484443 (WhatsApp: 9244784443)
 - **Email**: `info@vaishnavitours.com` / `bookings@vaishnavitours.com`

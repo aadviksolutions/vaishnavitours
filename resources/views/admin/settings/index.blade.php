@@ -51,29 +51,29 @@
 
             <!-- Helplines -->
             <div class="card mb-4">
-                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">📞 Contact & Emergency Helplines</h3>
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">📞 Official Contact & Support Numbers</h3>
 
                 <div class="grid grid-2 gap-3 mb-3">
                     <div class="form-group">
-                        <label for="phone_primary" class="form-label">Primary Booking Helpline</label>
-                        <input type="text" name="phone_primary" id="phone_primary" class="form-control" value="{{ old('phone_primary', $settings['phone_primary']->value ?? '') }}" placeholder="Enter primary contact number">
+                        <label for="phone_primary" class="form-label">Primary Booking Number</label>
+                        <input type="text" name="phone_primary" id="phone_primary" class="form-control" value="{{ old('phone_primary', $settings['phone_primary']->value ?? '9244784443') }}" placeholder="9244784443">
                     </div>
 
                     <div class="form-group">
-                        <label for="phone_secondary" class="form-label">Secondary Helpline / Landline</label>
-                        <input type="text" name="phone_secondary" id="phone_secondary" class="form-control" value="{{ old('phone_secondary', $settings['phone_secondary']->value ?? '') }}" placeholder="Optional alternate number">
+                        <label for="phone_secondary" class="form-label">Secondary Calling Number</label>
+                        <input type="text" name="phone_secondary" id="phone_secondary" class="form-control" value="{{ old('phone_secondary', $settings['phone_secondary']->value ?? '9179484443') }}" placeholder="9179484443">
                     </div>
                 </div>
 
                 <div class="grid grid-2 gap-3">
                     <div class="form-group">
-                        <label for="emergency_phone" class="form-label">24/7 Emergency Ambulance Helpline</label>
+                        <label for="emergency_phone" class="form-label">Support / Assistance Number</label>
                         <input type="text" name="emergency_phone" id="emergency_phone" class="form-control" value="{{ old('emergency_phone', $settings['emergency_phone']->value ?? '') }}" placeholder="Optional emergency number">
                     </div>
 
                     <div class="form-group">
                         <label for="whatsapp_number" class="form-label">WhatsApp Number (with Country Code)</label>
-                        <input type="text" name="whatsapp_number" id="whatsapp_number" class="form-control" value="{{ old('whatsapp_number', $settings['whatsapp_number']->value ?? '') }}" placeholder="e.g. 9198XXXXXXXX">
+                        <input type="text" name="whatsapp_number" id="whatsapp_number" class="form-control" value="{{ old('whatsapp_number', $settings['whatsapp_number']->value ?? '9244784443') }}" placeholder="9244784443">
                     </div>
                 </div>
             </div>
@@ -85,12 +85,12 @@
                 <div class="grid grid-2 gap-3 mb-3">
                     <div class="form-group">
                         <label for="address_line_1" class="form-label">Address Line 1 *</label>
-                        <input type="text" name="address_line_1" id="address_line_1" class="form-control" value="{{ old('address_line_1', $settings['address_line_1']->value ?? 'B.N City Colony, Jonki Road') }}" required>
+                        <input type="text" name="address_line_1" id="address_line_1" class="form-control" value="{{ old('address_line_1', $settings['address_line_1']->value ?? 'Mangal Chowk') }}" required>
                     </div>
 
                     <div class="form-group">
                         <label for="address_line_2" class="form-label">Address Line 2 / Landmark *</label>
-                        <input type="text" name="address_line_2" id="address_line_2" class="form-control" value="{{ old('address_line_2', $settings['address_line_2']->value ?? 'Mangla Chowk') }}" required>
+                        <input type="text" name="address_line_2" id="address_line_2" class="form-control" value="{{ old('address_line_2', $settings['address_line_2']->value ?? 'Bilaspur') }}" required>
                     </div>
                 </div>
 

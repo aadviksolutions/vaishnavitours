@@ -61,7 +61,7 @@
                 <!-- Notice Banner -->
                 <div style="background: #ffffff; border: 1.5px solid var(--slate-200); border-radius: var(--radius-lg); padding: 1.5rem 1.75rem; margin-bottom: 2rem;">
                     <p style="margin: 0; font-size: 0.95rem; color: var(--slate-700); line-height: 1.7;">
-                        These terms and conditions apply to all passenger transport and taxi booking services offered by <strong>Vaishnavi Tour's Taxi Service</strong> (headquartered at Mangla Chowk, Bilaspur, Chhattisgarh). By requesting, reserving, or utilizing any of our taxi vehicles, you acknowledge and agree to abide by the policies detailed below.
+                        These terms and conditions apply to all passenger transport and taxi booking services offered by <strong>Vaishnavi Tour's Taxi Service</strong> (headquartered at {{ config('vaishnavi.address') }}). By requesting, reserving, or utilizing any of our taxi vehicles, you acknowledge and agree to abide by the policies detailed below.
                     </p>
                 </div>
 

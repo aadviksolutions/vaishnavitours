@@ -67,7 +67,7 @@
                         <div class="grid grid-2 gap-2">
                             <div>
                                 <label style="font-size: 0.8rem; color: var(--slate-500); font-weight: 600;">PICKUP ADDRESS IN BILASPUR</label>
-                                <input type="text" name="pickup_location" class="form-control" placeholder="House/Colony, Landmark, Bilaspur" value="{{ old('pickup_location', 'Mangla Chowk, Bilaspur') }}" required>
+                                <input type="text" name="pickup_location" class="form-control" placeholder="House/Colony, Landmark, Bilaspur" value="{{ old('pickup_location', 'Mangal Chowk, Bilaspur') }}" required>
                             </div>
                             <div>
                                 <label style="font-size: 0.8rem; color: var(--slate-500); font-weight: 600;">DESTINATION CITY / ADDRESS</label>

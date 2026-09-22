@@ -10,6 +10,23 @@
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
+    <!-- TaxiService LocalBusiness Structured Data -->
+    <script type="application/ld+json">
+    {!! json_encode([
+        '@context' => 'https://schema.org',
+        '@type' => 'TaxiService',
+        'name' => config('vaishnavi.business_name'),
+        'telephone' => config('vaishnavi.phone_primary_tel'),
+        'address' => [
+            '@type' => 'PostalAddress',
+            'streetAddress' => config('vaishnavi.address'),
+            'addressLocality' => config('vaishnavi.city'),
+            'addressRegion' => config('vaishnavi.state'),
+            'addressCountry' => 'IN',
+        ],
+        'url' => config('app.url'),
+    ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+    </script>
 </head>
 <body>
 
@@ -17,8 +34,8 @@
     <div class="top-bar">
         <div class="container d-flex align-center justify-between flex-wrap gap-1">
             <div class="d-flex align-center gap-2 flex-wrap">
-                <span>📍 B.N City Colony, Jonki Road, Mangla Chowk, Bilaspur, CG - 495001</span>
-                <span>📞 <a href="{{ route('contact') }}">Contact us for assistance</a></span>
+                <span>📍 {{ config('vaishnavi.address') }}</span>
+                <span>📞 <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" style="color: var(--primary); font-weight: 700;">{{ config('vaishnavi.phone_primary') }}</a></span>
             </div>
             <div class="d-flex align-center gap-2 flex-wrap">
                 <a href="{{ route('contact') }}#emergency" class="top-badge-emergency">
@@ -79,7 +96,10 @@
                     <a href="{{ route('login') }}" class="nav-link {{ request()->routeIs('login') ? 'active' : '' }}">Login</a>
                 @endauth
 
-                <div class="nav-actions">
+                <div class="nav-actions d-flex align-center gap-2">
+                    <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" class="btn btn-outline btn-sm" style="color: var(--dark-950); font-weight: 700; border-color: var(--primary); text-decoration: none;">
+                        📞 {{ config('vaishnavi.phone_primary') }}
+                    </a>
                     <a href="{{ route('booking') }}" class="btn btn-primary btn-sm">🚖 Book Taxi</a>
                 </div>
             </div>
@@ -120,7 +140,7 @@
                         Chhattisgarh's premier chauffeur-driven taxi service. Reliable outstation cabs, hourly rentals, airport transfers, and 24/7 road emergency dispatch.
                     </p>
                     <div style="font-size: 0.85rem; color: var(--slate-300);">
-                        <strong>Location:</strong> Mangla Chowk, Bilaspur (C.G.)
+                        <strong>Location:</strong> {{ config('vaishnavi.address') }}
                     </div>
                 </div>
 
@@ -153,17 +173,21 @@
                 <div>
                     <h4 class="footer-title">Head Office</h4>
                     <p style="font-size: 0.9rem; margin-bottom: 0.75rem; color: var(--slate-300);">
-                        B.N City Colony, Jonki Road,<br>
-                        Mangla Chowk, Bilaspur,<br>
-                        Chhattisgarh - 495001
+                        {{ config('vaishnavi.business_name') }}<br>
+                        {{ config('vaishnavi.address') }}
                     </p>
                     <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">
-                        <strong>Direct Booking:</strong><br>
-                        <a href="{{ route('contact') }}" style="color: var(--primary); font-weight: 700;">Contact us for assistance</a>
+                        <strong>Call Us:</strong><br>
+                        <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" style="color: var(--primary); font-weight: 700;">{{ config('vaishnavi.phone_primary') }}</a><br>
+                        <a href="tel:{{ config('vaishnavi.phone_secondary_tel') }}" style="color: var(--primary); font-weight: 700;">{{ config('vaishnavi.phone_secondary') }}</a>
+                    </p>
+                    <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">
+                        <strong>WhatsApp:</strong><br>
+                        <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" style="color: #25D366; font-weight: 700; text-decoration: none;">💬 {{ config('vaishnavi.whatsapp') }}</a>
                     </p>
                     <p style="font-size: 0.9rem;">
                         <strong>Email:</strong><br>
-                        <a href="mailto:info@vaishnavitours.com">info@vaishnavitours.com</a>
+                        <a href="mailto:{{ config('vaishnavi.contact_email') }}">{{ config('vaishnavi.contact_email') }}</a>
                     </p>
                 </div>
             </div>
@@ -198,5 +222,10 @@
         }
     </script>
     @stack('scripts')
+    <!-- Floating WhatsApp Action -->
+    <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" class="floating-whatsapp-btn" style="position: fixed; bottom: 24px; right: 24px; z-index: 999; background: #25D366; color: #ffffff; padding: 10px 18px; border-radius: 50px; font-weight: 700; font-size: 0.925rem; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4); text-decoration: none; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+        <span style="font-size: 1.25rem;">💬</span>
+        <span>Chat on WhatsApp</span>
+    </a>
 </body>
 </html>

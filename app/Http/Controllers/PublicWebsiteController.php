@@ -338,7 +338,7 @@ class PublicWebsiteController extends Controller
             [
                 'name' => 'Sunil Verma',
                 'rating' => 5,
-                'comment' => 'Quick doorstep dispatch within 15 minutes in Mangla Chowk. Transparent rates with no hidden charges.',
+                'comment' => 'Quick doorstep dispatch within 15 minutes in Mangal Chowk. Transparent rates with no hidden charges.',
             ],
         ];
 

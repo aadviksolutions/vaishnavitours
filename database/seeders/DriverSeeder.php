@@ -22,7 +22,7 @@ class DriverSeeder extends Seeder
                 'alternate_mobile' => '9827001123',
                 'license_number' => 'CG10-20150012445',
                 'license_expiry' => '2030-05-15',
-                'address' => 'Mangla Chowk, Bilaspur, CG',
+                'address' => 'Mangal Chowk, Bilaspur, CG',
                 'status' => 'Available',
                 'assigned_vehicle_id' => $dzire?->id,
                 'rating' => 4.90,

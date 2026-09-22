@@ -143,8 +143,8 @@
                 </div>
             </a>
             <div class="d-flex align-center gap-2">
-                <a href="{{ route('contact') }}" style="color: #F59E0B; font-weight: 600; text-decoration: none; font-size: 0.9rem;">
-                    Contact us for assistance
+                <a href="tel:{{ config('vaishnavi.phone_primary_tel', '+919244784443') }}" style="color: #F59E0B; font-weight: 700; text-decoration: none; font-size: 0.95rem;">
+                    📞 Call Us: {{ config('vaishnavi.phone_primary', '9244784443') }}
                 </a>
             </div>
         </div>

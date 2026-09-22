@@ -39,14 +39,14 @@
 
                     <div class="form-group">
                         <label for="mobile" class="form-label">Primary Mobile Number *</label>
-                        <input type="text" name="mobile" id="mobile" class="form-control" value="{{ old('mobile') }}" placeholder="e.g. 9826112345" required>
+                        <input type="text" name="mobile" id="mobile" class="form-control" value="{{ old('mobile') }}" placeholder="10-digit mobile number" required>
                     </div>
                 </div>
 
                 <div class="grid grid-2 gap-3 mb-3">
                     <div class="form-group">
                         <label for="alternate_mobile" class="form-label">Alternate / Emergency Contact</label>
-                        <input type="text" name="alternate_mobile" id="alternate_mobile" class="form-control" value="{{ old('alternate_mobile') }}" placeholder="e.g. 9425212345">
+                        <input type="text" name="alternate_mobile" id="alternate_mobile" class="form-control" value="{{ old('alternate_mobile') }}" placeholder="10-digit mobile number">
                     </div>
 
                     <div class="form-group">

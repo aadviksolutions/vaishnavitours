@@ -187,7 +187,7 @@ Once your external database is reachable from Vercel:
 1. Navigate to: `https://your-domain.vercel.app/booking`.
 2. Fill out a booking inquiry:
    - Service Type: Outstation Round-Trip
-   - Pickup Location: Mangla Chowk, Bilaspur
+   - Pickup Location: Mangal Chowk, Bilaspur
    - Destination: Raipur Airport
    - Travel Date & Time: Tomorrow 09:00 AM
    - Vehicle: Maruti Suzuki Dzire (or Ertiga)

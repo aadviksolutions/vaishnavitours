@@ -18,7 +18,7 @@
                 <h3 style="font-size: 1.2rem; margin-bottom: 0.75rem; color: var(--dark-900);">🏢 Bilaspur Central Corridor</h3>
                 <p style="font-size: 0.875rem; color: var(--slate-500); margin-bottom: 1rem;">Daily on-demand city and peripheral cab services.</p>
                 <ul style="font-size: 0.9rem; color: var(--slate-700); line-height: 1.8;">
-                    <li>• Mangla Chowk & B.N City Colony</li>
+                    <li>• Mangal Chowk Hub</li>
                     <li>• Chhattisgarh High Court Bodri</li>
                     <li>• Bilaspur Junction Railway Station</li>
                     <li>• Tifra & Sirgitti Industrial Area</li>

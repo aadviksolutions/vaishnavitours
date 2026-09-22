@@ -304,8 +304,8 @@
                 <div class="brand-title">VAISHNAVI TOURS</div>
                 <div class="brand-sub">
                     Premium Taxi & Outstation Travel Services<br>
-                    B.N City Colony, Jonki Road, Mangla Chowk, Bilaspur (C.G.) - 495001<br>
-                    ✉️ info@vaishnavitours.in | Contact us for assistance
+                    {{ config('vaishnavi.address') }}<br>
+                    📞 {{ config('vaishnavi.phone_primary') }} | {{ config('vaishnavi.phone_secondary') }}
                 </div>
             </div>
             <div class="invoice-meta">
@@ -433,8 +433,8 @@
         </div>
 
         <div class="invoice-footer">
-            <div>Thank you for choosing <strong>Vaishnavi Tours</strong>. Have a safe journey!</div>
-            <div>Support: support@vaishnavitours.com | Contact us for assistance</div>
+            <div>Thank you for choosing <strong>{{ config('vaishnavi.business_name') }}</strong>. Have a safe journey!</div>
+            <div>{{ config('vaishnavi.address') }} | 📞 {{ config('vaishnavi.phone_primary') }} | {{ config('vaishnavi.phone_secondary') }}</div>
         </div>
     </div>
 

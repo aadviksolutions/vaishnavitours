@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Policies\BookingPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -24,6 +25,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(Booking::class, BookingPolicy::class);
+
+        View::share('vaishnavi', config('vaishnavi'));
 
         if (app()->environment('production') || env('VERCEL') || str_starts_with((string) config('app.url'), 'https://')) {
             URL::forceScheme('https');

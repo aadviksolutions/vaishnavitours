@@ -109,7 +109,7 @@ class BookingTest extends TestCase
             'customer_name' => 'Demo Customer',
             'mobile' => '9876543210',
             'trip_type' => 'One-Way',
-            'pickup_location' => 'Mangla Chowk, Bilaspur',
+            'pickup_location' => 'Mangal Chowk, Bilaspur',
             'destination' => 'Raipur Airport',
             'travel_date' => now()->addDay()->format('Y-m-d'),
             'travel_time' => '10:00',
@@ -128,7 +128,7 @@ class BookingTest extends TestCase
             'customer_name' => 'Demo Customer',
             'mobile' => '9876543210',
             'trip_type' => 'One-Way',
-            'pickup_location' => 'Mangla Chowk, Bilaspur',
+            'pickup_location' => 'Mangal Chowk, Bilaspur',
             'destination' => 'Raipur Airport',
             'travel_date' => '2020-01-01',
             'travel_time' => '10:00',
@@ -159,7 +159,7 @@ class BookingTest extends TestCase
             'mobile' => '9876543211',
             'email' => 'guest@example.com',
             'trip_type' => 'One-Way',
-            'pickup_location' => 'Mangla Chowk, Bilaspur',
+            'pickup_location' => 'Mangal Chowk, Bilaspur',
             'destination' => 'Raipur Airport',
             'travel_date' => now()->addDays(2)->format('Y-m-d'),
             'travel_time' => '09:30',
@@ -170,7 +170,7 @@ class BookingTest extends TestCase
 
         $response = $this->post('/booking', $postData);
 
-        $booking = Booking::where('pickup_location', 'Mangla Chowk, Bilaspur')->first();
+        $booking = Booking::where('pickup_location', 'Mangal Chowk, Bilaspur')->first();
         $this->assertNotNull($booking);
         $this->assertEquals('Pending', $booking->booking_status);
         $this->assertMatchesRegularExpression('/^VT-\\d+$/', $booking->booking_id);

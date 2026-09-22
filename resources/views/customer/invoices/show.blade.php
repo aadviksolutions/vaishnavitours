@@ -32,12 +32,9 @@
                 </div>
             </div>
             <div style="font-size: 0.825rem; color: var(--slate-600); line-height: 1.5;">
-                <strong>Premium Taxi & Travel Solutions</strong><br>
-                B.N City Colony, Jonki Road, Mangla Chowk,<br>
-                Bilaspur, Chhattisgarh - 495001<br>
-                📞 Phone: +91 7752-400000 | +91 98261 00000<br>
-                ✉️ Email: info@vaishnavitours.com<br>
-                <strong>GSTIN:</strong> 22AAAAA0000A1Z5
+                <strong>{{ config('vaishnavi.business_name') }}</strong><br>
+                {{ config('vaishnavi.address') }}<br>
+                📞 Phone: {{ config('vaishnavi.phone_primary') }} | {{ config('vaishnavi.phone_secondary') }}
             </div>
         </div>
 

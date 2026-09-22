@@ -66,7 +66,7 @@
                     <div class="grid grid-2 gap-3">
                         <div class="form-group">
                             <label class="form-label">Pickup Location</label>
-                            <input type="text" name="pickup_location" class="form-control" placeholder="e.g. Mangla Chowk, Bilaspur" value="{{ old('pickup_location', 'Mangla Chowk, Bilaspur') }}" required>
+                            <input type="text" name="pickup_location" class="form-control" placeholder="e.g. Mangal Chowk, Bilaspur" value="{{ old('pickup_location', 'Mangal Chowk, Bilaspur') }}" required>
                             @error('pickup_location') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
 
@@ -290,8 +290,11 @@
                         <li>✓ Patient-friendly, careful chauffeurs available 24/7</li>
                     </ul>
                     <div class="d-flex gap-2 flex-wrap">
-                        <a href="{{ route('contact') }}" class="btn btn-primary btn-lg">
-                            Contact Us
+                        <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" class="btn btn-primary btn-lg">
+                            📞 Call Us: {{ config('vaishnavi.phone_primary') }}
+                        </a>
+                        <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" class="btn btn-outline btn-lg" style="color: #fff; border-color: rgba(255,255,255,0.4); text-decoration: none;">
+                            💬 Chat on WhatsApp
                         </a>
                     </div>
                 </div>
@@ -330,7 +333,7 @@
                     <div style="background: var(--slate-50); padding: 1.25rem; border-radius: var(--radius-md); border-left: 4px solid var(--primary); margin-bottom: 1.75rem;">
                         <strong style="color: var(--dark-900); display: block; margin-bottom: 0.25rem;">Location:</strong>
                         <span style="color: var(--slate-600); font-size: 0.9rem;">
-                            B.N City Colony, Jonki Road, Mangla Chowk, Bilaspur, Chhattisgarh - 495001
+                            {{ config('vaishnavi.address') }}
                         </span>
                     </div>
 

@@ -12,14 +12,14 @@ class SettingSeeder extends Seeder
         $settings = [
             ['key' => 'company_name', 'value' => 'Vaishnavi Tours', 'group' => 'general'],
             ['key' => 'company_tagline', 'value' => '24/7 Car Rentals, Cabs & Travel Service', 'group' => 'general'],
-            ['key' => 'phone_primary', 'value' => '', 'group' => 'contact'],
-            ['key' => 'phone_secondary', 'value' => '', 'group' => 'contact'],
-            ['key' => 'emergency_phone', 'value' => '', 'group' => 'contact'],
-            ['key' => 'whatsapp_number', 'value' => '', 'group' => 'contact'],
+            ['key' => 'phone_primary', 'value' => '9244784443', 'group' => 'contact'],
+            ['key' => 'phone_secondary', 'value' => '9179484443', 'group' => 'contact'],
+            ['key' => 'emergency_phone', 'value' => '9244784443', 'group' => 'contact'],
+            ['key' => 'whatsapp_number', 'value' => '9244784443', 'group' => 'contact'],
             ['key' => 'contact_email', 'value' => 'info@vaishnavitours.com', 'group' => 'contact'],
             ['key' => 'support_email', 'value' => 'support@vaishnavitours.com', 'group' => 'contact'],
-            ['key' => 'address_line_1', 'value' => 'B.N City Colony, Jonki Road', 'group' => 'address'],
-            ['key' => 'address_line_2', 'value' => 'Mangla Chowk', 'group' => 'address'],
+            ['key' => 'address_line_1', 'value' => 'Mangal Chowk', 'group' => 'address'],
+            ['key' => 'address_line_2', 'value' => 'Bilaspur', 'group' => 'address'],
             ['key' => 'city', 'value' => 'Bilaspur', 'group' => 'address'],
             ['key' => 'state', 'value' => 'Chhattisgarh', 'group' => 'address'],
             ['key' => 'pincode', 'value' => '495001', 'group' => 'address'],
@@ -28,7 +28,7 @@ class SettingSeeder extends Seeder
         ];
 
         foreach ($settings as $setting) {
-            Setting::firstOrCreate(
+            Setting::updateOrCreate(
                 ['key' => $setting['key']],
                 $setting
             );
