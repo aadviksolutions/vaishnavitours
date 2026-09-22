@@ -4,29 +4,110 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Vaishnavi Tours - 24/7 Cab & Taxi Service Bilaspur')</title>
-    <meta name="description" content="@yield('meta_description', 'Vaishnavi Tours offers premium 24/7 cab booking, outstation taxi, airport transfer, local hourly car rental, and emergency services in Bilaspur, Chhattisgarh.')">
+
+    <!-- Page Title & Primary SEO Metadata -->
+    <title>@yield('title', config('seo.default_title'))</title>
+    <meta name="description" content="@yield('meta_description', config('seo.default_description'))">
+    <meta name="keywords" content="@yield('meta_keywords', config('seo.default_keywords'))">
+    <meta name="author" content="Vaishnavi Tours">
+    <meta name="robots" content="@yield('meta_robots', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1')">
+    <link rel="canonical" href="@yield('canonical', url()->current())">
+
+    <!-- Local SEO Geo Meta Tags (Bilaspur, Chhattisgarh) -->
+    <meta name="geo.region" content="IN-CT">
+    <meta name="geo.placename" content="Bilaspur, Chhattisgarh">
+    <meta name="geo.position" content="22.0797;82.1409">
+    <meta name="ICBM" content="22.0797, 82.1409">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:site_name" content="Vaishnavi Tours">
+    <meta property="og:locale" content="en_IN">
+    <meta property="og:title" content="@yield('og_title', trim($__env->yieldContent('title', config('seo.default_title'))))">
+    <meta property="og:description" content="@yield('og_description', trim($__env->yieldContent('meta_description', config('seo.default_description'))))">
+    <meta property="og:url" content="@yield('canonical', url()->current())">
+    <meta property="og:image" content="@yield('og_image', asset(config('seo.default_image')))">
+    <meta property="og:image:alt" content="Vaishnavi Tours Taxi & Cab Service Bilaspur">
+
+    <!-- Twitter / X Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('twitter_title', trim($__env->yieldContent('title', config('seo.default_title'))))">
+    <meta name="twitter:description" content="@yield('twitter_description', trim($__env->yieldContent('meta_description', config('seo.default_description'))))">
+    <meta name="twitter:image" content="@yield('twitter_image', trim($__env->yieldContent('og_image', asset(config('seo.default_image')))))">
+
+    <!-- Favicon & App Icons -->
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
-    <!-- TaxiService LocalBusiness Structured Data -->
+
+    <!-- Rich Schema.org Structured Data: TaxiService LocalBusiness & WebSite -->
     <script type="application/ld+json">
     {!! json_encode([
         '@context' => 'https://schema.org',
-        '@type' => 'TaxiService',
-        'name' => config('vaishnavi.business_name'),
-        'telephone' => config('vaishnavi.phone_primary_tel'),
-        'address' => [
-            '@type' => 'PostalAddress',
-            'streetAddress' => config('vaishnavi.address'),
-            'addressLocality' => config('vaishnavi.city'),
-            'addressRegion' => config('vaishnavi.state'),
-            'addressCountry' => 'IN',
+        '@graph' => [
+            [
+                '@type' => 'TaxiService',
+                '@id' => config('app.url') . '/#taxiservice',
+                'name' => config('vaishnavi.business_name'),
+                'description' => 'Premier 24/7 taxi and cab service in Bilaspur, Chhattisgarh. Providing verified chauffeur-driven local cabs, outstation travel, and airport transfers.',
+                'url' => config('app.url'),
+                'telephone' => config('vaishnavi.phone_primary_tel'),
+                'priceRange' => '₹₹',
+                'currenciesAccepted' => 'INR',
+                'paymentAccepted' => 'Cash, UPI, Credit Card, Debit Card, Net Banking',
+                'logo' => [
+                    '@type' => 'ImageObject',
+                    'url' => asset('assets/branding/vaishnavi-tours-logo.png'),
+                ],
+                'image' => asset('assets/images/hero-taxi.jpg'),
+                'address' => [
+                    '@type' => 'PostalAddress',
+                    'streetAddress' => config('vaishnavi.address'),
+                    'addressLocality' => config('vaishnavi.city'),
+                    'addressRegion' => config('vaishnavi.state'),
+                    'postalCode' => config('vaishnavi.pincode'),
+                    'addressCountry' => 'IN',
+                ],
+                'geo' => [
+                    '@type' => 'GeoCoordinates',
+                    'latitude' => 22.0797,
+                    'longitude' => 82.1409,
+                ],
+                'openingHoursSpecification' => [
+                    [
+                        '@type' => 'OpeningHoursSpecification',
+                        'dayOfWeek' => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+                        'opens' => '00:00',
+                        'closes' => '23:59',
+                    ],
+                ],
+                'areaServed' => array_map(function ($area) {
+                    return [
+                        '@type' => 'City',
+                        'name' => $area,
+                    ];
+                }, config('seo.service_areas', ['Bilaspur', 'Raipur', 'Korba', 'Ambikapur'])),
+                'sameAs' => [
+                    config('vaishnavi.whatsapp_link'),
+                ],
+            ],
+            [
+                '@type' => 'WebSite',
+                '@id' => config('app.url') . '/#website',
+                'url' => config('app.url'),
+                'name' => config('vaishnavi.business_name'),
+                'description' => config('seo.default_description'),
+                'publisher' => [
+                    '@id' => config('app.url') . '/#taxiservice',
+                ],
+                'inLanguage' => 'en-IN',
+            ],
         ],
-        'url' => config('app.url'),
     ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
     </script>
+    @stack('schema')
 </head>
 <body>
 
@@ -81,6 +162,7 @@
             <!-- Nav Links -->
             <div class="nav-links" id="nav-links-menu">
                 <a href="{{ route('home') }}" class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}">Home</a>
+                <a href="{{ route('services') }}" class="nav-link {{ request()->routeIs('services*') ? 'active' : '' }}">Services</a>
                 <a href="{{ route('rates') }}" class="nav-link {{ request()->routeIs('rates') ? 'active' : '' }}">Rates</a>
                 <a href="{{ route('vehicles') }}" class="nav-link {{ request()->routeIs('vehicles') ? 'active' : '' }}">Vehicles</a>
                 <a href="{{ route('service-network') }}" class="nav-link {{ request()->routeIs('service-network') || request()->routeIs('network') ? 'active' : '' }}">Service Network</a>
@@ -162,11 +244,11 @@
                 <div>
                     <h4 class="footer-title">Our Services</h4>
                     <ul class="footer-links">
-                        <li><a href="{{ route('booking') }}?type=One-Way">One-Way Intercity Cabs</a></li>
-                        <li><a href="{{ route('booking') }}?type=Round-Trip">Round-Trip Outstation</a></li>
-                        <li><a href="{{ route('booking') }}?type=Airport+Transfer">Airport Pick & Drop</a></li>
-                        <li><a href="{{ route('booking') }}?type=Local+Hourly">Local Hourly Rental</a></li>
-                        <li><a href="{{ route('booking') }}?type=Emergency">24/7 Emergency Ambulance Cab</a></li>
+                        <li><a href="{{ route('services.local-taxi') }}">Local Taxi Service Bilaspur</a></li>
+                        <li><a href="{{ route('services.outstation-taxi') }}">Outstation Cabs from Bilaspur</a></li>
+                        <li><a href="{{ route('services.airport-transfer') }}">Raipur & Bilaspur Airport Transfer</a></li>
+                        <li><a href="{{ route('services') }}#oneway">One-Way Intercity Cabs</a></li>
+                        <li><a href="{{ route('services') }}#corporate">Corporate & Event Car Rental</a></li>
                     </ul>
                 </div>
 

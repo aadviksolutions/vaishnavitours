@@ -1,6 +1,21 @@
 @extends('layouts.app')
 
-@section('title', 'Contact Us & Head Office - Vaishnavi Tours Bilaspur')
+@section('title', 'Contact Vaishnavi Tours | Taxi Booking Office Bilaspur')
+@section('meta_description', 'Contact Vaishnavi Tours in Mangal Chowk, Bilaspur, Chhattisgarh. Call 9244784443 / 9179484443 or WhatsApp for 24/7 cab reservations, emergency road help, and queries.')
+@section('canonical', route('contact'))
+
+@push('schema')
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'BreadcrumbList',
+    'itemListElement' => [
+        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => route('home')],
+        ['@type' => 'ListItem', 'position' => 2, 'name' => 'Contact Us', 'item' => route('contact')],
+    ],
+], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+</script>
+@endpush
 
 @section('content')
 <section style="background: var(--dark-900); color: #fff; padding: 3rem 0;">

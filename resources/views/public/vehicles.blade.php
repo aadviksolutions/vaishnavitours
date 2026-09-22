@@ -1,13 +1,27 @@
 @extends('layouts.app')
 
-@section('title', 'Vehicles & Fleet - Vaishnavi Tours Bilaspur')
-@section('meta_description', 'Explore our modern taxi fleet in Bilaspur: Sedan, SUV, MUV, and Tempo Traveller. Air-conditioned, sanitized, and commercial passenger licensed.')
+@section('title', 'Taxi Fleet & Cab Options in Bilaspur | Vaishnavi Tours')
+@section('meta_description', 'Explore our verified fleet of rental cabs in Bilaspur: Maruti Dzire, Ertiga MUV, Innova Crysta & Tempo Traveller. Clean, air-conditioned, with experienced chauffeurs.')
+@section('canonical', route('vehicles'))
+
+@push('schema')
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'BreadcrumbList',
+    'itemListElement' => [
+        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => route('home')],
+        ['@type' => 'ListItem', 'position' => 2, 'name' => 'Vehicles & Fleet', 'item' => route('vehicles')],
+    ],
+], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+</script>
+@endpush
 
 @section('content')
 <section style="background: var(--dark-900); color: #fff; padding: 3.5rem 0;">
     <div class="container text-center">
         <span style="color: var(--primary); font-weight: 800; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;">Our Vehicle Fleet</span>
-        <h1 style="color: #fff; font-size: 2.5rem; margin-top: 0.25rem;">Explore Our Cabs & Vehicles</h1>
+        <h1 style="color: #fff; font-size: 2.5rem; margin-top: 0.25rem;">Taxi Fleet & <span>Available Cabs in Bilaspur</span></h1>
         <p style="color: var(--slate-300); max-width: 600px; margin: 0.5rem auto 0;">All vehicles are GPS-enabled, fully commercial passenger insured, and rigorously sanitized before every dispatch.</p>
     </div>
 </section>
@@ -27,7 +41,7 @@
             @foreach($vehicles as $vehicle)
                 <div class="vehicle-card" data-category="{{ strtolower($vehicle->vehicle_type) }}">
                     <div class="vehicle-card-img" style="height: 200px; padding: 1rem; background: #f8fafc;">
-                        <img src="{{ $vehicle->icon_url }}" alt="{{ $vehicle->name }}" style="max-height: 160px; width: auto; object-fit: contain;">
+                        <img src="{{ $vehicle->icon_url }}" alt="{{ $vehicle->name }} - {{ $vehicle->vehicle_type }} Taxi Cab in Bilaspur" style="max-height: 160px; width: auto; object-fit: contain;">
                     </div>
                     <div class="vehicle-card-body">
                         <div class="d-flex justify-between align-center" style="margin-bottom: 0.5rem;">

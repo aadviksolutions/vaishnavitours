@@ -1,6 +1,21 @@
 @extends('layouts.app')
 
-@section('title', 'Book a Taxi Online - Vaishnavi Tours Bilaspur')
+@section('title', 'Online Cab Booking Bilaspur | Vaishnavi Tours')
+@section('meta_description', 'Book a local taxi, outstation cab, or airport transfer online in Bilaspur, Chhattisgarh. Instant booking confirmation with transparent rates and dedicated driver dispatch.')
+@section('canonical', route('booking'))
+
+@push('schema')
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'BreadcrumbList',
+    'itemListElement' => [
+        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => route('home')],
+        ['@type' => 'ListItem', 'position' => 2, 'name' => 'Book a Taxi', 'item' => route('booking')],
+    ],
+], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+</script>
+@endpush
 
 @section('content')
 <section style="padding: 3rem 0 5rem;">

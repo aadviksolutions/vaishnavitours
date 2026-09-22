@@ -1,7 +1,21 @@
 @extends('layouts.app')
 
-@section('title', 'Taxi Booking Cancellation &amp; Refund Policy - Vaishnavi Tours')
-@section('meta_description', 'Official Taxi Booking Cancellation &amp; Refund Policy for Vaishnavi Tours. Transparent timeline, refund process, no-show rules, and advance retention details.')
+@section('title', 'Cancellation & Refund Policy | Vaishnavi Tours Bilaspur')
+@section('meta_description', 'Clear cancellation and refund policy for Vaishnavi Tours taxi bookings in Bilaspur. Review refund slabs (>=24h, 12-24h, 6-12h, <6h) and cancellation guidelines.')
+@section('canonical', route('cancellation-refund-policy'))
+
+@push('schema')
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'BreadcrumbList',
+    'itemListElement' => [
+        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => route('home')],
+        ['@type' => 'ListItem', 'position' => 2, 'name' => 'Cancellation Policy', 'item' => route('cancellation-refund-policy')],
+    ],
+], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+</script>
+@endpush
 
 @section('content')
 <!-- Hero Section -->

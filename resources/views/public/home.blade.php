@@ -1,7 +1,51 @@
 @extends('layouts.app')
 
-@section('title', 'Vaishnavi Tours - 24/7 Cab Service | Bilaspur, Chhattisgarh')
-@section('meta_description', 'Reliable 24/7 taxi service for local and outstation travel from Bilaspur, Chhattisgarh. Clean sanitized cabs, experienced chauffeurs, and transparent pricing.')
+@section('title', 'Bilaspur Taxi & Cab Service | 24/7 Car Rental | Vaishnavi Tours')
+@section('meta_description', 'Book trusted 24/7 taxi & cab service in Bilaspur, Chhattisgarh with Vaishnavi Tours. Clean AC cabs, outstation travel to Raipur & Korba, airport transfers, transparent pricing.')
+@section('canonical', route('home'))
+
+@push('schema')
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'FAQPage',
+    'mainEntity' => [
+        [
+            '@type' => 'Question',
+            'name' => 'What taxi and cab services does Vaishnavi Tours provide in Bilaspur?',
+            'acceptedAnswer' => [
+                '@type' => 'Answer',
+                'text' => 'Vaishnavi Tours provides 24/7 local city taxi travel, outstation cabs from Bilaspur to all Chhattisgarh districts, dedicated airport pickup and drop transfers to Raipur Airport (RPR), and group rental coaches.'
+            ]
+        ],
+        [
+            '@type' => 'Question',
+            'name' => 'How can I book an outstation cab from Bilaspur to Raipur or Korba?',
+            'acceptedAnswer' => [
+                '@type' => 'Answer',
+                'text' => 'You can book directly through our online reservation form, call our 24/7 dispatch desk at 9244784443 / 9179484443, or chat with us on WhatsApp.'
+            ]
+        ],
+        [
+            '@type' => 'Question',
+            'name' => 'What is the starting per-kilometer rate for cab rental in Bilaspur?',
+            'acceptedAnswer' => [
+                '@type' => 'Answer',
+                'text' => 'Our verified rates start at ₹11/km for hatchbacks (Tiago/WagonR), ₹13/km for sedans (Dzire), ₹17/km for 6-seater MUVs (Ertiga), and ₹22/km for luxury Innova Crysta.'
+            ]
+        ],
+        [
+            '@type' => 'Question',
+            'name' => 'Do you provide airport transfer from Bilaspur to Swami Vivekananda Airport Raipur?',
+            'acceptedAnswer' => [
+                '@type' => 'Answer',
+                'text' => 'Yes, we provide dedicated airport transfers with punctual doorstep pickup in Bilaspur and terminal drop at Raipur Airport (~135 km via NH 130) with flight schedule coordination.'
+            ]
+        ]
+    ]
+], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+</script>
+@endpush
 
 @section('content')
 
@@ -15,7 +59,7 @@
                         <x-icon name="car-front" size="14" class="text-primary" style="margin-right: 4px;" /> 24/7 Bilaspur & Chhattisgarh Travel
                     </div>
                     <h1 class="hero-title">
-                        24/7 Cab <span>Service</span>
+                        Reliable 24/7 Taxi &amp; Cab <span>Service in Bilaspur</span>
                     </h1>
                     <p class="hero-desc">
                         Reliable taxi service for local and outstation travel.
@@ -373,5 +417,35 @@
             </div>
         </section>
     @endif
+
+
+    <!-- Local Travel & FAQ Section -->
+    <section style="padding: 4.5rem 0; background: #FFFFFF;" id="faqs-section">
+        <div class="container" style="max-width: 900px;">
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <div style="font-size: 0.85rem; font-weight: 800; color: var(--primary-dark); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem;">Got Questions?</div>
+                <h2 style="font-size: 2.15rem; font-weight: 800; color: var(--dark-900);">Common Questions About Bilaspur Taxi Booking</h2>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div class="card" style="padding: 1.5rem; border-radius: var(--radius-md);">
+                    <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--dark-900); margin-bottom: 0.5rem;">What taxi and cab services does Vaishnavi Tours provide in Bilaspur?</h3>
+                    <p style="color: var(--slate-600); font-size: 0.95rem; line-height: 1.6; margin: 0;">Vaishnavi Tours provides 24/7 local city taxi travel, outstation cabs from Bilaspur to all Chhattisgarh districts, dedicated airport pickup and drop transfers to Raipur Airport (RPR), and group rental coaches.</p>
+                </div>
+                <div class="card" style="padding: 1.5rem; border-radius: var(--radius-md);">
+                    <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--dark-900); margin-bottom: 0.5rem;">How can I book an outstation cab from Bilaspur to Raipur or Korba?</h3>
+                    <p style="color: var(--slate-600); font-size: 0.95rem; line-height: 1.6; margin: 0;">You can book directly through our <a href="{{ route('booking') }}" style="color: var(--primary-dark); font-weight: 700;">online reservation form</a>, call our 24/7 dispatch desk at <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" style="color: var(--primary-dark); font-weight: 700;">{{ config('vaishnavi.phone_primary') }}</a>, or chat with us on WhatsApp.</p>
+                </div>
+                <div class="card" style="padding: 1.5rem; border-radius: var(--radius-md);">
+                    <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--dark-900); margin-bottom: 0.5rem;">What are the starting taxi fares per kilometer in Bilaspur?</h3>
+                    <p style="color: var(--slate-600); font-size: 0.95rem; line-height: 1.6; margin: 0;">Our verified rates start at ₹11/km for hatchbacks (Tiago/WagonR), ₹13/km for sedans (Dzire), ₹17/km for 6-seater MUVs (Ertiga), and ₹22/km for luxury Innova Crysta. Check our full <a href="{{ route('rates') }}" style="color: var(--primary-dark); font-weight: 700;">Rate Card</a> for transparent details.</p>
+                </div>
+                <div class="card" style="padding: 1.5rem; border-radius: var(--radius-md);">
+                    <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--dark-900); margin-bottom: 0.5rem;">Do you provide airport transfer from Bilaspur to Raipur Airport?</h3>
+                    <p style="color: var(--slate-600); font-size: 0.95rem; line-height: 1.6; margin: 0;">Yes, we provide dedicated <a href="{{ route('services.airport-transfer') }}" style="color: var(--primary-dark); font-weight: 700;">Airport Transfer Service</a> with punctual doorstep pickup in Bilaspur and terminal drop at Raipur Airport (~135 km via NH 130) with flight schedule coordination.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
 @endsection

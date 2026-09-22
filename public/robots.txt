@@ -1,2 +1,24 @@
 User-agent: *
-Disallow:
+Allow: /
+Allow: /assets/
+Allow: /build/
+Allow: /css/
+Allow: /js/
+
+Disallow: /admin
+Disallow: /admin/
+Disallow: /customer
+Disallow: /customer/
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /dashboard
+Disallow: /invoices
+Disallow: /bookings
+Disallow: /payments
+Disallow: /notifications
+Disallow: /profile
+Disallow: /booking-success/
+Disallow: /invoice/
+
+Sitemap: https://vaishnavitours.vercel.app/sitemap.xml

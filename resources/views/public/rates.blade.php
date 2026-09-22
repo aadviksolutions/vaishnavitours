@@ -1,13 +1,27 @@
 @extends('layouts.app')
 
-@section('title', 'Rates & Tariffs - Vaishnavi Tours Bilaspur')
-@section('meta_description', 'Database-driven transparent rate card for Vaishnavi Tours taxi services. Clear tariffs, extra km rates, waiting charges, and night allowances.')
+@section('title', 'Taxi Fares & Cab Rates in Bilaspur | Vaishnavi Tours')
+@section('meta_description', 'Transparent taxi fare chart in Bilaspur: Hatchback ₹11/km, Sedan ₹13/km, Ertiga ₹17/km, Innova Crysta ₹22/km. No hidden charges, clear driver allowance and AC travel.')
+@section('canonical', route('rates'))
+
+@push('schema')
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'BreadcrumbList',
+    'itemListElement' => [
+        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => route('home')],
+        ['@type' => 'ListItem', 'position' => 2, 'name' => 'Rates & Tariffs', 'item' => route('rates')],
+    ],
+], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+</script>
+@endpush
 
 @section('content')
 <section style="background: var(--dark-900); color: #fff; padding: 3.5rem 0;">
     <div class="container text-center">
         <span style="color: var(--primary); font-weight: 800; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;">Transparent Pricing</span>
-        <h1 style="color: #fff; font-size: 2.5rem; margin-top: 0.25rem;">Service Rates & Tariffs</h1>
+        <h1 style="color: #fff; font-size: 2.5rem; margin-top: 0.25rem;">Taxi Fares & <span>Transparent Cab Rates</span></h1>
         <p style="color: var(--slate-300); max-width: 620px; margin: 0.5rem auto 0;">No hidden costs or dynamic peak surges. Transparent distance and hourly pricing for Bilaspur and all Chhattisgarh routes.</p>
     </div>
 </section>

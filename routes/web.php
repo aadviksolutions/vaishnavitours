@@ -31,6 +31,12 @@ Route::get('/booking', [PublicWebsiteController::class, 'booking'])->name('booki
 Route::post('/booking', [PublicWebsiteController::class, 'storeBooking'])->name('booking.store');
 Route::get('/booking-success/{booking}', [PublicWebsiteController::class, 'bookingSuccess'])->name('booking.success');
 
+Route::get('/services', [PublicWebsiteController::class, 'services'])->name('services');
+Route::get('/services/local-taxi', [PublicWebsiteController::class, 'localTaxi'])->name('services.local-taxi');
+Route::get('/services/outstation-taxi', [PublicWebsiteController::class, 'outstationTaxi'])->name('services.outstation-taxi');
+Route::get('/services/airport-transfer', [PublicWebsiteController::class, 'airportTransfer'])->name('services.airport-transfer');
+Route::get('/sitemap.xml', [PublicWebsiteController::class, 'sitemap'])->name('sitemap');
+Route::get('/robots.txt', [PublicWebsiteController::class, 'robots'])->name('robots');
 Route::get('/vehicles', [PublicWebsiteController::class, 'vehicles'])->name('vehicles');
 Route::get('/rates', [PublicWebsiteController::class, 'rates'])->name('rates');
 Route::get('/network', [PublicWebsiteController::class, 'network'])->name('network');

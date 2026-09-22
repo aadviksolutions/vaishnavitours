@@ -124,18 +124,97 @@ class PublicWebsiteController extends Controller
 
     public function vehicles()
     {
-        try {
-            $vehicles = Vehicle::where('status', '!=', 'Inactive')->get();
-        } catch (\Throwable $e) {
-            report($e);
-            $vehicles = collect([]);
-        }
-
-        if ($vehicles->isEmpty()) {
-            $vehicles = $this->getFallbackVehicles();
-        }
-
+        $vehicles = $this->getActiveVehicles();
         return view('public.vehicles', compact('vehicles'));
+    }
+
+    public function services()
+    {
+        return view('public.services.index');
+    }
+
+    public function localTaxi()
+    {
+        $vehicles = $this->getActiveVehicles();
+        return view('public.services.local-taxi', compact('vehicles'));
+    }
+
+    public function outstationTaxi()
+    {
+        $vehicles = $this->getActiveVehicles();
+        return view('public.services.outstation-taxi', compact('vehicles'));
+    }
+
+    public function airportTransfer()
+    {
+        $vehicles = $this->getActiveVehicles();
+        return view('public.services.airport-transfer', compact('vehicles'));
+    }
+
+    public function sitemap()
+    {
+        $domain = rtrim(config('app.url', 'https://vaishnavitours.vercel.app'), '/');
+        $today = date('Y-m-d');
+
+        $pages = [
+            ['loc' => $domain . '/', 'lastmod' => $today, 'changefreq' => 'daily', 'priority' => '1.0'],
+            ['loc' => $domain . '/services', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.9'],
+            ['loc' => $domain . '/services/local-taxi', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.9'],
+            ['loc' => $domain . '/services/outstation-taxi', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.9'],
+            ['loc' => $domain . '/services/airport-transfer', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.9'],
+            ['loc' => $domain . '/vehicles', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.8'],
+            ['loc' => $domain . '/rates', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.8'],
+            ['loc' => $domain . '/service-network', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.8'],
+            ['loc' => $domain . '/booking', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.8'],
+            ['loc' => $domain . '/about', 'lastmod' => $today, 'changefreq' => 'monthly', 'priority' => '0.7'],
+            ['loc' => $domain . '/contact', 'lastmod' => $today, 'changefreq' => 'monthly', 'priority' => '0.7'],
+            ['loc' => $domain . '/feedback', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.6'],
+            ['loc' => $domain . '/terms-and-conditions', 'lastmod' => $today, 'changefreq' => 'monthly', 'priority' => '0.5'],
+            ['loc' => $domain . '/cancellation-refund-policy', 'lastmod' => $today, 'changefreq' => 'monthly', 'priority' => '0.5'],
+        ];
+
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+        foreach ($pages as $page) {
+            $xml .= "  <url>\n";
+            $xml .= '    <loc>' . htmlspecialchars($page['loc']) . "</loc>\n";
+            $xml .= '    <lastmod>' . $page['lastmod'] . "</lastmod>\n";
+            $xml .= '    <changefreq>' . $page['changefreq'] . "</changefreq>\n";
+            $xml .= '    <priority>' . $page['priority'] . "</priority>\n";
+            $xml .= "  </url>\n";
+        }
+        $xml .= '</urlset>';
+
+        return response($xml, 200)->header('Content-Type', 'application/xml');
+    }
+
+    public function robots()
+    {
+        $domain = rtrim(config('app.url', 'https://vaishnavitours.vercel.app'), '/');
+        $content = "User-agent: *\n";
+        $content .= "Allow: /\n";
+        $content .= "Allow: /assets/\n";
+        $content .= "Allow: /build/\n";
+        $content .= "Allow: /css/\n";
+        $content .= "Allow: /js/\n\n";
+        $content .= "Disallow: /admin\n";
+        $content .= "Disallow: /admin/\n";
+        $content .= "Disallow: /customer\n";
+        $content .= "Disallow: /customer/\n";
+        $content .= "Disallow: /login\n";
+        $content .= "Disallow: /register\n";
+        $content .= "Disallow: /forgot-password\n";
+        $content .= "Disallow: /dashboard\n";
+        $content .= "Disallow: /invoices\n";
+        $content .= "Disallow: /bookings\n";
+        $content .= "Disallow: /payments\n";
+        $content .= "Disallow: /notifications\n";
+        $content .= "Disallow: /profile\n";
+        $content .= "Disallow: /booking-success/\n";
+        $content .= "Disallow: /invoice/\n\n";
+        $content .= "Sitemap: {$domain}/sitemap.xml\n";
+
+        return response($content, 200)->header('Content-Type', 'text/plain');
     }
 
     public function rates()
@@ -241,6 +320,22 @@ class PublicWebsiteController extends Controller
         }
 
         return back()->with('success', 'Thank you! Your enquiry has been received. Our team will call you back shortly.');
+    }
+
+    protected function getActiveVehicles()
+    {
+        try {
+            $vehicles = Vehicle::where('status', '!=', 'Inactive')->get();
+        } catch (\Throwable $e) {
+            report($e);
+            $vehicles = collect([]);
+        }
+
+        if ($vehicles->isEmpty()) {
+            $vehicles = $this->getFallbackVehicles();
+        }
+
+        return $vehicles;
     }
 
     protected function getFallbackVehicles()

@@ -1,7 +1,21 @@
 @extends('layouts.app')
 
-@section('title', 'About Vaishnavi Tours - 24/7 Cab & Taxi Service Bilaspur')
-@section('meta_description', 'About Vaishnavi Tours: reliable 24/7 taxi service, local and outstation travel across Chhattisgarh, professional drivers, and customer-focused service.')
+@section('title', 'About Vaishnavi Tours | Trusted Cab Service in Bilaspur, CG')
+@section('meta_description', 'Learn about Vaishnavi Tours, a premier local & outstation taxi service operating from Mangal Chowk, Bilaspur, Chhattisgarh. Dedicated to punctuality, passenger safety, and fair pricing.')
+@section('canonical', route('about'))
+
+@push('schema')
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'BreadcrumbList',
+    'itemListElement' => [
+        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => route('home')],
+        ['@type' => 'ListItem', 'position' => 2, 'name' => 'About Us', 'item' => route('about')],
+    ],
+], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+</script>
+@endpush
 
 @section('content')
 <section style="background: var(--dark-900); color: #fff; padding: 3.5rem 0;">

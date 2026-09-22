@@ -1,12 +1,27 @@
 @extends('layouts.app')
 
-@section('title', 'Service Network & Coverage - Vaishnavi Tours Bilaspur')
+@section('title', 'Service Network & Outstation Routes | Bilaspur | Vaishnavi Tours')
+@section('meta_description', 'Vaishnavi Tours operates intercity cabs across Chhattisgarh: Bilaspur to Raipur, Korba, Ambikapur, Raigarh, Durg-Bhilai, Jagdalpur & tourist destinations.')
+@section('canonical', route('service-network'))
+
+@push('schema')
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'BreadcrumbList',
+    'itemListElement' => [
+        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => route('home')],
+        ['@type' => 'ListItem', 'position' => 2, 'name' => 'Service Network', 'item' => route('service-network')],
+    ],
+], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+</script>
+@endpush
 
 @section('content')
 <section style="background: var(--dark-900); color: #fff; padding: 3rem 0;">
     <div class="container text-center">
         <span style="color: var(--primary); font-weight: 800; text-transform: uppercase; font-size: 0.85rem;">Regional Connectivity</span>
-        <h1 style="color: #fff; font-size: 2.5rem; margin-top: 0.25rem;">Our Service Network</h1>
+        <h1 style="color: #fff; font-size: 2.5rem; margin-top: 0.25rem;">Chhattisgarh Service Network & <span>Outstation Cab Routes</span></h1>
         <p style="color: var(--slate-300); max-width: 600px; margin: 0.5rem auto 0;">Connecting Bilaspur to every district in Chhattisgarh and major tourist & business corridors across India.</p>
     </div>
 </section>
