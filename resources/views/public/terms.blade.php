@@ -1,7 +1,21 @@
 @extends('layouts.app')
 
-@section('title', 'Taxi Service Cancellation Policy &amp; Terms &amp; Conditions - Vaishnavi Tours')
-@section('meta_description', 'Official Taxi Service Cancellation Policy and Terms &amp; Conditions for Vaishnavi Tours Taxi Service. Read booking confirmation, cancellation, fare rules, and customer responsibilities.')
+@section('title', 'Taxi Service Terms & Conditions | Vaishnavi Tours Bilaspur')
+@section('meta_description', 'Official taxi service terms and conditions for Vaishnavi Tours in Bilaspur. Covers booking confirmation, cancellation rules, fare policies, and passenger safety.')
+@section('canonical', route('terms-and-conditions'))
+
+@push('schema')
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'BreadcrumbList',
+    'itemListElement' => [
+        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => route('home')],
+        ['@type' => 'ListItem', 'position' => 2, 'name' => 'Terms & Conditions', 'item' => route('terms-and-conditions')],
+    ],
+], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+</script>
+@endpush
 
 @push('styles')
 <style>
