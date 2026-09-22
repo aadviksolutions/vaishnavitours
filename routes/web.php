@@ -37,6 +37,8 @@ Route::get('/network', [PublicWebsiteController::class, 'network'])->name('netwo
 Route::get('/service-network', [PublicWebsiteController::class, 'network'])->name('service-network');
 Route::get('/terms-and-conditions', [PublicWebsiteController::class, 'termsAndConditions'])->name('terms-and-conditions');
 Route::get('/cancellation-refund-policy', [PublicWebsiteController::class, 'cancellationPolicy'])->name('cancellation-refund-policy');
+Route::get('/cancellation-policy', [PublicWebsiteController::class, 'cancellationPolicy'])->name('cancellation-policy');
+Route::get('/cancellation', [PublicWebsiteController::class, 'cancellationPolicy'])->name('cancellation');
 Route::get('/about', [PublicWebsiteController::class, 'about'])->name('about');
 Route::get('/feedback', [PublicWebsiteController::class, 'feedback'])->name('feedback');
 Route::post('/feedback', [PublicWebsiteController::class, 'storeFeedback'])->name('feedback.store');
