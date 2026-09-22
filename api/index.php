@@ -11,13 +11,36 @@
 $_SERVER['SCRIPT_NAME'] = '/index.php';
 $_SERVER['SCRIPT_FILENAME'] = __DIR__ . '/../public/index.php';
 
-// 2. Enforce APP_KEY requirement (do not generate or use hardcoded secrets in production)
-$hasAppKey = !empty(getenv('APP_KEY')) || !empty($_ENV['APP_KEY']) || !empty($_SERVER['APP_KEY']);
-if (!$hasAppKey && (getenv('APP_ENV') === 'production' || ($_ENV['APP_ENV'] ?? null) === 'production')) {
+// 2. Synchronize and enforce APP_KEY requirement
+$appKey = getenv('APP_KEY') ?: ($_ENV['APP_KEY'] ?? ($_SERVER['APP_KEY'] ?? null));
+
+if (!empty($appKey)) {
+    putenv("APP_KEY={$appKey}");
+    $_ENV['APP_KEY'] = $appKey;
+    $_SERVER['APP_KEY'] = $appKey;
+} elseif (getenv('APP_ENV') === 'production' || ($_ENV['APP_ENV'] ?? null) === 'production' || ($_SERVER['APP_ENV'] ?? null) === 'production') {
     http_response_code(500);
     header('Content-Type: text/plain; charset=utf-8');
     echo "Configuration Error: APP_KEY is required in production. Please set APP_KEY in your Vercel Project Environment Variables.\n";
     exit(1);
+}
+
+// Synchronize other project variables passed via $_SERVER into getenv and $_ENV
+foreach ($_SERVER as $varKey => $varVal) {
+    if (is_string($varVal) && (
+        str_starts_with($varKey, 'APP_') ||
+        str_starts_with($varKey, 'DB_') ||
+        str_starts_with($varKey, 'MAIL_') ||
+        str_starts_with($varKey, 'SESSION_') ||
+        str_starts_with($varKey, 'CACHE_') ||
+        str_starts_with($varKey, 'QUEUE_') ||
+        str_starts_with($varKey, 'FILESYSTEM_')
+    )) {
+        if (!getenv($varKey)) {
+            putenv("{$varKey}={$varVal}");
+            $_ENV[$varKey] = $varVal;
+        }
+    }
 }
 
 // 3. Fallback serverless-safe drivers if not specified in environment
