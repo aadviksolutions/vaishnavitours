@@ -76,12 +76,24 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
     Route::get('/notifications', [CustomerNotificationController::class, 'index'])->name('notifications');
 });
 
+// Friendly customer root route aliases (Section 12 requirement)
+Route::middleware(['auth', 'customer'])->group(function () {
+    Route::get('/dashboard', fn () => redirect()->route('customer.dashboard'))->name('dashboard');
+    Route::get('/bookings', fn () => redirect()->route('customer.bookings.index'))->name('bookings');
+    Route::get('/bookings/{booking}', fn (\App\Models\Booking $booking) => redirect()->route('customer.bookings.show', $booking))->name('bookings.view');
+    Route::get('/payments', fn () => redirect()->route('customer.bookings.index'))->name('payments');
+    Route::get('/invoices', fn () => redirect()->route('customer.bookings.index'))->name('invoices');
+    Route::get('/notifications', fn () => redirect()->route('customer.notifications'))->name('notifications');
+    Route::get('/profile', fn () => redirect()->route('customer.profile'))->name('profile');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Admin Panel Routes (Authenticated + Admin Role)
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', fn () => redirect()->route('admin.dashboard'))->name('home');
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
     // Bookings & Controlled Workflow Actions

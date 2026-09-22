@@ -1,0 +1,28 @@
+{
+    auto_https off
+    admin off
+}
+
+:{$PORT:80} {
+    root * /app/public
+    encode zstd br gzip
+
+    # Execute PHP through FrankenPHP embedded server
+    php_server
+
+    # Production caching for static assets
+    @static {
+        path *.css *.js *.svg *.png *.jpg *.jpeg *.webp *.ico *.woff *.woff2 *.ttf
+    }
+    header @static Cache-Control "public, max-age=31536000, immutable"
+
+    # Security headers
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options SAMEORIGIN
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy strict-origin-when-cross-origin
+        -Server
+        -X-Powered-By
+    }
+}

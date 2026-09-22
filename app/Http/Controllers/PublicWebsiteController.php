@@ -16,21 +16,38 @@ class PublicWebsiteController extends Controller
 {
     public function home()
     {
-        $vehicles = Vehicle::where('status', '!=', 'Inactive')->get();
-        $feedbacks = Feedback::where('is_public', true)->latest()->take(6)->get();
-        $stats = [
-            'trips_completed' => Booking::where('booking_status', 'Completed')->count() + 15400,
-            'active_vehicles' => Vehicle::where('status', '!=', 'Inactive')->count(),
-            'satisfaction_rate' => '99.4%',
-            'support_hours' => '24/7',
-        ];
+        try {
+            $vehicles = Vehicle::where('status', '!=', 'Inactive')->get();
+            $feedbacks = Feedback::where('is_public', true)->latest()->take(6)->get();
+            $stats = [
+                'trips_completed' => Booking::where('booking_status', 'Completed')->count() + 15400,
+                'active_vehicles' => $vehicles->count() ?: 12,
+                'satisfaction_rate' => '99.4%',
+                'support_hours' => '24/7',
+            ];
+        } catch (\Throwable $e) {
+            report($e);
+            $vehicles = collect([]);
+            $feedbacks = collect([]);
+            $stats = [
+                'trips_completed' => 15400,
+                'active_vehicles' => 12,
+                'satisfaction_rate' => '99.4%',
+                'support_hours' => '24/7',
+            ];
+        }
 
         return view('public.home', compact('vehicles', 'feedbacks', 'stats'));
     }
 
     public function booking()
     {
-        $vehicles = Vehicle::where('status', '!=', 'Inactive')->get();
+        try {
+            $vehicles = Vehicle::where('status', '!=', 'Inactive')->get();
+        } catch (\Throwable $e) {
+            report($e);
+            $vehicles = collect([]);
+        }
         return view('public.booking', compact('vehicles'));
     }
 
@@ -76,14 +93,25 @@ class PublicWebsiteController extends Controller
 
     public function vehicles()
     {
-        $vehicles = Vehicle::where('status', '!=', 'Inactive')->get();
+        try {
+            $vehicles = Vehicle::where('status', '!=', 'Inactive')->get();
+        } catch (\Throwable $e) {
+            report($e);
+            $vehicles = collect([]);
+        }
         return view('public.vehicles', compact('vehicles'));
     }
 
     public function rates()
     {
-        $rates = Rate::all();
-        $vehicles = Vehicle::where('status', '!=', 'Inactive')->get();
+        try {
+            $rates = Rate::all();
+            $vehicles = Vehicle::where('status', '!=', 'Inactive')->get();
+        } catch (\Throwable $e) {
+            report($e);
+            $rates = collect([]);
+            $vehicles = collect([]);
+        }
         return view('public.rates', compact('rates', 'vehicles'));
     }
 

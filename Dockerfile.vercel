@@ -1,0 +1,99 @@
+# ==============================================================================
+# Vaishnavi Tours — Production Dockerfile for Vercel Container Deployment
+# Runtime: PHP 8.3 + FrankenPHP (Caddy) + Laravel 11/13 + Node.js (Asset build)
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Stage 1: Build Frontend Assets (Vite)
+# ------------------------------------------------------------------------------
+FROM node:20-alpine AS frontend
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --ignore-scripts
+
+COPY vite.config.js ./
+COPY resources ./resources
+COPY public ./public
+
+RUN npm run build
+
+# ------------------------------------------------------------------------------
+# Stage 2: Install Composer Dependencies
+# ------------------------------------------------------------------------------
+FROM composer:2 AS vendor
+WORKDIR /app
+
+COPY composer.json composer.lock ./
+
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --prefer-dist \
+    --optimize-autoloader \
+    --no-scripts \
+    --ignore-platform-reqs
+
+# ------------------------------------------------------------------------------
+# Stage 3: Production Runtime (FrankenPHP)
+# ------------------------------------------------------------------------------
+FROM dunglas/frankenphp:1-php8.3-alpine AS runner
+
+# Install required PHP extensions for Laravel + MySQL
+RUN install-php-extensions \
+    pdo_mysql \
+    bcmath \
+    opcache \
+    zip \
+    intl \
+    gd \
+    pcntl
+
+# Production PHP configuration
+RUN echo "expose_php = Off" > /usr/local/etc/php/conf.d/production.ini && \
+    echo "display_errors = Off" >> /usr/local/etc/php/conf.d/production.ini && \
+    echo "display_startup_errors = Off" >> /usr/local/etc/php/conf.d/production.ini && \
+    echo "log_errors = On" >> /usr/local/etc/php/conf.d/production.ini && \
+    echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/production.ini && \
+    echo "upload_max_filesize = 25M" >> /usr/local/etc/php/conf.d/production.ini && \
+    echo "post_max_size = 30M" >> /usr/local/etc/php/conf.d/production.ini && \
+    echo "opcache.enable = 1" >> /usr/local/etc/php/conf.d/production.ini && \
+    echo "opcache.enable_cli = 0" >> /usr/local/etc/php/conf.d/production.ini && \
+    echo "opcache.memory_consumption = 128" >> /usr/local/etc/php/conf.d/production.ini && \
+    echo "opcache.interned_strings_buffer = 16" >> /usr/local/etc/php/conf.d/production.ini && \
+    echo "opcache.max_accelerated_files = 10000" >> /usr/local/etc/php/conf.d/production.ini && \
+    echo "opcache.validate_timestamps = 0" >> /usr/local/etc/php/conf.d/production.ini
+
+ENV APP_ENV=production \
+    APP_DEBUG=false \
+    PORT=80 \
+    SERVER_NAME=":${PORT}"
+
+WORKDIR /app
+
+# Copy application source files
+COPY . .
+
+# Copy production PHP vendor dependencies
+COPY --from=vendor /app/vendor ./vendor
+
+# Copy compiled frontend assets from Node build stage
+COPY --from=frontend /app/public/build ./public/build
+
+# Copy Caddy server configuration
+COPY Caddyfile /etc/caddy/Caddyfile
+
+# Ensure write permissions for Laravel storage and cache directories
+RUN mkdir -p storage/framework/cache/data \
+             storage/framework/sessions \
+             storage/framework/views \
+             storage/logs \
+             bootstrap/cache && \
+    chown -R www-data:www-data storage bootstrap/cache && \
+    chmod -R 775 storage bootstrap/cache
+
+# Listen on Vercel-provided PORT
+EXPOSE ${PORT:-80}
+
+# Start FrankenPHP with the custom Caddyfile
+CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
