@@ -18,7 +18,7 @@
         <div class="container d-flex align-center justify-between flex-wrap gap-1">
             <div class="d-flex align-center gap-2 flex-wrap">
                 <span>📍 B.N City Colony, Jonki Road, Mangla Chowk, Bilaspur, CG - 495001</span>
-                <span>📞 <a href="tel:+919893012345">+91 98930 12345</a></span>
+                <span>📞 <a href="{{ route('contact') }}">Contact us for assistance</a></span>
             </div>
             <div class="d-flex align-center gap-2 flex-wrap">
                 <a href="{{ route('contact') }}#emergency" class="top-badge-emergency">
@@ -159,7 +159,7 @@
                     </p>
                     <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">
                         <strong>Direct Booking:</strong><br>
-                        <a href="tel:+919893012345" style="color: var(--primary); font-weight: 700;">+91 98930 12345</a>
+                        <a href="{{ route('contact') }}" style="color: var(--primary); font-weight: 700;">Contact us for assistance</a>
                     </p>
                     <p style="font-size: 0.9rem;">
                         <strong>Email:</strong><br>

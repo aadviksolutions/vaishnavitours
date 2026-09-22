@@ -33,8 +33,8 @@
                         <div style="display: flex; gap: 1rem; align-items: flex-start;">
                             <div style="font-size: 1.5rem; color: var(--primary-dark);">📞</div>
                             <div>
-                                <strong style="display: block; margin-bottom: 0.25rem;">24/7 Cab Booking Helpline:</strong>
-                                <a href="tel:+919893012345" style="color: var(--primary-dark); font-weight: 700; font-size: 1.1rem;">+91 98930 12345</a>
+                                <strong style="display: block; margin-bottom: 0.25rem;">24/7 Booking & Dispatch:</strong>
+                                <span style="color: var(--primary-dark); font-weight: 700; font-size: 1.05rem;">Contact us for assistance</span>
                             </div>
                         </div>
 
@@ -47,10 +47,10 @@
                         </div>
 
                         <div style="display: flex; gap: 1rem; align-items: flex-start;">
-                            <div style="font-size: 1.5rem; color: #25D366;">💬</div>
+                            <div style="font-size: 1.5rem; color: #25D366;">🚖</div>
                             <div>
-                                <strong style="display: block; margin-bottom: 0.25rem;">WhatsApp Instant Booking:</strong>
-                                <a href="https://wa.me/919893012345" target="_blank" style="color: #059669; font-weight: 700;">+91 98930 12345 (Chat on WhatsApp)</a>
+                                <strong style="display: block; margin-bottom: 0.25rem;">Online Cab Reservation:</strong>
+                                <a href="{{ route('booking') }}" style="color: #059669; font-weight: 700;">Book a Cab Online</a>
                             </div>
                         </div>
 
@@ -67,7 +67,7 @@
                 <div class="card" style="background: var(--slate-100);">
                     <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Corporate & Long-term Contracts</h3>
                     <p style="font-size: 0.9rem; color: var(--slate-600);">
-                        For regular business transfers, monthly billing accounts, or multi-car event logistics for weddings in Bilaspur and Raipur, call our accounts desk at <a href="tel:+919893012345" style="font-weight: 700;">+91 98930 12345</a>.
+                        For regular business transfers, monthly billing accounts, or multi-car event logistics for weddings in Bilaspur and Raipur, submit our <a href="{{ route('enquiry') }}" style="font-weight: 700;">corporate enquiry form</a>.
                     </p>
                 </div>
             </div>

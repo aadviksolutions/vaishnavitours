@@ -29,7 +29,7 @@ class ProductionSeeder extends Seeder
             ['email' => $adminEmail],
             [
                 'name' => $adminName,
-                'phone' => '9893012345',
+                'phone' => env('ADMIN_PHONE', null),
                 'role' => 'admin',
                 'password' => Hash::make($adminPassword),
                 'is_active' => true,

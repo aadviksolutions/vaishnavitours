@@ -48,6 +48,11 @@
     "env": {
         "APP_ENV": "production",
         "APP_DEBUG": "false",
-        "LOG_CHANNEL": "stderr"
+        "LOG_CHANNEL": "stderr",
+        "VERCEL": "1",
+        "APP_STORAGE_PATH": "/tmp/storage",
+        "VIEW_COMPILED_PATH": "/tmp/storage/framework/views",
+        "SESSION_DRIVER": "cookie",
+        "CACHE_STORE": "array"
     }
 }

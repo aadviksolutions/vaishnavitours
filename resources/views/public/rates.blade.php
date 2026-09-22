@@ -104,8 +104,8 @@
                     <a href="{{ route('contact') }}" class="btn btn-primary">
                         Contact Us
                     </a>
-                    <a href="tel:+919893012345" class="btn btn-dark">
-                        Call +91 98930 12345
+                    <a href="{{ route('booking') }}" class="btn btn-dark">
+                        Book a Cab
                     </a>
                 </div>
             </div>

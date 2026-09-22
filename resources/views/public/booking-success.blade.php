@@ -105,12 +105,12 @@
             @endguest
 
             <p style="font-size: 0.875rem; color: var(--slate-500); margin-bottom: 2rem;">
-                Our 24/7 central dispatch desk will contact you at <strong>{{ $booking->customer->phone }}</strong>. For urgent queries, call us directly.
+                Our central dispatch desk will contact you at <strong>{{ $booking->customer->phone }}</strong>. For urgent queries, reach out to our support team.
             </p>
 
             <div class="d-flex justify-center gap-3 flex-wrap">
                 <a href="{{ route('home') }}" class="btn btn-outline">← Back to Home</a>
-                <a href="tel:+919893012345" class="btn btn-primary">📞 Call Dispatch: +91 98930 12345</a>
+                <a href="{{ route('contact') }}" class="btn btn-primary">💬 Contact Support</a>
             </div>
         </div>
     </div>

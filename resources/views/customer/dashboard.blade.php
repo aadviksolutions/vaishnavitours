@@ -264,8 +264,8 @@
 
                 <div style="margin-top: 1.5rem; border-top: 1px solid var(--slate-100); padding-top: 1rem;">
                     <div style="font-size: 0.85rem; font-weight: 700; color: var(--dark-900); margin-bottom: 0.25rem;">Need Assistance?</div>
-                    <div style="font-size: 0.8rem; color: var(--slate-500); margin-bottom: 0.75rem;">Our 24/7 dispatch desk is always on standby.</div>
-                    <a href="tel:+919893012345" class="btn btn-outline btn-sm" style="width: 100%;">📞 Call +91 98930 12345</a>
+                    <div style="font-size: 0.8rem; color: var(--slate-500); margin-bottom: 0.75rem;">Our dispatch desk is always ready to help.</div>
+                    <a href="{{ route('contact') }}" class="btn btn-outline btn-sm" style="width: 100%;">Contact us for assistance</a>
                 </div>
             </div>
         </div>

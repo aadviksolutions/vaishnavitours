@@ -43,11 +43,25 @@ foreach ($_SERVER as $varKey => $varVal) {
     }
 }
 
-// 3. Fallback serverless-safe drivers if not specified in environment
+// 3. Fallback serverless-safe environment flags & drivers
+putenv('VERCEL=1');
+$_ENV['VERCEL'] = '1';
+$_SERVER['VERCEL'] = '1';
+
+putenv('APP_STORAGE_PATH=/tmp/storage');
+$_ENV['APP_STORAGE_PATH'] = '/tmp/storage';
+$_SERVER['APP_STORAGE_PATH'] = '/tmp/storage';
+
 if (empty(getenv('SESSION_DRIVER')) && empty($_ENV['SESSION_DRIVER']) && empty($_SERVER['SESSION_DRIVER'])) {
     putenv('SESSION_DRIVER=cookie');
     $_ENV['SESSION_DRIVER'] = 'cookie';
     $_SERVER['SESSION_DRIVER'] = 'cookie';
+}
+
+if (empty(getenv('CACHE_STORE')) && empty($_ENV['CACHE_STORE']) && empty($_SERVER['CACHE_STORE'])) {
+    putenv('CACHE_STORE=array');
+    $_ENV['CACHE_STORE'] = 'array';
+    $_SERVER['CACHE_STORE'] = 'array';
 }
 
 if (empty(getenv('LOG_CHANNEL')) && empty($_ENV['LOG_CHANNEL']) && empty($_SERVER['LOG_CHANNEL'])) {

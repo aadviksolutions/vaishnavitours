@@ -187,6 +187,5 @@ php artisan optimize:clear
 ## Brand Assets & Support
 
 - **Office Address**: B.N City Colony, Jonki Road, Mangla Chowk, Bilaspur, Chhattisgarh - 495001
-- **24/7 Helpline**: +91 98930 12345
-- **Secondary Contact**: +91 94250 54321
+- **Direct Dispatch**: Contact us for assistance via website booking/enquiry desk
 - **Email**: `info@vaishnavitours.com` / `bookings@vaishnavitours.com`

@@ -55,25 +55,25 @@
 
                 <div class="grid grid-2 gap-3 mb-3">
                     <div class="form-group">
-                        <label for="phone_primary" class="form-label">Primary Booking Helpline *</label>
-                        <input type="text" name="phone_primary" id="phone_primary" class="form-control" value="{{ old('phone_primary', $settings['phone_primary']->value ?? '+91 98930 12345') }}" required>
+                        <label for="phone_primary" class="form-label">Primary Booking Helpline</label>
+                        <input type="text" name="phone_primary" id="phone_primary" class="form-control" value="{{ old('phone_primary', $settings['phone_primary']->value ?? '') }}" placeholder="Enter primary contact number">
                     </div>
 
                     <div class="form-group">
                         <label for="phone_secondary" class="form-label">Secondary Helpline / Landline</label>
-                        <input type="text" name="phone_secondary" id="phone_secondary" class="form-control" value="{{ old('phone_secondary', $settings['phone_secondary']->value ?? '+91 7752 400000') }}">
+                        <input type="text" name="phone_secondary" id="phone_secondary" class="form-control" value="{{ old('phone_secondary', $settings['phone_secondary']->value ?? '') }}" placeholder="Optional alternate number">
                     </div>
                 </div>
 
                 <div class="grid grid-2 gap-3">
                     <div class="form-group">
-                        <label for="emergency_phone" class="form-label">24/7 Emergency Ambulance Helpline *</label>
-                        <input type="text" name="emergency_phone" id="emergency_phone" class="form-control" value="{{ old('emergency_phone', $settings['emergency_phone']->value ?? '+91 98930 99999') }}" required>
+                        <label for="emergency_phone" class="form-label">24/7 Emergency Ambulance Helpline</label>
+                        <input type="text" name="emergency_phone" id="emergency_phone" class="form-control" value="{{ old('emergency_phone', $settings['emergency_phone']->value ?? '') }}" placeholder="Optional emergency number">
                     </div>
 
                     <div class="form-group">
                         <label for="whatsapp_number" class="form-label">WhatsApp Number (with Country Code)</label>
-                        <input type="text" name="whatsapp_number" id="whatsapp_number" class="form-control" value="{{ old('whatsapp_number', $settings['whatsapp_number']->value ?? '919893012345') }}" placeholder="919893012345">
+                        <input type="text" name="whatsapp_number" id="whatsapp_number" class="form-control" value="{{ old('whatsapp_number', $settings['whatsapp_number']->value ?? '') }}" placeholder="e.g. 9198XXXXXXXX">
                     </div>
                 </div>
             </div>

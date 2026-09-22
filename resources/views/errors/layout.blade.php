@@ -143,8 +143,8 @@
                 </div>
             </a>
             <div class="d-flex align-center gap-2">
-                <a href="tel:+919893012345" style="color: #F59E0B; font-weight: 600; text-decoration: none; font-size: 0.9rem;">
-                    📞 +91 98930 12345
+                <a href="{{ route('contact') }}" style="color: #F59E0B; font-weight: 600; text-decoration: none; font-size: 0.9rem;">
+                    Contact us for assistance
                 </a>
             </div>
         </div>
@@ -165,12 +165,8 @@
                     🚖 Book a Cab
                 </a>
                 <a href="{{ route('contact') }}" class="btn-error-secondary">
-                    💬 Contact Support
+                    💬 Contact Us
                 </a>
-            </div>
-
-            <div class="error-helpline">
-                Need immediate ride assistance? Call our 24/7 helpline at <a href="tel:+919893012345">+91 98930 12345</a>.
             </div>
         </div>
     </main>

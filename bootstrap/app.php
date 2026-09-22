@@ -24,9 +24,31 @@ $app = Application::configure(basePath: dirname(__DIR__))
     })->create();
 
 // Support serverless environments where root filesystem is read-only except /tmp
-if (isset($_ENV['VERCEL']) || isset($_SERVER['VERCEL']) || getenv('VERCEL') || env('APP_STORAGE_PATH')) {
+$isServerless = isset($_ENV['VERCEL']) ||
+    isset($_SERVER['VERCEL']) ||
+    getenv('VERCEL') ||
+    env('APP_STORAGE_PATH') ||
+    !empty(getenv('AWS_LAMBDA_FUNCTION_NAME')) ||
+    !empty(getenv('LAMBDA_TASK_ROOT')) ||
+    (PHP_SAPI !== 'cli' && DIRECTORY_SEPARATOR === '/' && is_dir('/tmp') && !is_writable(base_path('storage')));
+
+if ($isServerless) {
     $storagePath = env('APP_STORAGE_PATH', '/tmp/storage');
     $app->useStoragePath($storagePath);
+
+    $requiredDirs = [
+        $storagePath . '/framework/views',
+        $storagePath . '/framework/cache/data',
+        $storagePath . '/framework/sessions',
+        $storagePath . '/logs',
+        $storagePath . '/app',
+        '/tmp/bootstrap/cache',
+    ];
+    foreach ($requiredDirs as $dir) {
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0755, true);
+        }
+    }
 }
 
 return $app;

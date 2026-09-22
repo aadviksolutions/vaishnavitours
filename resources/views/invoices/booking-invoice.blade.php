@@ -305,7 +305,7 @@
                 <div class="brand-sub">
                     Premium Taxi & Outstation Travel Services<br>
                     B.N City Colony, Jonki Road, Mangla Chowk, Bilaspur (C.G.) - 495001<br>
-                    📞 +91 98930 12345 | ✉️ info@vaishnavitours.in | GSTIN: 22AAAAA0000A1Z5
+                    ✉️ info@vaishnavitours.in | Contact us for assistance
                 </div>
             </div>
             <div class="invoice-meta">
@@ -433,7 +433,7 @@
 
         <div class="invoice-footer">
             <div>Thank you for choosing <strong>Vaishnavi Tours</strong>. Have a safe journey!</div>
-            <div>Support: +91 98930 12345 | support@vaishnavitours.in</div>
+            <div>Support: support@vaishnavitours.com | Contact us for assistance</div>
         </div>
     </div>
 

@@ -39,7 +39,7 @@ class BookingService
                 } else {
                     $user = User::create([
                         'name' => $data['customer_name'] ?? 'Traveler',
-                        'phone' => $phone ?: '9893000000',
+                        'phone' => $phone ?: null,
                         'email' => $email ?: ($phone ? $phone . '@vaishnavitours.in' : 'guest_' . uniqid() . '@vaishnavitours.in'),
                         'password' => bcrypt('Password@123'),
                         'role' => 'customer',

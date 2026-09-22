@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
             ['email' => 'admin@vaishnavitours.com'],
             [
                 'name' => 'Vaishnavi Tours Admin',
-                'phone' => '9893012345',
+                'phone' => null,
                 'role' => 'admin',
                 'password' => Hash::make('Password@123'),
                 'is_active' => true,
