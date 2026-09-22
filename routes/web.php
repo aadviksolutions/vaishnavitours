@@ -18,6 +18,7 @@ use App\Http\Controllers\Customer\CustomerInvoiceController;
 use App\Http\Controllers\Customer\CustomerNotificationController;
 use App\Http\Controllers\Customer\CustomerProfileController;
 use App\Http\Controllers\PublicWebsiteController;
+use App\Models\Booking;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -34,6 +35,8 @@ Route::get('/vehicles', [PublicWebsiteController::class, 'vehicles'])->name('veh
 Route::get('/rates', [PublicWebsiteController::class, 'rates'])->name('rates');
 Route::get('/network', [PublicWebsiteController::class, 'network'])->name('network');
 Route::get('/service-network', [PublicWebsiteController::class, 'network'])->name('service-network');
+Route::get('/terms-and-conditions', [PublicWebsiteController::class, 'termsAndConditions'])->name('terms-and-conditions');
+Route::get('/cancellation-refund-policy', [PublicWebsiteController::class, 'cancellationPolicy'])->name('cancellation-refund-policy');
 Route::get('/about', [PublicWebsiteController::class, 'about'])->name('about');
 Route::get('/feedback', [PublicWebsiteController::class, 'feedback'])->name('feedback');
 Route::post('/feedback', [PublicWebsiteController::class, 'storeFeedback'])->name('feedback.store');
@@ -80,7 +83,7 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
 Route::middleware(['auth', 'customer'])->group(function () {
     Route::get('/dashboard', fn () => redirect()->route('customer.dashboard'))->name('dashboard');
     Route::get('/bookings', fn () => redirect()->route('customer.bookings.index'))->name('bookings');
-    Route::get('/bookings/{booking}', fn (\App\Models\Booking $booking) => redirect()->route('customer.bookings.show', $booking))->name('bookings.view');
+    Route::get('/bookings/{booking}', fn (Booking $booking) => redirect()->route('customer.bookings.show', $booking))->name('bookings.view');
     Route::get('/payments', fn () => redirect()->route('customer.bookings.index'))->name('payments');
     Route::get('/invoices', fn () => redirect()->route('customer.bookings.index'))->name('invoices');
     Route::get('/notifications', fn () => redirect()->route('customer.notifications'))->name('notifications');

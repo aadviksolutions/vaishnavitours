@@ -71,6 +71,16 @@
                     <span style="color: var(--slate-600); font-weight: 700;">Estimated Base Fare:</span>
                     <strong style="font-size: 1.35rem; color: var(--dark-950);">₹{{ number_format((float)($booking->total_amount ?? 0), 2) }}</strong>
                 </div>
+
+                <!-- Terms Agreement Notice -->
+                <div style="background: #F0FDF4; border: 1.5px solid #BBF7D0; border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-top: 1.25rem; text-align: left; display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 1.35rem; color: #16A34A; flex-shrink: 0;">✓</span>
+                    <div style="font-size: 0.885rem; color: #166534; line-height: 1.5;">
+                        <strong>Agreed Terms:</strong> By confirming this booking, you agreed to Vaishnavi Tour's 
+                        <a href="{{ route('terms-and-conditions') }}" target="_blank" style="color: #15803D; font-weight: 700; text-decoration: underline;">Cancellation Policy &amp; Terms &amp; Conditions</a>
+                        (Version {{ $booking->terms_version ?? '1.0' }}).
+                    </div>
+                </div>
             </div>
 
             <!-- If customer is not logged in: Ask whether they want to create an account -->

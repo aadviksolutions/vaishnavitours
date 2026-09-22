@@ -128,6 +128,27 @@
                     <div style="font-weight: 600; color: var(--slate-600);">
                         ✉️ {{ $booking->customer->email ?? 'N/A' }}
                     </div>
+
+                    <!-- Read-Only Legal Acceptance Record -->
+                    <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px dashed var(--slate-200); font-size: 0.825rem;">
+                        <div class="d-flex justify-between align-center mb-1">
+                            <span style="color: var(--slate-500); font-weight: 700; text-transform: uppercase; font-size: 0.75rem;">Terms Accepted:</span>
+                            @if($booking->terms_accepted)
+                                <span class="badge badge-sm badge-success">✓ Yes (v{{ $booking->terms_version ?? '1.0' }})</span>
+                            @else
+                                <span class="badge badge-sm" style="background: var(--slate-200); color: var(--slate-600);">Recorded with Booking</span>
+                            @endif
+                        </div>
+                        <div class="d-flex justify-between align-center mb-1">
+                            <span style="color: var(--slate-500); font-size: 0.75rem;">Agreed At:</span>
+                            <span style="font-weight: 600; color: var(--dark-900);">
+                                {{ $booking->terms_accepted_at ? $booking->terms_accepted_at->format('d M Y, h:i A') : ($booking->created_at ? $booking->created_at->format('d M Y, h:i A') : 'N/A') }}
+                            </span>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--slate-400); margin-top: 0.25rem;">
+                            🔒 Read-only legal record agreed at booking creation.
+                        </div>
+                    </div>
                 </div>
             </div>
 

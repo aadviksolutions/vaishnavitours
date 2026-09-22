@@ -172,8 +172,12 @@
                 <div>
                     © {{ date('Y') }} Vaishnavi Tours. All rights reserved. Registered Taxi Operator, Bilaspur (C.G.).
                 </div>
-                <div class="d-flex gap-2">
-                    <a href="{{ route('about') }}">Privacy & Terms</a>
+                <div class="d-flex gap-2 flex-wrap align-center">
+                    <a href="{{ route('terms-and-conditions') }}">Terms & Conditions</a>
+                    <span>•</span>
+                    <a href="{{ route('terms-and-conditions') }}#privacy-policy">Privacy Policy</a>
+                    <span>•</span>
+                    <a href="{{ route('cancellation-refund-policy') }}">Cancellation Policy</a>
                     <span>•</span>
                     <a href="{{ route('contact') }}">Support</a>
                     <span>•</span>

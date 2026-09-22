@@ -427,7 +427,8 @@
                 <strong>Terms & Conditions:</strong><br>
                 1. Toll taxes, state permit taxes and parking charges are payable as per actual receipts unless explicitly included.<br>
                 2. Kilometers and hours calculation commences from pickup point to final drop destination.<br>
-                3. This is a computer-generated invoice and does not require a physical signature.
+                3. This booking is subject to Vaishnavi Tour's Taxi Service Cancellation Policy & Terms & Conditions. For complete details, visit <a href="{{ route('terms-and-conditions') }}" style="color: var(--primary-dark); font-weight: 700; text-decoration: underline;">{{ route('terms-and-conditions') }}</a>.<br>
+                4. This is a computer-generated invoice and does not require a physical signature.
             </div>
         </div>
 

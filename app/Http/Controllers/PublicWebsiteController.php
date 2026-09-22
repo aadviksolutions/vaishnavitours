@@ -89,6 +89,7 @@ class PublicWebsiteController extends Controller
             'travel_time' => 'required',
             'vehicle_id' => 'required',
             'notes' => 'nullable|string|max:1000',
+            'terms_accepted' => 'required|accepted',
         ], [
             'customer_name.required' => 'Customer name is required.',
             'mobile.required' => 'Mobile number is required.',
@@ -98,7 +99,11 @@ class PublicWebsiteController extends Controller
             'travel_date.after_or_equal' => 'Travel date cannot be in the past.',
             'travel_time.required' => 'Travel time is required.',
             'vehicle_id.required' => 'Please select a vehicle category for your booking.',
+            'terms_accepted.required' => 'You must agree to the Terms & Conditions and Cancellation Policy to complete your booking.',
+            'terms_accepted.accepted' => 'You must agree to the Terms & Conditions and Cancellation Policy to complete your booking.',
         ]);
+
+        $data['terms_version'] = '1.0';
 
         $booking = $bookingService->createBooking($data, Auth::user());
 
@@ -196,6 +201,16 @@ class PublicWebsiteController extends Controller
         }
 
         return back()->with('success', 'Thank you for your valuable feedback! It has been posted.');
+    }
+
+    public function termsAndConditions()
+    {
+        return view('public.terms');
+    }
+
+    public function cancellationPolicy()
+    {
+        return view('public.cancellation');
     }
 
     public function contact()

@@ -41,6 +41,9 @@ class Booking extends Model
         'cancelled_at',
         'cancelled_by',
         'cancellation_status',
+        'terms_accepted',
+        'terms_accepted_at',
+        'terms_version',
     ];
 
     protected $casts = [
@@ -48,6 +51,8 @@ class Booking extends Model
         'return_date' => 'date',
         'cancelled_at' => 'datetime',
         'total_amount' => 'decimal:2',
+        'terms_accepted' => 'boolean',
+        'terms_accepted_at' => 'datetime',
         'paid_amount' => 'decimal:2',
         'balance_amount' => 'decimal:2',
     ];

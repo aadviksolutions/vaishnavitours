@@ -226,6 +226,35 @@
 
     <!-- Right Col: Financials & Support -->
     <div>
+        <!-- Booking Compliance & Terms Acceptance Card -->
+        <div class="card mb-4" style="border-left: 4px solid #10B981; background: #ffffff;">
+            <div class="d-flex align-center gap-2 mb-3">
+                <span style="font-size: 1.15rem; color: #10B981;">📜</span>
+                <h3 style="font-size: 1.05rem; font-weight: 800; margin: 0; color: var(--dark-950);">Agreed Policy Terms</h3>
+            </div>
+            <div style="font-size: 0.875rem; display: flex; flex-direction: column; gap: 0.6rem;">
+                <div class="d-flex justify-between align-center">
+                    <span style="color: var(--slate-600);">Terms Accepted:</span>
+                    <span class="badge badge-sm badge-success" style="font-weight: 700;">✓ Yes (Confirmed)</span>
+                </div>
+                <div class="d-flex justify-between align-center">
+                    <span style="color: var(--slate-600);">Accepted On:</span>
+                    <span style="font-weight: 700; color: var(--dark-900);">
+                        {{ $booking->terms_accepted_at ? $booking->terms_accepted_at->format('d M Y, h:i A') : ($booking->created_at ? $booking->created_at->format('d M Y, h:i A') : 'Recorded at booking') }}
+                    </span>
+                </div>
+                <div class="d-flex justify-between align-center">
+                    <span style="color: var(--slate-600);">Terms Version:</span>
+                    <span class="badge badge-outline" style="font-size: 0.75rem; font-weight: 700;">v{{ $booking->terms_version ?? '1.0' }}</span>
+                </div>
+                <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--slate-200); text-align: center;">
+                    <a href="{{ route('terms-and-conditions') }}" target="_blank" style="color: var(--primary-dark); font-weight: 700; text-decoration: underline; font-size: 0.8rem;">
+                        View Full Terms & Conditions ↗
+                    </a>
+                </div>
+            </div>
+        </div>
+
         <!-- Fare & Payment Card (Section 17: Customer Payment View) -->
         <div class="card mb-4">
             <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem;">💳 Fare & Billing</h3>

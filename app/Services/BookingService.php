@@ -22,7 +22,7 @@ class BookingService
     {
         return DB::transaction(function () use ($data, $user) {
             // If customer is not logged in, find existing by phone or email, or create new without duplicate collisions
-            if (!$user) {
+            if (! $user) {
                 $phone = trim($data['mobile'] ?? $data['phone'] ?? '');
                 $email = trim($data['email'] ?? '');
 
@@ -30,7 +30,7 @@ class BookingService
                 if ($phone) {
                     $existingUser = User::where('phone', $phone)->first();
                 }
-                if (!$existingUser && $email) {
+                if (! $existingUser && $email) {
                     $existingUser = User::where('email', $email)->first();
                 }
 
@@ -40,7 +40,7 @@ class BookingService
                     $user = User::create([
                         'name' => $data['customer_name'] ?? 'Traveler',
                         'phone' => $phone ?: null,
-                        'email' => $email ?: ($phone ? $phone . '@vaishnavitours.in' : 'guest_' . uniqid() . '@vaishnavitours.in'),
+                        'email' => $email ?: ($phone ? $phone.'@vaishnavitours.in' : 'guest_'.uniqid().'@vaishnavitours.in'),
                         'password' => bcrypt('Password@123'),
                         'role' => 'customer',
                         'is_active' => true,
@@ -57,13 +57,13 @@ class BookingService
 
             // Determine vehicle category / model
             $vehicle = null;
-            if (!empty($data['vehicle_id'])) {
+            if (! empty($data['vehicle_id'])) {
                 $vehicle = Vehicle::find($data['vehicle_id']);
             }
 
             // Estimate total amount
             $tripType = $data['trip_type'] ?? 'One-Way';
-            $totalAmount = (float)($data['total_amount'] ?? 0);
+            $totalAmount = (float) ($data['total_amount'] ?? 0);
             if ($totalAmount <= 0 && $vehicle) {
                 $totalAmount = $this->calculateEstimatedFare($tripType, $vehicle);
             }
@@ -71,7 +71,7 @@ class BookingService
                 $totalAmount = 2500.00;
             }
 
-            $paidAmount = (float)($data['paid_amount'] ?? 0.00);
+            $paidAmount = (float) ($data['paid_amount'] ?? 0.00);
             $balanceAmount = max(0, $totalAmount - $paidAmount);
             $paymentStatus = $paidAmount >= $totalAmount && $totalAmount > 0 ? 'Paid' : ($paidAmount > 0 ? 'Partial' : 'Pending');
 
@@ -92,6 +92,9 @@ class BookingService
                 'payment_status' => $paymentStatus,
                 'booking_status' => 'Pending', // Strictly initial status: Pending
                 'notes' => $data['notes'] ?? null,
+                'terms_accepted' => ! empty($data['terms_accepted']),
+                'terms_accepted_at' => ! empty($data['terms_accepted']) ? now() : null,
+                'terms_version' => ! empty($data['terms_accepted']) ? ($data['terms_version'] ?? '1.0') : null,
             ]);
 
             // Status History log
@@ -108,19 +111,19 @@ class BookingService
             // Admin notification: Section 15: "New booking VT-1006 received."
             Notification::create([
                 'user_id' => null, // Broadcast to admins
-                'title' => 'New Booking: #' . $booking->booking_id,
-                'message' => 'New booking ' . $booking->booking_id . ' received.',
+                'title' => 'New Booking: #'.$booking->booking_id,
+                'message' => 'New booking '.$booking->booking_id.' received.',
                 'type' => 'booking',
-                'action_url' => '/admin/bookings/' . $booking->id,
+                'action_url' => '/admin/bookings/'.$booking->id,
             ]);
 
             // Customer notification
             Notification::create([
                 'user_id' => $user->id,
-                'title' => 'Booking Request Received: #' . $booking->booking_id,
-                'message' => 'Your booking request ' . $booking->booking_id . ' has been received. Our dispatch team will confirm shortly.',
+                'title' => 'Booking Request Received: #'.$booking->booking_id,
+                'message' => 'Your booking request '.$booking->booking_id.' has been received. Our dispatch team will confirm shortly.',
                 'type' => 'booking',
-                'action_url' => '/customer/bookings/' . $booking->id,
+                'action_url' => '/customer/bookings/'.$booking->id,
             ]);
 
             return $booking;
@@ -139,7 +142,7 @@ class BookingService
                 return $booking;
             }
 
-            if (!$booking->canTransitionTo($newStatus)) {
+            if (! $booking->canTransitionTo($newStatus)) {
                 throw ValidationException::withMessages([
                     'booking_status' => ["Invalid status transition from '{$oldStatus}' to '{$newStatus}'."],
                 ]);
@@ -168,9 +171,9 @@ class BookingService
                     'status' => $newStatus,
                     'trip_status' => $newStatus,
                 ];
-                if ($newStatus === 'Trip Started' && !$booking->trip->started_at) {
+                if ($newStatus === 'Trip Started' && ! $booking->trip->started_at) {
                     $tripUpdate['started_at'] = now();
-                } elseif ($newStatus === 'Completed' && !$booking->trip->completed_at) {
+                } elseif ($newStatus === 'Completed' && ! $booking->trip->completed_at) {
                     $tripUpdate['completed_at'] = now();
                 }
                 $booking->trip->update($tripUpdate);
@@ -212,10 +215,10 @@ class BookingService
             $customerMessage = match ($newStatus) {
                 'Confirmed' => "Your booking {$booking->booking_id} has been confirmed.",
                 'Vehicle Assigned' => "Vehicle has been assigned to booking {$booking->booking_id}.",
-                'Driver Assigned' => "Driver has been assigned.",
-                'Trip Started' => "Your trip has started.",
+                'Driver Assigned' => 'Driver has been assigned.',
+                'Trip Started' => 'Your trip has started.',
                 'On The Way' => "Your cab is on the way for booking {$booking->booking_id}.",
-                'Completed' => "Your trip has been completed.",
+                'Completed' => 'Your trip has been completed.',
                 'Cancelled' => "Your booking {$booking->booking_id} has been cancelled.",
                 default => "Your booking {$booking->booking_id} is now {$newStatus}.",
             };
@@ -225,7 +228,7 @@ class BookingService
                 'title' => "Booking #{$booking->booking_id} {$newStatus}",
                 'message' => $customerMessage,
                 'type' => 'trip',
-                'action_url' => '/customer/bookings/' . $booking->id,
+                'action_url' => '/customer/bookings/'.$booking->id,
             ]);
 
             return $booking;
@@ -283,7 +286,7 @@ class BookingService
             $oldStatus = $booking->booking_status;
             $newStatus = 'Vehicle Assigned';
 
-            $remarks = "Vehicle {$vehicle->name} ({$vehicle->registration_number}) assigned by " . ($admin?->name ?? 'Administrator') . '.';
+            $remarks = "Vehicle {$vehicle->name} ({$vehicle->registration_number}) assigned by ".($admin?->name ?? 'Administrator').'.';
 
             $booking->update(['booking_status' => $newStatus]);
 
@@ -303,7 +306,7 @@ class BookingService
                 'title' => "Vehicle Assigned: #{$booking->booking_id}",
                 'message' => "Vehicle has been assigned to booking {$booking->booking_id}.",
                 'type' => 'trip',
-                'action_url' => '/customer/bookings/' . $booking->id,
+                'action_url' => '/customer/bookings/'.$booking->id,
             ]);
 
             return $booking;
@@ -370,7 +373,7 @@ class BookingService
                 ]
             );
 
-            $remarks = "Chauffeur {$driver->name} ({$driver->mobile}) assigned by " . ($admin?->name ?? 'Administrator') . '.';
+            $remarks = "Chauffeur {$driver->name} ({$driver->mobile}) assigned by ".($admin?->name ?? 'Administrator').'.';
 
             BookingStatusHistory::create([
                 'booking_id' => $booking->id,
@@ -388,7 +391,7 @@ class BookingService
                 'title' => "Driver Assigned: #{$booking->booking_id}",
                 'message' => 'Driver has been assigned.',
                 'type' => 'trip',
-                'action_url' => '/customer/bookings/' . $booking->id,
+                'action_url' => '/customer/bookings/'.$booking->id,
             ]);
 
             return $booking;
@@ -426,7 +429,7 @@ class BookingService
                 'cancelled_by' => $cancelledBy?->id,
             ]);
 
-            $remarks = "Booking cancelled by " . ($cancelledBy?->name ?? 'Administrator') . ". Reason: {$reason}";
+            $remarks = 'Booking cancelled by '.($cancelledBy?->name ?? 'Administrator').". Reason: {$reason}";
 
             BookingStatusHistory::create([
                 'booking_id' => $booking->id,
@@ -443,7 +446,7 @@ class BookingService
                 'title' => "Booking Cancelled: #{$booking->booking_id}",
                 'message' => "Your booking {$booking->booking_id} has been cancelled. Reason: {$reason}",
                 'type' => 'booking',
-                'action_url' => '/customer/bookings/' . $booking->id,
+                'action_url' => '/customer/bookings/'.$booking->id,
             ]);
 
             return $booking;
@@ -455,11 +458,11 @@ class BookingService
      */
     public function calculateEstimatedFare(string $tripType, Vehicle $vehicle): float
     {
-        $rate = (float)($vehicle->per_km_rate ?: 14.00);
+        $rate = (float) ($vehicle->per_km_rate ?: 14.00);
 
         return match ($tripType) {
             'Airport Transfer' => round($rate * 110, -1),
-            'Local Hourly' => round((float)($vehicle->per_hour_rate ?: 250) * 8, -1),
+            'Local Hourly' => round((float) ($vehicle->per_hour_rate ?: 250) * 8, -1),
             'Round-Trip' => round($rate * 300, -1),
             'Emergency' => round($rate * 80 + 500, -1),
             default => round($rate * 140, -1),

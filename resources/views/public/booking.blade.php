@@ -143,6 +143,24 @@
                         <textarea name="notes" class="form-control" rows="2" placeholder="e.g. 2 large suitcases, patient on board, flight number, etc.">{{ old('notes') }}</textarea>
                     </div>
 
+                    <!-- Terms & Conditions Acceptance Checkbox -->
+                    <div class="form-group" style="background: #ffffff; padding: 1.15rem 1.25rem; border: 1.5px solid {{ $errors->has('terms_accepted') ? '#dc2626' : 'var(--slate-200)' }}; border-radius: var(--radius-md); margin-bottom: 1.25rem;">
+                        <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; margin: 0; font-size: 0.925rem; color: var(--dark-900); font-weight: 500; line-height: 1.5;">
+                            <input type="checkbox" name="terms_accepted" id="terms_accepted" value="1" {{ old('terms_accepted') ? 'checked' : '' }} required style="width: 1.25rem; height: 1.25rem; margin-top: 0.15rem; accent-color: var(--primary); cursor: pointer; flex-shrink: 0;">
+                            <span>
+                                I have read and agree to the 
+                                <a href="{{ route('terms-and-conditions') }}" target="_blank" style="color: var(--primary-dark); font-weight: 700; text-decoration: underline;">Terms & Conditions</a>, 
+                                <a href="{{ route('terms-and-conditions') }}#privacy-policy" target="_blank" style="color: var(--primary-dark); font-weight: 700; text-decoration: underline;">Privacy Policy</a>, and 
+                                <a href="{{ route('cancellation-refund-policy') }}" target="_blank" style="color: var(--primary-dark); font-weight: 700; text-decoration: underline;">Cancellation Policy</a>.
+                            </span>
+                        </label>
+                        @error('terms_accepted')
+                            <div style="color: #dc2626; font-size: 0.85rem; font-weight: 600; margin-top: 0.5rem; display: flex; align-items: center; gap: 0.35rem;">
+                                <span>⚠️</span> {{ $message }}
+                            </div>
+                        @enderror
+                    </div>
+
                     <div style="background: var(--primary-light); padding: 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
                         <div>
                             <div style="font-weight: 800; font-size: 1.1rem; color: var(--dark-950);">Transparent Billing Guarantee</div>
