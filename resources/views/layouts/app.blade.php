@@ -113,30 +113,44 @@
 
     <!-- Top Bar -->
     <div class="top-bar">
-        <div class="container d-flex align-center justify-between flex-wrap gap-1">
-            <div class="d-flex align-center gap-2 flex-wrap">
-                <span><x-icon name="map-pin" size="14" class="text-primary" style="margin-right: 4px;" /> {{ config('vaishnavi.address') }}</span>
-                <span><x-icon name="phone" size="14" class="text-primary" style="margin-right: 4px;" /><a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" style="color: var(--primary); font-weight: 700;">{{ config('vaishnavi.phone_primary') }}</a></span>
-            </div>
-            <div class="d-flex align-center gap-2 flex-wrap">
-                <a href="{{ route('contact') }}#emergency" class="top-badge-emergency">
-                    <x-icon name="life-buoy" size="14" style="margin-right: 4px;" /> 24/7 Road Assistance & Emergency
-                </a>
-                @auth
-                    @if(Auth::user()->isAdmin())
-                        <a href="{{ route('admin.dashboard') }}" style="font-weight: 700; color: var(--primary);"><x-icon name="settings" size="14" style="margin-right: 4px;" /> Admin Panel</a>
+        <div class="container top-bar-inner">
+            <!-- Desktop Top Bar Content -->
+            <div class="top-bar-desktop d-flex align-center justify-between flex-wrap gap-1">
+                <div class="d-flex align-center gap-2 flex-wrap">
+                    <span><x-icon name="map-pin" size="14" class="text-primary" style="margin-right: 4px;" /> {{ config('vaishnavi.address') }}</span>
+                    <span><x-icon name="phone" size="14" class="text-primary" style="margin-right: 4px;" /><a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" style="color: var(--primary); font-weight: 700;">{{ config('vaishnavi.phone_primary') }}</a></span>
+                </div>
+                <div class="d-flex align-center gap-2 flex-wrap">
+                    <a href="{{ route('contact') }}#emergency" class="top-badge-emergency">
+                        <x-icon name="life-buoy" size="14" style="margin-right: 4px;" /> 24/7 Road Assistance & Emergency
+                    </a>
+                    @auth
+                        @if(Auth::user()->isAdmin())
+                            <a href="{{ route('admin.dashboard') }}" style="font-weight: 700; color: var(--primary);"><x-icon name="settings" size="14" style="margin-right: 4px;" /> Admin Panel</a>
+                        @else
+                            <a href="{{ route('customer.dashboard') }}" style="font-weight: 700; color: var(--primary);"><x-icon name="user" size="14" style="margin-right: 4px;" /> My Account</a>
+                        @endif
+                        <form action="{{ route('logout') }}" method="POST" style="display: inline;">
+                            @csrf
+                            <button type="submit" style="background: none; border: none; color: var(--slate-300); cursor: pointer; font-size: 0.85rem;">Logout</button>
+                        </form>
                     @else
-                        <a href="{{ route('customer.dashboard') }}" style="font-weight: 700; color: var(--primary);"><x-icon name="user" size="14" style="margin-right: 4px;" /> My Account</a>
-                    @endif
-                    <form action="{{ route('logout') }}" method="POST" style="display: inline;">
-                        @csrf
-                        <button type="submit" style="background: none; border: none; color: var(--slate-300); cursor: pointer; font-size: 0.85rem;">Logout</button>
-                    </form>
-                @else
-                    <a href="{{ route('login') }}">Login</a>
-                    <span>|</span>
-                    <a href="{{ route('register') }}">Register</a>
-                @endauth
+                        <a href="{{ route('login') }}">Login</a>
+                        <span>|</span>
+                        <a href="{{ route('register') }}">Register</a>
+                    @endauth
+                </div>
+            </div>
+
+            <!-- Mobile Top Bar Content (Compact, no horizontal scroll, verified numbers 9244784443) -->
+            <div class="top-bar-mobile">
+                <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" class="top-bar-mobile-call">
+                    <x-icon name="phone" size="13" class="text-primary" style="margin-right: 4px;" />
+                    <span>Call: <strong>{{ config('vaishnavi.phone_primary') }}</strong></span>
+                </a>
+                <a href="{{ route('contact') }}#emergency" class="top-badge-emergency" style="font-size: 0.72rem; padding: 2px 7px;">
+                    <x-icon name="life-buoy" size="12" style="margin-right: 3px;" /> 24/7 Support
+                </a>
             </div>
         </div>
     </div>
@@ -154,12 +168,12 @@
                 </div>
             </a>
 
-            <!-- Mobile Toggle -->
-            <button class="mobile-nav-toggle" id="mobile-nav-btn" aria-label="Toggle navigation">
-                <svg width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+            <!-- Mobile Toggle Button -->
+            <button class="mobile-nav-toggle" id="mobile-nav-btn" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mobile-nav-drawer" type="button">
+                <svg width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
 
-            <!-- Nav Links -->
+            <!-- Nav Links (Desktop) -->
             <div class="nav-links" id="nav-links-menu">
                 <a href="{{ route('home') }}" class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}">Home</a>
                 <a href="{{ route('services') }}" class="nav-link {{ request()->routeIs('services*') ? 'active' : '' }}">Services</a>
@@ -187,6 +201,57 @@
             </div>
         </div>
     </nav>
+
+    <!-- Mobile Navigation Backdrop Overlay -->
+    <div class="mobile-nav-backdrop" id="mobile-nav-backdrop" aria-hidden="true"></div>
+
+    <!-- Mobile Navigation Drawer (Opens from RIGHT) -->
+    <aside class="mobile-nav-drawer" id="mobile-nav-drawer" aria-label="Mobile Navigation" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="mobile-drawer-header">
+            <a href="{{ route('home') }}" class="logo d-flex align-center gap-2">
+                <div class="brand-logo-badge" style="width: 38px; height: 38px;">
+                    <img src="{{ asset('assets/branding/vaishnavi-tours-logo.png') }}" alt="Vaishnavi Tours Logo">
+                </div>
+                <div>
+                    <div class="logo-brand" style="font-size: 1.15rem;">Vaishnavi <span>Tours</span></div>
+                    <div class="logo-sub" style="font-size: 0.6rem;">24/7 Cabs & Car Rentals</div>
+                </div>
+            </a>
+            <button class="mobile-drawer-close" id="mobile-drawer-close-btn" aria-label="Close navigation" type="button">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+
+        <div class="mobile-drawer-body">
+            <nav class="mobile-drawer-nav">
+                <a href="{{ route('home') }}" class="mobile-nav-link {{ request()->routeIs('home') ? 'active' : '' }}">Home</a>
+                <a href="{{ route('services') }}" class="mobile-nav-link {{ request()->routeIs('services*') ? 'active' : '' }}">Services</a>
+                <a href="{{ route('rates') }}" class="mobile-nav-link {{ request()->routeIs('rates') ? 'active' : '' }}">Rates</a>
+                <a href="{{ route('vehicles') }}" class="mobile-nav-link {{ request()->routeIs('vehicles') ? 'active' : '' }}">Vehicles</a>
+                <a href="{{ route('service-network') }}" class="mobile-nav-link {{ request()->routeIs('service-network') || request()->routeIs('network') ? 'active' : '' }}">Service Network</a>
+                <a href="{{ route('about') }}" class="mobile-nav-link {{ request()->routeIs('about') ? 'active' : '' }}">About</a>
+                <a href="{{ route('contact') }}" class="mobile-nav-link {{ request()->routeIs('contact') ? 'active' : '' }}">Contact</a>
+                @auth
+                    @if(Auth::user()->isAdmin())
+                        <a href="{{ route('admin.dashboard') }}" class="mobile-nav-link" style="color: var(--primary-dark); font-weight: 700;">Admin Panel</a>
+                    @else
+                        <a href="{{ route('customer.dashboard') }}" class="mobile-nav-link" style="color: var(--primary-dark); font-weight: 700;">My Account</a>
+                    @endif
+                @else
+                    <a href="{{ route('login') }}" class="mobile-nav-link {{ request()->routeIs('login') ? 'active' : '' }}">Login</a>
+                @endauth
+            </nav>
+
+            <div class="mobile-drawer-actions">
+                <a href="{{ route('booking') }}" class="btn btn-primary" style="width: 100%; justify-content: center; min-height: 46px; font-weight: 800;">
+                    <x-icon name="car-front" size="18" style="margin-right: 6px;" /> BOOK A TAXI
+                </a>
+                <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" class="btn btn-outline" style="width: 100%; justify-content: center; min-height: 44px; color: var(--dark-950); font-weight: 700; border-color: var(--primary); text-decoration: none;">
+                    <x-icon name="phone" size="16" style="margin-right: 6px;" /> Call {{ config('vaishnavi.phone_primary') }}
+                </a>
+            </div>
+        </div>
+    </aside>
 
     <!-- Flash Alerts -->
     <div class="container" style="margin-top: 1rem;">
@@ -307,16 +372,6 @@
         </div>
     </footer>
 
-    <script>
-        // Mobile Navigation Toggle
-        const navBtn = document.getElementById('mobile-nav-btn');
-        const navMenu = document.getElementById('nav-links-menu');
-        if (navBtn && navMenu) {
-            navBtn.addEventListener('click', () => {
-                navMenu.classList.toggle('show');
-            });
-        }
-    </script>
     @stack('scripts')
     <!-- Floating WhatsApp Action -->
     <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" class="floating-whatsapp-btn" style="position: fixed; bottom: 24px; right: 24px; z-index: 999; background: #25D366; color: #ffffff; padding: 10px 18px; border-radius: 50px; font-weight: 700; font-size: 0.925rem; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4); text-decoration: none; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">

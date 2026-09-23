@@ -106,6 +106,7 @@
                 <form action="{{ route('booking.store') }}" method="POST" id="homeBookingForm">
                     @csrf
                     <input type="hidden" name="trip_type" value="One-Way">
+                    <input type="hidden" name="terms_accepted" value="1">
 
                     <div class="grid grid-2 gap-3">
                         <div class="form-group">
@@ -134,16 +135,76 @@
                             @error('travel_time') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
 
-                        <div class="form-group">
-                            <label class="form-label">Vehicle</label>
-                            <select name="vehicle_id" class="form-select">
-                                <option value="">-- Best Available Vehicle --</option>
-                                @foreach($vehicles as $veh)
-                                    <option value="{{ $veh->id }}" {{ old('vehicle_id') == $veh->id ? 'selected' : '' }}>
-                                        {{ $veh->name }} ({{ $veh->vehicle_type }} • {{ $veh->seating_capacity }} Seats)
-                                    </option>
-                                @endforeach
-                            </select>
+                        @php
+                            $selectedVeh = $vehicles->firstWhere('id', old('vehicle_id'));
+                            $initialDisplay = $selectedVeh ? $selectedVeh->name : 'Select a vehicle';
+                        @endphp
+                        <div class="form-group custom-select-group" id="vehicle-select-group">
+                            <label class="form-label" id="vehicle-select-label">Vehicle</label>
+
+                            <!-- Hidden input holding actual vehicle_id submitted to backend -->
+                            <input type="hidden" name="vehicle_id" id="selected-vehicle-id" value="{{ old('vehicle_id', '') }}">
+
+                            <!-- Accessible Trigger Button -->
+                            <div class="custom-select-wrapper">
+                                <button 
+                                    type="button" 
+                                    class="custom-select-trigger" 
+                                    id="vehicle-select-btn" 
+                                    aria-haspopup="listbox" 
+                                    aria-expanded="false" 
+                                    aria-controls="vehicle-select-menu"
+                                    aria-labelledby="vehicle-select-label vehicle-select-display"
+                                >
+                                    <span class="custom-select-trigger-text" id="vehicle-select-display">{{ $initialDisplay }}</span>
+                                    <svg class="custom-select-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </button>
+
+                                <!-- Custom dropdown options panel -->
+                                <ul 
+                                    class="custom-select-menu" 
+                                    id="vehicle-select-menu" 
+                                    role="listbox" 
+                                    aria-labelledby="vehicle-select-label"
+                                    tabindex="-1"
+                                >
+                                    <li 
+                                        class="custom-select-option {{ old('vehicle_id') ? '' : 'selected' }}" 
+                                        role="option" 
+                                        data-value="" 
+                                        data-name="Best Available Vehicle"
+                                        aria-selected="{{ old('vehicle_id') ? 'false' : 'true' }}"
+                                        tabindex="0"
+                                    >
+                                        <div class="option-content">
+                                            <div class="option-name">Best Available Vehicle</div>
+                                        </div>
+                                        <div class="option-radio-indicator" aria-hidden="true">
+                                            <span class="radio-dot"></span>
+                                        </div>
+                                    </li>
+                                    @foreach($vehicles as $veh)
+                                        <li 
+                                            class="custom-select-option {{ old('vehicle_id') == $veh->id ? 'selected' : '' }}" 
+                                            role="option" 
+                                            data-value="{{ $veh->id }}" 
+                                            data-name="{{ $veh->name }}"
+                                            aria-selected="{{ old('vehicle_id') == $veh->id ? 'true' : 'false' }}"
+                                            tabindex="0"
+                                        >
+                                            <div class="option-content">
+                                                <div class="option-name">{{ $veh->name }}</div>
+                                                <div class="option-desc">{{ $veh->vehicle_type }} • {{ $veh->seating_capacity }} Seats</div>
+                                            </div>
+                                            <div class="option-radio-indicator" aria-hidden="true">
+                                                <span class="radio-dot"></span>
+                                            </div>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
                             @error('vehicle_id') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
                     </div>
