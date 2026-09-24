@@ -117,6 +117,9 @@
                                             <input type="radio" name="vehicle_id" value="{{ $veh->id }}" {{ (request('vehicle_id') == $veh->id || $loop->first) ? 'checked' : '' }} required>
                                             <span class="badge badge-available">{{ $veh->ac_non_ac }}</span>
                                         </div>
+                                        <div style="height: 100px; width: 100%; border-radius: var(--radius-sm); overflow: hidden; background: #f8fafc; margin-bottom: 0.75rem; border: 1px solid var(--slate-200); display: flex; align-items: center; justify-content: center;">
+                                            <img src="{{ $veh->icon_url }}" alt="{{ $veh->name }}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
+                                        </div>
                                         <div style="font-weight: 800; font-size: 1rem; color: var(--dark-900);">{{ $veh->name }}</div>
                                         <div style="font-size: 0.775rem; color: var(--slate-500);">{{ $veh->vehicle_type }} • {{ $veh->seating_capacity }} Seater</div>
                                     </div>

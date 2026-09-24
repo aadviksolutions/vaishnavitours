@@ -99,7 +99,14 @@
                 <div>
                     <span style="color: var(--slate-500); font-size: 0.75rem; text-transform: uppercase; font-weight: 700;">Vehicle</span>
                     <div style="font-weight: 700;">
-                        {{ $upcomingTrip->vehicle ? $upcomingTrip->vehicle->name : 'Assigning Fleet...' }}
+                        @if($upcomingTrip->vehicle)
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <img src="{{ $upcomingTrip->vehicle->icon_url }}" alt="{{ $upcomingTrip->vehicle->name }}" style="width: 44px; height: 30px; object-fit: cover; border-radius: 4px; border: 1px solid var(--slate-200);">
+                                <span>{{ $upcomingTrip->vehicle->name }}</span>
+                            </div>
+                        @else
+                            Assigning Fleet...
+                        @endif
                     </div>
                 </div>
                 <div>

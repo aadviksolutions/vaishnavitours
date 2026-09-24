@@ -115,7 +115,7 @@
                 </div>
             </div>
             <div>
-                <img src="{{ asset('assets/images/muv.jpg') }}" alt="Airport Taxi Bilaspur to Raipur - Vaishnavi Tours" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-xl); object-fit: cover; max-height: 420px;" loading="lazy">
+                <img src="{{ asset('assets/vehicles/maruti-suzuki-ertiga.jpg') }}" alt="Airport Taxi Bilaspur to Raipur - Vaishnavi Tours" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-xl); object-fit: cover; max-height: 420px;" loading="lazy">
             </div>
         </div>
     </div>

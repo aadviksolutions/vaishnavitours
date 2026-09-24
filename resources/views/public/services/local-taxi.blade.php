@@ -129,7 +129,7 @@
                 </div>
             </div>
             <div>
-                <img src="{{ asset('assets/images/sedan.jpg') }}" alt="Local Taxi Service in Bilaspur - Vaishnavi Tours" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-xl); object-fit: cover; max-height: 420px;" loading="lazy">
+                <img src="{{ asset('assets/vehicles/maruti-suzuki-dzire.jpg') }}" alt="Local Taxi Service in Bilaspur - Vaishnavi Tours" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-xl); object-fit: cover; max-height: 420px;" loading="lazy">
             </div>
         </div>
     </div>
@@ -145,7 +145,7 @@
         <div class="grid grid-3 gap-3">
             @foreach($vehicles->take(3) as $vehicle)
                 <div class="card" style="border-radius: var(--radius-lg); overflow: hidden; padding: 0;">
-                    <img src="{{ asset($vehicle->image ?? 'assets/images/sedan.jpg') }}" alt="{{ $vehicle->name }} - Local Cab Bilaspur" style="width: 100%; height: 200px; object-fit: cover;" loading="lazy">
+                    <img src="{{ $vehicle->icon_url }}" alt="{{ $vehicle->name }} - Local Cab Bilaspur" style="width: 100%; height: 200px; object-fit: cover;" loading="lazy">
                     <div style="padding: 1.5rem;">
                         <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--dark-900); margin-bottom: 0.5rem;">{{ $vehicle->name }}</h3>
                         <div style="display: flex; gap: 1rem; font-size: 0.85rem; color: var(--slate-600); margin-bottom: 1rem;">

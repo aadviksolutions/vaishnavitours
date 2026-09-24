@@ -124,7 +124,7 @@
                 </div>
             </div>
             <div>
-                <img src="{{ asset('assets/images/suv.jpg') }}" alt="Outstation Cab Booking from Bilaspur - Vaishnavi Tours" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-xl); object-fit: cover; max-height: 420px;" loading="lazy">
+                <img src="{{ asset('assets/vehicles/toyota-innova-crysta.jpg') }}" alt="Outstation Cab Booking from Bilaspur - Vaishnavi Tours" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-xl); object-fit: cover; max-height: 420px;" loading="lazy">
             </div>
         </div>
     </div>

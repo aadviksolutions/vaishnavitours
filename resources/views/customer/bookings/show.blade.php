@@ -154,7 +154,7 @@
                     <div style="font-size: 0.8rem; font-weight: 700; color: var(--slate-500); text-transform: uppercase; margin-bottom: 0.75rem;">Vehicle Details</div>
                     @if($booking->vehicle)
                         <div class="d-flex align-center gap-3">
-                            <img src="{{ asset($booking->vehicle->image ?? 'assets/sedan.svg') }}" alt="{{ $booking->vehicle->name }}" style="width: 80px; height: 50px; object-fit: contain;">
+                            <img src="{{ $booking->vehicle->icon_url }}" alt="{{ $booking->vehicle->name }}" style="width: 80px; height: 50px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--slate-200);">
                             <div>
                                 <h4 style="margin: 0; font-size: 1.1rem; font-weight: 800;">{{ $booking->vehicle->name }}</h4>
                                 <div style="color: var(--slate-500); font-size: 0.85rem;">{{ $booking->vehicle->vehicle_type }} • {{ $booking->vehicle->seating_capacity }} Seater ({{ $booking->vehicle->ac_non_ac }})</div>
