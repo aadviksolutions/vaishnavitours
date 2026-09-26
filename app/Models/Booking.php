@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Booking extends Model
 {
@@ -31,6 +32,9 @@ class Booking extends Model
         'return_date',
         'vehicle_id',
         'driver_id',
+        'rate_vehicle_price_id',
+        'rate_category',
+        'pricing_details',
         'total_amount',
         'paid_amount',
         'balance_amount',
@@ -55,6 +59,7 @@ class Booking extends Model
         'terms_accepted_at' => 'datetime',
         'paid_amount' => 'decimal:2',
         'balance_amount' => 'decimal:2',
+        'pricing_details' => 'array',
     ];
 
     public static function generateBookingId(): string
@@ -144,6 +149,11 @@ class Booking extends Model
     public function vehicle()
     {
         return $this->belongsTo(Vehicle::class);
+    }
+
+    public function rateVehiclePrice(): BelongsTo
+    {
+        return $this->belongsTo(RateVehiclePrice::class);
     }
 
     public function driver()

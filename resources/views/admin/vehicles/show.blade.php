@@ -52,17 +52,6 @@
                 </div>
             </div>
 
-            <div class="grid grid-2 gap-3" style="font-size: 0.9rem;">
-                <div>
-                    <span style="color: var(--slate-500);">Outstation Per KM:</span>
-                    <strong>₹{{ number_format($vehicle->per_km_rate, 2) }} / KM</strong>
-                </div>
-                <div>
-                    <span style="color: var(--slate-500);">Local Hourly Rate:</span>
-                    <strong>₹{{ number_format($vehicle->per_hour_rate, 2) }} / Hr</strong>
-                </div>
-            </div>
-
             @if($vehicle->notes)
                 <div style="margin-top: 1rem; background: #fffbeb; padding: 0.75rem 1rem; border-radius: var(--radius-sm); border: 1px solid #fef3c7; font-size: 0.875rem;">
                     <strong>Fleet Notes:</strong> {{ $vehicle->notes }}

@@ -101,7 +101,7 @@
                         Comfortable highway cabs from Bilaspur to all major cities including Raipur, Korba, Ambikapur, Raigarh, and Durg-Bhilai. Available for both one-way and round trips.
                     </p>
                     <ul style="list-style: none; padding: 0; margin: 0 0 1.5rem; font-size: 0.9rem; color: var(--slate-700); display: flex; flex-direction: column; gap: 0.5rem;">
-                        <li style="display: flex; align-items: center; gap: 6px;"><x-icon name="circle-check" size="15" style="color: #800020;" /> Transparent per-km rates from ₹11/km</li>
+                        <li style="display: flex; align-items: center; gap: 6px;"><x-icon name="circle-check" size="15" style="color: #800020;" /> Route-based fares shown before booking</li>
                         <li style="display: flex; align-items: center; gap: 6px;"><x-icon name="circle-check" size="15" style="color: #800020;" /> Professional highway experienced drivers</li>
                         <li style="display: flex; align-items: center; gap: 6px;"><x-icon name="circle-check" size="15" style="color: #800020;" /> No hidden fuel or return surge fees</li>
                     </ul>

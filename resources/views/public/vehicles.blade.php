@@ -65,11 +65,11 @@
                         <div style="background: var(--slate-50); padding: 0.85rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; border: 1px solid var(--slate-200);">
                             <div class="d-flex justify-between align-center" style="margin-bottom: 0.35rem;">
                                 <span style="font-size: 0.8rem; color: var(--slate-500);">Outstation Rate:</span>
-                                <strong style="font-size: 1.15rem; color: var(--dark-900);">₹{{ number_format($vehicle->per_km_rate, 2) }} <span style="font-size: 0.8rem; color: var(--slate-500); font-weight: 400;">/ km</span></strong>
+                                <a href="{{ route('rates') }}" style="font-size: 0.9rem; color: var(--primary-dark); font-weight: 700;">View configured route rates</a>
                             </div>
                             <div class="d-flex justify-between align-center">
                                 <span style="font-size: 0.8rem; color: var(--slate-500);">Local Hourly Rate:</span>
-                                <strong style="font-size: 0.95rem; color: var(--slate-700);">₹{{ number_format($vehicle->per_hour_rate, 2) }} <span style="font-size: 0.8rem; color: var(--slate-500); font-weight: 400;">/ hr</span></strong>
+                                <span style="font-size: 0.85rem; color: var(--slate-600);">Package pricing depends on trip type</span>
                             </div>
                         </div>
 

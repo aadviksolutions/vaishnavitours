@@ -38,8 +38,6 @@ class AdminVehicleController extends Controller
             'vehicle_type' => 'required|string',
             'seating_capacity' => 'required|integer|min:1|max:50',
             'ac_non_ac' => 'required|string',
-            'per_km_rate' => 'required|numeric|min:1',
-            'per_hour_rate' => 'required|numeric|min:1',
             'status' => 'required|string',
             'notes' => 'nullable|string',
         ]);
@@ -53,6 +51,7 @@ class AdminVehicleController extends Controller
     public function show(Vehicle $vehicle)
     {
         $vehicle->load(['assignedDriver', 'bookings.customer', 'trips.driver']);
+
         return view('admin.vehicles.show', compact('vehicle'));
     }
 
@@ -65,12 +64,10 @@ class AdminVehicleController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'registration_number' => 'required|string|max:50|unique:vehicles,registration_number,' . $vehicle->id,
+            'registration_number' => 'required|string|max:50|unique:vehicles,registration_number,'.$vehicle->id,
             'vehicle_type' => 'required|string',
             'seating_capacity' => 'required|integer|min:1|max:50',
             'ac_non_ac' => 'required|string',
-            'per_km_rate' => 'required|numeric|min:1',
-            'per_hour_rate' => 'required|numeric|min:1',
             'status' => 'required|string',
             'notes' => 'nullable|string',
         ]);
@@ -84,6 +81,7 @@ class AdminVehicleController extends Controller
     public function destroy(Vehicle $vehicle)
     {
         $vehicle->delete();
+
         return redirect()->route('admin.vehicles.index')
             ->with('success', 'Vehicle removed from fleet.');
     }

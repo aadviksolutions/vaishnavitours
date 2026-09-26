@@ -51,9 +51,9 @@
 
                 <div class="form-group mb-3">
                     <label for="trip_type" class="form-label">Trip Type *</label>
-                    <select name="trip_type" id="trip_type" class="form-select" required>
-                        @foreach(['One-Way Outstation', 'Round-Trip Outstation', 'Local 8hr/80km Rental', 'Airport Transfer (Raipur RPR)', '24/7 Emergency Ambulance Cab'] as $type)
-                            <option value="{{ $type }}" {{ old('trip_type') == $type ? 'selected' : '' }}>{{ $type }}</option>
+                    <select name="rate_category" id="rate_category" class="form-select" required>
+                        @foreach(['outstation' => 'Outstation Route', 'airport' => 'Quick Airport Booking', 'round_trip' => 'Round Trip', 'local_8h_80km' => 'Local 8 Hours / 80 KM', 'local_4h_40km' => 'Local 4 Hours / 40 KM'] as $key => $label)
+                            <option value="{{ $key }}" {{ old('rate_category', 'outstation') === $key ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -61,12 +61,32 @@
                 <div class="grid grid-2 gap-3 mb-3">
                     <div class="form-group">
                         <label for="pickup_location" class="form-label">Pickup Location *</label>
-                        <input type="text" name="pickup_location" id="pickup_location" class="form-control" value="{{ old('pickup_location', 'Bilaspur Railway Station') }}" required>
+                        <select name="pickup_location" id="pickup_location" class="form-select" required>
+                            <option value="">Select pickup</option>
+                            @foreach($locations as $location)<option value="{{ $location }}" {{ old('pickup_location') === $location ? 'selected' : '' }}>{{ $location }}</option>@endforeach
+                        </select>
                     </div>
 
                     <div class="form-group">
                         <label for="destination" class="form-label">Drop Destination *</label>
-                        <input type="text" name="destination" id="destination" class="form-control" value="{{ old('destination', 'Swami Vivekananda Airport, Raipur') }}" required>
+                        <select name="destination" id="destination" class="form-select" required>
+                            <option value="">Select destination</option>
+                            @foreach($locations as $location)<option value="{{ $location }}" {{ old('destination') === $location ? 'selected' : '' }}>{{ $location }}</option>@endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-2 gap-3 mb-3">
+                    <div class="form-group">
+                        <label for="vehicle_category" class="form-label">Rate vehicle category *</label>
+                        <select name="vehicle_category" id="vehicle_category" class="form-select" required>
+                            <option value="">Select vehicle category</option>
+                            @foreach($vehicleCategories as $category)<option value="{{ $category }}" {{ old('vehicle_category') === $category ? 'selected' : '' }}>{{ $category }}</option>@endforeach
+                        </select>
+                    </div>
+                    <div class="form-group" id="estimatedKmGroup" style="display: none;">
+                        <label for="estimated_km" class="form-label">Estimated round-trip distance (KM) *</label>
+                        <input type="number" min="0.01" step="0.1" name="estimated_km" id="estimated_km" class="form-control" value="{{ old('estimated_km') }}">
                     </div>
                 </div>
 
@@ -141,8 +161,9 @@
                 </div>
 
                 <div class="form-group mb-3">
-                    <label for="total_amount" class="form-label">Total Trip Fare (₹) *</label>
-                    <input type="number" step="0.01" name="total_amount" id="total_amount" class="form-control" value="{{ old('total_amount', '2800.00') }}" required>
+                    <label for="total_amount" class="form-label">Configured Trip Fare (₹)</label>
+                    <input type="number" step="0.01" name="total_amount" id="total_amount" class="form-control" value="{{ old('total_amount', '0.00') }}" readonly required>
+                    <div id="fareDetails" style="font-size: 0.8rem; color: var(--slate-600); margin-top: 0.35rem;" aria-live="polite">Select route and vehicle category.</div>
                 </div>
 
                 <div class="form-group mb-3">
@@ -166,4 +187,46 @@
         </div>
     </div>
 </form>
+
+<script>
+    const rateOptions = @json($rateOptions);
+    const rateCategory = document.querySelector('#rate_category');
+    const pickup = document.querySelector('#pickup_location');
+    const destination = document.querySelector('#destination');
+    const vehicleCategory = document.querySelector('#vehicle_category');
+    const estimatedKm = document.querySelector('#estimated_km');
+    const estimatedKmGroup = document.querySelector('#estimatedKmGroup');
+    const totalAmount = document.querySelector('#total_amount');
+    const fareDetails = document.querySelector('#fareDetails');
+
+    function updateFare() {
+        const category = rateCategory.value;
+        const globalRate = category.startsWith('local_') || category === 'round_trip';
+        estimatedKmGroup.style.display = category === 'round_trip' ? 'block' : 'none';
+        estimatedKm.required = category === 'round_trip';
+        if (category.startsWith('local_') && pickup.value) destination.value = pickup.value;
+        const key = [category, globalRate ? '' : pickup.value, globalRate ? '' : destination.value, vehicleCategory.value].join('|');
+        const quote = rateOptions[key];
+        if (!quote) {
+            totalAmount.value = '0.00';
+            fareDetails.textContent = 'Rate not configured. Please contact Vaishnavi Tours.';
+            return;
+        }
+        let amount = Number(quote.total_amount);
+        if (quote.details.vehicle_rent !== null) {
+            amount = Number(quote.details.vehicle_rent) + Number(estimatedKm.value || 0) * Number(quote.details.per_km_rate);
+        }
+        totalAmount.value = amount.toFixed(2);
+        fareDetails.textContent = [
+            quote.details.included_km ? `${quote.details.included_km} KM included` : '',
+            quote.details.included_hours ? `${quote.details.included_hours} hours included` : '',
+            quote.details.extra_km_rate !== null ? `Extra KM ₹${quote.details.extra_km_rate}` : '',
+            quote.details.extra_hour_rate !== null ? `Extra hour ₹${quote.details.extra_hour_rate}` : '',
+            quote.details.gst_applicable ? 'GST applicable' : '',
+        ].filter(Boolean).join(' · ');
+    }
+
+    [rateCategory, pickup, destination, vehicleCategory, estimatedKm].forEach((input) => input.addEventListener('change', updateFare));
+    updateFare();
+</script>
 @endsection

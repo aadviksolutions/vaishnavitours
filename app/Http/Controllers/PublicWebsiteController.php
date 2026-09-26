@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Enquiry;
 use App\Models\Feedback;
-use App\Models\Rate;
+use App\Models\RateRoute;
+use App\Models\RateVehiclePrice;
 use App\Models\Vehicle;
 use App\Services\BookingService;
+use App\Services\RateQuoteService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -60,16 +62,42 @@ class PublicWebsiteController extends Controller
     {
         try {
             $vehicles = Vehicle::where('status', '!=', 'Inactive')->get();
+            $fleetVehicles = Vehicle::where('status', 'Available')->get();
         } catch (\Throwable $e) {
             report($e);
             $vehicles = collect([]);
+            $fleetVehicles = collect([]);
         }
 
         if ($vehicles->isEmpty()) {
             $vehicles = $this->getFallbackVehicles();
         }
 
-        return view('public.booking', compact('vehicles'));
+        $routes = RateRoute::query()->where('active', true)->with('vehiclePrices')->get();
+        $locations = $routes->flatMap(fn (RateRoute $route): array => array_filter([$route->origin, $route->destination]))
+            ->unique()
+            ->sort()
+            ->values();
+        $vehicleCategories = RateVehiclePrice::query()->distinct()->orderBy('vehicle_category')->pluck('vehicle_category');
+        $rateOptions = [];
+        foreach ($routes as $route) {
+            foreach ($route->vehiclePrices as $price) {
+                $directions = [[$route->origin, $route->destination]];
+                if ($route->return_same_rate && $route->origin && $route->destination) {
+                    $directions[] = [$route->destination, $route->origin];
+                }
+                foreach ($directions as [$origin, $destination]) {
+                    $rateOptions[implode('|', [$route->category, $origin ?? '', $destination ?? '', $price->vehicle_category])] = app(RateQuoteService::class)->quote(
+                        $route->category,
+                        $origin ?? '',
+                        $destination ?? '',
+                        $price->vehicle_category
+                    );
+                }
+            }
+        }
+
+        return view('public.booking', compact('vehicles', 'fleetVehicles', 'locations', 'vehicleCategories', 'rateOptions'));
     }
 
     public function storeBooking(Request $request, BookingService $bookingService)
@@ -85,9 +113,12 @@ class PublicWebsiteController extends Controller
             'trip_type' => 'required|string',
             'pickup_location' => 'required|string|max:255',
             'destination' => 'required|string|max:255',
+            'rate_category' => 'required|in:airport,outstation,round_trip,local_8h_80km,local_4h_40km',
+            'vehicle_category' => 'required|string|max:80',
+            'estimated_km' => 'nullable|required_if:rate_category,round_trip|numeric|min:0.01',
             'travel_date' => 'required|date|after_or_equal:today',
             'travel_time' => 'required',
-            'vehicle_id' => 'required',
+            'vehicle_id' => 'nullable|exists:vehicles,id',
             'notes' => 'nullable|string|max:1000',
             'terms_accepted' => 'required|accepted',
         ], [
@@ -98,7 +129,7 @@ class PublicWebsiteController extends Controller
             'travel_date.required' => 'Travel date is required.',
             'travel_date.after_or_equal' => 'Travel date cannot be in the past.',
             'travel_time.required' => 'Travel time is required.',
-            'vehicle_id.required' => 'Please select a vehicle category for your booking.',
+            'vehicle_category.required' => 'Please select a vehicle category for your booking.',
             'terms_accepted.required' => 'You must agree to the Terms & Conditions and Cancellation Policy to complete your booking.',
             'terms_accepted.accepted' => 'You must agree to the Terms & Conditions and Cancellation Policy to complete your booking.',
         ]);
@@ -125,6 +156,7 @@ class PublicWebsiteController extends Controller
     public function vehicles()
     {
         $vehicles = $this->getActiveVehicles();
+
         return view('public.vehicles', compact('vehicles'));
     }
 
@@ -136,18 +168,21 @@ class PublicWebsiteController extends Controller
     public function localTaxi()
     {
         $vehicles = $this->getActiveVehicles();
+
         return view('public.services.local-taxi', compact('vehicles'));
     }
 
     public function outstationTaxi()
     {
         $vehicles = $this->getActiveVehicles();
+
         return view('public.services.outstation-taxi', compact('vehicles'));
     }
 
     public function airportTransfer()
     {
         $vehicles = $this->getActiveVehicles();
+
         return view('public.services.airport-transfer', compact('vehicles'));
     }
 
@@ -157,30 +192,30 @@ class PublicWebsiteController extends Controller
         $today = date('Y-m-d');
 
         $pages = [
-            ['loc' => $domain . '/', 'lastmod' => $today, 'changefreq' => 'daily', 'priority' => '1.0'],
-            ['loc' => $domain . '/services', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.9'],
-            ['loc' => $domain . '/services/local-taxi', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.9'],
-            ['loc' => $domain . '/services/outstation-taxi', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.9'],
-            ['loc' => $domain . '/services/airport-transfer', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.9'],
-            ['loc' => $domain . '/vehicles', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.8'],
-            ['loc' => $domain . '/rates', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.8'],
-            ['loc' => $domain . '/service-network', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.8'],
-            ['loc' => $domain . '/booking', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.8'],
-            ['loc' => $domain . '/about', 'lastmod' => $today, 'changefreq' => 'monthly', 'priority' => '0.7'],
-            ['loc' => $domain . '/contact', 'lastmod' => $today, 'changefreq' => 'monthly', 'priority' => '0.7'],
-            ['loc' => $domain . '/feedback', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.6'],
-            ['loc' => $domain . '/terms-and-conditions', 'lastmod' => $today, 'changefreq' => 'monthly', 'priority' => '0.5'],
-            ['loc' => $domain . '/cancellation-refund-policy', 'lastmod' => $today, 'changefreq' => 'monthly', 'priority' => '0.5'],
+            ['loc' => $domain.'/', 'lastmod' => $today, 'changefreq' => 'daily', 'priority' => '1.0'],
+            ['loc' => $domain.'/services', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.9'],
+            ['loc' => $domain.'/services/local-taxi', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.9'],
+            ['loc' => $domain.'/services/outstation-taxi', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.9'],
+            ['loc' => $domain.'/services/airport-transfer', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.9'],
+            ['loc' => $domain.'/vehicles', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.8'],
+            ['loc' => $domain.'/rates', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.8'],
+            ['loc' => $domain.'/service-network', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.8'],
+            ['loc' => $domain.'/booking', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.8'],
+            ['loc' => $domain.'/about', 'lastmod' => $today, 'changefreq' => 'monthly', 'priority' => '0.7'],
+            ['loc' => $domain.'/contact', 'lastmod' => $today, 'changefreq' => 'monthly', 'priority' => '0.7'],
+            ['loc' => $domain.'/feedback', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.6'],
+            ['loc' => $domain.'/terms-and-conditions', 'lastmod' => $today, 'changefreq' => 'monthly', 'priority' => '0.5'],
+            ['loc' => $domain.'/cancellation-refund-policy', 'lastmod' => $today, 'changefreq' => 'monthly', 'priority' => '0.5'],
         ];
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
+        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n";
         foreach ($pages as $page) {
             $xml .= "  <url>\n";
-            $xml .= '    <loc>' . htmlspecialchars($page['loc']) . "</loc>\n";
-            $xml .= '    <lastmod>' . $page['lastmod'] . "</lastmod>\n";
-            $xml .= '    <changefreq>' . $page['changefreq'] . "</changefreq>\n";
-            $xml .= '    <priority>' . $page['priority'] . "</priority>\n";
+            $xml .= '    <loc>'.htmlspecialchars($page['loc'])."</loc>\n";
+            $xml .= '    <lastmod>'.$page['lastmod']."</lastmod>\n";
+            $xml .= '    <changefreq>'.$page['changefreq']."</changefreq>\n";
+            $xml .= '    <priority>'.$page['priority']."</priority>\n";
             $xml .= "  </url>\n";
         }
         $xml .= '</urlset>';
@@ -217,22 +252,36 @@ class PublicWebsiteController extends Controller
         return response($content, 200)->header('Content-Type', 'text/plain');
     }
 
-    public function rates()
+    public function rates(Request $request, RateQuoteService $rateQuoteService)
     {
-        try {
-            $rates = Rate::all();
-            $vehicles = Vehicle::where('status', '!=', 'Inactive')->get();
-        } catch (\Throwable $e) {
-            report($e);
-            $rates = collect([]);
-            $vehicles = collect([]);
+        $routes = RateRoute::query()->where('active', true)->with('vehiclePrices')->orderBy('category')->orderBy('origin')->get();
+        $locations = $routes->flatMap(fn (RateRoute $route): array => array_filter([$route->origin, $route->destination]))
+            ->unique()
+            ->sort()
+            ->values();
+        $vehicleCategories = RateVehiclePrice::query()->distinct()->orderBy('vehicle_category')->pluck('vehicle_category');
+        $selectedQuotes = collect();
+
+        if ($request->filled('from') && $request->filled('to') && $request->filled('rate_category')) {
+            foreach ($vehicleCategories as $vehicleCategory) {
+                if ($request->filled('vehicle_category') && $request->string('vehicle_category')->toString() !== $vehicleCategory) {
+                    continue;
+                }
+
+                $quote = $rateQuoteService->quote(
+                    $request->string('rate_category')->toString(),
+                    $request->string('from')->toString(),
+                    $request->string('to')->toString(),
+                    $vehicleCategory,
+                    $request->filled('estimated_km') ? (float) $request->input('estimated_km') : null
+                );
+                if ($quote) {
+                    $selectedQuotes->push($quote);
+                }
+            }
         }
 
-        if ($vehicles->isEmpty()) {
-            $vehicles = $this->getFallbackVehicles();
-        }
-
-        return view('public.rates', compact('rates', 'vehicles'));
+        return view('public.rates', compact('routes', 'locations', 'vehicleCategories', 'selectedQuotes'));
     }
 
     public function network()
@@ -348,8 +397,6 @@ class PublicWebsiteController extends Controller
                 'vehicle_type' => 'Sedan',
                 'seating_capacity' => 4,
                 'ac_non_ac' => 'AC',
-                'per_km_rate' => 13.00,
-                'per_hour_rate' => 220.00,
                 'status' => 'Available',
                 'image' => 'assets/vehicles/maruti-suzuki-dzire.jpg',
                 'notes' => 'Prime comfort sedan with boot space for 2 large luggage bags.',
@@ -361,8 +408,6 @@ class PublicWebsiteController extends Controller
                 'vehicle_type' => 'MUV',
                 'seating_capacity' => 6,
                 'ac_non_ac' => 'AC',
-                'per_km_rate' => 17.00,
-                'per_hour_rate' => 280.00,
                 'status' => 'Available',
                 'image' => 'assets/vehicles/maruti-suzuki-ertiga.jpg',
                 'notes' => 'Spacious 6-seater MUV, ideal for family airport runs and intercity trips.',
@@ -374,8 +419,6 @@ class PublicWebsiteController extends Controller
                 'vehicle_type' => 'Innova Crysta',
                 'seating_capacity' => 7,
                 'ac_non_ac' => 'AC',
-                'per_km_rate' => 22.00,
-                'per_hour_rate' => 350.00,
                 'status' => 'Available',
                 'image' => 'assets/vehicles/toyota-innova-crysta.jpg',
                 'notes' => 'Premium captain seat luxury ride, best for long-distance highway travel.',
@@ -387,8 +430,6 @@ class PublicWebsiteController extends Controller
                 'vehicle_type' => 'Tempo Traveller',
                 'seating_capacity' => 14,
                 'ac_non_ac' => 'AC',
-                'per_km_rate' => 30.00,
-                'per_hour_rate' => 500.00,
                 'status' => 'Available',
                 'image' => 'assets/vehicles/force-tempo-traveller.jpg',
                 'notes' => 'Spacious 14-seater tourist coach with pushback seats and overhead luggage carrier.',
@@ -400,8 +441,6 @@ class PublicWebsiteController extends Controller
                 'vehicle_type' => 'Hatchback',
                 'seating_capacity' => 4,
                 'ac_non_ac' => 'AC',
-                'per_km_rate' => 11.00,
-                'per_hour_rate' => 180.00,
                 'status' => 'Available',
                 'image' => 'assets/vehicles/tata-tiago-wagonr.jpg',
                 'notes' => 'Economical city and short intercity ride with high fuel efficiency.',

@@ -333,7 +333,7 @@
                     <div class="info-detail">
                         Mobile: <strong>{{ $booking->customer->phone ?? 'N/A' }}</strong><br>
                         Email: {{ $booking->customer->email ?? 'N/A' }}<br>
-                        Address: {{ $booking->customer->customer->address ?? 'Bilaspur, Chhattisgarh' }}
+                        Address: {{ $booking->customer->customer->address ?? $booking->pickup_location }}
                     </div>
                 </div>
                 <div>
@@ -394,6 +394,24 @@
                     </tr>
                 </tbody>
             </table>
+
+            @if($booking->pricing_details)
+                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 1rem; margin: 1rem 0 1.5rem; font-size: 0.85rem;">
+                    <strong>Configured Fare Details</strong><br>
+                    @if($booking->pricing_details['base_fare'] ?? null)Base fare: ₹{{ number_format($booking->pricing_details['base_fare'], 2) }}<br>@endif
+                    @if($booking->pricing_details['included_km'] ?? null)Included KM: {{ $booking->pricing_details['included_km'] }} KM<br>@endif
+                    @if($booking->pricing_details['included_hours'] ?? null)Included time: {{ $booking->pricing_details['included_hours'] }} hours<br>@endif
+                    @if($booking->pricing_details['extra_km_rate'] ?? null)Extra KM: ₹{{ number_format($booking->pricing_details['extra_km_rate'], 2) }}/KM<br>@endif
+                    @if($booking->pricing_details['extra_hour_rate'] ?? null)Extra hour: ₹{{ number_format($booking->pricing_details['extra_hour_rate'], 2) }}/hour<br>@endif
+                    @if($booking->pricing_details['vehicle_rent'] ?? null)Vehicle rent: ₹{{ number_format($booking->pricing_details['vehicle_rent'], 2) }} + ₹{{ number_format($booking->pricing_details['per_km_rate'], 2) }}/KM<br>@endif
+                    @if($booking->pricing_details['toll_type'] ?? null)Toll: {{ $booking->pricing_details['toll_type'] }}<br>@endif
+                    @if($booking->pricing_details['parking_type'] ?? null)Parking: {{ $booking->pricing_details['parking_type'] }}<br>@endif
+                    @if($booking->pricing_details['border_tax_type'] ?? null)Border tax: {{ $booking->pricing_details['border_tax_type'] }}<br>@endif
+                    @if($booking->pricing_details['night_charge'] ?? null)Night charge: ₹{{ number_format($booking->pricing_details['night_charge'], 2) }}<br>@endif
+                    @if($booking->pricing_details['driver_food_type'] ?? null)Driver food: {{ $booking->pricing_details['driver_food_type'] }}<br>@endif
+                    @if($booking->pricing_details['gst_applicable'] ?? false)GST applicable<br>@endif
+                </div>
+            @endif
 
             <!-- Totals Breakdown -->
             <div class="table-totals">

@@ -15,6 +15,8 @@ use Illuminate\Validation\ValidationException;
 
 class BookingService
 {
+    public function __construct(private readonly RateQuoteService $rateQuoteService) {}
+
     /**
      * Create a new booking with initial Pending status and admin notification.
      */
@@ -48,7 +50,7 @@ class BookingService
 
                     Customer::create([
                         'user_id' => $user->id,
-                        'city' => 'Bilaspur',
+                        'city' => $data['pickup_location'],
                         'state' => 'Chhattisgarh',
                         'pincode' => '495001',
                     ]);
@@ -61,14 +63,33 @@ class BookingService
                 $vehicle = Vehicle::find($data['vehicle_id']);
             }
 
-            // Estimate total amount
             $tripType = $data['trip_type'] ?? 'One-Way';
-            $totalAmount = (float) ($data['total_amount'] ?? 0);
-            if ($totalAmount <= 0 && $vehicle) {
-                $totalAmount = $this->calculateEstimatedFare($tripType, $vehicle);
-            }
-            if ($totalAmount <= 0) {
-                $totalAmount = 2500.00;
+            $ratePrice = null;
+            $pricingDetails = null;
+            if (! empty($data['rate_category'])) {
+                $quote = $this->rateQuoteService->quote(
+                    $data['rate_category'],
+                    $data['pickup_location'],
+                    $data['destination'],
+                    $data['vehicle_category'] ?? '',
+                    isset($data['estimated_km']) ? (float) $data['estimated_km'] : null
+                );
+
+                if (! $quote) {
+                    throw ValidationException::withMessages([
+                        'destination' => ['Rate not configured. Please contact Vaishnavi Tours.'],
+                    ]);
+                }
+
+                $ratePrice = $quote['price'];
+                $pricingDetails = array_merge($quote['details'], ['total_amount' => $quote['total_amount']]);
+                $totalAmount = $quote['total_amount'];
+            } elseif (isset($data['total_amount']) && (float) $data['total_amount'] > 0) {
+                $totalAmount = (float) $data['total_amount'];
+            } else {
+                throw ValidationException::withMessages([
+                    'rate_category' => ['Rate not configured. Please contact Vaishnavi Tours.'],
+                ]);
             }
 
             $paidAmount = (float) ($data['paid_amount'] ?? 0.00);
@@ -86,6 +107,9 @@ class BookingService
                 'return_date' => $data['return_date'] ?? null,
                 'vehicle_id' => $vehicle?->id,
                 'driver_id' => null,
+                'rate_vehicle_price_id' => $ratePrice?->id,
+                'rate_category' => $data['rate_category'] ?? null,
+                'pricing_details' => $pricingDetails,
                 'total_amount' => $totalAmount,
                 'paid_amount' => $paidAmount,
                 'balance_amount' => $balanceAmount,
@@ -451,21 +475,5 @@ class BookingService
 
             return $booking;
         });
-    }
-
-    /**
-     * Estimate rough fare based on service type & vehicle rate.
-     */
-    public function calculateEstimatedFare(string $tripType, Vehicle $vehicle): float
-    {
-        $rate = (float) ($vehicle->per_km_rate ?: 14.00);
-
-        return match ($tripType) {
-            'Airport Transfer' => round($rate * 110, -1),
-            'Local Hourly' => round((float) ($vehicle->per_hour_rate ?: 250) * 8, -1),
-            'Round-Trip' => round($rate * 300, -1),
-            'Emergency' => round($rate * 80 + 500, -1),
-            default => round($rate * 140, -1),
-        };
     }
 }

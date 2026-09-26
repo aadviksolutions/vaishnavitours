@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * Test home page returns 200 and renders all core elements.
      */
@@ -45,7 +48,8 @@ class ExampleTest extends TestCase
         $response = $this->get('/booking');
 
         $response->assertStatus(200);
-        $response->assertSee('Maruti Suzuki Dzire');
-        $response->assertSee('Toyota Innova Crysta');
+        $response->assertSee('name="vehicle_category"', false);
+        $response->assertSee('Sedan');
+        $response->assertSee('Innova Crysta');
     }
 }

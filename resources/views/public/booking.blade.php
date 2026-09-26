@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Online Cab Booking Bilaspur | Vaishnavi Tours')
-@section('meta_description', 'Book a local taxi, outstation cab, or airport transfer online in Bilaspur, Chhattisgarh. Instant booking confirmation with transparent rates and dedicated driver dispatch.')
+@section('title', 'Book a Taxi | Vaishnavi Tours')
+@section('meta_description', 'Book airport, outstation, round-trip, or local taxi services from configured pickup locations.')
 @section('canonical', route('booking'))
 
 @push('schema')
@@ -18,13 +18,23 @@
 @endpush
 
 @section('content')
+@php
+    $defaultRateCategory = old('rate_category', request('rate_category', 'outstation'));
+    $tripOptions = [
+        ['trip_type' => 'One-Way', 'category' => 'outstation', 'title' => 'Outstation Route', 'description' => 'Configured route fare', 'icon' => 'arrow-right'],
+        ['trip_type' => 'Airport Transfer', 'category' => 'airport', 'title' => 'Airport Booking', 'description' => 'Bilaspur ↔ Raipur Airport', 'icon' => 'plane'],
+        ['trip_type' => 'Round-Trip', 'category' => 'round_trip', 'title' => 'Round Trip', 'description' => 'Vehicle rent + per KM', 'icon' => 'repeat'],
+        ['trip_type' => 'Local 8 Hours', 'category' => 'local_8h_80km', 'title' => 'Local Rental', 'description' => '8 hours / 80 KM', 'icon' => 'clock'],
+        ['trip_type' => 'Local 4 Hours', 'category' => 'local_4h_40km', 'title' => 'Local Rental', 'description' => '4 hours / 40 KM', 'icon' => 'clock'],
+    ];
+@endphp
 <section style="padding: 3rem 0 5rem;">
     <div class="container">
         <div style="max-width: 860px; margin: 0 auto;">
             <div style="text-align: center; margin-bottom: 2.5rem;">
                 <span style="color: var(--primary-hover); font-weight: 800; text-transform: uppercase; font-size: 0.85rem;">Instant Reservation</span>
                 <h1 style="font-size: 2.5rem; margin-top: 0.25rem;">Book Your Cab with Vaishnavi Tours</h1>
-                <p style="color: var(--slate-500); margin-top: 0.5rem;">Outstation Cabs, One-Way Drops, Local 8hr Packages & 24/7 Airport Transfers.</p>
+                <p style="color: var(--slate-500); margin-top: 0.5rem;">Choose a configured route and vehicle category to see its fare.</p>
             </div>
 
             <div class="card" style="padding: 2.5rem; border: 2px solid var(--primary); box-shadow: var(--shadow-lg);">
@@ -42,58 +52,44 @@
                 <form action="{{ route('booking.store') }}" method="POST">
                     @csrf
 
-                    <!-- 1. Trip Type -->
+                    <input type="hidden" name="rate_category" id="rateCategory" value="{{ $defaultRateCategory }}">
+
                     <div class="form-group" style="margin-bottom: 2rem;">
-                        <label class="form-label">1. Select Trip Type</label>
-                        <div class="grid grid-4 gap-2" id="bookingTripTypes">
-                            <label style="border: 1.5px solid var(--slate-300); padding: 0.85rem; border-radius: var(--radius-md); text-align: center; cursor: pointer; display: block;" class="trip-opt active">
-                                <input type="radio" name="trip_type" value="One-Way" checked style="display: none;">
-                                <div class="icon-box icon-box-sm icon-box-primary" style="margin: 0 auto 0.5rem;"><x-icon name="arrow-right" size="18" /></div>
-                                <div style="font-weight: 700; font-size: 0.95rem; margin-top: 0.25rem;">One-Way Drop</div>
-                                <div style="font-size: 0.75rem; color: var(--slate-400);">Pay only for 1 side</div>
-                            </label>
-
-                            <label style="border: 1.5px solid var(--slate-300); padding: 0.85rem; border-radius: var(--radius-md); text-align: center; cursor: pointer; display: block;" class="trip-opt">
-                                <input type="radio" name="trip_type" value="Round-Trip" style="display: none;">
-                                <div class="icon-box icon-box-sm icon-box-primary" style="margin: 0 auto 0.5rem;"><x-icon name="repeat" size="18" /></div>
-                                <div style="font-weight: 700; font-size: 0.95rem; margin-top: 0.25rem;">Round-Trip</div>
-                                <div style="font-size: 0.75rem; color: var(--slate-400);">Multi-day outstation</div>
-                            </label>
-
-                            <label style="border: 1.5px solid var(--slate-300); padding: 0.85rem; border-radius: var(--radius-md); text-align: center; cursor: pointer; display: block;" class="trip-opt">
-                                <input type="radio" name="trip_type" value="Airport Transfer" style="display: none;">
-                                <div class="icon-box icon-box-sm icon-box-primary" style="margin: 0 auto 0.5rem;"><x-icon name="plane" size="18" /></div>
-                                <div style="font-weight: 700; font-size: 0.95rem; margin-top: 0.25rem;">Airport Transfer</div>
-                                <div style="font-size: 0.75rem; color: var(--slate-400);">Raipur Airport Drop</div>
-                            </label>
-
-                            <label style="border: 1.5px solid var(--slate-300); padding: 0.85rem; border-radius: var(--radius-md); text-align: center; cursor: pointer; display: block;" class="trip-opt">
-                                <input type="radio" name="trip_type" value="Local Hourly" style="display: none;">
-                                <div style="font-size: 1.25rem;">⏱️</div>
-                                <div style="font-weight: 700; font-size: 0.95rem; margin-top: 0.25rem;">Local Hourly</div>
-                                <div style="font-size: 0.75rem; color: var(--slate-400);">8 Hr / 80 Km pkg</div>
-                            </label>
+                        <label class="form-label">1. Trip type</label>
+                        <div class="grid grid-3 gap-2" id="bookingTripTypes">
+                            @foreach($tripOptions as $option)
+                                <label style="border: 1.5px solid var(--slate-300); padding: 0.85rem; border-radius: var(--radius-md); text-align: center; cursor: pointer; display: block;" class="trip-opt {{ $defaultRateCategory === $option['category'] ? 'active' : '' }}">
+                                    <input type="radio" name="trip_type" value="{{ $option['trip_type'] }}" data-rate-category="{{ $option['category'] }}" {{ $defaultRateCategory === $option['category'] ? 'checked' : '' }} required>
+                                    <div class="icon-box icon-box-sm icon-box-primary" style="margin: 0 auto 0.5rem;"><x-icon :name="$option['icon']" size="18" /></div>
+                                    <div style="font-weight: 700; font-size: 0.95rem; margin-top: 0.25rem;">{{ $option['title'] }}</div>
+                                    <div style="font-size: 0.75rem; color: var(--slate-500);">{{ $option['description'] }}</div>
+                                </label>
+                            @endforeach
                         </div>
                     </div>
 
-                    <!-- 2. Locations -->
                     <div class="form-group" style="margin-bottom: 2rem;">
-                        <label class="form-label">2. Route Details</label>
+                        <label class="form-label">2. Route details</label>
                         <div class="grid grid-2 gap-2">
                             <div>
-                                <label style="font-size: 0.8rem; color: var(--slate-500); font-weight: 600;">PICKUP ADDRESS IN BILASPUR</label>
-                                <input type="text" name="pickup_location" class="form-control" placeholder="House/Colony, Landmark, Bilaspur" value="{{ old('pickup_location', 'Mangal Chowk, Bilaspur') }}" required>
+                                <label for="pickupLocation" style="font-size: 0.8rem; color: var(--slate-500); font-weight: 600;">PICKUP LOCATION</label>
+                                <select id="pickupLocation" name="pickup_location" class="form-select" required>
+                                    <option value="">Select pickup city</option>
+                                    @foreach($locations as $location)<option value="{{ $location }}" {{ old('pickup_location', request('pickup_location')) === $location ? 'selected' : '' }}>{{ $location }}</option>@endforeach
+                                </select>
                             </div>
                             <div>
-                                <label style="font-size: 0.8rem; color: var(--slate-500); font-weight: 600;">DESTINATION CITY / ADDRESS</label>
-                                <input type="text" name="destination" class="form-control" placeholder="City or Destination (e.g. Raipur, Korba)" value="{{ old('destination', 'Raipur') }}" required>
+                                <label for="destinationLocation" style="font-size: 0.8rem; color: var(--slate-500); font-weight: 600;">DESTINATION</label>
+                                <select id="destinationLocation" name="destination" class="form-select" required>
+                                    <option value="">Select destination</option>
+                                    @foreach($locations as $location)<option value="{{ $location }}" {{ old('destination', request('destination')) === $location ? 'selected' : '' }}>{{ $location }}</option>@endforeach
+                                </select>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 3. Schedule -->
                     <div class="form-group" style="margin-bottom: 2rem;">
-                        <label class="form-label">3. Date & Pickup Time</label>
+                        <label class="form-label">3. Date and pickup time</label>
                         <div class="grid grid-2 gap-2">
                             <div>
                                 <label style="font-size: 0.8rem; color: var(--slate-500); font-weight: 600;">TRAVEL DATE</label>
@@ -106,40 +102,46 @@
                         </div>
                     </div>
 
-                    <!-- 4. Vehicle Selection -->
                     <div class="form-group" style="margin-bottom: 2rem;">
-                        <label class="form-label">4. Select Vehicle Category</label>
+                        <label class="form-label">4. Vehicle category</label>
                         <div class="grid grid-3 gap-2">
-                            @forelse($vehicles as $veh)
-                                <label style="border: 1.5px solid var(--slate-300); padding: 1rem; border-radius: var(--radius-md); cursor: pointer; display: flex; flex-direction: column; justify-content: space-between;" class="veh-opt {{ (request('vehicle_id') == $veh->id || $loop->first) ? 'active' : '' }}">
-                                    <div>
-                                        <div class="d-flex justify-between align-center" style="margin-bottom: 0.5rem;">
-                                            <input type="radio" name="vehicle_id" value="{{ $veh->id }}" {{ (request('vehicle_id') == $veh->id || $loop->first) ? 'checked' : '' }} required>
-                                            <span class="badge badge-available">{{ $veh->ac_non_ac }}</span>
-                                        </div>
-                                        <div style="height: 100px; width: 100%; border-radius: var(--radius-sm); overflow: hidden; background: #f8fafc; margin-bottom: 0.75rem; border: 1px solid var(--slate-200); display: flex; align-items: center; justify-content: center;">
-                                            <img src="{{ $veh->icon_url }}" alt="{{ $veh->name }}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
-                                        </div>
-                                        <div style="font-weight: 800; font-size: 1rem; color: var(--dark-900);">{{ $veh->name }}</div>
-                                        <div style="font-size: 0.775rem; color: var(--slate-500);">{{ $veh->vehicle_type }} • {{ $veh->seating_capacity }} Seater</div>
-                                    </div>
-                                    <div style="margin-top: 1rem; border-top: 1px solid var(--slate-200); padding-top: 0.5rem; font-weight: 800; color: var(--primary-dark); font-size: 1.1rem;">
-                                        ₹{{ number_format($veh->per_km_rate, 0) }} <span style="font-size: 0.75rem; font-weight: 500; color: var(--slate-400);">/ km</span>
-                                    </div>
+                            @forelse($vehicleCategories as $category)
+                                <label style="border: 1.5px solid var(--slate-300); padding: 1rem; border-radius: var(--radius-md); cursor: pointer; display: block;" class="vehicle-category-opt">
+                                    <input type="radio" name="vehicle_category" value="{{ $category }}" {{ old('vehicle_category', request('vehicle_category')) === $category ? 'checked' : '' }} required>
+                                    <span style="font-weight: 800; color: var(--dark-900); margin-left: 0.4rem;">{{ $category }}</span>
                                 </label>
                             @empty
                                 <div style="grid-column: 1 / -1; padding: 1.75rem; background: var(--slate-100); border: 1.5px dashed var(--slate-300); border-radius: var(--radius-md); text-align: center; color: var(--slate-600);">
-                                    <p style="margin-bottom: 0.5rem; font-weight: 700; color: var(--dark-900); font-size: 1.05rem;">No vehicles currently available. Please contact us.</p>
-                                    <p style="font-size: 0.875rem; margin-bottom: 1rem; color: var(--slate-500);">No vehicles are currently configured. Please contact Vaishnavi Tours.</p>
+                                    <p style="margin-bottom: 0.5rem; font-weight: 700; color: var(--dark-900); font-size: 1.05rem;">No vehicle rates are currently configured.</p>
                                     <a href="{{ route('contact') }}" class="btn btn-primary btn-sm">Contact Vaishnavi Tours</a>
                                 </div>
                             @endforelse
                         </div>
                     </div>
 
-                    <!-- 5. Passenger Contact -->
                     <div class="form-group" style="margin-bottom: 2rem;">
-                        <label class="form-label">5. Passenger Information</label>
+                        <label for="preferredVehicle" class="form-label">Preferred available fleet vehicle (optional)</label>
+                        <select id="preferredVehicle" name="vehicle_id" class="form-select">
+                            <option value="">Let dispatch assign a vehicle</option>
+                            @foreach($fleetVehicles as $fleetVehicle)
+                                <option value="{{ $fleetVehicle->id }}" {{ old('vehicle_id', request('vehicle_id')) == $fleetVehicle->id ? 'selected' : '' }}>{{ $fleetVehicle->name }} · {{ $fleetVehicle->registration_number }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div id="estimatedKmGroup" class="form-group" style="margin-bottom: 2rem; display: none;">
+                        <label for="estimatedKm" class="form-label">Estimated round-trip distance (KM)</label>
+                        <input type="number" name="estimated_km" id="estimatedKm" class="form-control" min="0.01" step="0.1" value="{{ old('estimated_km') }}">
+                    </div>
+
+                    <div id="ratePreview" class="card" style="padding: 1.25rem; margin-bottom: 2rem; border-left: 4px solid var(--primary);" aria-live="polite">
+                        <div style="font-weight: 800; color: var(--dark-900);">Applicable fare</div>
+                        <div id="ratePreviewAmount" style="font-size: 1.35rem; font-weight: 800; margin: 0.35rem 0;">Select route and vehicle</div>
+                        <div id="ratePreviewDetails" style="font-size: 0.875rem; color: var(--slate-600);"></div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 2rem;">
+                        <label class="form-label">5. Passenger information</label>
                         <div class="grid grid-3 gap-2">
                             <div>
                                 <label style="font-size: 0.8rem; color: var(--slate-500); font-weight: 600;">PASSENGER NAME</label>
@@ -181,8 +183,8 @@
 
                     <div style="background: var(--primary-light); padding: 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
                         <div>
-                            <div style="font-weight: 800; font-size: 1.1rem; color: var(--dark-950);">Transparent Billing Guarantee</div>
-                            <div style="font-size: 0.85rem; color: var(--dark-800);">Toll tax & parking as per actual receipts. Zero dynamic peak surge multipliers.</div>
+                            <div style="font-weight: 800; font-size: 1.1rem; color: var(--dark-950);">Configured Fare</div>
+                            <div style="font-size: 0.85rem; color: var(--dark-800);">Only charges listed for the selected rate apply.</div>
                         </div>
                         <button type="submit" class="btn btn-primary btn-lg" style="font-size: 1.1rem; font-weight: 800; padding: 0.85rem 2rem;">
                             Confirm Booking
@@ -197,34 +199,75 @@
 
 @push('scripts')
 <script>
-    // Trip options style toggle
-    document.querySelectorAll('.trip-opt').forEach(opt => {
-        opt.addEventListener('click', function() {
-            document.querySelectorAll('.trip-opt').forEach(o => {
-                o.classList.remove('active');
-                o.style.borderColor = 'var(--slate-300)';
-                o.style.background = '#fff';
-            });
-            this.classList.add('active');
-            this.style.borderColor = 'var(--primary)';
-            this.style.background = 'var(--primary-subtle)';
-            this.querySelector('input').checked = true;
-        });
-    });
+    const rateOptions = @json($rateOptions);
+    const categoryInput = document.querySelector('#rateCategory');
+    const pickupInput = document.querySelector('#pickupLocation');
+    const destinationInput = document.querySelector('#destinationLocation');
+    const estimatedKmGroup = document.querySelector('#estimatedKmGroup');
+    const estimatedKmInput = document.querySelector('#estimatedKm');
+    const previewAmount = document.querySelector('#ratePreviewAmount');
+    const previewDetails = document.querySelector('#ratePreviewDetails');
 
-    // Vehicle options style toggle
-    document.querySelectorAll('.veh-opt').forEach(opt => {
-        opt.addEventListener('click', function() {
-            document.querySelectorAll('.veh-opt').forEach(o => {
-                o.classList.remove('active');
-                o.style.borderColor = 'var(--slate-300)';
-                o.style.background = '#fff';
-            });
-            this.classList.add('active');
-            this.style.borderColor = 'var(--primary)';
-            this.style.background = 'var(--primary-subtle)';
-            this.querySelector('input').checked = true;
-        });
-    });
+    function updateRatePreview() {
+        const selectedTrip = document.querySelector('input[name="trip_type"]:checked');
+        const selectedVehicle = document.querySelector('input[name="vehicle_category"]:checked');
+        if (selectedTrip) {
+            categoryInput.value = selectedTrip.dataset.rateCategory;
+        }
+
+        const category = categoryInput.value;
+        const isRoundTrip = category === 'round_trip';
+        estimatedKmGroup.style.display = isRoundTrip ? 'block' : 'none';
+        estimatedKmInput.required = isRoundTrip;
+
+        if (category.startsWith('local_') && pickupInput.value) {
+            destinationInput.value = pickupInput.value;
+        }
+
+        if (!pickupInput.value || !destinationInput.value || !selectedVehicle) {
+            previewAmount.textContent = 'Select route and vehicle';
+            previewDetails.textContent = '';
+            return;
+        }
+
+        const quoteKey = [category, category.startsWith('local_') || isRoundTrip ? '' : pickupInput.value, category.startsWith('local_') || isRoundTrip ? '' : destinationInput.value, selectedVehicle.value].join('|');
+        const quote = rateOptions[quoteKey];
+        if (!quote) {
+            previewAmount.textContent = 'Rate not configured. Please contact Vaishnavi Tours.';
+            previewDetails.textContent = '';
+            return;
+        }
+
+        const details = quote.details;
+        const pieces = [];
+        if (details.included_km !== null) pieces.push(`${details.included_km} KM included`);
+        if (details.included_hours !== null) pieces.push(`${details.included_hours} hours included`);
+        if (details.extra_km_rate !== null) pieces.push(`Extra KM ₹${Number(details.extra_km_rate).toFixed(2)}`);
+        if (details.extra_hour_rate !== null) pieces.push(`Extra hour ₹${Number(details.extra_hour_rate).toFixed(2)}`);
+        if (details.toll_type) pieces.push(`Toll ${details.toll_type}`);
+        if (details.parking_type) pieces.push(`Parking ${details.parking_type}`);
+        if (details.border_tax_type) pieces.push(`Border tax ${details.border_tax_type}`);
+        if (details.night_charge !== null) pieces.push(`Night charge ₹${Number(details.night_charge).toFixed(2)}`);
+        if (details.driver_food_type) pieces.push(`Driver food ${details.driver_food_type}`);
+        if (details.gst_applicable) pieces.push('GST applicable');
+        previewDetails.textContent = pieces.join(' · ');
+
+        if (details.vehicle_rent !== null) {
+            const distance = Number(estimatedKmInput.value || 0);
+            if (distance > 0) {
+                const estimatedFare = Number(details.vehicle_rent) + distance * Number(details.per_km_rate);
+                previewAmount.textContent = `₹${estimatedFare.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+            } else {
+                previewAmount.textContent = `₹${Number(details.vehicle_rent).toLocaleString('en-IN')} rent + ₹${Number(details.per_km_rate).toFixed(2)}/KM`;
+            }
+        } else {
+            const gstText = details.gst_applicable ? ' + GST' : '';
+            previewAmount.textContent = `₹${Number(quote.total_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}${gstText}`;
+        }
+    }
+
+    document.querySelectorAll('input[name="trip_type"], input[name="vehicle_category"]').forEach((input) => input.addEventListener('change', updateRatePreview));
+    [pickupInput, destinationInput, estimatedKmInput].forEach((input) => input.addEventListener('change', updateRatePreview));
+    updateRatePreview();
 </script>
 @endpush

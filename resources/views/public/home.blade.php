@@ -28,10 +28,10 @@
         ],
         [
             '@type' => 'Question',
-            'name' => 'What is the starting per-kilometer rate for cab rental in Bilaspur?',
+            'name' => 'How can I check current taxi fares?',
             'acceptedAnswer' => [
                 '@type' => 'Answer',
-                'text' => 'Our verified rates start at ₹11/km for hatchbacks (Tiago/WagonR), ₹13/km for sedans (Dzire), ₹17/km for 6-seater MUVs (Ertiga), and ₹22/km for luxury Innova Crysta.'
+                'text' => 'Use the route and vehicle filters on our Rates page to see the current configured fare and applicable inclusions.'
             ]
         ],
         [
@@ -361,7 +361,7 @@
                                 <div>
                                     <div style="font-size: 0.75rem; color: var(--slate-400); text-transform: uppercase;">Tariff from</div>
                                     <div style="font-size: 1.2rem; font-weight: 800; color: var(--dark-900);">
-                                        ₹{{ number_format($vehicle->per_km_rate, 0) }} <span style="font-size: 0.8rem; font-weight: 500; color: var(--slate-500);">/ km</span>
+                                        <a href="{{ route('rates') }}" style="font-size: 0.8rem; font-weight: 700; color: var(--primary-dark);">View configured rates</a>
                                     </div>
                                 </div>
                                 <a href="{{ route('booking') }}?vehicle_id={{ $vehicle->id }}" class="btn btn-primary btn-sm">
@@ -498,8 +498,8 @@
                     <p style="color: var(--slate-600); font-size: 0.95rem; line-height: 1.6; margin: 0;">You can book directly through our <a href="{{ route('booking') }}" style="color: var(--primary-dark); font-weight: 700;">online reservation form</a>, call our 24/7 dispatch desk at <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" style="color: var(--primary-dark); font-weight: 700;">{{ config('vaishnavi.phone_primary') }}</a>, or chat with us on WhatsApp.</p>
                 </div>
                 <div class="card" style="padding: 1.5rem; border-radius: var(--radius-md);">
-                    <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--dark-900); margin-bottom: 0.5rem;">What are the starting taxi fares per kilometer in Bilaspur?</h3>
-                    <p style="color: var(--slate-600); font-size: 0.95rem; line-height: 1.6; margin: 0;">Our verified rates start at ₹11/km for hatchbacks (Tiago/WagonR), ₹13/km for sedans (Dzire), ₹17/km for 6-seater MUVs (Ertiga), and ₹22/km for luxury Innova Crysta. Check our full <a href="{{ route('rates') }}" style="color: var(--primary-dark); font-weight: 700;">Rate Card</a> for transparent details.</p>
+                    <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--dark-900); margin-bottom: 0.5rem;">How do I check taxi fares for my route?</h3>
+                    <p style="color: var(--slate-600); font-size: 0.95rem; line-height: 1.6; margin: 0;">Choose your origin, destination, trip type, and vehicle on our <a href="{{ route('rates') }}" style="color: var(--primary-dark); font-weight: 700;">Rates page</a> to see the configured fare and applicable charges.</p>
                 </div>
                 <div class="card" style="padding: 1.5rem; border-radius: var(--radius-md);">
                     <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--dark-900); margin-bottom: 0.5rem;">Do you provide airport transfer from Bilaspur to Raipur Airport?</h3>

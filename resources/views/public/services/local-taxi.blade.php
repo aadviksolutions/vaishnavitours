@@ -155,7 +155,7 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--slate-200); padding-top: 1rem;">
                             <div>
                                 <span style="font-size: 0.75rem; color: var(--slate-500); display: block;">Local Hourly Rate</span>
-                                <strong style="font-size: 1.2rem; color: var(--primary-dark);">₹{{ number_format($vehicle->per_hour_rate, 0) }} / hr</strong>
+                                <a href="{{ route('rates') }}" style="font-size: 0.9rem; color: var(--primary-dark); font-weight: 700;">View local package rates</a>
                             </div>
                             <a href="{{ route('booking') }}?vehicle_id={{ $vehicle->id }}" class="btn btn-primary btn-sm">Select</a>
                         </div>

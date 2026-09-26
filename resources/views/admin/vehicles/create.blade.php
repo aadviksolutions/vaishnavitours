@@ -74,20 +74,10 @@
             </div>
         </div>
 
-        <!-- Right 1 Col: Pricing & Status -->
+        <!-- Right 1 Col: Fleet Status -->
         <div>
             <div class="card mb-4">
-                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">💰 Tariff & Status</h3>
-
-                <div class="form-group mb-3">
-                    <label for="per_km_rate" class="form-label">Standard Per KM Rate (₹) *</label>
-                    <input type="number" step="0.50" name="per_km_rate" id="per_km_rate" class="form-control" value="{{ old('per_km_rate', '12.00') }}" required>
-                </div>
-
-                <div class="form-group mb-3">
-                    <label for="per_hour_rate" class="form-label">Local Per Hour Rate (₹) *</label>
-                    <input type="number" step="10" name="per_hour_rate" id="per_hour_rate" class="form-control" value="{{ old('per_hour_rate', '200.00') }}" required>
-                </div>
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">Fleet Status</h3>
 
                 <div class="form-group mb-4">
                     <label for="status" class="form-label">Operational Status *</label>

@@ -276,6 +276,24 @@
                 </div>
             </div>
 
+            @if($booking->pricing_details)
+                <div style="border: 1px solid var(--slate-200); padding: 0.85rem; margin-bottom: 1.25rem; font-size: 0.825rem;">
+                    <strong>Configured fare details</strong>
+                    <div style="color: var(--slate-600); margin-top: 0.35rem;">
+                        @if($booking->pricing_details['included_km'] ?? null){{ $booking->pricing_details['included_km'] }} KM included · @endif
+                        @if($booking->pricing_details['included_hours'] ?? null){{ $booking->pricing_details['included_hours'] }} hours included · @endif
+                        @if($booking->pricing_details['extra_km_rate'] ?? null)Extra KM ₹{{ number_format($booking->pricing_details['extra_km_rate'], 2) }} · @endif
+                        @if($booking->pricing_details['extra_hour_rate'] ?? null)Extra hour ₹{{ number_format($booking->pricing_details['extra_hour_rate'], 2) }} · @endif
+                        @if($booking->pricing_details['toll_type'] ?? null)Toll {{ $booking->pricing_details['toll_type'] }} · @endif
+                        @if($booking->pricing_details['parking_type'] ?? null)Parking {{ $booking->pricing_details['parking_type'] }} · @endif
+                        @if($booking->pricing_details['border_tax_type'] ?? null)Border tax {{ $booking->pricing_details['border_tax_type'] }} · @endif
+                        @if($booking->pricing_details['night_charge'] ?? null)Night charge ₹{{ number_format($booking->pricing_details['night_charge'], 2) }} · @endif
+                        @if($booking->pricing_details['driver_food_type'] ?? null)Driver food {{ $booking->pricing_details['driver_food_type'] }} · @endif
+                        @if($booking->pricing_details['gst_applicable'] ?? false)GST applicable@endif
+                    </div>
+                </div>
+            @endif
+
             <div class="d-flex justify-between align-center mb-3">
                 <span style="font-size: 0.85rem; color: var(--slate-500); font-weight: 700; text-transform: uppercase;">Payment Status:</span>
                 <span class="badge {{ $booking->payment_status === 'Paid' ? 'badge-paid' : ($booking->payment_status === 'Partial' ? 'badge-warning' : 'badge-pending') }}">

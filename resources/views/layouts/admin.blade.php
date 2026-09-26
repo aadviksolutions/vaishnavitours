@@ -46,6 +46,9 @@
             <a href="{{ route('admin.vehicles.index') }}" class="admin-nav-item {{ request()->routeIs('admin.vehicles.*') ? 'active' : '' }}">
                 <span>🚗</span> Vehicles Fleet
             </a>
+            <a href="{{ route('admin.rates.index') }}" class="admin-nav-item {{ request()->routeIs('admin.rates.*') ? 'active' : '' }}">
+                <span>₹</span> Rates
+            </a>
             <a href="{{ route('admin.drivers.index') }}" class="admin-nav-item {{ request()->routeIs('admin.drivers.*') ? 'active' : '' }}">
                 <span>👨‍✈️</span> Chauffeurs / Drivers
             </a>

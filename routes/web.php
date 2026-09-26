@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AdminDriverController;
 use App\Http\Controllers\Admin\AdminInvoiceController;
 use App\Http\Controllers\Admin\AdminNotificationController;
 use App\Http\Controllers\Admin\AdminPaymentController;
+use App\Http\Controllers\Admin\AdminRateController;
 use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AdminSettingController;
 use App\Http\Controllers\Admin\AdminTripController;
@@ -132,6 +133,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Vehicles CRUD
     Route::resource('vehicles', AdminVehicleController::class);
+
+    // Rate configuration
+    Route::resource('rates', AdminRateController::class)->except(['show']);
 
     // Drivers CRUD
     Route::resource('drivers', AdminDriverController::class);

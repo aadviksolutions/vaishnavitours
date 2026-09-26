@@ -6,13 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\BookingStatusHistory;
 use App\Models\Driver;
-use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\RateRoute;
+use App\Models\RateVehiclePrice;
 use App\Models\Trip;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\BookingService;
 use App\Services\PaymentService;
+use App\Services\RateQuoteService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -39,17 +41,17 @@ class AdminBookingController extends Controller
             $s = $request->search;
             $query->where(function ($q) use ($s) {
                 $q->where('booking_id', 'like', "%{$s}%")
-                  ->orWhere('pickup_location', 'like', "%{$s}%")
-                  ->orWhere('destination', 'like', "%{$s}%")
-                  ->orWhereHas('customer', function ($cq) use ($s) {
-                      $cq->where('name', 'like', "%{$s}%")
-                         ->orWhere('phone', 'like', "%{$s}%");
-                  });
+                    ->orWhere('pickup_location', 'like', "%{$s}%")
+                    ->orWhere('destination', 'like', "%{$s}%")
+                    ->orWhereHas('customer', function ($cq) use ($s) {
+                        $cq->where('name', 'like', "%{$s}%")
+                            ->orWhere('phone', 'like', "%{$s}%");
+                    });
             });
         }
 
         $bookings = $query->latest()->paginate(15);
-        
+
         // Pass only Available vehicles and drivers for assignments
         $availableVehicles = Vehicle::where('status', 'Available')->get();
         $availableDrivers = Driver::where('status', 'Available')->get();
@@ -64,21 +66,51 @@ class AdminBookingController extends Controller
         $customers = User::where('role', 'customer')->orderBy('name')->get();
         $vehicles = Vehicle::where('status', 'Available')->get();
         $drivers = Driver::where('status', 'Available')->get();
+        $routes = RateRoute::query()->where('active', true)->with('vehiclePrices')->get();
+        $locations = $routes->flatMap(fn (RateRoute $route): array => array_filter([$route->origin, $route->destination]))
+            ->unique()->sort()->values();
+        $vehicleCategories = RateVehiclePrice::query()->distinct()->orderBy('vehicle_category')->pluck('vehicle_category');
+        $rateOptions = [];
+        $rateQuoteService = app(RateQuoteService::class);
+        foreach ($routes as $route) {
+            foreach ($route->vehiclePrices as $price) {
+                $directions = [[$route->origin, $route->destination]];
+                if ($route->return_same_rate && $route->origin && $route->destination) {
+                    $directions[] = [$route->destination, $route->origin];
+                }
+                foreach ($directions as [$origin, $destination]) {
+                    $key = implode('|', [$route->category, $origin ?? '', $destination ?? '', $price->vehicle_category]);
+                    $rateOptions[$key] = $rateQuoteService->quote($route->category, $origin ?? '', $destination ?? '', $price->vehicle_category);
+                }
+            }
+        }
 
-        return view('admin.bookings.create', compact('customers', 'vehicles', 'drivers'));
+        return view('admin.bookings.create', compact('customers', 'vehicles', 'drivers', 'locations', 'vehicleCategories', 'rateOptions'));
     }
 
     public function store(Request $request, BookingService $bookingService)
     {
+        $request->merge([
+            'trip_type' => match ($request->input('rate_category')) {
+                'airport' => 'Airport Transfer',
+                'round_trip' => 'Round-Trip',
+                'local_8h_80km', 'local_4h_40km' => 'Local Hourly',
+                default => 'One-Way',
+            },
+        ]);
+
         $data = $request->validate([
             'customer_id' => 'required|exists:users,id',
             'trip_type' => 'required|string',
             'pickup_location' => 'required|string|max:255',
             'destination' => 'required|string|max:255',
+            'rate_category' => 'required|in:airport,outstation,round_trip,local_8h_80km,local_4h_40km',
+            'vehicle_category' => 'required|string|max:80',
+            'estimated_km' => 'nullable|required_if:rate_category,round_trip|numeric|min:0.01',
             'travel_date' => 'required|date',
             'travel_time' => 'required',
             'return_date' => 'nullable|date',
-            'vehicle_id' => 'required|exists:vehicles,id',
+            'vehicle_id' => 'nullable|exists:vehicles,id',
             'driver_id' => 'nullable|exists:drivers,id',
             'total_amount' => 'required|numeric|min:0',
             'paid_amount' => 'nullable|numeric|min:0',
@@ -87,7 +119,7 @@ class AdminBookingController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        if (isset($data['paid_amount']) && (float)$data['paid_amount'] > (float)$data['total_amount']) {
+        if (isset($data['paid_amount']) && (float) $data['paid_amount'] > (float) $data['total_amount']) {
             throw ValidationException::withMessages([
                 'paid_amount' => ['Paid amount cannot exceed total fare amount.'],
             ]);
@@ -97,8 +129,8 @@ class AdminBookingController extends Controller
         $booking = $bookingService->createBooking($data, $user);
 
         // If specific admin overrides were provided:
-        $total = (float)$data['total_amount'];
-        $paid = (float)($data['paid_amount'] ?? 0);
+        $total = (float) $booking->total_amount;
+        $paid = (float) ($data['paid_amount'] ?? 0);
         $balance = max(0, $total - $paid);
 
         $booking->update([
@@ -168,8 +200,8 @@ class AdminBookingController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $totalAmount = (float)$data['total_amount'];
-        $paidAmount = (float)$data['paid_amount'];
+        $totalAmount = (float) $data['total_amount'];
+        $paidAmount = (float) $data['paid_amount'];
 
         if ($paidAmount > $totalAmount) {
             throw ValidationException::withMessages([
@@ -252,7 +284,8 @@ class AdminBookingController extends Controller
         ]);
 
         try {
-            $bookingService->assignVehicle($booking, (int)$request->vehicle_id, Auth::user());
+            $bookingService->assignVehicle($booking, (int) $request->vehicle_id, Auth::user());
+
             return back()->with('success', "Vehicle successfully allocated to Booking #{$booking->booking_id}!");
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
@@ -269,7 +302,8 @@ class AdminBookingController extends Controller
         ]);
 
         try {
-            $bookingService->assignDriver($booking, (int)$request->driver_id, Auth::user());
+            $bookingService->assignDriver($booking, (int) $request->driver_id, Auth::user());
+
             return back()->with('success', "Chauffeur successfully assigned and Trip activated for Booking #{$booking->booking_id}!");
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
@@ -286,8 +320,8 @@ class AdminBookingController extends Controller
             'paid_amount' => 'required|numeric|min:0',
         ]);
 
-        $total = (float)$request->total_amount;
-        $paid = (float)$request->paid_amount;
+        $total = (float) $request->total_amount;
+        $paid = (float) $request->paid_amount;
 
         if ($paid > $total) {
             return back()->with('error', 'Validation Error: Paid Amount cannot be greater than Total Fare Amount.');
@@ -326,8 +360,8 @@ class AdminBookingController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $amount = (float)$request->amount;
-        $maxPayable = (float)$booking->total_amount - (float)$booking->paid_amount;
+        $amount = (float) $request->amount;
+        $maxPayable = (float) $booking->total_amount - (float) $booking->paid_amount;
 
         if ($amount > $maxPayable) {
             return back()->with('error', "Cannot accept payment of ₹{$amount}. Remaining balance is ₹{$maxPayable}.");
@@ -336,12 +370,12 @@ class AdminBookingController extends Controller
         $paymentService->recordPayment($booking, [
             'amount' => $amount,
             'payment_method' => $request->payment_method,
-            'transaction_id' => $request->transaction_id ?: ('TXN-' . strtoupper(uniqid())),
+            'transaction_id' => $request->transaction_id ?: ('TXN-'.strtoupper(uniqid())),
             'status' => 'Success',
             'notes' => $request->notes,
         ], Auth::user());
 
-        return back()->with('success', "Payment of ₹" . number_format($amount, 2) . " recorded successfully for Booking #{$booking->booking_id}!");
+        return back()->with('success', 'Payment of ₹'.number_format($amount, 2)." recorded successfully for Booking #{$booking->booking_id}!");
     }
 
     /**
@@ -359,6 +393,7 @@ class AdminBookingController extends Controller
 
         try {
             $bookingService->updateStatus($booking, $newStatus, $remarks, Auth::user());
+
             return back()->with('success', "Booking #{$booking->booking_id} status transitioned to '{$newStatus}'!");
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();

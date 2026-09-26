@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Booking;
 use App\Models\User;
 use App\Models\Vehicle;
+use Database\Seeders\RateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -29,8 +30,8 @@ class BookingTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Book Your Cab with Vaishnavi Tours');
-        $response->assertSee('Maruti Suzuki Dzire');
-        $response->assertSee('Sedan');
+        $response->assertSee('name="vehicle_category"', false);
+        $response->assertSee('Select pickup city');
         $response->assertSee('terms_accepted');
         $response->assertSee(route('terms-and-conditions'));
         $response->assertSee(route('cancellation-refund-policy'));
@@ -85,9 +86,10 @@ class BookingTest extends TestCase
             'mobile',
             'pickup_location',
             'destination',
+            'rate_category',
+            'vehicle_category',
             'travel_date',
             'travel_time',
-            'vehicle_id',
             'terms_accepted',
         ]);
     }
@@ -109,6 +111,8 @@ class BookingTest extends TestCase
             'customer_name' => 'Demo Customer',
             'mobile' => '9876543210',
             'trip_type' => 'One-Way',
+            'rate_category' => 'airport',
+            'vehicle_category' => 'Sedan',
             'pickup_location' => 'Mangal Chowk, Bilaspur',
             'destination' => 'Raipur Airport',
             'travel_date' => now()->addDay()->format('Y-m-d'),
@@ -143,6 +147,7 @@ class BookingTest extends TestCase
 
     public function test_post_booking_creates_booking_for_guest(): void
     {
+        $this->seed(RateSeeder::class);
         $vehicle = Vehicle::create([
             'name' => 'Toyota Innova Crysta',
             'registration_number' => 'CG-10-TR-9988',
@@ -158,23 +163,29 @@ class BookingTest extends TestCase
             'customer_name' => 'Guest Traveler',
             'mobile' => '9876543211',
             'email' => 'guest@example.com',
-            'trip_type' => 'One-Way',
-            'pickup_location' => 'Mangal Chowk, Bilaspur',
+            'trip_type' => 'Airport Transfer',
+            'rate_category' => 'airport',
+            'vehicle_category' => 'Innova Crysta',
+            'pickup_location' => 'Bilaspur',
             'destination' => 'Raipur Airport',
             'travel_date' => now()->addDays(2)->format('Y-m-d'),
             'travel_time' => '09:30',
             'vehicle_id' => $vehicle->id,
+            'total_amount' => 1,
             'notes' => 'Need child booster seat',
             'terms_accepted' => '1',
         ];
 
         $response = $this->post('/booking', $postData);
 
-        $booking = Booking::where('pickup_location', 'Mangal Chowk, Bilaspur')->first();
+        $booking = Booking::where('pickup_location', 'Bilaspur')->first();
         $this->assertNotNull($booking);
         $this->assertEquals('Pending', $booking->booking_status);
         $this->assertMatchesRegularExpression('/^VT-\\d+$/', $booking->booking_id);
         $this->assertEquals($vehicle->id, $booking->vehicle_id);
+        $this->assertSame('airport', $booking->rate_category);
+        $this->assertSame('4500.00', $booking->total_amount);
+        $this->assertSame(true, $booking->pricing_details['gst_applicable'] === false);
         $this->assertTrue($booking->terms_accepted);
         $this->assertNotNull($booking->terms_accepted_at);
         $this->assertEquals('1.0', $booking->terms_version);
@@ -192,6 +203,7 @@ class BookingTest extends TestCase
 
     public function test_post_booking_associates_with_authenticated_customer(): void
     {
+        $this->seed(RateSeeder::class);
         $user = User::factory()->create([
             'name' => 'Registered Customer',
             'phone' => '9123456780',
@@ -212,9 +224,11 @@ class BookingTest extends TestCase
         $postData = [
             'customer_name' => $user->name,
             'mobile' => $user->phone,
-            'trip_type' => 'Round-Trip',
-            'pickup_location' => 'Vyapar Vihar, Bilaspur',
-            'destination' => 'Amarkantak',
+            'trip_type' => 'One-Way',
+            'rate_category' => 'outstation',
+            'vehicle_category' => 'Sedan',
+            'pickup_location' => 'Bilaspur',
+            'destination' => 'Raigarh',
             'travel_date' => now()->addDays(3)->format('Y-m-d'),
             'travel_time' => '06:00',
             'vehicle_id' => $vehicle->id,
@@ -223,13 +237,35 @@ class BookingTest extends TestCase
 
         $response = $this->actingAs($user)->post('/booking', $postData);
 
-        $booking = Booking::where('destination', 'Amarkantak')->first();
+        $booking = Booking::where('destination', 'Raigarh')->first();
         $this->assertNotNull($booking);
         $this->assertEquals($user->id, $booking->customer_id);
         $this->assertTrue($booking->terms_accepted);
         $this->assertNotNull($booking->terms_accepted_at);
 
         $response->assertRedirect(route('booking.success', $booking->id));
+    }
+
+    public function test_post_booking_rejects_unconfigured_routes_without_creating_a_booking(): void
+    {
+        $response = $this->from('/booking')->post('/booking', [
+            'customer_name' => 'Guest Traveler',
+            'mobile' => '9876543212',
+            'trip_type' => 'One-Way',
+            'rate_category' => 'outstation',
+            'vehicle_category' => 'Sedan',
+            'pickup_location' => 'Korba',
+            'destination' => 'Ambikapur',
+            'travel_date' => now()->addDay()->format('Y-m-d'),
+            'travel_time' => '08:00',
+            'terms_accepted' => '1',
+        ]);
+
+        $response->assertRedirect('/booking');
+        $response->assertSessionHasErrors([
+            'destination' => 'Rate not configured. Please contact Vaishnavi Tours.',
+        ]);
+        $this->assertDatabaseMissing('bookings', ['destination' => 'Ambikapur']);
     }
 
     public function test_booking_id_generation_sequential(): void

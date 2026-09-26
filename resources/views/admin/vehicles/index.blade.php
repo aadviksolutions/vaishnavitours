@@ -69,7 +69,6 @@
                                     <a href="{{ route('admin.vehicles.show', $veh->id) }}" style="font-weight: 800; color: var(--dark-900);">
                                         {{ $veh->name }}
                                     </a>
-                                    <div style="font-size: 0.75rem; color: var(--slate-500);">₹{{ number_format($veh->per_km_rate, 2) }}/km</div>
                                 </div>
                             </div>
                         </td>
