@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Bilaspur Taxi & Cab Service | 24/7 Car Rental | Vaishnavi Tours')
-@section('meta_description', 'Book trusted 24/7 taxi & cab service in Bilaspur, Chhattisgarh with Vaishnavi Tours. Clean AC cabs, outstation travel to Raipur & Korba, airport transfers, transparent pricing.')
+@section('title', 'Vaishnavi Tours | 24/7 Taxi & Cab Service Across Chhattisgarh')
+@section('meta_description', 'Vaishnavi Tours provides reliable 24/7 taxi and cab services across Chhattisgarh, including Bilaspur, Raipur, Raigarh, Korba, Ambikapur and nearby destinations.')
 @section('canonical', route('home'))
 
 @push('schema')
@@ -12,10 +12,10 @@
     'mainEntity' => [
         [
             '@type' => 'Question',
-            'name' => 'What taxi and cab services does Vaishnavi Tours provide in Bilaspur?',
+            'name' => 'What taxi and cab services does Vaishnavi Tours provide across Chhattisgarh?',
             'acceptedAnswer' => [
                 '@type' => 'Answer',
-                'text' => 'Vaishnavi Tours provides 24/7 local city taxi travel, outstation cabs from Bilaspur to all Chhattisgarh districts, dedicated airport pickup and drop transfers to Raipur Airport (RPR), and group rental coaches.'
+                'text' => 'Vaishnavi Tours provides 24/7 local, airport and outstation taxi services across Chhattisgarh, including Bilaspur, Raipur, Raigarh, Korba, Ambikapur, Bhilai and other service locations.'
             ]
         ],
         [
@@ -56,13 +56,13 @@
                 <!-- Hero Left Content -->
                 <div>
                     <div class="hero-badge">
-                        <x-icon name="car-front" size="14" class="text-primary" style="margin-right: 4px;" /> 24/7 Bilaspur & Chhattisgarh Travel
+                        <x-icon name="car-front" size="14" class="text-primary" style="margin-right: 4px;" /> 24/7 Chhattisgarh Travel
                     </div>
                     <h1 class="hero-title">
-                        Reliable 24/7 Taxi &amp; Cab <span>Service in Bilaspur</span>
+                        Reliable 24/7 Taxi &amp; Cab <span>Service Across Chhattisgarh</span>
                     </h1>
                     <p class="hero-desc">
-                        Reliable taxi service for local and outstation travel.
+                        Reliable taxi service for local, airport and outstation travel across Chhattisgarh.
                     </p>
 
                     <div class="d-flex gap-3 flex-wrap align-center">
