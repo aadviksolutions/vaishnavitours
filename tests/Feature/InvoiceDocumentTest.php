@@ -25,6 +25,10 @@ class InvoiceDocumentTest extends TestCase
         Setting::create(['key' => 'bank_account_number', 'value' => 'ACCOUNT-TEST']);
         Setting::create(['key' => 'bank_ifsc_code', 'value' => 'IFSC-TEST']);
         Setting::create(['key' => 'booking_terms', 'value' => 'Configured booking terms']);
+        Setting::updateOrCreate(
+            ['key' => 'gstin'],
+            ['value' => config('vaishnavi.gstin'), 'group' => 'billing']
+        );
 
         $response = $this->actingAs($customer)->get(route('invoice.show', $booking));
 
@@ -36,6 +40,7 @@ class InvoiceDocumentTest extends TestCase
         $response->assertSee('Sample Customer');
         $response->assertSee('10 Sample Street, Raipur, Chhattisgarh, 492001');
         $response->assertSee('9820000000');
+        $response->assertSee('GSTIN: 22DXEPS5353C1ZN');
         $response->assertSee('Sample Driver');
         $response->assertSee('CG-04-AB-1234');
         $response->assertSee('Raipur to Bilaspur Oneway Taxi Service with Sedan');

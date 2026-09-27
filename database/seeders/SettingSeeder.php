@@ -23,7 +23,7 @@ class SettingSeeder extends Seeder
             ['key' => 'city', 'value' => 'Bilaspur', 'group' => 'address'],
             ['key' => 'state', 'value' => 'Chhattisgarh', 'group' => 'address'],
             ['key' => 'pincode', 'value' => '495001', 'group' => 'address'],
-            ['key' => 'gstin', 'value' => '22AAAAA0000A1Z5', 'group' => 'billing'],
+            ['key' => 'gstin', 'value' => config('vaishnavi.gstin'), 'group' => 'billing'],
             ['key' => 'booking_terms', 'value' => 'Toll and parking charges extra if applicable. Driver night allowance applicable between 10:00 PM and 06:00 AM.', 'group' => 'booking'],
         ];
 

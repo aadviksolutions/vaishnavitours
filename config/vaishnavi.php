@@ -76,7 +76,7 @@ return [
     // Verified Emails
     'contact_email' => 'info@vaishnavitours.com',
     'support_email' => 'support@vaishnavitours.com',
-    'gstin' => env('BUSINESS_GSTIN'),
+    'gstin' => '22DXEPS5353C1ZN',
     'bank_account_name' => env('BANK_ACCOUNT_NAME'),
     'bank_ifsc_code' => env('BANK_IFSC_CODE'),
     'bank_account_number' => env('BANK_ACCOUNT_NUMBER'),
