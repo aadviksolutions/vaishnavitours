@@ -18,7 +18,7 @@ return new class extends Migration
             $table->date('travel_date')->index();
             $table->time('travel_time');
             $table->date('return_date')->nullable();
-            $table->foreignId('vehicle_id')->nullable()->constrained('vehicles')->nullOnDelete();
+            $table->foreign('vehicle_id', 'fk_bookings_vehicle_id')->references('id')->on('vehicles')->nullOnDelete();
             $table->foreignId('driver_id')->nullable()->constrained('drivers')->nullOnDelete();
             $table->decimal('total_amount', 10, 2)->default(0.00);
             $table->decimal('paid_amount', 10, 2)->default(0.00);
