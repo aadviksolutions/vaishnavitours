@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
+use App\Services\InvoiceDocumentService;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
 class AdminInvoiceController extends Controller
@@ -21,9 +23,20 @@ class AdminInvoiceController extends Controller
         return view('admin.invoices.index', compact('invoices'));
     }
 
-    public function show(Invoice $invoice)
+    public function show(Invoice $invoice, InvoiceDocumentService $invoiceDocumentService): View
     {
-        $invoice->load(['booking.vehicle', 'booking.driver', 'customer.customer']);
-        return view('admin.invoices.show', compact('invoice'));
+        $invoice->loadMissing([
+            'booking.customer.customer',
+            'booking.vehicle',
+            'booking.driver',
+            'booking.payments',
+            'booking.rateVehiclePrice',
+        ]);
+
+        $booking = $invoice->booking;
+        $document = $invoiceDocumentService->forBooking($booking);
+        $backUrl = route('admin.invoices.index');
+
+        return view('invoices.printable', compact('invoice', 'booking', 'document', 'backUrl'));
     }
 }

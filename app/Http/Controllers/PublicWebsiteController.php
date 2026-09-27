@@ -165,6 +165,11 @@ class PublicWebsiteController extends Controller
         return view('public.services.index');
     }
 
+    public function ambulanceServices()
+    {
+        return view('public.ambulance-services');
+    }
+
     public function localTaxi()
     {
         $vehicles = $this->getActiveVehicles();
@@ -194,6 +199,7 @@ class PublicWebsiteController extends Controller
         $pages = [
             ['loc' => $domain.'/', 'lastmod' => $today, 'changefreq' => 'daily', 'priority' => '1.0'],
             ['loc' => $domain.'/services', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.9'],
+            ['loc' => $domain.'/ambulance-services', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.8'],
             ['loc' => $domain.'/services/local-taxi', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.9'],
             ['loc' => $domain.'/services/outstation-taxi', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.9'],
             ['loc' => $domain.'/services/airport-transfer', 'lastmod' => $today, 'changefreq' => 'weekly', 'priority' => '0.9'],

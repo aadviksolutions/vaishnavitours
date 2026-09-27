@@ -113,7 +113,33 @@
 
                 <div class="form-group">
                     <label for="gstin" class="form-label">Goods & Services Tax (GSTIN) Number</label>
-                    <input type="text" name="gstin" id="gstin" class="form-control" value="{{ old('gstin', $settings['gstin']->value ?? '22AAAAA0000A1Z5') }}">
+                    <input type="text" name="gstin" id="gstin" class="form-control" value="{{ old('gstin', $settings['gstin']->value ?? config('vaishnavi.gstin')) }}">
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">Bank Details for Invoices</h3>
+
+                <div class="grid grid-2 gap-3 mb-3">
+                    <div class="form-group">
+                        <label for="bank_account_name" class="form-label">Account Name</label>
+                        <input type="text" name="bank_account_name" id="bank_account_name" class="form-control" value="{{ old('bank_account_name', $settings['bank_account_name']->value ?? config('vaishnavi.bank_account_name')) }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="bank_name" class="form-label">Bank</label>
+                        <input type="text" name="bank_name" id="bank_name" class="form-control" value="{{ old('bank_name', $settings['bank_name']->value ?? config('vaishnavi.bank_name')) }}">
+                    </div>
+                </div>
+
+                <div class="grid grid-2 gap-3">
+                    <div class="form-group">
+                        <label for="bank_account_number" class="form-label">Account Number</label>
+                        <input type="text" name="bank_account_number" id="bank_account_number" class="form-control" value="{{ old('bank_account_number', $settings['bank_account_number']->value ?? config('vaishnavi.bank_account_number')) }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="bank_ifsc_code" class="form-label">IFSC Code</label>
+                        <input type="text" name="bank_ifsc_code" id="bank_ifsc_code" class="form-control" value="{{ old('bank_ifsc_code', $settings['bank_ifsc_code']->value ?? config('vaishnavi.bank_ifsc_code')) }}">
+                    </div>
                 </div>
             </div>
 
@@ -123,7 +149,7 @@
 
                 <div class="form-group">
                     <label for="booking_terms" class="form-label">Standard Customer Policy (Printed on Invoices)</label>
-                    <textarea name="booking_terms" id="booking_terms" class="form-control" rows="3">{{ old('booking_terms', $settings['booking_terms']->value ?? 'Toll plaza taxes, state border permits & parking fees are extra if applicable. Night driving allowance applies between 10:00 PM and 06:00 AM.') }}</textarea>
+                    <textarea name="booking_terms" id="booking_terms" class="form-control" rows="3">{{ old('booking_terms', $settings['booking_terms']->value ?? config('vaishnavi.booking_terms')) }}</textarea>
                 </div>
             </div>
 

@@ -177,6 +177,7 @@
             <div class="nav-links" id="nav-links-menu">
                 <a href="{{ route('home') }}" class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}">Home</a>
                 <a href="{{ route('services') }}" class="nav-link {{ request()->routeIs('services*') ? 'active' : '' }}">Services</a>
+                <a href="{{ route('ambulance-services') }}" class="nav-link {{ request()->routeIs('ambulance-services') ? 'active' : '' }}">Ambulance Services</a>
                 <a href="{{ route('rates') }}" class="nav-link {{ request()->routeIs('rates') ? 'active' : '' }}">Rates</a>
                 <a href="{{ route('vehicles') }}" class="nav-link {{ request()->routeIs('vehicles') ? 'active' : '' }}">Vehicles</a>
                 <a href="{{ route('service-network') }}" class="nav-link {{ request()->routeIs('service-network') || request()->routeIs('network') ? 'active' : '' }}">Service Network</a>
@@ -226,6 +227,7 @@
             <nav class="mobile-drawer-nav">
                 <a href="{{ route('home') }}" class="mobile-nav-link {{ request()->routeIs('home') ? 'active' : '' }}">Home</a>
                 <a href="{{ route('services') }}" class="mobile-nav-link {{ request()->routeIs('services*') ? 'active' : '' }}">Services</a>
+                <a href="{{ route('ambulance-services') }}" class="mobile-nav-link {{ request()->routeIs('ambulance-services') ? 'active' : '' }}">Ambulance Services</a>
                 <a href="{{ route('rates') }}" class="mobile-nav-link {{ request()->routeIs('rates') ? 'active' : '' }}">Rates</a>
                 <a href="{{ route('vehicles') }}" class="mobile-nav-link {{ request()->routeIs('vehicles') ? 'active' : '' }}">Vehicles</a>
                 <a href="{{ route('service-network') }}" class="mobile-nav-link {{ request()->routeIs('service-network') || request()->routeIs('network') ? 'active' : '' }}">Service Network</a>

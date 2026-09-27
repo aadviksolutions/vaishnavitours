@@ -33,6 +33,7 @@ Route::post('/booking', [PublicWebsiteController::class, 'storeBooking'])->name(
 Route::get('/booking-success/{booking}', [PublicWebsiteController::class, 'bookingSuccess'])->name('booking.success');
 
 Route::get('/services', [PublicWebsiteController::class, 'services'])->name('services');
+Route::get('/ambulance-services', [PublicWebsiteController::class, 'ambulanceServices'])->name('ambulance-services');
 Route::get('/services/local-taxi', [PublicWebsiteController::class, 'localTaxi'])->name('services.local-taxi');
 Route::get('/services/outstation-taxi', [PublicWebsiteController::class, 'outstationTaxi'])->name('services.outstation-taxi');
 Route::get('/services/airport-transfer', [PublicWebsiteController::class, 'airportTransfer'])->name('services.airport-transfer');

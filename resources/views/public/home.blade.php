@@ -375,41 +375,20 @@
         </div>
     </section>
 
-    <!-- 6. Emergency / Ambulance Service Section -->
-    <section class="emergency-banner" id="emergency-service">
+    <!-- 6. Ambulance Services Preview -->
+    <section class="ambulance-home-preview" id="emergency-service">
         <div class="container">
-            <div class="grid grid-2 gap-4 align-center">
+            <div class="ambulance-home-heading">
                 <div>
-                    <div style="background: rgba(245, 158, 11, 0.2); display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 700; color: var(--primary); margin-bottom: 1rem;">
-                        <x-icon name="life-buoy" size="16" style="margin-right: 4px;" /> Standby Road Assistance
-                    </div>
-                    <h2 style="color: #FFFFFF; font-size: 2.25rem; margin-bottom: 1rem;">
-                        Emergency & Ambulance Service
-                    </h2>
-                    <p style="font-size: 1.05rem; color: var(--slate-300); margin-bottom: 1.5rem; line-height: 1.7;">
-                        Priority patient transport and urgent hospital transfers from Bilaspur to medical centers, Apollo Bilaspur, CIMS, and AIIMS Raipur. Dedicated dispatch on active standby.
-                    </p>
-                    <ul style="color: var(--slate-300); font-size: 0.95rem; margin-bottom: 2rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                        <li style="display: flex; align-items: center; gap: 8px;"><x-icon name="circle-check" size="16" class="text-primary" style="flex-shrink: 0;" /><span>Rapid medical hospital pick and drop service</span></li>
-                        <li style="display: flex; align-items: center; gap: 8px;"><x-icon name="circle-check" size="16" class="text-primary" style="flex-shrink: 0;" /><span>Direct highway connectivity between Bilaspur and Raipur hospitals</span></li>
-                        <li style="display: flex; align-items: center; gap: 8px;"><x-icon name="circle-check" size="16" class="text-primary" style="flex-shrink: 0;" /><span>Patient-friendly, careful chauffeurs available 24/7</span></li>
-                    </ul>
-                    <div class="d-flex gap-2 flex-wrap">
-                        <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" class="btn btn-primary btn-lg">
-                            <x-icon name="phone" size="18" style="margin-right: 6px;" /> Call Us: {{ config('vaishnavi.phone_primary') }}
-                        </a>
-                        <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" class="btn btn-outline btn-lg" style="color: #fff; border-color: rgba(255,255,255,0.4); text-decoration: none;">
-                            <x-icon.whatsapp size="20" style="margin-right: 6px;" /> Chat on WhatsApp
-                        </a>
-                    </div>
+                    <span class="ambulance-kicker">Additional Specialized Service</span>
+                    <h2>24/7 Ambulance Services</h2>
+                    <p>Ambulance support for emergency and non-emergency transportation, including body freezer, ventilator, ICU and deceased-person transfer services.</p>
                 </div>
-
-                <div>
-                    <div class="emergency-visual-wrap">
-                        <img src="{{ asset('assets/images/emergency-ambulance.jpg') }}" alt="Emergency and Ambulance Transport Service" class="emergency-visual-img">
-                    </div>
-                </div>
+                <a href="{{ route('ambulance-services') }}" class="btn btn-primary">
+                    View Ambulance Services <x-icon name="arrow-right" size="16" style="margin-left: 6px;" />
+                </a>
             </div>
+            @include('public.partials.ambulance-service-cards', ['compact' => true])
         </div>
     </section>
 

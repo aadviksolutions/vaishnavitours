@@ -19,7 +19,9 @@ class ExampleTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('vaishnavi-tours-logo.png');
         $response->assertSee('hero-taxi.jpg');
-        $response->assertSee('emergency-ambulance.jpg');
+        $response->assertSee('24/7 Ambulance Services');
+        $response->assertSee('View Ambulance Services');
+        $response->assertSee(route('ambulance-services'));
         $response->assertSee('about-travel.jpg');
         $response->assertSee('Book Your Taxi');
         $response->assertSee('Maruti Suzuki Dzire');
