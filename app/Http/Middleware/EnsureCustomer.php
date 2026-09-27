@@ -11,7 +11,7 @@ class EnsureCustomer
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login')->with('error', 'Please log in to access your customer dashboard.');
         }
 

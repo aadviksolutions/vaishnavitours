@@ -13,6 +13,7 @@ class CustomerProfileController extends Controller
     public function edit()
     {
         $user = Auth::user()->load('customer');
+
         return view('customer.profile', compact('user'));
     }
 
@@ -22,7 +23,7 @@ class CustomerProfileController extends Controller
 
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20|unique:users,phone,' . $user->id,
+            'phone' => 'required|string|max:20|unique:users,phone,'.$user->id,
             'alternate_phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
             'city' => 'nullable|string|max:100',
@@ -37,8 +38,8 @@ class CustomerProfileController extends Controller
             'phone' => $data['phone'],
         ]);
 
-        if (!empty($data['new_password'])) {
-            if (!Hash::check($data['current_password'], $user->password)) {
+        if (! empty($data['new_password'])) {
+            if (! Hash::check($data['current_password'], $user->password)) {
                 return back()->withErrors(['current_password' => 'The current password provided is incorrect.']);
             }
             $user->update(['password' => Hash::make($data['new_password'])]);

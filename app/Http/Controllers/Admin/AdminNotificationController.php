@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
-use Illuminate\Http\Request;
 
 class AdminNotificationController extends Controller
 {
@@ -22,12 +21,14 @@ class AdminNotificationController extends Controller
     public function markRead(Notification $notification)
     {
         $notification->update(['is_read' => true]);
+
         return back()->with('success', 'Notification marked as read.');
     }
 
     public function markAllRead()
     {
         Notification::whereNull('user_id')->update(['is_read' => true]);
+
         return back()->with('success', 'All notifications marked as read.');
     }
 }

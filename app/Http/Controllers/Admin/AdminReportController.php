@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Driver;
-use App\Models\Payment;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
 

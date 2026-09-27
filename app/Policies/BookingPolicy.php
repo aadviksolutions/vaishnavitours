@@ -12,7 +12,7 @@ class BookingPolicy
      */
     public function view(User $user, Booking $booking): bool
     {
-        return $user->isAdmin() || (int)$booking->customer_id === (int)$user->id;
+        return $user->isAdmin() || (int) $booking->customer_id === (int) $user->id;
     }
 
     /**
@@ -28,7 +28,7 @@ class BookingPolicy
      */
     public function cancel(User $user, Booking $booking): bool
     {
-        return $user->isAdmin() || (int)$booking->customer_id === (int)$user->id;
+        return $user->isAdmin() || (int) $booking->customer_id === (int) $user->id;
     }
 
     /**
@@ -36,7 +36,7 @@ class BookingPolicy
      */
     public function viewInvoice(User $user, Booking $booking): bool
     {
-        return $user->isAdmin() || (int)$booking->customer_id === (int)$user->id;
+        return $user->isAdmin() || (int) $booking->customer_id === (int) $user->id;
     }
 
     /**

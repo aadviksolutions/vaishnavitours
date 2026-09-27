@@ -19,7 +19,7 @@ class AdminTripController extends Controller
         if ($request->filled('status')) {
             $query->where(function ($q) use ($request) {
                 $q->where('status', $request->status)
-                  ->orWhere('trip_status', $request->status);
+                    ->orWhere('trip_status', $request->status);
             });
         }
 
@@ -27,11 +27,11 @@ class AdminTripController extends Controller
             $s = $request->search;
             $query->where(function ($q) use ($s) {
                 $q->where('id', $s)
-                  ->orWhereHas('booking', function ($bq) use ($s) {
-                      $bq->where('booking_id', 'like', "%{$s}%")
-                         ->orWhere('pickup_location', 'like', "%{$s}%")
-                         ->orWhere('destination', 'like', "%{$s}%");
-                  });
+                    ->orWhereHas('booking', function ($bq) use ($s) {
+                        $bq->where('booking_id', 'like', "%{$s}%")
+                            ->orWhere('pickup_location', 'like', "%{$s}%")
+                            ->orWhere('destination', 'like', "%{$s}%");
+                    });
             });
         }
 
@@ -67,9 +67,9 @@ class AdminTripController extends Controller
             'notes' => $data['route_notes'],
         ];
 
-        if ($newStatus === 'Trip Started' && !$trip->started_at) {
+        if ($newStatus === 'Trip Started' && ! $trip->started_at) {
             $update['started_at'] = now();
-        } elseif ($newStatus === 'Completed' && !$trip->completed_at) {
+        } elseif ($newStatus === 'Completed' && ! $trip->completed_at) {
             $update['completed_at'] = now();
         }
 

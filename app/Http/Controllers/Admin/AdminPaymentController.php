@@ -52,6 +52,6 @@ class AdminPaymentController extends Controller
         $payment = $paymentService->recordPayment($booking, $data, Auth::user());
 
         return redirect()->route('admin.bookings.show', $booking->id)
-            ->with('success', "Payment of ₹" . number_format($payment->amount, 2) . " recorded successfully!");
+            ->with('success', 'Payment of ₹'.number_format($payment->amount, 2).' recorded successfully!');
     }
 }

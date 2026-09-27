@@ -7,9 +7,7 @@ use App\Models\Booking;
 use App\Models\Driver;
 use App\Models\Notification;
 use App\Models\Payment;
-use App\Models\Trip;
 use App\Models\Vehicle;
-use Illuminate\Http\Request;
 
 class AdminDashboardController extends Controller
 {

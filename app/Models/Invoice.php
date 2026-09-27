@@ -33,7 +33,7 @@ class Invoice extends Model
 
         static::creating(function ($invoice) {
             if (empty($invoice->invoice_number)) {
-                $invoice->invoice_number = 'INV-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -4));
+                $invoice->invoice_number = 'INV-'.date('Ymd').'-'.strtoupper(substr(uniqid(), -4));
             }
             if (empty($invoice->issued_at)) {
                 $invoice->issued_at = now();

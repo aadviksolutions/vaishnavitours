@@ -36,7 +36,7 @@ class Payment extends Model
 
         static::creating(function ($payment) {
             if (empty($payment->payment_id)) {
-                $payment->payment_id = 'PAY-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -4));
+                $payment->payment_id = 'PAY-'.date('Ymd').'-'.strtoupper(substr(uniqid(), -4));
             }
             if (empty($payment->paid_at) && $payment->status === 'Success') {
                 $payment->paid_at = now();

@@ -2,7 +2,8 @@
 
 error_reporting(E_ALL & ~E_DEPRECATED);
 
-function request($url, $method = 'GET', $data = [], $cookieFile = null) {
+function request($url, $method = 'GET', $data = [], $cookieFile = null)
+{
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -27,8 +28,8 @@ function request($url, $method = 'GET', $data = [], $cookieFile = null) {
 }
 
 $baseUrl = 'http://127.0.0.1:8000';
-$cookieFileAdmin = sys_get_temp_dir() . '/cookie_admin_' . uniqid() . '.txt';
-$cookieFileCustomer = sys_get_temp_dir() . '/cookie_cust_' . uniqid() . '.txt';
+$cookieFileAdmin = sys_get_temp_dir().'/cookie_admin_'.uniqid().'.txt';
+$cookieFileCustomer = sys_get_temp_dir().'/cookie_cust_'.uniqid().'.txt';
 
 echo "1. Testing Public GET /booking\n";
 $res = request("{$baseUrl}/booking");
@@ -50,13 +51,13 @@ echo "\n3. Testing Admin Bookings Dashboard\n";
 $adminBookings = request("{$baseUrl}/admin/bookings", 'GET', [], $cookieFileAdmin);
 echo "   GET /admin/bookings Status: {$adminBookings['code']} (Expected: 200)\n";
 $hasVT = strpos($adminBookings['body'], 'VT-1001') !== false;
-echo "   Contains VT-1001: " . ($hasVT ? 'YES' : 'NO') . "\n";
+echo '   Contains VT-1001: '.($hasVT ? 'YES' : 'NO')."\n";
 
 echo "\n4. Testing Admin Trips Dashboard\n";
 $adminTrips = request("{$baseUrl}/admin/trips", 'GET', [], $cookieFileAdmin);
 echo "   GET /admin/trips Status: {$adminTrips['code']} (Expected: 200)\n";
 $hasTrip = strpos($adminTrips['body'], '#TRIP-') !== false;
-echo "   Contains #TRIP-: " . ($hasTrip ? 'YES' : 'NO') . "\n";
+echo '   Contains #TRIP-: '.($hasTrip ? 'YES' : 'NO')."\n";
 
 echo "\n5. Testing Customer Login (Rajesh Sharma)\n";
 $loginPageCust = request("{$baseUrl}/login", 'GET', [], $cookieFileCustomer);
@@ -74,7 +75,7 @@ echo "\n6. Testing Customer Dashboard & Upcoming Trip Timeline\n";
 $custDash = request("{$baseUrl}/customer/dashboard", 'GET', [], $cookieFileCustomer);
 echo "   GET /customer/dashboard Status: {$custDash['code']} (Expected: 200)\n";
 $hasTimeline = strpos($custDash['body'], 'Booking Confirmed') !== false;
-echo "   Contains Upcoming Trip Timeline: " . ($hasTimeline ? 'YES' : 'NO') . "\n";
+echo '   Contains Upcoming Trip Timeline: '.($hasTimeline ? 'YES' : 'NO')."\n";
 
 echo "\n7. Testing Customer 'My Bookings'\n";
 $custBookings = request("{$baseUrl}/customer/bookings", 'GET', [], $cookieFileCustomer);
@@ -89,9 +90,9 @@ echo "\n8. Testing Print-Friendly Invoice ({$invoiceUrl})\n";
 $invoiceRes = request($invoiceUrl, 'GET', [], $cookieFileCustomer);
 echo "   GET {$invoiceUrl} Status: {$invoiceRes['code']} (Expected: 200)\n";
 $hasTaxInvoice = strpos($invoiceRes['body'], 'TAX INVOICE') !== false;
-echo "   Contains TAX INVOICE: " . ($hasTaxInvoice ? 'YES' : 'NO') . "\n";
+echo '   Contains TAX INVOICE: '.($hasTaxInvoice ? 'YES' : 'NO')."\n";
 $hasBrand = strpos($invoiceRes['body'], 'VAISHNAVI TOURS') !== false;
-echo "   Contains VAISHNAVI TOURS: " . ($hasBrand ? 'YES' : 'NO') . "\n";
+echo '   Contains VAISHNAVI TOURS: '.($hasBrand ? 'YES' : 'NO')."\n";
 
 echo "\n9. Testing Customer A trying to access Customer B's invoice (Policy Security)\n";
 // Booking ID 2 belongs to Amit Patel (Customer B). Customer A (Rajesh) must get 403

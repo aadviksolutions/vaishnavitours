@@ -1,13 +1,13 @@
 <?php
 
-require __DIR__ . '/../vendor/autoload.php';
-$app = require_once __DIR__ . '/../bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+require __DIR__.'/../vendor/autoload.php';
+$app = require_once __DIR__.'/../bootstrap/app.php';
+$kernel = $app->make(Kernel::class);
 $kernel->bootstrap();
 
-use App\Services\BookingService;
 use App\Models\Notification;
-use App\Models\Booking;
+use App\Services\BookingService;
+use Illuminate\Contracts\Console\Kernel;
 
 echo "--- TESTING BOOKING FLOW ---\n";
 $service = app(BookingService::class);
@@ -23,12 +23,12 @@ $booking = $service->createBooking([
     'special_notes' => 'Airport pickup with 2 large luggage bags',
 ]);
 
-echo "Created Booking ID: " . $booking->booking_id . "\n";
-echo "Status: " . $booking->booking_status . " (Expected: Pending)\n";
-echo "Customer ID linked: " . ($booking->customer_id ?: 'Guest/None') . "\n";
+echo 'Created Booking ID: '.$booking->booking_id."\n";
+echo 'Status: '.$booking->booking_status." (Expected: Pending)\n";
+echo 'Customer ID linked: '.($booking->customer_id ?: 'Guest/None')."\n";
 
 $adminNotif = Notification::where('title', 'New Booking Received')->latest()->first();
-echo "Admin Notification: " . ($adminNotif ? $adminNotif->message : 'None') . "\n";
+echo 'Admin Notification: '.($adminNotif ? $adminNotif->message : 'None')."\n";
 
 if (preg_match('/^VT-\d{4,}$/', $booking->booking_id) && $booking->booking_status === 'Pending') {
     echo "SUCCESS: Public booking workflow verified.\n";

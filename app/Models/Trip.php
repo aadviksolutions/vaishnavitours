@@ -35,9 +35,9 @@ class Trip extends Model
         parent::boot();
 
         static::saving(function ($trip) {
-            if ($trip->trip_status && !$trip->status) {
+            if ($trip->trip_status && ! $trip->status) {
                 $trip->status = $trip->trip_status;
-            } elseif ($trip->status && !$trip->trip_status) {
+            } elseif ($trip->status && ! $trip->trip_status) {
                 $trip->trip_status = $trip->status;
             }
         });

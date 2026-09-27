@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Booking;
 use App\Models\BookingStatusHistory;
 use App\Models\Driver;
-use App\Models\Feedback;
 use App\Models\Invoice;
 use App\Models\Notification;
 use App\Models\Payment;
@@ -13,7 +12,6 @@ use App\Models\Trip;
 use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class BookingSeeder extends Seeder
 {
@@ -369,7 +367,7 @@ class BookingSeeder extends Seeder
             }
 
             // Trip creation if applicable
-            if (!empty($bData['trip'])) {
+            if (! empty($bData['trip'])) {
                 Trip::updateOrCreate(
                     ['booking_id' => $booking->id],
                     [
@@ -386,7 +384,7 @@ class BookingSeeder extends Seeder
             }
 
             // Payment record if applicable
-            if (!empty($bData['payment'])) {
+            if (! empty($bData['payment'])) {
                 Payment::updateOrCreate(
                     ['booking_id' => $booking->id, 'transaction_id' => $bData['payment']['txnid']],
                     [
@@ -422,7 +420,7 @@ class BookingSeeder extends Seeder
                 [
                     'message' => "Your booking {$booking->booking_id} status is currently '{$booking->booking_status}'.",
                     'type' => 'trip',
-                    'action_url' => '/customer/bookings/' . $booking->id,
+                    'action_url' => '/customer/bookings/'.$booking->id,
                 ]
             );
         }

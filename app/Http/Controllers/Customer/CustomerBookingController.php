@@ -34,8 +34,8 @@ class CustomerBookingController extends Controller
             $s = $request->search;
             $query->where(function ($q) use ($s) {
                 $q->where('booking_id', 'like', "%{$s}%")
-                  ->orWhere('pickup_location', 'like', "%{$s}%")
-                  ->orWhere('destination', 'like', "%{$s}%");
+                    ->orWhere('pickup_location', 'like', "%{$s}%")
+                    ->orWhere('destination', 'like', "%{$s}%");
             });
         }
 
@@ -58,7 +58,7 @@ class CustomerBookingController extends Controller
         Gate::authorize('cancel', $booking);
 
         if (in_array($booking->booking_status, ['Trip Started', 'On The Way', 'Completed', 'Cancelled'])) {
-            return back()->with('error', 'This booking cannot be cancelled because it is already ' . strtolower($booking->booking_status) . '.');
+            return back()->with('error', 'This booking cannot be cancelled because it is already '.strtolower($booking->booking_status).'.');
         }
 
         $request->validate([
@@ -75,18 +75,18 @@ class CustomerBookingController extends Controller
             'changed_by' => Auth::id(),
             'old_status' => $booking->booking_status,
             'new_status' => $booking->booking_status,
-            'remarks' => 'Cancellation requested by customer. Reason: ' . $request->cancellation_reason,
-            'comment' => 'Cancellation requested by customer. Reason: ' . $request->cancellation_reason,
+            'remarks' => 'Cancellation requested by customer. Reason: '.$request->cancellation_reason,
+            'comment' => 'Cancellation requested by customer. Reason: '.$request->cancellation_reason,
             'created_at' => now(),
         ]);
 
         // Notify Admin
         Notification::create([
             'user_id' => null,
-            'title' => 'Cancellation Requested: #' . $booking->booking_id,
-            'message' => 'Customer ' . Auth::user()->name . ' requested cancellation for booking ' . $booking->booking_id . '. Reason: ' . $request->cancellation_reason,
+            'title' => 'Cancellation Requested: #'.$booking->booking_id,
+            'message' => 'Customer '.Auth::user()->name.' requested cancellation for booking '.$booking->booking_id.'. Reason: '.$request->cancellation_reason,
             'type' => 'booking',
-            'action_url' => '/admin/bookings/' . $booking->id,
+            'action_url' => '/admin/bookings/'.$booking->id,
         ]);
 
         return back()->with('success', 'Your cancellation request has been submitted to dispatch for review.');

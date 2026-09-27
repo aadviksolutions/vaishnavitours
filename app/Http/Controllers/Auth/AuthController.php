@@ -18,6 +18,7 @@ class AuthController extends Controller
                 ? redirect()->route('admin.dashboard')
                 : redirect()->route('customer.dashboard');
         }
+
         return view('auth.login');
     }
 
@@ -57,6 +58,7 @@ class AuthController extends Controller
         if (Auth::check()) {
             return redirect()->route('customer.dashboard');
         }
+
         return view('auth.register');
     }
 
@@ -113,7 +115,7 @@ class AuthController extends Controller
         $request->validate(['email' => 'required|email']);
 
         $user = User::where('email', $request->email)->first();
-        if (!$user) {
+        if (! $user) {
             return back()->withErrors(['email' => 'We could not find a user with that email address.']);
         }
 

@@ -11,6 +11,7 @@ class AdminSettingController extends Controller
     public function index()
     {
         $settings = Setting::all()->keyBy('key');
+
         return view('admin.settings.index', compact('settings'));
     }
 

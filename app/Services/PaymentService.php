@@ -17,13 +17,13 @@ class PaymentService
     public function recordPayment(Booking $booking, array $data, ?User $recordedBy = null): Payment
     {
         return DB::transaction(function () use ($booking, $data) {
-            $amount = (float)$data['amount'];
+            $amount = (float) $data['amount'];
 
             $payment = Payment::create([
                 'booking_id' => $booking->id,
                 'customer_id' => $booking->customer_id,
                 'gateway' => $data['gateway'] ?? 'Manual / Direct',
-                'transaction_id' => $data['transaction_id'] ?? ('TXN-' . strtoupper(uniqid())),
+                'transaction_id' => $data['transaction_id'] ?? ('TXN-'.strtoupper(uniqid())),
                 'amount' => $amount,
                 'currency' => 'INR',
                 'payment_method' => $data['payment_method'] ?? 'Cash',
@@ -34,8 +34,8 @@ class PaymentService
 
             // If payment succeeded, update booking amounts
             if ($payment->status === 'Success') {
-                $newPaid = (float)$booking->paid_amount + $amount;
-                $newBalance = max(0, (float)$booking->total_amount - $newPaid);
+                $newPaid = (float) $booking->paid_amount + $amount;
+                $newBalance = max(0, (float) $booking->total_amount - $newPaid);
 
                 $paymentStatus = 'Partial';
                 if ($newBalance <= 0) {
@@ -54,18 +54,18 @@ class PaymentService
                 // Send payment notification
                 Notification::create([
                     'user_id' => $booking->customer_id,
-                    'title' => 'Payment Received: ₹' . number_format($amount, 2),
-                    'message' => 'We received ₹' . number_format($amount, 2) . ' for booking #' . $booking->booking_id . '. Remaining balance: ₹' . number_format($newBalance, 2),
+                    'title' => 'Payment Received: ₹'.number_format($amount, 2),
+                    'message' => 'We received ₹'.number_format($amount, 2).' for booking #'.$booking->booking_id.'. Remaining balance: ₹'.number_format($newBalance, 2),
                     'type' => 'payment',
-                    'action_url' => '/customer/bookings/' . $booking->id,
+                    'action_url' => '/customer/bookings/'.$booking->id,
                 ]);
 
                 Notification::create([
                     'user_id' => null,
-                    'title' => 'Payment Received: ' . $booking->booking_id,
-                    'message' => 'Payment received for ' . $booking->booking_id . '.',
+                    'title' => 'Payment Received: '.$booking->booking_id,
+                    'message' => 'Payment received for '.$booking->booking_id.'.',
                     'type' => 'payment',
-                    'action_url' => '/admin/bookings/' . $booking->id,
+                    'action_url' => '/admin/bookings/'.$booking->id,
                 ]);
             }
 

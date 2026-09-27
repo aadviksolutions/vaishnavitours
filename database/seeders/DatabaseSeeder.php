@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
         // In production environment, halt here to prevent demo data insertion
         if (app()->environment('production')) {
             $this->command->info('Production environment detected: Demo seeders skipped.');
+
             return;
         }
 
