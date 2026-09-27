@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="800" viewBox="0 0 640 800" fill="none">
+  <rect width="640" height="800" fill="#0F172A"/>
+  <path d="M0 572C126 515 198 533 306 600C414 667 499 678 640 602V800H0V572Z" fill="#1E293B"/>
+  <circle cx="514" cy="148" r="174" fill="#F59E0B" fill-opacity="0.12"/>
+  <circle cx="122" cy="637" r="194" fill="#F59E0B" fill-opacity="0.08"/>
+  <rect x="236" y="310" width="168" height="128" rx="18" stroke="#F59E0B" stroke-width="12"/>
+  <circle cx="320" cy="374" r="37" stroke="#F59E0B" stroke-width="12"/>
+  <path d="M276 310L293 282H351L368 310" stroke="#F59E0B" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="320" y="493" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="22" font-weight="700" letter-spacing="2" text-anchor="middle">PHOTO PENDING</text>
+</svg>
