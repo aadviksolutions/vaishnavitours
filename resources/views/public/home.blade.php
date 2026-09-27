@@ -398,7 +398,7 @@
             <div class="grid grid-2 gap-4 align-center">
                 <div>
                     <div class="about-visual-wrap">
-                        <img src="{{ asset('assets/images/about-travel.jpg') }}" alt="About Vaishnavi Tours Chauffeur Service" class="about-visual-img">
+                        <img src="{{ asset('assets/images/about-travel-v2.jpg') }}" alt="About Vaishnavi Tours Chauffeur Service" class="about-visual-img">
                     </div>
                 </div>
 

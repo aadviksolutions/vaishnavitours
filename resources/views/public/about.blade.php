@@ -240,7 +240,7 @@
 
             <div>
                 <div class="about-visual-wrap">
-                    <img src="{{ asset('assets/images/about-travel.jpg') }}" alt="Vaishnavi Tours travel service" class="about-visual-img" style="height: 380px;">
+                    <img src="{{ asset('assets/images/about-travel-v2.jpg') }}" alt="Vaishnavi Tours travel service" class="about-visual-img" style="height: 380px;">
                 </div>
             </div>
         </div>
