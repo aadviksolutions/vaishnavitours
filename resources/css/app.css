@@ -5,5 +5,5 @@
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-sans: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif;
 }

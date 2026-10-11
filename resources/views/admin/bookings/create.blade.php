@@ -30,18 +30,78 @@
         <div style="grid-column: span 2;">
             <!-- Customer Selection Card -->
             <div class="card mb-4">
-                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">👤 Customer & Passenger</h3>
+                <div class="d-flex justify-between align-center flex-wrap gap-2 mb-3">
+                    <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">👤 Customer & Passenger Details</h3>
+                    <!-- Mode Switch Buttons -->
+                    <div class="d-flex gap-1" style="background: var(--slate-100); padding: 4px; border-radius: 8px;">
+                        <button type="button" id="modeExistingBtn" class="btn btn-sm" onclick="setCustomerMode('existing')" style="border-radius: 6px; font-weight: 700; font-size: 0.8rem; padding: 5px 14px; transition: all 0.2s;">
+                            👥 Existing Customer
+                        </button>
+                        <button type="button" id="modeNewBtn" class="btn btn-sm" onclick="setCustomerMode('new')" style="border-radius: 6px; font-weight: 700; font-size: 0.8rem; padding: 5px 14px; transition: all 0.2s;">
+                            ➕ New Customer
+                        </button>
+                    </div>
+                </div>
 
-                <div class="form-group mb-3">
-                    <label for="customer_id" class="form-label">Select Registered Customer *</label>
-                    <select name="customer_id" id="customer_id" class="form-select" required>
-                        <option value="">-- Choose Customer --</option>
-                        @foreach($customers as $c)
-                            <option value="{{ $c->id }}" {{ old('customer_id') == $c->id ? 'selected' : '' }}>
-                                {{ $c->name }} (📞 {{ $c->phone }} | ✉️ {{ $c->email }})
-                            </option>
-                        @endforeach
-                    </select>
+                <input type="hidden" name="customer_mode" id="customer_mode" value="{{ old('customer_mode', (old('new_customer_name') || old('new_customer_phone')) ? 'new' : 'existing') }}">
+
+                <!-- Existing Customer Mode -->
+                <div id="existingCustomerSection">
+                    <div class="form-group mb-2">
+                        <label for="customer_id" class="form-label">Select Registered Customer *</label>
+                        <select name="customer_id" id="customer_id" class="form-select">
+                            <option value="">-- Choose Existing Customer --</option>
+                            <option value="new" style="font-weight: 700; color: var(--primary);">✨ + Add New Customer Instead</option>
+                            @foreach($customers as $c)
+                                <option value="{{ $c->id }}" {{ old('customer_id') == $c->id ? 'selected' : '' }}>
+                                    {{ $c->name }} (📞 {{ $c->phone }} | ✉️ {{ $c->email }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--slate-500); margin: 0;">
+                        Can't find the customer? Click <strong>➕ New Customer</strong> above to enter customer name & phone directly.
+                    </p>
+                </div>
+
+                <!-- New Customer Mode -->
+                <div id="newCustomerSection" style="display: none; background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 8px; padding: 1.25rem;">
+                    <div class="d-flex align-center gap-2 mb-3">
+                        <span style="font-size: 1.25rem;">✨</span>
+                        <div>
+                            <strong style="color: #92400E; font-size: 0.95rem;">Enter New Passenger / Customer Information</strong>
+                            <p style="font-size: 0.8rem; color: #B45309; margin: 0;">A customer account will be created automatically and linked to this booking.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-2 gap-3 mb-3">
+                        <div class="form-group">
+                            <label for="new_customer_name" class="form-label">Full Name *</label>
+                            <input type="text" name="new_customer_name" id="new_customer_name" class="form-control" placeholder="e.g. Rajesh Sharma" value="{{ old('new_customer_name') }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="new_customer_phone" class="form-label">Mobile / WhatsApp Number *</label>
+                            <input type="tel" name="new_customer_phone" id="new_customer_phone" class="form-control" placeholder="e.g. 9876543210" value="{{ old('new_customer_phone') }}">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-3 gap-3">
+                        <div class="form-group">
+                            <label for="new_customer_email" class="form-label">Email Address (Optional)</label>
+                            <input type="email" name="new_customer_email" id="new_customer_email" class="form-control" placeholder="e.g. customer@gmail.com" value="{{ old('new_customer_email') }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="new_customer_city" class="form-label">City / Area</label>
+                            <input type="text" name="new_customer_city" id="new_customer_city" class="form-control" placeholder="e.g. Bilaspur / Raipur" value="{{ old('new_customer_city', 'Bilaspur') }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="new_customer_address" class="form-label">Pickup Address / Landmark</label>
+                            <input type="text" name="new_customer_address" id="new_customer_address" class="form-control" placeholder="e.g. Near Railway Station" value="{{ old('new_customer_address') }}">
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -161,7 +221,12 @@
                 </div>
 
                 <div class="form-group mb-3">
-                    <label for="total_amount" class="form-label">Configured Trip Fare (₹)</label>
+                    <div class="d-flex justify-between align-center mb-1">
+                        <label for="total_amount" class="form-label" style="margin: 0;">Configured Trip Fare (₹) *</label>
+                        <label style="font-size: 0.75rem; color: var(--slate-600); cursor: pointer; user-select: none;">
+                            <input type="checkbox" id="customFareToggle" onchange="toggleCustomFare(this)"> Custom Fare
+                        </label>
+                    </div>
                     <input type="number" step="0.01" name="total_amount" id="total_amount" class="form-control" value="{{ old('total_amount', '0.00') }}" readonly required>
                     <div id="fareDetails" style="font-size: 0.8rem; color: var(--slate-600); margin-top: 0.35rem;" aria-live="polite">Select route and vehicle category.</div>
                 </div>
@@ -200,6 +265,9 @@
     const fareDetails = document.querySelector('#fareDetails');
 
     function updateFare() {
+        if (document.getElementById('customFareToggle')?.checked) {
+            return;
+        }
         const category = rateCategory.value;
         const globalRate = category.startsWith('local_') || category === 'round_trip';
         estimatedKmGroup.style.display = category === 'round_trip' ? 'block' : 'none';
@@ -209,7 +277,7 @@
         const quote = rateOptions[key];
         if (!quote) {
             totalAmount.value = '0.00';
-            fareDetails.textContent = 'Rate not configured. Please contact Vaishnavi Tours.';
+            fareDetails.textContent = 'Rate not configured. Check "Custom Fare" to set manual price.';
             return;
         }
         let amount = Number(quote.total_amount);
@@ -225,6 +293,69 @@
             quote.details.gst_applicable ? 'GST applicable' : '',
         ].filter(Boolean).join(' · ');
     }
+
+    function toggleCustomFare(checkbox) {
+        if (checkbox.checked) {
+            totalAmount.removeAttribute('readonly');
+            totalAmount.style.background = '#fff';
+            fareDetails.textContent = '✏️ Manual fare mode enabled. Enter any custom amount.';
+            totalAmount.focus();
+        } else {
+            totalAmount.setAttribute('readonly', 'readonly');
+            totalAmount.style.background = '';
+            updateFare();
+        }
+    }
+
+    function setCustomerMode(mode) {
+        const modeInput = document.getElementById('customer_mode');
+        const existingSection = document.getElementById('existingCustomerSection');
+        const newSection = document.getElementById('newCustomerSection');
+        const existingBtn = document.getElementById('modeExistingBtn');
+        const newBtn = document.getElementById('modeNewBtn');
+        const customerSelect = document.getElementById('customer_id');
+        const newName = document.getElementById('new_customer_name');
+        const newPhone = document.getElementById('new_customer_phone');
+
+        if (!modeInput) return;
+        modeInput.value = mode;
+
+        if (mode === 'new') {
+            existingSection.style.display = 'none';
+            newSection.style.display = 'block';
+            if (customerSelect) customerSelect.required = false;
+            if (newName) newName.required = true;
+            if (newPhone) newPhone.required = true;
+            newBtn.style.background = 'var(--primary)';
+            newBtn.style.color = '#fff';
+            existingBtn.style.background = 'transparent';
+            existingBtn.style.color = 'var(--slate-700)';
+            setTimeout(() => { if (newName) newName.focus(); }, 50);
+        } else {
+            newSection.style.display = 'none';
+            existingSection.style.display = 'block';
+            if (customerSelect) customerSelect.required = true;
+            if (newName) newName.required = false;
+            if (newPhone) newPhone.required = false;
+            existingBtn.style.background = 'var(--primary)';
+            existingBtn.style.color = '#fff';
+            newBtn.style.background = 'transparent';
+            newBtn.style.color = 'var(--slate-700)';
+        }
+    }
+
+    const customerSelectElem = document.getElementById('customer_id');
+    if (customerSelectElem) {
+        customerSelectElem.addEventListener('change', function() {
+            if (this.value === 'new') {
+                this.value = '';
+                setCustomerMode('new');
+            }
+        });
+    }
+
+    const initialCustomerMode = "{{ old('customer_mode', (old('new_customer_name') || old('new_customer_phone')) ? 'new' : 'existing') }}";
+    setCustomerMode(initialCustomerMode);
 
     [rateCategory, pickup, destination, vehicleCategory, estimatedKm].forEach((input) => input.addEventListener('change', updateFare));
     updateFare();

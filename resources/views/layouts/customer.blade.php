@@ -14,68 +14,71 @@
 <body style="background-color: var(--slate-100);">
 
     <!-- Customer Topbar -->
-    <header style="background: var(--dark-900); color: #fff; padding: 0.85rem 0; box-shadow: var(--shadow-md);">
+    <header style="background: var(--dark-900); color: #fff; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
         <div class="container d-flex align-center justify-between flex-wrap gap-2">
             <a href="{{ route('home') }}" class="brand-logo-wrap brand-logo-dark">
-                <div class="brand-logo-badge" style="width: 40px; height: 40px;">
+                <div class="brand-logo-badge" style="width: 32px; height: 32px; border-radius: 6px;">
                     <img src="{{ asset('assets/branding/vaishnavi-tours-logo.png') }}" alt="Vaishnavi Tours Logo">
                 </div>
                 <div>
-                    <div class="logo-brand" style="color: #fff; font-size: 1.2rem;">Vaishnavi <span style="color: var(--primary);">Tours</span></div>
-                    <div class="logo-sub" style="color: var(--slate-400);">Customer Portal</div>
+                    <div class="logo-brand" style="color: #fff; font-size: 13.5px; font-weight: 600;">Vaishnavi <span style="color: var(--accent);">Tours</span></div>
+                    <div class="logo-sub" style="color: var(--slate-400); font-size: 10px; font-weight: 500;">Customer Portal</div>
                 </div>
             </a>
 
             <div class="d-flex align-center gap-2">
-                <a href="{{ route('booking') }}" class="btn btn-primary btn-sm">🚖 Quick Book Taxi</a>
-                <div class="d-flex align-center gap-1" style="background: rgba(255,255,255,0.08); padding: 0.35rem 0.85rem; border-radius: var(--radius-md);">
-                    <span style="font-weight: 700; font-size: 0.875rem;">👤 {{ Auth::user()->name }}</span>
+                <a href="{{ route('booking') }}" class="btn btn-primary btn-sm">
+                    <x-icon name="car" size="14" /> Quick Book Taxi
+                </a>
+                <div class="d-flex align-center gap-1" style="background: rgba(255,255,255,0.06); padding: 0.25rem 0.65rem; border-radius: var(--radius-sm);">
+                    <x-icon name="user" size="13" class="text-slate-400" />
+                    <span style="font-weight: 600; font-size: 12px; color: #fff;">{{ Auth::user()->name }}</span>
                 </div>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
-                    <button type="submit" class="btn btn-outline btn-sm" style="color: #fff; border-color: rgba(255,255,255,0.2);">Logout</button>
+                    <button type="submit" class="btn btn-outline btn-sm" style="color: #fff; border-color: rgba(255,255,255,0.2); font-size: 11.5px; height: 30px;">Logout</button>
                 </form>
             </div>
         </div>
     </header>
 
     <!-- Sub Navigation Tabs -->
-    <div style="background: #fff; border-bottom: 1px solid var(--slate-200); padding: 0.5rem 0;">
-        <div class="container d-flex align-center gap-2 flex-wrap">
+    <div style="background: #fff; border-bottom: 1px solid var(--slate-200); padding: 0.35rem 0;">
+        <div class="container d-flex align-center gap-1 flex-wrap">
             <a href="{{ route('customer.dashboard') }}" class="btn btn-sm {{ request()->routeIs('customer.dashboard') ? 'btn-primary' : 'btn-outline' }}">
-                📊 Dashboard
+                <x-icon name="trending-up" size="13" /> Dashboard
             </a>
             <a href="{{ route('customer.bookings.index') }}" class="btn btn-sm {{ request()->routeIs('customer.bookings.index') && !request('filter') ? 'btn-primary' : 'btn-outline' }}">
-                🚖 My Bookings
+                <x-icon name="calendar-check" size="13" /> My Bookings
             </a>
             <a href="{{ route('customer.bookings.index') }}?filter=upcoming" class="btn btn-sm {{ request('filter') === 'upcoming' ? 'btn-primary' : 'btn-outline' }}">
-                🗓️ Upcoming Trips
+                <x-icon name="calendar" size="13" /> Upcoming Trips
             </a>
             <a href="{{ route('customer.bookings.index') }}?filter=payments" class="btn btn-sm {{ request('filter') === 'payments' ? 'btn-primary' : 'btn-outline' }}">
-                💳 Payment History & Invoices
+                <x-icon name="credit-card" size="13" /> Invoices & Payments
             </a>
             <a href="{{ route('customer.notifications') }}" class="btn btn-sm {{ request()->routeIs('customer.notifications') ? 'btn-primary' : 'btn-outline' }}">
-                🔔 Notifications
+                <x-icon name="bell" size="13" /> Notifications
             </a>
             <a href="{{ route('customer.profile') }}" class="btn btn-sm {{ request()->routeIs('customer.profile') ? 'btn-primary' : 'btn-outline' }}">
-                ⚙️ Profile
+                <x-icon name="settings" size="13" /> Profile
             </a>
-            <a href="{{ route('home') }}" class="btn btn-sm btn-outline" style="margin-left: auto;">
-                ← Public Website
+            <a href="{{ route('home') }}" class="btn btn-sm btn-outline" style="margin-left: auto; color: var(--slate-600);">
+                <x-icon name="external-link" size="12" /> Public Site
             </a>
         </div>
     </div>
 
     <!-- Main Body -->
-    <main class="container" style="padding-top: 1.75rem; padding-bottom: 3rem;">
+    <main class="container" style="padding-top: 1.25rem; padding-bottom: 2rem;">
         @if(session('success'))
-            <div class="alert alert-success">✅ {{ session('success') }}</div>
+            <div class="alert alert-success"><x-icon name="circle-check" size="16" /> {{ session('success') }}</div>
         @endif
         @if(session('error'))
-            <div class="alert alert-danger" style="display: flex; align-items: center; gap: 8px;"><x-icon name="alert-circle" size="18" /><span>{{ session('error') }}</span></div>
+            <div class="alert alert-danger"><x-icon name="alert-circle" size="16" /> {{ session('error') }}</div>
         @endif
         @if(session('info'))
-            <div class="alert alert-info">ℹ️ {{ session('info') }}</div>
+            <div class="alert alert-info"><x-icon name="info" size="16" /> {{ session('info') }}</div>
         @endif
 
         @yield('content')

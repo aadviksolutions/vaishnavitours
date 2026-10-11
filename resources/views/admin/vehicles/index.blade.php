@@ -6,14 +6,14 @@
 @section('content')
 <div class="d-flex justify-between align-center flex-wrap gap-2 mb-4">
     <div>
-        <h1 style="font-size: 1.65rem; font-weight: 800; margin: 0; color: var(--dark-900);">Vehicle Fleet Management</h1>
-        <p style="color: var(--slate-500); margin: 2px 0 0 0; font-size: 0.875rem;">Manage commercial taxis, seating capacities, per-KM rates, and availability status.</p>
+        <h1 style="font-size: 1.35rem; font-weight: 600; margin: 0; color: var(--dark-900);">Vehicle Fleet Management</h1>
+        <p style="color: var(--slate-500); margin: 2px 0 0 0; font-size: 0.85rem;">Manage commercial taxis, seating capacities, per-KM rates, and availability status.</p>
     </div>
     <a href="{{ route('admin.vehicles.create') }}" class="btn btn-primary btn-sm">+ Add New Vehicle</a>
 </div>
 
 <!-- Filters Bar -->
-<div class="card mb-4" style="padding: 1.25rem;">
+<div class="card mb-4" style="padding: 1rem 1.25rem;">
     <form method="GET" action="{{ route('admin.vehicles.index') }}" class="d-flex align-center gap-3 flex-wrap">
         <div style="min-width: 200px;">
             <select name="type" class="form-select form-select-sm" onchange="this.form.submit()">
@@ -50,6 +50,7 @@
                     <th>Type</th>
                     <th>Seats</th>
                     <th>Status</th>
+                    <th>Documents</th>
                     <th>Assigned Trip</th>
                     <th style="text-align: right;">Actions</th>
                 </tr>
@@ -66,22 +67,22 @@
                                     <img src="{{ $veh->icon_url }}" alt="{{ $veh->name }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
                                 </div>
                                 <div>
-                                    <a href="{{ route('admin.vehicles.show', $veh->id) }}" style="font-weight: 800; color: var(--dark-900);">
+                                    <a href="{{ route('admin.vehicles.show', $veh->id) }}" style="font-weight: 600; color: var(--dark-900);">
                                         {{ $veh->name }}
                                     </a>
                                 </div>
                             </div>
                         </td>
                         <td>
-                            <span class="badge badge-outline" style="font-family: monospace; font-size: 0.85rem; font-weight: 700;">
+                            <span class="badge badge-outline" style="font-family: monospace; font-size: 0.8rem; font-weight: 600;">
                                 {{ $veh->registration_number }}
                             </span>
                         </td>
                         <td>
-                            <span class="badge badge-secondary" style="font-weight: 600;">{{ $veh->vehicle_type }}</span>
+                            <span class="badge badge-secondary" style="font-weight: 500;">{{ $veh->vehicle_type }}</span>
                         </td>
                         <td>
-                            <span style="font-weight: 700; color: var(--dark-800);">{{ $veh->seating_capacity }}</span>
+                            <span style="font-weight: 500; color: var(--dark-800);">{{ $veh->seating_capacity }}</span>
                         </td>
                         <td>
                             <span class="badge 
@@ -92,6 +93,28 @@
                             ">
                                 {{ $veh->status }}
                             </span>
+                        </td>
+                        <td>
+                            @php
+                                $expiringDocs = $veh->getExpiringDocuments(30);
+                            @endphp
+                            @if(!empty($expiringDocs))
+                                @foreach($expiringDocs as $docName => $info)
+                                    @if($info['status'] === 'expired')
+                                        <div style="font-size: 0.72rem; color: #DC2626; font-weight: 700; white-space: nowrap;">
+                                            ⚠️ {{ $docName }} Expired
+                                        </div>
+                                    @else
+                                        <div style="font-size: 0.72rem; color: #D97706; font-weight: 700; white-space: nowrap;">
+                                            ⏳ {{ $docName }} in {{ $info['days'] }}d
+                                        </div>
+                                    @endif
+                                @endforeach
+                            @elseif($veh->insurance_expiry || $veh->fitness_expiry || $veh->permit_expiry || $veh->puc_expiry)
+                                <span style="font-size: 0.75rem; color: #059669; font-weight: 700;">✓ Valid</span>
+                            @else
+                                <span style="font-size: 0.75rem; color: var(--slate-400);">Not set</span>
+                            @endif
                         </td>
                         <td>
                             @if($activeBooking)

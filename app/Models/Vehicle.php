@@ -15,6 +15,11 @@ class Vehicle extends Model
         'vehicle_type',
         'seating_capacity',
         'ac_non_ac',
+        'insurance_number',
+        'insurance_expiry',
+        'fitness_expiry',
+        'permit_expiry',
+        'puc_expiry',
         'per_km_rate',
         'per_hour_rate',
         'status',
@@ -26,6 +31,10 @@ class Vehicle extends Model
         'per_km_rate' => 'decimal:2',
         'per_hour_rate' => 'decimal:2',
         'seating_capacity' => 'integer',
+        'insurance_expiry' => 'date',
+        'fitness_expiry' => 'date',
+        'permit_expiry' => 'date',
+        'puc_expiry' => 'date',
     ];
 
     public function bookings()
@@ -106,5 +115,35 @@ class Vehicle extends Model
         }
 
         return asset('assets/vehicles/maruti-suzuki-dzire.jpg');
+    }
+
+    /**
+     * Get list of documents that are expired or expiring within $days.
+     */
+    public function getExpiringDocuments(int $days = 30): array
+    {
+        $threshold = now()->addDays($days)->toDateString();
+        $today = now()->toDateString();
+        $expiring = [];
+
+        $docs = [
+            'Insurance' => $this->insurance_expiry,
+            'Fitness' => $this->fitness_expiry,
+            'Permit' => $this->permit_expiry,
+            'PUC' => $this->puc_expiry,
+        ];
+
+        foreach ($docs as $name => $expiry) {
+            if ($expiry) {
+                $expiryDate = $expiry->format('Y-m-d');
+                if ($expiryDate < $today) {
+                    $expiring[$name] = ['status' => 'expired', 'date' => $expiryDate, 'days' => $expiry->diffInDays(now()) * -1];
+                } elseif ($expiryDate <= $threshold) {
+                    $expiring[$name] = ['status' => 'expiring_soon', 'date' => $expiryDate, 'days' => now()->diffInDays($expiry)];
+                }
+            }
+        }
+
+        return $expiring;
     }
 }

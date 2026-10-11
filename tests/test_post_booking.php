@@ -39,6 +39,7 @@ curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
     'travel_time' => '10:00',
     'vehicle_id' => $vehicle->id,
     'notes' => 'Need clean car with AC on continuously',
+    'terms_accepted' => '1',
 ]));
 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 $res = curl_exec($ch);

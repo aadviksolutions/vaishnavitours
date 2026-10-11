@@ -67,6 +67,9 @@
             <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" class="btn btn-primary btn-lg">
                 <x-icon name="phone" size="18" style="margin-right: 6px;" /> Call Now
             </a>
+            <a href="{{ route('booking', ['trip_type' => 'Ambulance Service', 'rate_category' => 'emergency']) }}" class="btn btn-lg" style="background: #EF4444; color: #fff; font-weight: 800; border: none;">
+                🚑 Request Online
+            </a>
             <a href="{{ config('vaishnavi.whatsapp_link') }}" class="btn btn-outline btn-lg" target="_blank" rel="noopener noreferrer" style="color: var(--white); border-color: rgba(255,255,255,0.45);">
                 <x-icon.whatsapp size="19" style="margin-right: 6px;" /> WhatsApp Us
             </a>

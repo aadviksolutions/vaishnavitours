@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\BookingStatusHistory;
+use App\Models\Customer;
 use App\Models\Driver;
 use App\Models\Payment;
 use App\Models\RateRoute;
@@ -90,6 +91,11 @@ class AdminBookingController extends Controller
 
     public function store(Request $request, BookingService $bookingService)
     {
+        $customerMode = $request->input('customer_mode', 'existing');
+        if ($request->input('customer_id') === 'new' || ! empty($request->input('new_customer_name'))) {
+            $customerMode = 'new';
+        }
+
         $request->merge([
             'trip_type' => match ($request->input('rate_category')) {
                 'airport' => 'Airport Transfer',
@@ -99,8 +105,7 @@ class AdminBookingController extends Controller
             },
         ]);
 
-        $data = $request->validate([
-            'customer_id' => 'required|exists:users,id',
+        $rules = [
             'trip_type' => 'required|string',
             'pickup_location' => 'required|string|max:255',
             'destination' => 'required|string|max:255',
@@ -117,7 +122,19 @@ class AdminBookingController extends Controller
             'booking_status' => 'required|string',
             'payment_status' => 'required|string',
             'notes' => 'nullable|string',
-        ]);
+        ];
+
+        if ($customerMode === 'new') {
+            $rules['new_customer_name'] = 'required|string|max:255';
+            $rules['new_customer_phone'] = 'required|string|max:20';
+            $rules['new_customer_email'] = 'nullable|email|max:255';
+            $rules['new_customer_city'] = 'nullable|string|max:100';
+            $rules['new_customer_address'] = 'nullable|string|max:255';
+        } else {
+            $rules['customer_id'] = 'required|exists:users,id';
+        }
+
+        $data = $request->validate($rules);
 
         if (isset($data['paid_amount']) && (float) $data['paid_amount'] > (float) $data['total_amount']) {
             throw ValidationException::withMessages([
@@ -125,7 +142,51 @@ class AdminBookingController extends Controller
             ]);
         }
 
-        $user = User::findOrFail($data['customer_id']);
+        if ($customerMode === 'new') {
+            $rawPhone = trim($request->input('new_customer_phone'));
+            $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
+            $phone = ! empty($cleanPhone) ? $cleanPhone : $rawPhone;
+            $email = trim($request->input('new_customer_email') ?? '');
+            if (! $email) {
+                $email = $phone ? $phone.'@vaishnavitours.in' : 'guest_'.uniqid().'@vaishnavitours.in';
+            }
+
+            // Check if user already exists with this phone or email
+            $existingUser = null;
+            if ($phone) {
+                $existingUser = User::where('phone', $phone)->first();
+            }
+            if (! $existingUser && $email) {
+                $existingUser = User::where('email', $email)->first();
+            }
+
+            if ($existingUser) {
+                $user = $existingUser;
+                if ($user->name === 'Traveler' || empty($user->name)) {
+                    $user->update(['name' => $request->input('new_customer_name')]);
+                }
+            } else {
+                $user = User::create([
+                    'name' => $request->input('new_customer_name'),
+                    'phone' => $phone,
+                    'email' => $email,
+                    'password' => bcrypt('Password@123'),
+                    'role' => 'customer',
+                    'is_active' => true,
+                ]);
+
+                Customer::create([
+                    'user_id' => $user->id,
+                    'city' => $request->input('new_customer_city') ?: $request->input('pickup_location') ?: 'Bilaspur',
+                    'address' => $request->input('new_customer_address'),
+                    'state' => 'Chhattisgarh',
+                    'pincode' => '495001',
+                ]);
+            }
+        } else {
+            $user = User::findOrFail($data['customer_id']);
+        }
+
         $booking = $bookingService->createBooking($data, $user);
 
         // If specific admin overrides were provided:
@@ -143,7 +204,7 @@ class AdminBookingController extends Controller
         ]);
 
         return redirect()->route('admin.bookings.show', $booking->id)
-            ->with('success', "Booking #{$booking->booking_id} created successfully!");
+            ->with('success', "Booking #{$booking->booking_id} created successfully for customer {$user->name}!");
     }
 
     public function show(Booking $booking)

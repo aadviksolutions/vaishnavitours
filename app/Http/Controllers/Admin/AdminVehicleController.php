@@ -38,6 +38,13 @@ class AdminVehicleController extends Controller
             'vehicle_type' => 'required|string',
             'seating_capacity' => 'required|integer|min:1|max:50',
             'ac_non_ac' => 'required|string',
+            'insurance_number' => 'nullable|string|max:100',
+            'insurance_expiry' => 'nullable|date',
+            'fitness_expiry' => 'nullable|date',
+            'permit_expiry' => 'nullable|date',
+            'puc_expiry' => 'nullable|date',
+            'per_km_rate' => 'nullable|numeric|min:0',
+            'per_hour_rate' => 'nullable|numeric|min:0',
             'status' => 'required|string',
             'notes' => 'nullable|string',
         ]);
@@ -45,7 +52,7 @@ class AdminVehicleController extends Controller
         Vehicle::create($data);
 
         return redirect()->route('admin.vehicles.index')
-            ->with('success', 'Vehicle registered successfully!');
+            ->with('success', 'Vehicle registered successfully with document records!');
     }
 
     public function show(Vehicle $vehicle)
@@ -68,6 +75,13 @@ class AdminVehicleController extends Controller
             'vehicle_type' => 'required|string',
             'seating_capacity' => 'required|integer|min:1|max:50',
             'ac_non_ac' => 'required|string',
+            'insurance_number' => 'nullable|string|max:100',
+            'insurance_expiry' => 'nullable|date',
+            'fitness_expiry' => 'nullable|date',
+            'permit_expiry' => 'nullable|date',
+            'puc_expiry' => 'nullable|date',
+            'per_km_rate' => 'nullable|numeric|min:0',
+            'per_hour_rate' => 'nullable|numeric|min:0',
             'status' => 'required|string',
             'notes' => 'nullable|string',
         ]);

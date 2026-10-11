@@ -460,7 +460,7 @@
                         @if($booking->pricing_details['border_tax_type'] ?? null)Border tax {{ $booking->pricing_details['border_tax_type'] }} · @endif
                         @if($booking->pricing_details['night_charge'] ?? null)Night charge ₹{{ number_format($booking->pricing_details['night_charge'], 2) }} · @endif
                         @if($booking->pricing_details['driver_food_type'] ?? null)Driver food {{ $booking->pricing_details['driver_food_type'] }} · @endif
-                        @if($booking->pricing_details['gst_applicable'] ?? false)GST applicable@endif
+                        @if($booking->pricing_details['gst_applicable'] ?? false)GST applicable @endif
                     </div>
                 </div>
             @endif
@@ -518,6 +518,84 @@
                     </form>
                 </div>
             @endif
+
+            <!-- Process Refund Form (if paid > 0) -->
+            @if($booking->paid_amount > 0)
+                <div class="mt-3 pt-3" style="border-top: 1px dashed var(--slate-200);">
+                    <h4 style="font-size: 0.9rem; font-weight: 800; color: #DC2626; margin-bottom: 0.75rem;">
+                        💸 Process Refund
+                    </h4>
+                    <form action="{{ route('admin.payments.refund', $booking->id) }}" method="POST" onsubmit="return confirm('Process refund of this amount to customer?');">
+                        @csrf
+                        <div class="form-group mb-2">
+                            <label class="form-label" style="font-size: 0.775rem;">Refund Amount (Max ₹{{ number_format($booking->paid_amount, 2) }})</label>
+                            <input type="number" step="0.01" min="1" max="{{ $booking->paid_amount }}" name="amount" class="form-control form-control-sm" placeholder="Amount to refund" required>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label class="form-label" style="font-size: 0.775rem;">Reason for Refund</label>
+                            <input type="text" name="reason" class="form-control form-control-sm" placeholder="e.g. Trip cancelled, excess paid" required>
+                        </div>
+                        <button type="submit" class="btn btn-outline btn-sm w-100" style="color: #DC2626; border-color: #F87171;">
+                            Confirm Refund
+                        </button>
+                    </form>
+                </div>
+            @endif
+        </div>
+
+        <!-- WhatsApp Messaging Center (Section 12 & 14) -->
+        @php
+            $cleanPhone = preg_replace('/[^0-9]/', '', $booking->customer->phone ?? '');
+            if (strlen($cleanPhone) === 10) {
+                $cleanPhone = '91' . $cleanPhone;
+            }
+
+            $confirmMsg = "Namaste " . ($booking->customer->name ?? 'Customer') . ", your taxi booking with Vaishnavi Tours is CONFIRMED!\n\nBooking ID: #" . $booking->booking_id . "\nRoute: " . $booking->pickup_location . " to " . $booking->destination . "\nDate: " . ($booking->travel_date ? $booking->travel_date->format('d M Y') : '') . " at " . $booking->travel_time . "\nTotal Fare: ₹" . number_format($booking->total_amount, 2) . "\nAdvance Paid: ₹" . number_format($booking->paid_amount, 2) . "\nBalance: ₹" . number_format($booking->balance_amount, 2) . "\n\nHelpline: +91 92447 84443";
+
+            $driverMsg = "Namaste " . ($booking->customer->name ?? 'Customer') . ", your chauffeur & vehicle details for booking #" . $booking->booking_id . ":\n\nVehicle: " . ($booking->vehicle ? $booking->vehicle->name . ' (' . $booking->vehicle->registration_number . ')' : 'Assigned') . "\nDriver: " . ($booking->driver->name ?? 'Assigned') . "\nDriver Mobile: " . ($booking->driver->mobile ?? 'Contact Dispatch') . "\n\nHave a safe journey!";
+
+            $remindMsg = "Namaste " . ($booking->customer->name ?? 'Customer') . ", friendly reminder regarding your booking #" . $booking->booking_id . ".\n\nPending balance amount: ₹" . number_format($booking->balance_amount, 2) . ".\nKindly keep the payment ready. Thank you, Vaishnavi Tours!";
+
+            $reviewMsg = "Namaste " . ($booking->customer->name ?? 'Customer') . ", thank you for traveling with Vaishnavi Tours!\n\nWe hope you had a pleasant trip. Please share your valuable experience with a 5-star Google Review:\nhttps://maps.google.com/?q=Vaishnavi+Tours+Bilaspur\n\nThank you!";
+        @endphp
+        <div class="card mb-4" style="border-top: 4px solid #25D366;">
+            <div class="d-flex justify-between align-center mb-2">
+                <h3 style="font-size: 1rem; font-weight: 800; color: #15803D; margin: 0;">
+                    💬 WhatsApp Dispatch Actions
+                </h3>
+                <span class="badge" style="background: #DCFCE7; color: #166534; font-size: 0.7rem;">Quick Send</span>
+            </div>
+            <p style="font-size: 0.78rem; color: var(--slate-500); margin-bottom: 0.75rem;">
+                Send automated pre-filled WhatsApp notifications directly to <strong>{{ $cleanPhone ? '+' . $cleanPhone : 'Customer' }}</strong>.
+            </p>
+
+            <div class="d-flex flex-column gap-2">
+                <a href="https://wa.me/{{ $cleanPhone }}?text={{ urlencode($confirmMsg) }}" target="_blank" class="btn btn-outline btn-sm d-flex align-center justify-between" style="border-color: #25D366; color: #166534; font-weight: 700; font-size: 0.8rem;">
+                    <span>📲 Send Booking Confirmation</span>
+                    <span>➔</span>
+                </a>
+
+                @if($booking->driver)
+                    <a href="https://wa.me/{{ $cleanPhone }}?text={{ urlencode($driverMsg) }}" target="_blank" class="btn btn-outline btn-sm d-flex align-center justify-between" style="border-color: #3B82F6; color: #1D4ED8; font-weight: 700; font-size: 0.8rem;">
+                        <span>🚗 Send Driver & Vehicle Details</span>
+                        <span>➔</span>
+                    </a>
+                @endif
+
+                @if($booking->balance_amount > 0)
+                    <a href="https://wa.me/{{ $cleanPhone }}?text={{ urlencode($remindMsg) }}" target="_blank" class="btn btn-outline btn-sm d-flex align-center justify-between" style="border-color: #F59E0B; color: #B45309; font-weight: 700; font-size: 0.8rem;">
+                        <span>⚠️ Send Payment Reminder (₹{{ number_format($booking->balance_amount) }})</span>
+                        <span>➔</span>
+                    </a>
+                @endif
+
+                @if($booking->booking_status === 'Completed')
+                    <a href="https://wa.me/{{ $cleanPhone }}?text={{ urlencode($reviewMsg) }}" target="_blank" class="btn btn-outline btn-sm d-flex align-center justify-between" style="border-color: #8B5CF6; color: #6D28D9; font-weight: 700; font-size: 0.8rem;">
+                        <span>⭐ Request Google Review</span>
+                        <span>➔</span>
+                    </a>
+                @endif
+            </div>
         </div>
 
         <!-- Cancel Booking Action Card -->

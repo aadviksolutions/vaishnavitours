@@ -279,30 +279,30 @@
             <div class="grid grid-4 gap-3">
                 <!-- Col 1 -->
                 <div>
-                    <div class="d-flex align-center gap-2" style="margin-bottom: 1rem;">
-                        <div class="brand-logo-badge" style="width: 42px; height: 42px;">
+                    <div class="d-flex align-center gap-2" style="margin-bottom: 0.75rem;">
+                        <div class="brand-logo-badge" style="width: 34px; height: 34px; border-radius: 6px;">
                             <img src="{{ asset('assets/branding/vaishnavi-tours-logo.png') }}" alt="Vaishnavi Tours Logo">
                         </div>
-                        <div style="font-family: var(--font-heading); font-weight: 800; font-size: 1.25rem; color: #fff;">Vaishnavi <span style="color: var(--primary);">Tours</span></div>
+                        <div style="font-family: var(--font-heading); font-weight: 700; font-size: 15px; color: #fff;">Vaishnavi <span style="color: var(--accent);">Tours</span></div>
                     </div>
-                    <p style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--slate-400);">
+                    <p style="font-size: 12.5px; margin-bottom: 0.75rem; color: var(--slate-400); line-height: 1.5;">
                         Chhattisgarh's premier chauffeur-driven taxi service. Reliable outstation cabs, hourly rentals, airport transfers, and 24/7 road emergency dispatch.
                     </p>
-                    <div style="font-size: 0.85rem; color: var(--slate-300); margin-bottom: 1.25rem;">
+                    <div style="font-size: 12px; color: var(--slate-300); margin-bottom: 0.875rem;">
                         <strong>Location:</strong> {{ config('vaishnavi.address') }}
                     </div>
-                    <div style="display: flex; gap: 0.65rem; align-items: center;">
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
                         <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" class="social-link-btn social-wa" aria-label="WhatsApp" title="WhatsApp">
-                            <x-icon.whatsapp size="18" />
+                            <x-icon.whatsapp size="15" />
                         </a>
                         <a href="https://instagram.com" target="_blank" class="social-link-btn" aria-label="Instagram" title="Instagram">
-                            <x-icon.instagram size="18" />
+                            <x-icon.instagram size="15" />
                         </a>
                         <a href="https://facebook.com" target="_blank" class="social-link-btn" aria-label="Facebook" title="Facebook">
-                            <x-icon.facebook size="18" />
+                            <x-icon.facebook size="15" />
                         </a>
                         <a href="https://youtube.com" target="_blank" class="social-link-btn" aria-label="YouTube" title="YouTube">
-                            <x-icon.youtube size="18" />
+                            <x-icon.youtube size="15" />
                         </a>
                     </div>
                 </div>
@@ -335,21 +335,21 @@
                 <!-- Col 4 -->
                 <div>
                     <h4 class="footer-title">Head Office</h4>
-                    <p style="font-size: 0.9rem; margin-bottom: 0.75rem; color: var(--slate-300);">
+                    <p style="font-size: 12.5px; margin-bottom: 0.5rem; color: var(--slate-300); line-height: 1.4;">
                         {{ config('vaishnavi.business_name') }}<br>
                         {{ config('vaishnavi.address') }}
                     </p>
-                    <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">
-                        <strong>Call Us:</strong><br>
-                        <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" style="color: var(--primary); font-weight: 700;">{{ config('vaishnavi.phone_primary') }}</a><br>
-                        <a href="tel:{{ config('vaishnavi.phone_secondary_tel') }}" style="color: var(--primary); font-weight: 700;">{{ config('vaishnavi.phone_secondary') }}</a>
+                    <p style="font-size: 12px; margin-bottom: 0.35rem;">
+                        <span style="color: var(--slate-400);">Call Us:</span><br>
+                        <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" style="color: #38BDF8; font-weight: 600;">{{ config('vaishnavi.phone_primary') }}</a><br>
+                        <a href="tel:{{ config('vaishnavi.phone_secondary_tel') }}" style="color: #38BDF8; font-weight: 600;">{{ config('vaishnavi.phone_secondary') }}</a>
                     </p>
-                    <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">
-                        <strong>WhatsApp:</strong><br>
-                        <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" style="color: #25D366; font-weight: 700; text-decoration: none;"><x-icon.whatsapp size="16" style="margin-right: 6px;" /> {{ config('vaishnavi.whatsapp') }}</a>
+                    <p style="font-size: 12px; margin-bottom: 0.35rem;">
+                        <span style="color: var(--slate-400);">WhatsApp:</span><br>
+                        <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" style="color: #25D366; font-weight: 600; text-decoration: none;"><x-icon.whatsapp size="14" style="margin-right: 4px;" /> {{ config('vaishnavi.whatsapp') }}</a>
                     </p>
-                    <p style="font-size: 0.9rem;">
-                        <strong>Email:</strong><br>
+                    <p style="font-size: 12px;">
+                        <span style="color: var(--slate-400);">Email:</span><br>
                         <a href="mailto:{{ config('vaishnavi.contact_email') }}">{{ config('vaishnavi.contact_email') }}</a>
                     </p>
                 </div>
@@ -375,9 +375,9 @@
     </footer>
 
     @stack('scripts')
-    <!-- Floating WhatsApp Action -->
-    <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" class="floating-whatsapp-btn" style="position: fixed; bottom: 24px; right: 24px; z-index: 999; background: #25D366; color: #ffffff; padding: 10px 18px; border-radius: 50px; font-weight: 700; font-size: 0.925rem; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4); text-decoration: none; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-        <x-icon.whatsapp size="20" />
+    <!-- Floating WhatsApp Action (Compact) -->
+    <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" class="floating-whatsapp-btn" style="position: fixed; bottom: 20px; right: 20px; z-index: 999; background: #25D366; color: #ffffff; padding: 7px 13px; border-radius: 20px; font-weight: 600; font-size: 12px; display: flex; align-items: center; gap: 6px; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15); text-decoration: none; transition: transform 0.15s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+        <x-icon.whatsapp size="16" />
         <span>Chat on WhatsApp</span>
     </a>
 </body>

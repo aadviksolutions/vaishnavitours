@@ -18,52 +18,52 @@
 @endpush
 
 @section('content')
-<section style="background: var(--dark-900); color: #fff; padding: 3rem 0;">
+<section style="background: var(--navy-900); color: #fff; padding: 2.25rem 0; border-bottom: 1px solid var(--navy-800);">
     <div class="container">
-        <span style="color: var(--primary); font-weight: 800; text-transform: uppercase; font-size: 0.85rem;">Official Fare Schedule</span>
-        <h1 style="color: #fff; font-size: 2.25rem; margin: 0.35rem 0;">Taxi Rates</h1>
-        <p style="color: var(--slate-300); max-width: 700px; margin: 0;">Airport, outstation, round-trip, and local packages from Bilaspur, Raipur, Raigarh, Korba, and configured locations.</p>
+        <span style="color: var(--accent-gold); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.8px;">Tariff Schedule</span>
+        <h1 style="color: #fff; font-size: 1.65rem; font-weight: 600; margin: 0.25rem 0;">Taxi Rates &amp; Route Fares</h1>
+        <p style="color: var(--slate-300); max-width: 680px; margin: 0; font-size: 0.875rem;">Airport transfers, outstation routes, round-trip, and local city rental packages across Chhattisgarh.</p>
     </div>
 </section>
 
-<section style="padding: 2.5rem 0 4rem; background: var(--slate-50);">
+<section style="padding: 2rem 0 3.5rem; background: var(--slate-50);">
     <div class="container">
-        <form method="GET" action="{{ route('rates') }}" class="card" style="padding: 1.25rem; margin-bottom: 2rem;">
-            <div class="grid grid-4 gap-3">
-                <div class="form-group">
-                    <label for="rateFrom" class="form-label">From</label>
-                    <select id="rateFrom" name="from" class="form-select">
-                        <option value="">Select city</option>
+        <form method="GET" action="{{ route('rates') }}" class="card" style="padding: 1.15rem; margin-bottom: 1.5rem; border: 1px solid var(--slate-200); box-shadow: var(--shadow-sm);">
+            <div class="grid grid-4 gap-2">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="rateFrom" class="form-label" style="font-size: 0.75rem;">From</label>
+                    <select id="rateFrom" name="from" class="form-select form-select-sm">
+                        <option value="">Select origin</option>
                         @foreach($locations as $location)<option value="{{ $location }}" {{ request('from') === $location ? 'selected' : '' }}>{{ $location }}</option>@endforeach
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="rateTo" class="form-label">To</label>
-                    <select id="rateTo" name="to" class="form-select">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="rateTo" class="form-label" style="font-size: 0.75rem;">To</label>
+                    <select id="rateTo" name="to" class="form-select form-select-sm">
                         <option value="">Select destination</option>
                         @foreach($locations as $location)<option value="{{ $location }}" {{ request('to') === $location ? 'selected' : '' }}>{{ $location }}</option>@endforeach
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="rateTripType" class="form-label">Trip type</label>
-                    <select id="rateTripType" name="rate_category" class="form-select">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="rateTripType" class="form-label" style="font-size: 0.75rem;">Trip Type</label>
+                    <select id="rateTripType" name="rate_category" class="form-select form-select-sm">
                         @foreach(['airport' => 'Quick Airport Booking', 'outstation' => 'Outstation Route', 'round_trip' => 'Round Trip', 'local_8h_80km' => 'Local 8 Hours / 80 KM', 'local_4h_40km' => 'Local 4 Hours / 40 KM'] as $key => $label)
                             <option value="{{ $key }}" {{ request('rate_category', 'outstation') === $key ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="rateVehicle" class="form-label">Vehicle</label>
-                    <select id="rateVehicle" name="vehicle_category" class="form-select">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="rateVehicle" class="form-label" style="font-size: 0.75rem;">Vehicle</label>
+                    <select id="rateVehicle" name="vehicle_category" class="form-select form-select-sm">
                         <option value="">All vehicles</option>
                         @foreach($vehicleCategories as $category)<option value="{{ $category }}" {{ request('vehicle_category') === $category ? 'selected' : '' }}>{{ $category }}</option>@endforeach
                     </select>
                 </div>
             </div>
-            <div class="d-flex align-center gap-3" style="flex-wrap: wrap; margin-top: 0.75rem;">
-                <label for="rateEstimatedKm" id="rateEstimatedKmLabel" class="form-label" style="margin: 0; display: none;">Round-trip distance (KM)</label>
-                <input id="rateEstimatedKm" name="estimated_km" type="number" min="0.01" step="0.1" class="form-control" style="max-width: 180px; display: none;" value="{{ request('estimated_km') }}">
-                <button type="submit" class="btn btn-primary">Show rate</button>
+            <div class="d-flex align-center gap-2" style="flex-wrap: wrap; margin-top: 0.85rem;">
+                <label for="rateEstimatedKm" id="rateEstimatedKmLabel" class="form-label" style="margin: 0; font-size: 0.75rem; display: none;">Round-trip distance (KM)</label>
+                <input id="rateEstimatedKm" name="estimated_km" type="number" min="0.01" step="0.1" class="form-control form-control-sm" style="max-width: 160px; display: none;" value="{{ request('estimated_km') }}">
+                <button type="submit" class="btn btn-primary btn-sm" style="height: 34px; padding: 0 1.25rem;">Show Rate</button>
             </div>
         </form>
 
@@ -84,13 +84,13 @@
         @endpush
 
         @if(request()->filled('from') && request()->filled('to') && request()->filled('rate_category'))
-            <section class="card" style="padding: 1.25rem; margin-bottom: 2rem;">
-                <h2 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 1rem;">{{ request('from') }} → {{ request('to') }}</h2>
+            <section class="card" style="padding: 1rem; margin-bottom: 1.5rem; border: 1px solid var(--slate-200); box-shadow: var(--shadow-sm);">
+                <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--dark-900);">{{ request('from') }} → {{ request('to') }}</h2>
                 @forelse($selectedQuotes as $quote)
-                    <div style="border-top: 1px solid var(--slate-200); padding: 1rem 0; display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+                    <div style="border-top: 1px solid var(--slate-200); padding: 0.85rem 0; display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
                         <div>
-                            <strong>{{ $quote['price']->vehicle_category }}</strong>
-                            <div style="color: var(--slate-600); font-size: 0.9rem; margin-top: 0.3rem;">
+                            <strong style="font-size: 0.95rem; color: var(--dark-900);">{{ $quote['price']->vehicle_category }}</strong>
+                            <div style="color: var(--slate-600); font-size: 0.825rem; margin-top: 0.2rem;">
                                 @if($quote['details']['included_km'] !== null){{ $quote['details']['included_km'] }} KM included · @endif
                                 @if($quote['details']['included_hours'] !== null){{ rtrim(rtrim(number_format($quote['details']['included_hours'], 2), '0'), '.') }} hours included · @endif
                                 @if($quote['details']['extra_km_rate'] !== null)Extra KM ₹{{ number_format($quote['details']['extra_km_rate'], 2) }} · @endif
@@ -105,26 +105,26 @@
                         </div>
                         <div style="text-align: right;">
                             @if($quote['details']['vehicle_rent'] !== null)
-                                <strong>₹{{ number_format($quote['details']['vehicle_rent'], 2) }} rent + ₹{{ number_format($quote['details']['per_km_rate'], 2) }}/KM</strong>
-                                @if($quote['details']['distance_km'] !== null)<div style="font-size: 0.85rem;">Estimated fare ₹{{ number_format($quote['total_amount'], 2) }}</div>@endif
+                                <strong style="font-size: 0.95rem; color: var(--dark-900);">₹{{ number_format($quote['details']['vehicle_rent'], 2) }} rent + ₹{{ number_format($quote['details']['per_km_rate'], 2) }}/KM</strong>
+                                @if($quote['details']['distance_km'] !== null)<div style="font-size: 0.8rem; color: var(--slate-500);">Estimated fare ₹{{ number_format($quote['total_amount'], 2) }}</div>@endif
                             @else
-                                <strong style="font-size: 1.15rem;">₹{{ number_format($quote['total_amount'], 2) }}{{ $quote['details']['gst_applicable'] ? ' + GST' : '' }}</strong>
+                                <strong style="font-size: 1.05rem; color: var(--dark-900);">₹{{ number_format($quote['total_amount'], 2) }}{{ $quote['details']['gst_applicable'] ? ' + GST' : '' }}</strong>
                             @endif
-                            <div style="margin-top: 0.5rem;">
+                            <div style="margin-top: 0.35rem;">
                                 <a class="btn btn-primary btn-sm" href="{{ route('booking', ['rate_category' => request('rate_category'), 'pickup_location' => request('from'), 'destination' => request('to'), 'vehicle_category' => $quote['price']->vehicle_category]) }}">Book this rate</a>
                             </div>
                         </div>
                     </div>
                 @empty
-                    <p style="color: var(--slate-600);">Rate not configured. Please contact Vaishnavi Tours.</p>
+                    <p style="color: var(--slate-600); font-size: 0.85rem;">Rate not configured. Please contact Vaishnavi Tours.</p>
                 @endforelse
             </section>
         @endif
 
         @foreach(['airport' => 'Quick Airport Bookings', 'outstation' => 'Outstation Routes'] as $key => $heading)
-            <section style="margin-bottom: 2rem;">
-                <h2 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.75rem;">{{ $heading }}</h2>
-                <div class="table-responsive card" style="padding: 1rem;">
+            <section style="margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--dark-900);">{{ $heading }}</h2>
+                <div class="table-responsive card" style="padding: 0.75rem; border: 1px solid var(--slate-200); box-shadow: var(--shadow-sm);">
                     <table class="table">
                         <thead><tr><th>Route</th><th>Vehicle</th><th>Fare</th><th>Included</th><th>Extra running</th><th>Other charges</th></tr></thead>
                         <tbody>
@@ -152,9 +152,9 @@
         @foreach(['round_trip' => 'Round Trip', 'local_8h_80km' => 'Local Rentals · 8 Hours / 80 KM', 'local_4h_40km' => 'Local Rentals · 4 Hours / 40 KM'] as $key => $heading)
             @php($package = $routes->firstWhere('category', $key))
             @if($package)
-                <section style="margin-bottom: 2rem;">
-                    <h2 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.75rem;">{{ $heading }}</h2>
-                    <div class="table-responsive card" style="padding: 1rem;">
+                <section style="margin-bottom: 1.5rem;">
+                    <h2 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--dark-900);">{{ $heading }}</h2>
+                    <div class="table-responsive card" style="padding: 0.75rem; border: 1px solid var(--slate-200); box-shadow: var(--shadow-sm);">
                         <table class="table">
                             <thead><tr><th>Vehicle</th><th>Fare</th><th>Included</th><th>Extra KM</th><th>Extra hour</th><th>Additional charges</th></tr></thead>
                             <tbody>

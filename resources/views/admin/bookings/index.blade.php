@@ -6,8 +6,8 @@
 @section('content')
 <div class="d-flex justify-between align-center flex-wrap gap-2 mb-4">
     <div>
-        <h1 style="font-size: 1.65rem; font-weight: 800; margin: 0; color: var(--dark-950);">Cab Bookings Management</h1>
-        <p style="color: var(--slate-500); margin: 2px 0 0 0; font-size: 0.875rem;">
+        <h1 style="font-size: 1.35rem; font-weight: 600; margin: 0; color: var(--dark-900);">Cab Bookings Management</h1>
+        <p style="color: var(--slate-500); margin: 2px 0 0 0; font-size: 0.85rem;">
             Central dispatch desk: review reservations, allocate fleet & chauffeurs, track journey milestones.
         </p>
     </div>
@@ -40,7 +40,7 @@
 @endif
 
 <!-- Filters Bar -->
-<div class="card mb-4" style="padding: 1.25rem;">
+<div class="card mb-4" style="padding: 1rem 1.25rem;">
     <form method="GET" action="{{ route('admin.bookings.index') }}" class="grid grid-4 gap-3 align-end">
         <div>
             <label class="form-label" style="font-size: 0.775rem;">Search Passenger / Route / ID</label>
@@ -79,7 +79,7 @@
 <!-- Bookings Table -->
 <div class="card">
     <div class="table-responsive">
-        <table class="table" style="font-size: 0.875rem;">
+        <table class="table" style="font-size: 0.825rem;">
             <thead>
                 <tr>
                     <th>Booking ID</th>
@@ -104,7 +104,7 @@
                 @forelse($bookings as $booking)
                     <tr>
                         <td>
-                            <a href="{{ route('admin.bookings.show', $booking->id) }}" style="font-weight: 800; color: var(--primary-dark); font-family: monospace;">
+                            <a href="{{ route('admin.bookings.show', $booking->id) }}" style="font-weight: 600; color: var(--primary); font-family: monospace;">
                                 {{ $booking->booking_id }}
                             </a>
                             @if($booking->cancellation_status === 'Requested' && $booking->booking_status !== 'Cancelled')
@@ -113,7 +113,7 @@
                                 </span>
                             @endif
                         </td>
-                        <td style="font-weight: 700; white-space: nowrap;">
+                        <td style="font-weight: 500; white-space: nowrap;">
                             {{ $booking->customer->name ?? 'Guest User' }}
                         </td>
                         <td style="white-space: nowrap; color: var(--slate-600);">
@@ -129,7 +129,7 @@
                                 {{ $booking->destination }}
                             </div>
                         </td>
-                        <td style="white-space: nowrap; font-weight: 600;">
+                        <td style="white-space: nowrap; font-weight: 500;">
                             {{ $booking->travel_date ? $booking->travel_date->format('d M, Y') : '' }}
                         </td>
                         <td style="white-space: nowrap;">
@@ -139,23 +139,23 @@
                             @if($booking->vehicle)
                                 <span title="{{ $booking->vehicle->registration_number }}">{{ $booking->vehicle->name }}</span>
                             @else
-                                <span style="color: #dc2626; font-size: 0.8rem; font-weight: 600;">Unassigned</span>
+                                <span style="color: #dc2626; font-size: 0.775rem; font-weight: 500;">Unassigned</span>
                             @endif
                         </td>
                         <td style="white-space: nowrap;">
                             @if($booking->driver)
                                 <span>{{ $booking->driver->name }}</span>
                             @else
-                                <span style="color: #dc2626; font-size: 0.8rem; font-weight: 600;">Unassigned</span>
+                                <span style="color: #dc2626; font-size: 0.775rem; font-weight: 500;">Unassigned</span>
                             @endif
                         </td>
-                        <td style="font-weight: 800; white-space: nowrap;">
+                        <td style="font-weight: 600; white-space: nowrap;">
                             ₹{{ number_format($booking->total_amount, 2) }}
                         </td>
-                        <td style="color: #059669; font-weight: 700; white-space: nowrap;">
+                        <td style="color: #059669; font-weight: 600; white-space: nowrap;">
                             ₹{{ number_format($booking->paid_amount, 2) }}
                         </td>
-                        <td style="color: {{ $booking->balance_amount > 0 ? '#dc2626' : '#16a34a' }}; font-weight: 700; white-space: nowrap;">
+                        <td style="color: {{ $booking->balance_amount > 0 ? '#dc2626' : '#16a34a' }}; font-weight: 600; white-space: nowrap;">
                             ₹{{ number_format($booking->balance_amount, 2) }}
                         </td>
                         <td style="white-space: nowrap;">

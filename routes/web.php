@@ -1,9 +1,12 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminBookingController;
+use App\Http\Controllers\Admin\AdminCalendarController;
 use App\Http\Controllers\Admin\AdminCustomerController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminDriverController;
+use App\Http\Controllers\Admin\AdminEnquiryController;
+use App\Http\Controllers\Admin\AdminFeedbackController;
 use App\Http\Controllers\Admin\AdminInvoiceController;
 use App\Http\Controllers\Admin\AdminNotificationController;
 use App\Http\Controllers\Admin\AdminPaymentController;
@@ -132,6 +135,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/trips/{trip}', [AdminTripController::class, 'show'])->name('trips.show');
     Route::put('/trips/{trip}', [AdminTripController::class, 'update'])->name('trips.update');
 
+    // Advance Booking Calendar
+    Route::get('/calendar', [AdminCalendarController::class, 'index'])->name('calendar.index');
+
     // Vehicles CRUD
     Route::resource('vehicles', AdminVehicleController::class);
 
@@ -145,22 +151,35 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/customers', [AdminCustomerController::class, 'index'])->name('customers.index');
     Route::get('/customers/{user}', [AdminCustomerController::class, 'show'])->name('customers.show');
 
-    // Payments
+    // Payments & Refunds
     Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');
     Route::get('/payments/create', [AdminPaymentController::class, 'create'])->name('payments.create');
     Route::post('/payments', [AdminPaymentController::class, 'store'])->name('payments.store');
+    Route::post('/payments/{booking}/refund', [AdminPaymentController::class, 'refund'])->name('payments.refund');
 
     // Invoices
     Route::get('/invoices', [AdminInvoiceController::class, 'index'])->name('invoices.index');
     Route::get('/invoices/{invoice}', [AdminInvoiceController::class, 'show'])->name('invoices.show');
+
+    // Enquiries Inbox
+    Route::resource('enquiries', AdminEnquiryController::class)->only(['index', 'show', 'update', 'destroy']);
+
+    // Customer Feedback Moderation
+    Route::get('/feedback', [AdminFeedbackController::class, 'index'])->name('feedback.index');
+    Route::post('/feedback/{feedback}/toggle-status', [AdminFeedbackController::class, 'toggleStatus'])->name('feedback.toggle-status');
+    Route::delete('/feedback/{feedback}', [AdminFeedbackController::class, 'destroy'])->name('feedback.destroy');
 
     // Notifications
     Route::get('/notifications', [AdminNotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{notification}/read', [AdminNotificationController::class, 'markRead'])->name('notifications.read');
     Route::post('/notifications/mark-read', [AdminNotificationController::class, 'markAllRead'])->name('notifications.mark-read');
 
-    // Reports
+    // Reports & Exports
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/export-excel', [AdminReportController::class, 'exportExcel'])->name('reports.export.excel');
+    Route::get('/reports/export-pdf', [AdminReportController::class, 'exportPdf'])->name('reports.export.pdf');
+    Route::get('/reports/export-csv', [AdminReportController::class, 'exportBookingsCsv'])->name('reports.export.csv');
+    Route::get('/reports/print', [AdminReportController::class, 'printReport'])->name('reports.print');
 
     // Settings
     Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings.index');

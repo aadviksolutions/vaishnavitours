@@ -27,7 +27,7 @@
 @push('styles')
 <style>
     .about-page-content {
-        padding: 4rem 0 5rem;
+        padding: 2.5rem 0 3.5rem;
         background: var(--slate-50);
     }
     .about-page-container {
@@ -36,60 +36,66 @@
     .about-intro-card {
         display: grid;
         grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
-        gap: 2rem;
+        gap: 1.5rem;
         align-items: center;
-        padding: 2.5rem;
-        margin-bottom: 4rem;
+        padding: 1.5rem;
+        margin-bottom: 2.25rem;
+        border: 1px solid var(--slate-200);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        background: #fff;
     }
     .about-section-kicker {
-        color: var(--primary-hover);
-        font-size: 0.82rem;
-        font-weight: 800;
+        color: var(--accent-gold);
+        font-size: 0.75rem;
+        font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.8px;
     }
     .about-intro-title {
-        margin: 0.4rem 0 1rem;
+        margin: 0.25rem 0 0.75rem;
         color: var(--dark-900);
-        font-size: 2rem;
+        font-size: 1.5rem;
+        font-weight: 600;
     }
     .about-intro-copy {
-        margin-bottom: 1rem;
+        margin-bottom: 0.75rem;
         color: var(--slate-700);
-        font-size: 1rem;
-        line-height: 1.8;
+        font-size: 0.875rem;
+        line-height: 1.6;
     }
     .about-service-areas {
-        margin-bottom: 1.25rem;
+        margin-bottom: 1rem;
         color: var(--slate-600);
-        font-size: 0.95rem;
-        line-height: 1.7;
+        font-size: 0.825rem;
+        line-height: 1.5;
     }
     .about-owner-section,
     .about-team-section {
-        margin-bottom: 4rem;
+        margin-bottom: 2.25rem;
     }
     .about-section-heading {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
     }
     .about-section-heading h2 {
-        margin-top: 0.35rem;
+        margin-top: 0.25rem;
         color: var(--dark-900);
-        font-size: 2rem;
+        font-size: 1.35rem;
+        font-weight: 600;
     }
     .about-owner-card {
         display: grid;
-        grid-template-columns: minmax(260px, 0.82fr) minmax(0, 1.18fr);
+        grid-template-columns: minmax(240px, 0.75fr) minmax(0, 1.25fr);
         overflow: hidden;
         border: 1px solid var(--slate-200);
-        border-radius: var(--radius-lg);
+        border-radius: var(--radius-md);
         background: var(--white);
-        box-shadow: var(--shadow-xl);
+        box-shadow: var(--shadow-sm);
     }
     .about-portrait-frame {
         overflow: hidden;
         aspect-ratio: 4 / 5;
-        background: var(--dark-900);
+        background: var(--navy-900);
     }
     .about-portrait {
         display: block;
@@ -99,53 +105,56 @@
     }
     .about-owner-copy {
         align-self: center;
-        padding: clamp(1.5rem, 4vw, 3.5rem);
+        padding: clamp(1.25rem, 3vw, 2rem);
     }
     .about-owner-copy h3 {
-        margin: 0.5rem 0 0.35rem;
+        margin: 0.25rem 0 0.25rem;
         color: var(--dark-900);
-        font-size: 2.25rem;
+        font-size: 1.35rem;
+        font-weight: 600;
         overflow-wrap: anywhere;
     }
     .about-person-designation {
-        margin-bottom: 1rem;
-        color: var(--primary-dark);
-        font-weight: 800;
+        margin-bottom: 0.65rem;
+        color: var(--accent-gold);
+        font-weight: 600;
+        font-size: 0.825rem;
     }
     .about-person-description {
         color: var(--slate-600);
-        font-size: 0.95rem;
-        line-height: 1.75;
+        font-size: 0.85rem;
+        line-height: 1.6;
         overflow-wrap: anywhere;
     }
     .about-team-grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 1.5rem;
+        gap: 1.25rem;
     }
     .about-team-card {
         min-width: 0;
         overflow: hidden;
         border: 1px solid var(--slate-200);
-        border-radius: var(--radius-lg);
+        border-radius: var(--radius-md);
         background: var(--white);
-        box-shadow: var(--shadow-md);
+        box-shadow: var(--shadow-sm);
     }
     .about-team-card .about-portrait-frame {
         aspect-ratio: 4 / 5;
     }
     .about-team-copy {
-        padding: 1.25rem 1.35rem 1.5rem;
+        padding: 1rem 1.15rem 1.25rem;
     }
     .about-team-copy h3 {
-        margin-bottom: 0.35rem;
+        margin-bottom: 0.25rem;
         color: var(--dark-900);
-        font-size: 1.2rem;
+        font-size: 1.05rem;
+        font-weight: 600;
         overflow-wrap: anywhere;
     }
     .about-team-copy .about-person-designation {
-        margin-bottom: 0.75rem;
-        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.775rem;
     }
     .about-pillars {
         margin-top: 0;
@@ -156,43 +165,43 @@
         }
         .about-intro-card {
             grid-template-columns: minmax(0, 1fr) minmax(250px, 0.8fr);
-            gap: 1.5rem;
-            padding: 2rem;
+            gap: 1.25rem;
+            padding: 1.5rem;
         }
     }
     @media (max-width: 768px) {
         .about-page-content {
-            padding: 3rem 0 4rem;
+            padding: 2rem 0 3rem;
         }
         .about-intro-card,
         .about-owner-card {
             grid-template-columns: minmax(0, 1fr);
         }
         .about-owner-card .about-portrait-frame {
-            max-height: 420px;
+            max-height: 340px;
         }
         .about-owner-copy h3 {
-            font-size: 1.9rem;
+            font-size: 1.25rem;
         }
         .about-owner-section,
         .about-team-section {
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
         }
     }
     @media (max-width: 480px) {
         .about-page-content {
-            padding-top: 2.5rem;
+            padding-top: 1.75rem;
         }
         .about-intro-card {
-            padding: 1.25rem;
+            padding: 1rem;
         }
         .about-section-heading h2,
         .about-intro-title {
-            font-size: 1.7rem;
+            font-size: 1.25rem;
         }
         .about-team-grid {
             grid-template-columns: minmax(0, 1fr);
-            gap: 1rem;
+            gap: 0.85rem;
         }
     }
 </style>

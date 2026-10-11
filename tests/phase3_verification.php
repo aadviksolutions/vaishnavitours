@@ -1,9 +1,6 @@
 <?php
 
 require_once __DIR__.'/../vendor/autoload.php';
-$app = require_once __DIR__.'/../bootstrap/app.php';
-$kernel = $app->make(Kernel::class);
-$kernel->bootstrap();
 
 use App\Models\Booking;
 use App\Models\BookingStatusHistory;
@@ -19,6 +16,10 @@ use App\Services\PaymentService;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
+
+$app = require_once __DIR__.'/../bootstrap/app.php';
+$kernel = $app->make(Kernel::class);
+$kernel->bootstrap();
 
 echo "=======================================================\n";
 echo "VAISHNAVI TOURS — PHASE 3 AUTOMATED VERIFICATION TEST\n";

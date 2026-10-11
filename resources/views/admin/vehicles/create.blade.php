@@ -67,6 +67,40 @@
                     </div>
                 </div>
 
+                <div class="card mb-4" style="background: var(--slate-50); border: 1px solid var(--slate-200);">
+                    <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 0.75rem;">📑 Compliance & Document Records</h3>
+                    <p style="font-size: 0.8rem; color: var(--slate-500); margin-top: -0.5rem; margin-bottom: 1rem;">Set document expiry dates for automated compliance reminders.</p>
+
+                    <div class="grid grid-2 gap-3 mb-3">
+                        <div class="form-group">
+                            <label for="insurance_number" class="form-label">Insurance Policy Number</label>
+                            <input type="text" name="insurance_number" id="insurance_number" class="form-control" value="{{ old('insurance_number') }}" placeholder="e.g. POL-98765432">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="insurance_expiry" class="form-label">Insurance Expiry Date</label>
+                            <input type="date" name="insurance_expiry" id="insurance_expiry" class="form-control" value="{{ old('insurance_expiry') }}">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-3 gap-3 mb-2">
+                        <div class="form-group">
+                            <label for="fitness_expiry" class="form-label">Fitness Expiry</label>
+                            <input type="date" name="fitness_expiry" id="fitness_expiry" class="form-control" value="{{ old('fitness_expiry') }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="permit_expiry" class="form-label">Permit Expiry</label>
+                            <input type="date" name="permit_expiry" id="permit_expiry" class="form-control" value="{{ old('permit_expiry') }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="puc_expiry" class="form-label">PUC Expiry</label>
+                            <input type="date" name="puc_expiry" id="puc_expiry" class="form-control" value="{{ old('puc_expiry') }}">
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label for="notes" class="form-label">Maintenance Notes / Special Equipment</label>
                     <textarea name="notes" id="notes" class="form-control" rows="2" placeholder="GPS installed, commercial permit valid till 2028, first-aid kit... ">{{ old('notes') }}</textarea>

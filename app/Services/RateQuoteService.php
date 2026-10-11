@@ -99,6 +99,21 @@ class RateQuoteService
 
     private function sameLocation(?string $first, string $second): bool
     {
-        return $first !== null && strcasecmp(trim($first), trim($second)) === 0;
+        if ($first === null) {
+            return false;
+        }
+
+        $f = strtolower(trim($first));
+        $s = strtolower(trim($second));
+
+        if ($f === $s) {
+            return true;
+        }
+
+        if (str_contains($f, 'airport') && str_contains($s, 'airport')) {
+            return true;
+        }
+
+        return str_contains($s, $f) || str_contains($f, $s);
     }
 }

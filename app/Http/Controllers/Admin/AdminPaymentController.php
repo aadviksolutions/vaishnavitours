@@ -54,4 +54,16 @@ class AdminPaymentController extends Controller
         return redirect()->route('admin.bookings.show', $booking->id)
             ->with('success', 'Payment of ₹'.number_format($payment->amount, 2).' recorded successfully!');
     }
+
+    public function refund(Request $request, Booking $booking, PaymentService $paymentService)
+    {
+        $data = $request->validate([
+            'amount' => 'required|numeric|min:1|max:'.$booking->paid_amount,
+            'reason' => 'required|string|max:255',
+        ]);
+
+        $paymentService->recordRefund($booking, (float) $data['amount'], $data['reason'], Auth::user());
+
+        return back()->with('success', 'Refund of ₹'.number_format($data['amount'], 2).' processed successfully.');
+    }
 }

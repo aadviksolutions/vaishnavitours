@@ -46,4 +46,37 @@ class Driver extends Model
     {
         return $query->where('status', 'Available');
     }
+
+    public function getLicenseStatus(): array
+    {
+        if (! $this->license_expiry) {
+            return ['status' => 'unknown', 'label' => 'Not recorded', 'class' => 'secondary'];
+        }
+
+        $today = now()->startOfDay();
+        $expiry = $this->license_expiry->startOfDay();
+
+        if ($expiry->isPast()) {
+            return [
+                'status' => 'expired',
+                'label' => 'Expired ('.$expiry->format('d M Y').')',
+                'class' => 'danger',
+            ];
+        }
+
+        $days = (int) $today->diffInDays($expiry);
+        if ($days <= 30) {
+            return [
+                'status' => 'expiring_soon',
+                'label' => "Expires in {$days} days",
+                'class' => 'warning',
+            ];
+        }
+
+        return [
+            'status' => 'valid',
+            'label' => 'Valid till '.$expiry->format('d M Y'),
+            'class' => 'success',
+        ];
+    }
 }

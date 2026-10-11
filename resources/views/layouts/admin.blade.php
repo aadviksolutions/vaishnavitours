@@ -19,66 +19,75 @@
     <aside class="admin-sidebar" id="adminSidebar">
         <div class="admin-sidebar-header d-flex align-center justify-between">
             <a href="{{ route('admin.dashboard') }}" class="brand-logo-wrap brand-logo-dark">
-                <div class="brand-logo-badge" style="width: 38px; height: 38px;">
+                <div class="brand-logo-badge" style="width: 32px; height: 32px; border-radius: 6px;">
                     <img src="{{ asset('assets/branding/vaishnavi-tours-logo.png') }}" alt="Vaishnavi Tours Logo">
                 </div>
                 <div>
-                    <div class="logo-brand" style="color: #fff; font-size: 1.15rem;">Vaishnavi <span style="color: var(--primary);">Tours</span></div>
-                    <div class="logo-sub" style="color: var(--slate-400); font-size: 0.65rem;">Admin Management</div>
+                    <div class="logo-brand" style="color: #fff; font-size: 13.5px; font-weight: 600;">Vaishnavi <span style="color: var(--accent);">Tours</span></div>
+                    <div class="logo-sub" style="color: var(--slate-400); font-size: 10px; font-weight: 500;">Admin Console</div>
                 </div>
             </a>
-            <button id="sidebarCloseBtn" style="background: none; border: none; color: #fff; cursor: pointer; display: none;" class="mobile-only-btn">✕</button>
+            <button id="sidebarCloseBtn" style="background: none; border: none; color: var(--slate-400); cursor: pointer; display: none; font-size: 16px;" class="mobile-only-btn">✕</button>
         </div>
 
         <nav class="admin-sidebar-menu">
             <div class="admin-menu-heading">Main</div>
             <a href="{{ route('admin.dashboard') }}" class="admin-nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                <span>📊</span> Dashboard
+                <x-icon name="trending-up" size="15" /> Dashboard
             </a>
 
             <div class="admin-menu-heading">Operations</div>
             <a href="{{ route('admin.bookings.index') }}" class="admin-nav-item {{ request()->routeIs('admin.bookings.*') ? 'active' : '' }}">
-                <span>🚖</span> Bookings
+                <x-icon name="calendar-check" size="15" /> Bookings
+            </a>
+            <a href="{{ route('admin.calendar.index') }}" class="admin-nav-item {{ request()->routeIs('admin.calendar.*') ? 'active' : '' }}">
+                <x-icon name="calendar" size="15" /> Booking Calendar
             </a>
             <a href="{{ route('admin.trips.index') }}" class="admin-nav-item {{ request()->routeIs('admin.trips.*') ? 'active' : '' }}">
-                <span>🗺️</span> Trips & Tracking
+                <x-icon name="route" size="15" /> Trips & Tracking
+            </a>
+            <a href="{{ route('admin.enquiries.index') }}" class="admin-nav-item {{ request()->routeIs('admin.enquiries.*') ? 'active' : '' }}">
+                <x-icon name="mail" size="15" /> Website Enquiries
             </a>
             <a href="{{ route('admin.vehicles.index') }}" class="admin-nav-item {{ request()->routeIs('admin.vehicles.*') ? 'active' : '' }}">
-                <span>🚗</span> Vehicles Fleet
+                <x-icon name="car-front" size="15" /> Vehicles Fleet
             </a>
             <a href="{{ route('admin.rates.index') }}" class="admin-nav-item {{ request()->routeIs('admin.rates.*') ? 'active' : '' }}">
-                <span>₹</span> Rates
+                <x-icon name="indian-rupee" size="15" /> Rates Matrix
             </a>
             <a href="{{ route('admin.drivers.index') }}" class="admin-nav-item {{ request()->routeIs('admin.drivers.*') ? 'active' : '' }}">
-                <span>👨‍✈️</span> Chauffeurs / Drivers
+                <x-icon name="user-check" size="15" /> Chauffeurs / Drivers
             </a>
             <a href="{{ route('admin.customers.index') }}" class="admin-nav-item {{ request()->routeIs('admin.customers.*') ? 'active' : '' }}">
-                <span>👥</span> Customers
+                <x-icon name="users" size="15" /> Customers
             </a>
 
             <div class="admin-menu-heading">Finance & Billing</div>
             <a href="{{ route('admin.payments.index') }}" class="admin-nav-item {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}">
-                <span>💳</span> Payments
+                <x-icon name="credit-card" size="15" /> Payments
             </a>
             <a href="{{ route('admin.invoices.index') }}" class="admin-nav-item {{ request()->routeIs('admin.invoices.*') ? 'active' : '' }}">
-                <span>🧾</span> Invoices
+                <x-icon name="receipt" size="15" /> Invoices
             </a>
 
             <div class="admin-menu-heading">Insights & Tools</div>
             <a href="{{ route('admin.notifications.index') }}" class="admin-nav-item {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}">
-                <span>🔔</span> Notifications
+                <x-icon name="bell" size="15" /> Notifications
             </a>
             <a href="{{ route('admin.reports.index') }}" class="admin-nav-item {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
-                <span>📈</span> Reports & Analytics
+                <x-icon name="file-text" size="15" /> Reports & Analytics
+            </a>
+            <a href="{{ route('admin.feedback.index') }}" class="admin-nav-item {{ request()->routeIs('admin.feedback.*') ? 'active' : '' }}">
+                <x-icon name="star" size="15" /> Customer Reviews
             </a>
             <a href="{{ route('admin.settings.index') }}" class="admin-nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
-                <span>⚙️</span> Company Settings
+                <x-icon name="settings" size="15" /> Company Settings
             </a>
         </nav>
 
-        <div style="padding: 1rem 1.25rem; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.825rem;">
-            <a href="{{ route('home') }}" target="_blank" style="color: var(--primary); display: flex; align-items: center; gap: 6px; font-weight: 700;">
-                🌐 View Public Website ↗
+        <div style="padding: 0.75rem 1rem; border-top: 1px solid rgba(255,255,255,0.06); font-size: 12px;">
+            <a href="{{ route('home') }}" target="_blank" style="color: #38BDF8; display: flex; align-items: center; gap: 6px; font-weight: 500;">
+                <x-icon name="external-link" size="13" /> View Public Site
             </a>
         </div>
     </aside>
@@ -88,32 +97,32 @@
         <!-- Topbar -->
         <header class="admin-topbar">
             <div class="d-flex align-center gap-2">
-                <button id="sidebarOpenBtn" class="btn btn-outline btn-sm" style="display: none;" aria-label="Toggle Menu">
-                    ☰
+                <button id="sidebarOpenBtn" class="btn btn-outline btn-sm" style="display: none; padding: 0 8px;" aria-label="Toggle Menu">
+                    <x-icon name="menu" size="16" />
                 </button>
-                <h2 style="font-size: 1.25rem; font-weight: 800;">@yield('page_title', 'Admin Dashboard')</h2>
+                <h1 style="font-size: 15px; font-weight: 600; margin: 0; color: var(--dark-900);">@yield('page_title', 'Admin Dashboard')</h1>
             </div>
 
-            <div class="d-flex align-center gap-3">
+            <div class="d-flex align-center gap-2">
                 <a href="{{ route('admin.bookings.create') }}" class="btn btn-primary btn-sm">
                     + New Booking
                 </a>
 
-                <a href="{{ route('admin.notifications.index') }}" title="Notifications" style="position: relative; font-size: 1.2rem;">
-                    🔔
+                <a href="{{ route('admin.notifications.index') }}" class="btn btn-outline btn-sm" title="Notifications" style="padding: 0 8px; color: var(--slate-600);">
+                    <x-icon name="bell" size="15" />
                 </a>
 
-                <div class="d-flex align-center gap-2" style="border-left: 1px solid var(--slate-200); padding-left: 1rem;">
-                    <div style="width: 34px; height: 34px; background: var(--dark-900); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem;">
+                <div class="d-flex align-center gap-2" style="border-left: 1px solid var(--slate-200); padding-left: 0.75rem; margin-left: 0.25rem;">
+                    <div style="width: 28px; height: 28px; background: var(--dark-900); color: var(--white); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 11px;">
                         VT
                     </div>
                     <div style="line-height: 1.2;">
-                        <div style="font-weight: 700; font-size: 0.875rem;">{{ Auth::user()->name }}</div>
-                        <div style="font-size: 0.725rem; color: var(--slate-500);">Administrator</div>
+                        <div style="font-weight: 600; font-size: 12.5px; color: var(--dark-900);">{{ Auth::user()->name }}</div>
+                        <div style="font-size: 11px; color: var(--slate-500);">Administrator</div>
                     </div>
-                    <form action="{{ route('logout') }}" method="POST" style="margin-left: 0.5rem;">
+                    <form action="{{ route('logout') }}" method="POST" style="margin-left: 0.25rem;">
                         @csrf
-                        <button type="submit" class="btn btn-outline btn-sm" title="Logout">Logout</button>
+                        <button type="submit" class="btn btn-outline btn-sm" style="font-size: 11.5px; height: 28px; padding: 0 0.5rem;" title="Logout">Logout</button>
                     </form>
                 </div>
             </div>
@@ -122,13 +131,13 @@
         <!-- Content Area -->
         <div class="admin-content">
             @if(session('success'))
-                <div class="alert alert-success">✅ {{ session('success') }}</div>
+                <div class="alert alert-success"><x-icon name="circle-check" size="16" /> {{ session('success') }}</div>
             @endif
             @if(session('error'))
-                <div class="alert alert-danger">⚠️ {{ session('error') }}</div>
+                <div class="alert alert-danger"><x-icon name="alert-circle" size="16" /> {{ session('error') }}</div>
             @endif
             @if(session('info'))
-                <div class="alert alert-info">ℹ️ {{ session('info') }}</div>
+                <div class="alert alert-info"><x-icon name="info" size="16" /> {{ session('info') }}</div>
             @endif
 
             @yield('content')

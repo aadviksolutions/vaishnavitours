@@ -104,6 +104,41 @@ class AdminTripController extends Controller
             }
         }
 
+        // Automatic final fare recalculation based on actual odometer distance
+        if ($newStatus === 'Completed' && $data['start_odometer'] !== null && $data['end_odometer'] !== null && $trip->booking) {
+            $startOdo = (int) $data['start_odometer'];
+            $endOdo = (int) $data['end_odometer'];
+            if ($endOdo > $startOdo) {
+                $actualKm = $endOdo - $startOdo;
+                $booking = $trip->booking->fresh();
+                $details = $booking->pricing_details ?? [];
+                $includedKm = (float) ($details['included_km'] ?? $details['distance_km'] ?? 0);
+                $extraRate = (float) ($details['extra_km_rate'] ?? $details['per_km_rate'] ?? 12.0);
+
+                if ($includedKm > 0 && $actualKm > $includedKm && empty($details['extra_km_charged'])) {
+                    $extraKm = $actualKm - $includedKm;
+                    $extraFare = round($extraKm * $extraRate, 2);
+
+                    $details['actual_km'] = $actualKm;
+                    $details['extra_km'] = $extraKm;
+                    $details['extra_km_charge'] = $extraFare;
+                    $details['extra_km_charged'] = true;
+
+                    $newTotal = round((float) $booking->total_amount + $extraFare, 2);
+                    $newBalance = round($newTotal - (float) $booking->paid_amount, 2);
+
+                    $booking->update([
+                        'total_amount' => $newTotal,
+                        'balance_amount' => $newBalance,
+                        'pricing_details' => $details,
+                    ]);
+                } else {
+                    $details['actual_km'] = $actualKm;
+                    $booking->update(['pricing_details' => $details]);
+                }
+            }
+        }
+
         return back()->with('success', "Trip #{$trip->id} status and operational records updated!");
     }
 }

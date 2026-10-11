@@ -17,16 +17,7 @@ class PublicWebsiteController extends Controller
 {
     public function home()
     {
-        try {
-            $vehicles = Vehicle::where('status', '!=', 'Inactive')->get();
-        } catch (\Throwable $e) {
-            report($e);
-            $vehicles = collect([]);
-        }
-
-        if ($vehicles->isEmpty()) {
-            $vehicles = $this->getFallbackVehicles();
-        }
+        $bookingData = $this->getBookingViewData();
 
         try {
             $feedbacks = Feedback::where('is_public', true)->latest()->take(6)->get();
@@ -42,7 +33,7 @@ class PublicWebsiteController extends Controller
         try {
             $stats = [
                 'trips_completed' => Booking::where('booking_status', 'Completed')->count() + 15400,
-                'active_vehicles' => $vehicles->count() ?: 12,
+                'active_vehicles' => $bookingData['vehicles']->count() ?: 12,
                 'satisfaction_rate' => '99.4%',
                 'support_hours' => '24/7',
             ];
@@ -55,10 +46,17 @@ class PublicWebsiteController extends Controller
             ];
         }
 
-        return view('public.home', compact('vehicles', 'feedbacks', 'stats'));
+        return view('public.home', array_merge($bookingData, compact('feedbacks', 'stats')));
     }
 
     public function booking()
+    {
+        $bookingData = $this->getBookingViewData();
+
+        return view('public.booking', $bookingData);
+    }
+
+    protected function getBookingViewData(): array
     {
         try {
             $vehicles = Vehicle::where('status', '!=', 'Inactive')->get();
@@ -97,13 +95,59 @@ class PublicWebsiteController extends Controller
             }
         }
 
-        return view('public.booking', compact('vehicles', 'fleetVehicles', 'locations', 'vehicleCategories', 'rateOptions'));
+        return compact('vehicles', 'fleetVehicles', 'routes', 'locations', 'vehicleCategories', 'rateOptions');
     }
 
     public function storeBooking(Request $request, BookingService $bookingService)
     {
         if (! $request->filled('trip_type')) {
             $request->merge(['trip_type' => 'One-Way']);
+        }
+
+        if (! $request->filled('rate_category')) {
+            $tripType = $request->input('trip_type', 'One-Way');
+            $dest = strtolower($request->input('destination', ''));
+            $orig = strtolower($request->input('pickup_location', ''));
+            if (str_contains($dest, 'airport') || str_contains($orig, 'airport')) {
+                $request->merge(['rate_category' => 'airport']);
+            } elseif ($tripType === 'Round-Trip') {
+                $request->merge(['rate_category' => 'round_trip']);
+            } elseif ($tripType === 'Local Hourly') {
+                $request->merge(['rate_category' => 'local_8h_80km']);
+            } elseif ($tripType === 'Tour Package') {
+                $request->merge(['rate_category' => 'tour_package']);
+            } elseif ($tripType === 'Ambulance Service') {
+                $request->merge(['rate_category' => 'emergency']);
+            } else {
+                $request->merge(['rate_category' => 'outstation']);
+            }
+        }
+
+        if (! $request->filled('vehicle_category')) {
+            if ($request->filled('vehicle_id')) {
+                $veh = Vehicle::find($request->input('vehicle_id'));
+                if ($veh) {
+                    $categoryMap = [
+                        'Sedan' => 'Sedan',
+                        'Ertiga' => 'Ertiga',
+                        'SUV' => 'Ertiga',
+                        'Innova Crysta' => 'Innova Crysta',
+                        'Premium SUV' => 'Innova Crysta',
+                        'Hatchback' => 'Sedan',
+                        'Compact Sedan' => 'Sedan',
+                    ];
+                    $request->merge(['vehicle_category' => $categoryMap[$veh->vehicle_type] ?? 'Sedan']);
+                } else {
+                    $request->merge(['vehicle_category' => 'Sedan']);
+                }
+            } else {
+                $request->merge(['vehicle_category' => 'Sedan']);
+            }
+        }
+
+        // For local rentals where destination is not separate, fill destination from pickup location if empty
+        if (in_array($request->input('rate_category'), ['local_8h_80km', 'local_4h_40km'], true) && ! $request->filled('destination')) {
+            $request->merge(['destination' => $request->input('pickup_location', 'Local Service').' (Local)']);
         }
 
         $data = $request->validate([
@@ -113,11 +157,17 @@ class PublicWebsiteController extends Controller
             'trip_type' => 'required|string',
             'pickup_location' => 'required|string|max:255',
             'destination' => 'required|string|max:255',
-            'rate_category' => 'required|in:airport,outstation,round_trip,local_8h_80km,local_4h_40km',
+            'rate_category' => 'required|in:airport,outstation,round_trip,local_8h_80km,local_4h_40km,tour_package,emergency',
             'vehicle_category' => 'required|string|max:80',
             'estimated_km' => 'nullable|required_if:rate_category,round_trip|numeric|min:0.01',
             'travel_date' => 'required|date|after_or_equal:today',
             'travel_time' => 'required',
+            'return_date' => 'nullable|date|after_or_equal:travel_date',
+            'return_time' => 'nullable',
+            'passenger_count' => 'nullable|integer|min:1|max:50',
+            'flight_number' => 'nullable|string|max:50',
+            'package_duration' => 'nullable|string|max:100',
+            'service_category' => 'nullable|string|max:100',
             'vehicle_id' => 'nullable|exists:vehicles,id',
             'notes' => 'nullable|string|max:1000',
             'terms_accepted' => 'required|accepted',

@@ -48,7 +48,7 @@ class AdminDashboardController extends Controller
         // Notification count
         $unreadNotificationsCount = Notification::whereNull('user_id')->where('is_read', false)->count();
 
-        // Revenue chart data: last 6 months
+        // Revenue chart data: last 6 months (Real database records)
         $revenueMonths = [];
         $revenueData = [];
         for ($i = 5; $i >= 0; $i--) {
@@ -59,8 +59,28 @@ class AdminDashboardController extends Controller
                 ->whereBetween('created_at', [$monthStart, $monthEnd])
                 ->sum('amount');
             $revenueMonths[] = $monthLabel;
-            $revenueData[] = round($rev > 0 ? $rev : (rand(45, 95) * 1000), 2);
+            $revenueData[] = round((float) $rev, 2);
         }
+
+        // Module 1: Daily, Weekly, and Monthly Booking & Revenue Statistics
+        $dailyStats = [
+            'bookings' => Booking::whereDate('created_at', now()->toDateString())->count(),
+            'travels_today' => Booking::whereDate('travel_date', now()->toDateString())->count(),
+            'completed' => Booking::whereDate('travel_date', now()->toDateString())->where('booking_status', 'Completed')->count(),
+            'revenue' => (float) Payment::where('status', 'Success')->whereDate('created_at', now()->toDateString())->sum('amount'),
+        ];
+
+        $weeklyStats = [
+            'bookings' => Booking::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
+            'completed' => Booking::whereBetween('travel_date', [now()->startOfWeek(), now()->endOfWeek()])->where('booking_status', 'Completed')->count(),
+            'revenue' => (float) Payment::where('status', 'Success')->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->sum('amount'),
+        ];
+
+        $monthlyStats = [
+            'bookings' => Booking::whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])->count(),
+            'completed' => Booking::whereBetween('travel_date', [now()->startOfMonth(), now()->endOfMonth()])->where('booking_status', 'Completed')->count(),
+            'revenue' => (float) Payment::where('status', 'Success')->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])->sum('amount'),
+        ];
 
         return view('admin.dashboard', compact(
             'totalBookings',
@@ -77,7 +97,10 @@ class AdminDashboardController extends Controller
             'statusCounts',
             'unreadNotificationsCount',
             'revenueMonths',
-            'revenueData'
+            'revenueData',
+            'dailyStats',
+            'weeklyStats',
+            'monthlyStats'
         ));
     }
 }

@@ -97,4 +97,47 @@ class PaymentService
             ]
         );
     }
+
+    /**
+     * Process and record a customer refund for a booking.
+     */
+    public function recordRefund(Booking $booking, float $amount, string $reason = '', ?User $recordedBy = null): Payment
+    {
+        return DB::transaction(function () use ($booking, $amount, $reason) {
+            $payment = Payment::create([
+                'booking_id' => $booking->id,
+                'customer_id' => $booking->customer_id,
+                'gateway' => 'Manual Refund',
+                'transaction_id' => 'REF-'.strtoupper(uniqid()),
+                'amount' => -abs($amount),
+                'currency' => 'INR',
+                'payment_method' => 'Refund',
+                'status' => 'Refunded',
+                'paid_at' => now(),
+                'notes' => 'Refund issued: '.$reason,
+            ]);
+
+            $newPaid = max(0, (float) $booking->paid_amount - $amount);
+            $newBalance = max(0, (float) $booking->total_amount - $newPaid);
+            $paymentStatus = $newPaid <= 0 ? 'Refunded' : 'Partial';
+
+            $booking->update([
+                'paid_amount' => $newPaid,
+                'balance_amount' => $newBalance,
+                'payment_status' => $paymentStatus,
+            ]);
+
+            $this->syncInvoice($booking);
+
+            Notification::create([
+                'user_id' => $booking->customer_id,
+                'title' => 'Refund Processed: ₹'.number_format($amount, 2),
+                'message' => 'Refund of ₹'.number_format($amount, 2).' processed for booking #'.$booking->booking_id.'.',
+                'type' => 'payment',
+                'action_url' => '/customer/bookings/'.$booking->id,
+            ]);
+
+            return $payment;
+        });
+    }
 }

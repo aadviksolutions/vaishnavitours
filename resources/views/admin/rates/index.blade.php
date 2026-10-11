@@ -35,16 +35,16 @@
                     <td>{{ $categories[$route->category] ?? $route->category }}</td>
                     <td>{{ $route->origin && $route->destination ? $route->origin . ' ↔ ' . $route->destination : 'Any location' }}</td>
                     <td>
-                        @if($route->km_limit !== null){{ $route->km_limit }} KM@endif
-                        @if($route->included_hours !== null){{ $route->km_limit !== null ? ' / ' : '' }}{{ rtrim(rtrim(number_format((float) $route->included_hours, 2), '0'), '.') }} hr@endif
+                        @if($route->km_limit !== null){{ $route->km_limit }} KM @endif
+                        @if($route->included_hours !== null){{ $route->km_limit !== null ? ' / ' : '' }}{{ rtrim(rtrim(number_format((float) $route->included_hours, 2), '0'), '.') }} hr @endif
                         @if($route->km_limit === null && $route->included_hours === null)–@endif
                     </td>
                     <td>
                         @foreach($route->vehiclePrices as $price)
                             <div><strong>{{ $price->vehicle_category }}:</strong>
-                                @if($price->base_fare !== null)₹{{ number_format((float) $price->base_fare, 2) }}@endif
-                                @if($price->vehicle_rent !== null)₹{{ number_format((float) $price->vehicle_rent, 2) }} rent + ₹{{ number_format((float) $price->per_km_rate, 2) }}/KM@endif
-                                @if($price->gst_applicable) + GST@endif
+                                @if($price->base_fare !== null)₹{{ number_format((float) $price->base_fare, 2) }} @endif
+                                @if($price->vehicle_rent !== null)₹{{ number_format((float) $price->vehicle_rent, 2) }} rent + ₹{{ number_format((float) $price->per_km_rate, 2) }}/KM @endif
+                                @if($price->gst_applicable) + GST @endif
                             </div>
                         @endforeach
                     </td>

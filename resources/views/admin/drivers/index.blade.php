@@ -71,6 +71,14 @@
                             <span class="badge badge-outline" style="font-family: monospace; font-size: 0.8rem; font-weight: 700;">
                                 {{ $driver->license_number }}
                             </span>
+                            @php
+                                $lic = $driver->getLicenseStatus();
+                            @endphp
+                            <div style="margin-top: 4px;">
+                                <span class="badge badge-{{ $lic['class'] }}" style="font-size: 0.7rem; font-weight: 700;">
+                                    {{ $lic['label'] }}
+                                </span>
+                            </div>
                         </td>
                         <td>
                             @if($driver->assignedVehicle)

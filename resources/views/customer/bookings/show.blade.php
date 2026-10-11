@@ -289,7 +289,7 @@
                         @if($booking->pricing_details['border_tax_type'] ?? null)Border tax {{ $booking->pricing_details['border_tax_type'] }} · @endif
                         @if($booking->pricing_details['night_charge'] ?? null)Night charge ₹{{ number_format($booking->pricing_details['night_charge'], 2) }} · @endif
                         @if($booking->pricing_details['driver_food_type'] ?? null)Driver food {{ $booking->pricing_details['driver_food_type'] }} · @endif
-                        @if($booking->pricing_details['gst_applicable'] ?? false)GST applicable@endif
+                        @if($booking->pricing_details['gst_applicable'] ?? false)GST applicable @endif
                     </div>
                 </div>
             @endif
