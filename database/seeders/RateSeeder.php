@@ -47,8 +47,8 @@ class RateSeeder extends Seeder
 
         $this->seedGlobalRates('round_trip', null, null, null, null, [
             ['vehicle_category' => 'Sedan', 'vehicle_rent' => 1000, 'per_km_rate' => 12, 'night_charge' => 300, 'toll_type' => 'extra', 'parking_type' => 'extra', 'border_tax_type' => 'extra', 'driver_food_type' => 'extra'],
-            ['vehicle_category' => 'Ertiga', 'vehicle_rent' => 1500, 'per_km_rate' => 13, 'night_charge' => 400, 'toll_type' => 'extra', 'parking_type' => 'extra', 'border_tax_type' => 'extra'],
-            ['vehicle_category' => 'Innova Crysta', 'vehicle_rent' => 1800, 'per_km_rate' => 16, 'night_charge' => 500, 'toll_type' => 'extra', 'parking_type' => 'extra', 'border_tax_type' => 'extra'],
+            ['vehicle_category' => 'Ertiga', 'vehicle_rent' => 1500, 'per_km_rate' => 13, 'night_charge' => 400, 'toll_type' => 'extra', 'parking_type' => 'extra', 'border_tax_type' => 'extra', 'driver_food_type' => 'extra'],
+            ['vehicle_category' => 'Innova Crysta', 'vehicle_rent' => 1800, 'per_km_rate' => 16, 'night_charge' => 500, 'toll_type' => 'extra', 'parking_type' => 'extra', 'border_tax_type' => 'extra', 'driver_food_type' => 'extra'],
         ]);
 
         $this->seedGlobalRates('local_8h_80km', 80, 8, null, null, [
@@ -58,9 +58,9 @@ class RateSeeder extends Seeder
         ]);
 
         $this->seedGlobalRates('local_4h_40km', 40, 4, null, null, [
-            ['vehicle_category' => 'Sedan', 'base_fare' => 1600],
-            ['vehicle_category' => 'Ertiga', 'base_fare' => 2200],
-            ['vehicle_category' => 'Innova Crysta', 'base_fare' => 3000],
+            ['vehicle_category' => 'Sedan', 'base_fare' => 1600, 'toll_type' => 'extra', 'parking_type' => 'extra'],
+            ['vehicle_category' => 'Ertiga', 'base_fare' => 2200, 'toll_type' => 'extra', 'parking_type' => 'extra'],
+            ['vehicle_category' => 'Innova Crysta', 'base_fare' => 3000, 'toll_type' => 'extra', 'parking_type' => 'extra'],
         ]);
     }
 

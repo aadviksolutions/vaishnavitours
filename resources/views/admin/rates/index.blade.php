@@ -41,10 +41,25 @@
                     </td>
                     <td>
                         @foreach($route->vehiclePrices as $price)
-                            <div><strong>{{ $price->vehicle_category }}:</strong>
+                            <div style="margin-bottom: 0.35rem;">
+                                <strong>{{ $price->vehicle_category }}:</strong>
                                 @if($price->base_fare !== null)₹{{ number_format((float) $price->base_fare, 2) }} @endif
                                 @if($price->vehicle_rent !== null)₹{{ number_format((float) $price->vehicle_rent, 2) }} rent + ₹{{ number_format((float) $price->per_km_rate, 2) }}/KM @endif
-                                @if($price->gst_applicable) + GST @endif
+                                @if($price->gst_applicable) <span class="badge badge-sm badge-warning">+ GST</span> @endif
+                                <div style="font-size: 0.75rem; color: var(--slate-600);">
+                                    @if($price->extra_km_rate !== null)
+                                        Extra ₹{{ number_format((float) $price->extra_km_rate, 2) }}/KM
+                                    @elseif($route->category !== 'round_trip')
+                                        <span style="color: #b45309; font-weight: 500;">⚠️ Extra KM rate needs configuration</span>
+                                    @endif
+                                    @if($price->extra_hour_rate !== null)
+                                        · Extra ₹{{ number_format((float) $price->extra_hour_rate, 2) }}/hr
+                                    @endif
+                                    @if($price->toll_type) · Toll {{ $price->toll_type }} @endif
+                                    @if($price->parking_type) · Park {{ $price->parking_type }} @endif
+                                    @if($price->driver_food_type) · Food {{ $price->driver_food_type }} @endif
+                                    @if($price->night_charge !== null) · Night ₹{{ number_format((float) $price->night_charge, 2) }} @endif
+                                </div>
                             </div>
                         @endforeach
                     </td>

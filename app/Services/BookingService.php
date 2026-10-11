@@ -78,10 +78,13 @@ class BookingService
                 if ($quote) {
                     $ratePrice = $quote['price'];
                     $pricingDetails = array_merge($quote['details'], ['total_amount' => $quote['total_amount']]);
-                    $totalAmount = isset($data['total_amount']) && (float) $data['total_amount'] > 0
+                    // Authoritative pricing: prevent client-side fare tampering
+                    // Only an authenticated administrator can supply a custom manual total amount
+                    $isAdmin = $user && $user->role === 'admin';
+                    $totalAmount = ($isAdmin && isset($data['total_amount']) && (float) $data['total_amount'] > 0)
                         ? (float) $data['total_amount']
                         : $quote['total_amount'];
-                } elseif (isset($data['total_amount']) && (float) $data['total_amount'] > 0) {
+                } elseif (isset($data['total_amount']) && (float) $data['total_amount'] > 0 && $user && $user->role === 'admin') {
                     $totalAmount = (float) $data['total_amount'];
                     $pricingDetails = [
                         'total_amount' => $totalAmount,

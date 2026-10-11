@@ -1195,7 +1195,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 fareLabel.textContent = 'Estimated Round-Trip Fare';
                 farePrice.textContent = `₹${total.toLocaleString('en-IN')}`;
-                fareInclusions.textContent = `₹${rent.toLocaleString('en-IN')} vehicle rent + ₹${perKm.toFixed(2)}/KM (${estKm} KM) · Driver allowance included`;
+                fareInclusions.textContent = `Estimated base: ₹${rent.toLocaleString('en-IN')} vehicle rent + ₹${perKm.toFixed(2)}/KM (${estKm} KM). Toll, parking, border tax, driver food & night charges extra.`;
                 fareBadge.textContent = 'Per KM Tariff';
                 fareBadge.className = 'badge badge-assigned';
                 submitText.textContent = 'Book Round Trip';
@@ -1216,10 +1216,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const km = quote.details.included_km || (category === 'local_8h_80km' ? 80 : 40);
                 const extraKm = quote.details.extra_km_rate ? ` · Extra ₹${quote.details.extra_km_rate}/KM` : '';
                 const extraHr = quote.details.extra_hour_rate ? ` · Extra ₹${quote.details.extra_hour_rate}/hr` : '';
+                const tollInfo = quote.details.toll_type ? ` · Toll ${quote.details.toll_type}` : '';
+                const parkingInfo = quote.details.parking_type ? ` · Parking ${quote.details.parking_type}` : '';
 
                 fareLabel.textContent = `${hrs} Hours / ${km} KM Package`;
                 farePrice.textContent = `₹${amount.toLocaleString('en-IN')}`;
-                fareInclusions.textContent = `City local usage (${hrs}h & ${km}km included)${extraKm}${extraHr}`;
+                fareInclusions.textContent = `City local usage (${hrs}h & ${km}km included)${extraKm}${extraHr}${tollInfo}${parkingInfo}`;
                 fareBadge.textContent = 'Fixed Package';
                 fareBadge.className = 'badge badge-assigned';
                 submitText.textContent = 'Book Local Rental';
@@ -1229,36 +1231,38 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // One-Way & Airport Transfers
+        // One-Way & Airport Transfers: strict category scoping
         let lookupCategory = category;
         if (pickup.includes('Airport') || destination.includes('Airport')) {
             lookupCategory = 'airport';
         }
 
-        // Try exact key or opposite key
+        // Try exact key or opposite key within same category
         let key = `${lookupCategory}|${pickup}|${destination}|${vCat}`;
         let quote = rateOptions[key];
 
-        if (!quote && lookupCategory === 'airport') {
-            key = `airport|${destination}|${pickup}|${vCat}`;
-            quote = rateOptions[key];
-        }
-
-        if (!quote && lookupCategory !== 'outstation') {
-            key = `outstation|${pickup}|${destination}|${vCat}`;
+        if (!quote) {
+            key = `${lookupCategory}|${destination}|${pickup}|${vCat}`;
             quote = rateOptions[key];
         }
 
         if (quote && quote.details) {
             const amount = Number(quote.total_amount || 0);
             const km = quote.details.included_km ? `${quote.details.included_km} KM included · ` : '';
-            const toll = quote.details.toll_type ? `Toll ${quote.details.toll_type}` : 'Tolls as per toll-plaza';
-            const extraKm = quote.details.extra_km_rate ? ` · Extra ₹${quote.details.extra_km_rate}/KM` : '';
+            const hrs = quote.details.included_hours ? `${quote.details.included_hours} hrs duration · ` : '';
+            let toll = '';
+            if (quote.details.toll_type === 'included' && quote.details.parking_type === 'included') {
+                toll = 'Toll & Parking included · ';
+            } else if (quote.details.toll_type) {
+                toll = `Toll ${quote.details.toll_type} · `;
+            }
+            const extraKm = quote.details.extra_km_rate ? `Extra ₹${quote.details.extra_km_rate}/KM · ` : '';
+            const gstSuffix = quote.details.gst_applicable ? ' + GST' : '';
 
-            fareLabel.textContent = 'Configured Route Fare';
-            farePrice.textContent = `₹${amount.toLocaleString('en-IN')}`;
-            fareInclusions.textContent = `${km}${toll}${extraKm} · Dedicated AC cab`;
-            fareBadge.textContent = 'Fixed Fare';
+            fareLabel.textContent = lookupCategory === 'airport' ? 'Airport Transfer Fare' : 'Configured Route Fare';
+            farePrice.textContent = `₹${amount.toLocaleString('en-IN')}${gstSuffix}`;
+            fareInclusions.textContent = `${km}${hrs}${toll}${extraKm}Dedicated AC cab`;
+            fareBadge.textContent = lookupCategory === 'airport' ? 'Airport Rate' : 'Fixed Fare';
             fareBadge.className = 'badge badge-assigned';
             submitText.textContent = 'Book Now';
         } else {

@@ -34,7 +34,7 @@
         <div style="max-width: 860px; margin: 0 auto;">
             <div style="text-align: center; margin-bottom: 1.75rem;">
                 <span style="color: var(--accent-gold); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.8px;">Direct Reservation</span>
-                <h1 style="font-size: 1.65rem; font-weight: 600; margin-top: 0.25rem; color: var(--dark-900);">Book Your Journey with Vaishnavi Tours</h1>
+                <h1 style="font-size: 1.65rem; font-weight: 600; margin-top: 0.25rem; color: var(--dark-900);">Book Your Cab with Vaishnavi Tours</h1>
                 <p style="color: var(--slate-500); font-size: 0.875rem; margin-top: 0.35rem;">Select your route and vehicle category to calculate official fixed rates.</p>
             </div>
 
@@ -257,9 +257,9 @@
             const distance = Number(estimatedKmInput.value || 0);
             if (distance > 0) {
                 const estimatedFare = Number(details.vehicle_rent) + distance * Number(details.per_km_rate);
-                previewAmount.textContent = `₹${estimatedFare.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+                previewAmount.textContent = `₹${estimatedFare.toLocaleString('en-IN', { minimumFractionDigits: 2 })} (Estimated)`;
             } else {
-                previewAmount.textContent = `₹${Number(details.vehicle_rent).toLocaleString('en-IN')} rent + ₹${Number(details.per_km_rate).toFixed(2)}/KM`;
+                previewAmount.textContent = `₹${Number(details.vehicle_rent).toLocaleString('en-IN')} rent + ₹${Number(details.per_km_rate).toFixed(2)}/KM (Estimated)`;
             }
         } else {
             const gstText = details.gst_applicable ? ' + GST' : '';

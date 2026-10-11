@@ -113,25 +113,35 @@ class AdminTripController extends Controller
                 $booking = $trip->booking->fresh();
                 $details = $booking->pricing_details ?? [];
                 $includedKm = (float) ($details['included_km'] ?? $details['distance_km'] ?? 0);
-                $extraRate = (float) ($details['extra_km_rate'] ?? $details['per_km_rate'] ?? 12.0);
+                $extraRate = isset($details['extra_km_rate']) && $details['extra_km_rate'] !== null && $details['extra_km_rate'] !== ''
+                    ? (float) $details['extra_km_rate']
+                    : null;
 
                 if ($includedKm > 0 && $actualKm > $includedKm && empty($details['extra_km_charged'])) {
                     $extraKm = $actualKm - $includedKm;
-                    $extraFare = round($extraKm * $extraRate, 2);
+                    if ($extraRate !== null && $extraRate > 0) {
+                        $extraFare = round($extraKm * $extraRate, 2);
 
-                    $details['actual_km'] = $actualKm;
-                    $details['extra_km'] = $extraKm;
-                    $details['extra_km_charge'] = $extraFare;
-                    $details['extra_km_charged'] = true;
+                        $details['actual_km'] = $actualKm;
+                        $details['extra_km'] = $extraKm;
+                        $details['extra_km_charge'] = $extraFare;
+                        $details['extra_km_charged'] = true;
 
-                    $newTotal = round((float) $booking->total_amount + $extraFare, 2);
-                    $newBalance = round($newTotal - (float) $booking->paid_amount, 2);
+                        $newTotal = round((float) $booking->total_amount + $extraFare, 2);
+                        $newBalance = round($newTotal - (float) $booking->paid_amount, 2);
 
-                    $booking->update([
-                        'total_amount' => $newTotal,
-                        'balance_amount' => $newBalance,
-                        'pricing_details' => $details,
-                    ]);
+                        $booking->update([
+                            'total_amount' => $newTotal,
+                            'balance_amount' => $newBalance,
+                            'pricing_details' => $details,
+                        ]);
+                    } else {
+                        // Extra KM rate is not configured - do not calculate invented charges
+                        $details['actual_km'] = $actualKm;
+                        $details['extra_km'] = $extraKm;
+                        $details['extra_km_unconfigured'] = true;
+                        $booking->update(['pricing_details' => $details]);
+                    }
                 } else {
                     $details['actual_km'] = $actualKm;
                     $booking->update(['pricing_details' => $details]);

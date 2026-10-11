@@ -45,15 +45,21 @@ class RateQuoteService
             'included_hours' => $route->included_hours === null ? null : (float) $route->included_hours,
             'extra_km_rate' => $price->extra_km_rate === null ? null : (float) $price->extra_km_rate,
             'extra_hour_rate' => $price->extra_hour_rate === null ? null : (float) $price->extra_hour_rate,
+            'extra_km_configured' => $price->extra_km_rate !== null,
+            'extra_hour_configured' => $price->extra_hour_rate !== null,
             'vehicle_rent' => $price->vehicle_rent === null ? null : (float) $price->vehicle_rent,
             'per_km_rate' => $price->per_km_rate === null ? null : (float) $price->per_km_rate,
             'distance_km' => $distanceKm,
-            'gst_applicable' => $price->gst_applicable,
+            'gst_applicable' => (bool) $price->gst_applicable,
             'toll_type' => $price->toll_type,
             'parking_type' => $price->parking_type,
             'border_tax_type' => $price->border_tax_type,
             'night_charge' => $price->night_charge === null ? null : (float) $price->night_charge,
             'driver_food_type' => $price->driver_food_type,
+            'is_estimate' => $category === 'round_trip',
+            'estimate_notice' => $category === 'round_trip'
+                ? 'Estimated base: vehicle rent + per-KM tariff. Toll, parking, border tax, driver food & night charges extra.'
+                : null,
         ];
 
         return [
@@ -110,8 +116,29 @@ class RateQuoteService
             return true;
         }
 
-        if (str_contains($f, 'airport') && str_contains($s, 'airport')) {
-            return true;
+        $fAirport = str_contains($f, 'airport');
+        $sAirport = str_contains($s, 'airport');
+
+        // Do not confuse Raipur Airport with Raipur city
+        if ($fAirport !== $sAirport) {
+            return false;
+        }
+
+        if ($fAirport && $sAirport) {
+            $isRaipurF = str_contains($f, 'raipur') || str_contains($f, 'swami vivekananda') || str_contains($f, 'mana') || str_contains($f, 'rpr');
+            $isRaipurS = str_contains($s, 'raipur') || str_contains($s, 'swami vivekananda') || str_contains($s, 'mana') || str_contains($s, 'rpr');
+
+            return $isRaipurF && $isRaipurS;
+        }
+
+        // Neither is an airport: check if locations refer to the same recognized hub city
+        $knownCities = ['bilaspur', 'raipur', 'raigarh', 'korba', 'ambikapur', 'bhilai', 'sambalpur', 'jharsuguda'];
+        foreach ($knownCities as $city) {
+            $fHas = str_contains($f, $city);
+            $sHas = str_contains($s, $city);
+            if ($fHas || $sHas) {
+                return $fHas && $sHas;
+            }
         }
 
         return str_contains($s, $f) || str_contains($f, $s);

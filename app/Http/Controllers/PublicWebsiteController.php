@@ -100,12 +100,8 @@ class PublicWebsiteController extends Controller
 
     public function storeBooking(Request $request, BookingService $bookingService)
     {
-        if (! $request->filled('trip_type')) {
-            $request->merge(['trip_type' => 'One-Way']);
-        }
-
-        if (! $request->filled('rate_category')) {
-            $tripType = $request->input('trip_type', 'One-Way');
+        if ($request->filled('trip_type') && ! $request->filled('rate_category')) {
+            $tripType = $request->input('trip_type');
             $dest = strtolower($request->input('destination', ''));
             $orig = strtolower($request->input('pickup_location', ''));
             if (str_contains($dest, 'airport') || str_contains($orig, 'airport')) {
@@ -123,25 +119,19 @@ class PublicWebsiteController extends Controller
             }
         }
 
-        if (! $request->filled('vehicle_category')) {
-            if ($request->filled('vehicle_id')) {
-                $veh = Vehicle::find($request->input('vehicle_id'));
-                if ($veh) {
-                    $categoryMap = [
-                        'Sedan' => 'Sedan',
-                        'Ertiga' => 'Ertiga',
-                        'SUV' => 'Ertiga',
-                        'Innova Crysta' => 'Innova Crysta',
-                        'Premium SUV' => 'Innova Crysta',
-                        'Hatchback' => 'Sedan',
-                        'Compact Sedan' => 'Sedan',
-                    ];
-                    $request->merge(['vehicle_category' => $categoryMap[$veh->vehicle_type] ?? 'Sedan']);
-                } else {
-                    $request->merge(['vehicle_category' => 'Sedan']);
-                }
-            } else {
-                $request->merge(['vehicle_category' => 'Sedan']);
+        if (! $request->filled('vehicle_category') && $request->filled('vehicle_id')) {
+            $veh = Vehicle::find($request->input('vehicle_id'));
+            if ($veh) {
+                $categoryMap = [
+                    'Sedan' => 'Sedan',
+                    'Ertiga' => 'Ertiga',
+                    'SUV' => 'Ertiga',
+                    'Innova Crysta' => 'Innova Crysta',
+                    'Premium SUV' => 'Innova Crysta',
+                    'Hatchback' => 'Sedan',
+                    'Compact Sedan' => 'Sedan',
+                ];
+                $request->merge(['vehicle_category' => $categoryMap[$veh->vehicle_type] ?? 'Sedan']);
             }
         }
 
