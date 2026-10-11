@@ -293,4 +293,112 @@ class BookingTest extends TestCase
         $id2 = Booking::generateBookingId();
         $this->assertEquals('VT-1002', $id2);
     }
+
+    public function test_post_booking_one_way_with_stale_return_date_succeeds_without_error(): void
+    {
+        $this->seed(RateSeeder::class);
+
+        $travelDate = now()->addDays(10)->format('Y-m-d');
+        $staleReturnDate = now()->addDay()->format('Y-m-d'); // Prior to travel_date
+
+        $response = $this->post('/booking', [
+            'customer_name' => 'One Way Traveler',
+            'mobile' => '9876543210',
+            'trip_type' => 'One-Way',
+            'rate_category' => 'outstation',
+            'vehicle_category' => 'Sedan',
+            'pickup_location' => 'Bilaspur',
+            'destination' => 'Korba',
+            'travel_date' => $travelDate,
+            'travel_time' => '08:00',
+            'return_date' => $staleReturnDate,
+            'return_time' => '18:00',
+            'terms_accepted' => '1',
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $user = User::where('name', 'One Way Traveler')->first();
+        $this->assertNotNull($user);
+        $booking = Booking::where('customer_id', $user->id)->first();
+        $this->assertNotNull($booking);
+        $this->assertNull($booking->return_date);
+    }
+
+    public function test_post_booking_round_trip_validates_return_date(): void
+    {
+        $this->seed(RateSeeder::class);
+
+        $travelDate = now()->addDays(5)->format('Y-m-d');
+        $invalidReturnDate = now()->addDays(2)->format('Y-m-d'); // Before travel date
+
+        // 1. Invalid return date (before travel_date)
+        $response = $this->from('/booking')->post('/booking', [
+            'customer_name' => 'Round Trip Traveler',
+            'mobile' => '9876543210',
+            'trip_type' => 'Round-Trip',
+            'rate_category' => 'round_trip',
+            'vehicle_category' => 'Sedan',
+            'estimated_km' => 300,
+            'pickup_location' => 'Bilaspur',
+            'destination' => 'Raipur',
+            'travel_date' => $travelDate,
+            'travel_time' => '08:00',
+            'return_date' => $invalidReturnDate,
+            'return_time' => '20:00',
+            'terms_accepted' => '1',
+        ]);
+
+        $response->assertSessionHasErrors(['return_date']);
+        $this->assertEquals(
+            'The return date must be on or after the travel date.',
+            session('errors')->first('return_date')
+        );
+
+        // 2. Missing return date on Round-Trip
+        $response2 = $this->from('/booking')->post('/booking', [
+            'customer_name' => 'Round Trip Traveler',
+            'mobile' => '9876543210',
+            'trip_type' => 'Round-Trip',
+            'rate_category' => 'round_trip',
+            'vehicle_category' => 'Sedan',
+            'estimated_km' => 300,
+            'pickup_location' => 'Bilaspur',
+            'destination' => 'Raipur',
+            'travel_date' => $travelDate,
+            'travel_time' => '08:00',
+            'return_date' => '',
+            'terms_accepted' => '1',
+        ]);
+
+        $response2->assertSessionHasErrors(['return_date']);
+        $this->assertEquals(
+            'Please select a return date for your round trip journey.',
+            session('errors')->first('return_date')
+        );
+
+        // 3. Valid return date on Round-Trip succeeds
+        $validReturnDate = now()->addDays(7)->format('Y-m-d');
+        $response3 = $this->post('/booking', [
+            'customer_name' => 'Round Trip Traveler',
+            'mobile' => '9876543210',
+            'trip_type' => 'Round-Trip',
+            'rate_category' => 'round_trip',
+            'vehicle_category' => 'Sedan',
+            'estimated_km' => 300,
+            'pickup_location' => 'Bilaspur',
+            'destination' => 'Raipur',
+            'travel_date' => $travelDate,
+            'travel_time' => '08:00',
+            'return_date' => $validReturnDate,
+            'return_time' => '20:00',
+            'terms_accepted' => '1',
+        ]);
+
+        $response3->assertSessionHasNoErrors();
+        $user = User::where('name', 'Round Trip Traveler')->first();
+        $this->assertNotNull($user);
+        $booking = Booking::where('customer_id', $user->id)->first();
+        $this->assertNotNull($booking);
+        $this->assertEquals($validReturnDate, $booking->return_date->format('Y-m-d'));
+    }
 }

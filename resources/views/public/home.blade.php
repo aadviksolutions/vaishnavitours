@@ -365,14 +365,14 @@
                         <!-- Return Date (for Round Trip) -->
                         <div class="form-group" id="returnDateGroup" style="display: none; margin-bottom: 0;">
                             <label class="form-label">Return Date</label>
-                            <input type="date" name="return_date" id="returnDateInput" class="form-control" value="{{ old('return_date', date('Y-m-d', strtotime('+1 day'))) }}" min="{{ date('Y-m-d') }}">
+                            <input type="date" name="return_date" id="returnDateInput" class="form-control" value="{{ old('return_date') }}" min="{{ date('Y-m-d') }}" disabled>
                             @error('return_date') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
 
                         <!-- Return Time (for Round Trip) -->
                         <div class="form-group" id="returnTimeGroup" style="display: none; margin-bottom: 0;">
                             <label class="form-label">Return Time</label>
-                            <input type="time" name="return_time" id="returnTimeInput" class="form-control" value="{{ old('return_time', '18:00') }}">
+                            <input type="time" name="return_time" id="returnTimeInput" class="form-control" value="{{ old('return_time', '18:00') }}" disabled>
                             @error('return_time') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
 
@@ -402,7 +402,7 @@
                         <div class="grid grid-2 gap-2 align-center">
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label class="form-label">Estimated Round-Trip Distance (KM)</label>
-                                <input type="number" name="estimated_km" id="estimatedKmInput" class="form-control" min="1" step="1" placeholder="e.g. 270 KM" value="{{ old('estimated_km', '270') }}">
+                                <input type="number" name="estimated_km" id="estimatedKmInput" class="form-control" min="1" step="1" placeholder="e.g. 270 KM" value="{{ old('estimated_km', '270') }}" disabled>
                             </div>
                             <div style="font-size: 11.5px; color: var(--slate-500); line-height: 1.4; padding-top: 14px;">
                                 Fares calculated as fixed daily vehicle rent + actual KM charge.
@@ -804,6 +804,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const ambulanceFields = document.getElementById('ambulanceFields');
     const returnDateGroup = document.getElementById('returnDateGroup');
     const returnTimeGroup = document.getElementById('returnTimeGroup');
+    const returnDateInput = document.getElementById('returnDateInput');
+    const returnTimeInput = document.getElementById('returnTimeInput');
+    const travelDateInput = document.getElementById('travelDateInput');
     const flightNumberGroup = document.getElementById('flightNumberGroup');
     const estimatedKmGroup = document.getElementById('estimatedKmGroup');
     const estimatedKmInput = document.getElementById('estimatedKmInput');
@@ -837,6 +840,8 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.setAttribute('aria-selected', isMatch ? 'true' : 'false');
         });
 
+        const isRoundTrip = (tab === 'roundtrip');
+
         // Toggle field visibilities based on tab
         standardRouteGrid.style.display = (tab === 'tour' || tab === 'ambulance') ? 'none' : 'block';
         tourPackageFields.style.display = tab === 'tour' ? 'block' : 'none';
@@ -844,9 +849,26 @@ document.addEventListener('DOMContentLoaded', function() {
         airportDirectionWrap.style.display = tab === 'airport' ? 'block' : 'none';
         localPackageWrap.style.display = tab === 'local' ? 'block' : 'none';
         flightNumberGroup.style.display = tab === 'airport' ? 'block' : 'none';
-        returnDateGroup.style.display = tab === 'roundtrip' ? 'block' : 'none';
-        returnTimeGroup.style.display = tab === 'roundtrip' ? 'block' : 'none';
-        estimatedKmGroup.style.display = tab === 'roundtrip' ? 'block' : 'none';
+        returnDateGroup.style.display = isRoundTrip ? 'block' : 'none';
+        returnTimeGroup.style.display = isRoundTrip ? 'block' : 'none';
+        estimatedKmGroup.style.display = isRoundTrip ? 'block' : 'none';
+
+        // Manage disabled state and min date constraints for round-trip fields
+        if (returnDateInput) {
+            returnDateInput.disabled = !isRoundTrip;
+            if (isRoundTrip && travelDateInput && travelDateInput.value) {
+                returnDateInput.min = travelDateInput.value;
+                if (!returnDateInput.value || returnDateInput.value < travelDateInput.value) {
+                    returnDateInput.value = travelDateInput.value;
+                }
+            }
+        }
+        if (returnTimeInput) {
+            returnTimeInput.disabled = !isRoundTrip;
+        }
+        if (estimatedKmInput) {
+            estimatedKmInput.disabled = !isRoundTrip;
+        }
 
         // Swap button visibility (not applicable in local hourly)
         if (swapLocationsBtn) {
@@ -1304,6 +1326,27 @@ document.addEventListener('DOMContentLoaded', function() {
             if (submitIcon) submitIcon.style.display = 'none';
             submitSpinner.style.display = 'inline-flex';
         });
+    }
+
+    // Dynamic return date constraints on travel date change
+    if (travelDateInput) {
+        travelDateInput.addEventListener('change', function() {
+            if (returnDateInput) {
+                returnDateInput.min = this.value;
+                if (returnDateInput.value && returnDateInput.value < this.value) {
+                    returnDateInput.value = this.value;
+                }
+            }
+        });
+    }
+
+    // Sync initial booking tab based on formTripType (handles reloads & validation errors)
+    const initialTripType = formTripType ? formTripType.value : 'One-Way';
+    const matchingBtn = Array.from(tabButtons).find(btn => btn.dataset.trip === initialTripType);
+    if (matchingBtn) {
+        setBookingType(matchingBtn.dataset.tab, matchingBtn.dataset.trip, matchingBtn.dataset.category);
+    } else {
+        setBookingType('oneway', 'One-Way', 'outstation');
     }
 
     // Initial calculation

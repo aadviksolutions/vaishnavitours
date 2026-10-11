@@ -140,6 +140,14 @@ class PublicWebsiteController extends Controller
             $request->merge(['destination' => $request->input('pickup_location', 'Local Service').' (Local)']);
         }
 
+        // For non-round-trip bookings, clear return_date and return_time so they never trigger validation errors
+        if ($request->input('trip_type') !== 'Round-Trip' || ! $request->filled('return_date')) {
+            $request->merge([
+                'return_date' => null,
+                'return_time' => null,
+            ]);
+        }
+
         $data = $request->validate([
             'customer_name' => 'required|string|max:255',
             'mobile' => 'required|string|max:20',
@@ -152,7 +160,7 @@ class PublicWebsiteController extends Controller
             'estimated_km' => 'nullable|required_if:rate_category,round_trip|numeric|min:0.01',
             'travel_date' => 'required|date|after_or_equal:today',
             'travel_time' => 'required',
-            'return_date' => 'nullable|date|after_or_equal:travel_date',
+            'return_date' => 'nullable|required_if:trip_type,Round-Trip|date|after_or_equal:travel_date',
             'return_time' => 'nullable',
             'passenger_count' => 'nullable|integer|min:1|max:50',
             'flight_number' => 'nullable|string|max:50',
@@ -169,6 +177,8 @@ class PublicWebsiteController extends Controller
             'travel_date.required' => 'Travel date is required.',
             'travel_date.after_or_equal' => 'Travel date cannot be in the past.',
             'travel_time.required' => 'Travel time is required.',
+            'return_date.required_if' => 'Please select a return date for your round trip journey.',
+            'return_date.after_or_equal' => 'The return date must be on or after the travel date.',
             'vehicle_category.required' => 'Please select a vehicle category for your booking.',
             'terms_accepted.required' => 'You must agree to the Terms & Conditions and Cancellation Policy to complete your booking.',
             'terms_accepted.accepted' => 'You must agree to the Terms & Conditions and Cancellation Policy to complete your booking.',
