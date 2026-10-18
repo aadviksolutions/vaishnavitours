@@ -107,6 +107,19 @@ class PublicWebsiteController extends Controller
 
     public function storeBooking(Request $request, BookingService $bookingService)
     {
+        if ($request->filled('name') && ! $request->filled('customer_name')) {
+            $request->merge(['customer_name' => $request->input('name')]);
+        }
+        if ($request->filled('phone') && ! $request->filled('mobile')) {
+            $request->merge(['mobile' => $request->input('phone')]);
+        }
+        if ($request->filled('pickup_date') && ! $request->filled('travel_date')) {
+            $request->merge(['travel_date' => $request->input('pickup_date')]);
+        }
+        if ($request->filled('pickup_time') && ! $request->filled('travel_time')) {
+            $request->merge(['travel_time' => $request->input('pickup_time')]);
+        }
+
         if ($request->filled('trip_type') && ! $request->filled('rate_category')) {
             $tripType = $request->input('trip_type');
             $dest = strtolower($request->input('destination', ''));
@@ -172,14 +185,19 @@ class PublicWebsiteController extends Controller
             try {
                 $tz = config('app.timezone', 'Asia/Kolkata');
                 $pickupDateTime = Carbon::createFromFormat('Y-m-d H:i:s', $request->input('travel_date').' '.$pickupTimeStr, $tz);
-                $minAllowedTime = now($tz)->addHours(4);
+                $todayStart = now($tz)->startOfDay();
 
-                if ($pickupDateTime->lt($minAllowedTime)) {
-                    $phone = Setting::where('key', 'phone_primary')->value('value') ?: '+91 92447 84443';
+                // Only enforce 4-hour advance notice if travel_date is today or in future; past dates fail travel_date validation
+                if ($pickupDateTime->gte($todayStart)) {
+                    $minAllowedTime = now($tz)->addHours(4);
 
-                    return back()->withInput()->withErrors([
-                        'travel_time' => "Online bookings must be scheduled at least 4 hours in advance. For urgent or late-night bookings, please call us directly at {$phone}.",
-                    ]);
+                    if ($pickupDateTime->lt($minAllowedTime)) {
+                        $phone = Setting::where('key', 'phone_primary')->value('value') ?: '+91 92447 84443';
+
+                        return back()->withInput()->withErrors([
+                            'travel_time' => "Online bookings must be scheduled at least 4 hours in advance. For urgent or late-night bookings, please call us directly at {$phone}.",
+                        ]);
+                    }
                 }
             } catch (\Throwable $e) {
                 // If date parsing fails, let standard validator catch it
@@ -213,6 +231,19 @@ class PublicWebsiteController extends Controller
             'tour_package_id' => 'nullable|exists:tour_packages,id',
             'notes' => 'nullable|string|max:1000',
             'terms_accepted' => 'required|accepted',
+            'pickup_latitude' => 'nullable|numeric',
+            'pickup_longitude' => 'nullable|numeric',
+            'pickup_place_id' => 'nullable|string|max:255',
+            'via_latitude' => 'nullable|numeric',
+            'via_longitude' => 'nullable|numeric',
+            'via_place_id' => 'nullable|string|max:255',
+            'destination_latitude' => 'nullable|numeric',
+            'destination_longitude' => 'nullable|numeric',
+            'destination_place_id' => 'nullable|string|max:255',
+            'route_distance_km' => 'nullable|numeric',
+            'route_duration_text' => 'nullable|string|max:100',
+            'route_duration_minutes' => 'nullable|integer',
+            'route_geometry' => 'nullable|string',
         ], [
             'customer_name.required' => 'Customer name is required.',
             'mobile.required' => 'Mobile number is required.',
@@ -254,14 +285,29 @@ class PublicWebsiteController extends Controller
                 'phone' => $data['mobile'],
                 'booking_type' => 'Round-Trip',
                 'pickup_location' => $data['pickup_location'],
+                'pickup_latitude' => $booking->pickup_latitude,
+                'pickup_longitude' => $booking->pickup_longitude,
+                'pickup_place_id' => $booking->pickup_place_id,
                 'via_location' => $data['via_location'] ?? null,
+                'via_latitude' => $booking->via_latitude,
+                'via_longitude' => $booking->via_longitude,
+                'via_place_id' => $booking->via_place_id,
                 'destination' => $data['destination'],
+                'destination_latitude' => $booking->destination_latitude,
+                'destination_longitude' => $booking->destination_longitude,
+                'destination_place_id' => $booking->destination_place_id,
+                'route_distance_km' => $booking->route_distance_km,
+                'route_duration_text' => $booking->route_duration_text,
+                'route_duration_minutes' => $booking->route_duration_minutes,
+                'route_legs' => $booking->route_legs,
+                'route_geometry' => $booking->route_geometry,
+                'routed_at' => $booking->routed_at,
                 'travel_date' => $data['travel_date'],
                 'return_date' => $data['return_date'] ?? null,
                 'duration_days' => $data['duration_days'] ?? 1,
                 'vehicle_preference' => $data['vehicle_category'],
                 'subject' => 'Round-Trip Taxi Quotation Query',
-                'message' => 'Customer submitted a round-trip quotation request: '.$data['pickup_location'].' via '.($data['via_location'] ?? 'Direct').' to '.$data['destination'].'.',
+                'message' => 'Customer submitted a round-trip quotation request: '.$data['pickup_location'].' via '.($data['via_location'] ?? 'Direct').' to '.$data['destination'].($booking->route_distance_km ? ' (Road distance: '.$booking->route_distance_km.' KM)' : '').'.',
                 'converted_booking_id' => $booking->id,
                 'status' => Enquiry::STATUS_NEW,
             ]);

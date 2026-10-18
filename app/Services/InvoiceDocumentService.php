@@ -73,7 +73,7 @@ class InvoiceDocumentService
             $booking->destination,
             str($booking->trip_type)->replace('_', ' ')->title()->toString(),
             'Taxi Service',
-            $booking->vehicle?->name ? '('.$booking->vehicle->name.')' : null,
+            $booking->vehicle?->name ? 'with '.$booking->vehicle->name : null,
         ], static fn (?string $value): bool => filled($value))));
 
         $companyName = $this->setting($settings, 'company_name', config('vaishnavi.business_name', 'Vaishnavi Tours'));
@@ -148,10 +148,10 @@ class InvoiceDocumentService
                 'sgst_amount' => $tax['sgst_amount'],
                 'igst_amount' => $tax['igst_amount'],
                 'gst_amount' => $tax['gst_amount'],
-                'tax_recorded' => true,
+                'tax_recorded' => $tax['tax_recorded'],
                 'total_amount' => $totalAmount,
                 'received_amount' => $receivedAmount,
-                'balance_amount' => max(0, round($totalAmount - $receivedAmount, 2)),
+                'balance_amount' => round($totalAmount - $receivedAmount, 2),
                 'amount_in_words' => $this->amountInWords($totalAmount),
             ],
             'bank' => [
@@ -265,28 +265,69 @@ class InvoiceDocumentService
             ];
         }
 
-        // Standard GST for taxi passenger transport in India: 5%
-        // Standard rate quote in Vaishnavi Tours is inclusive of GST where applicable
-        $taxable = round($totalAmount / (1 + ($gstRate / 100)), 2);
-        $totalGst = round($totalAmount - $taxable, 2);
+        $pricing = (array) ($booking->pricing_details ?? []);
+        $gstApplicable = (bool) data_get(
+            $pricing,
+            'gst_applicable',
+            $booking->rateVehiclePrice?->gst_applicable ?? false
+        );
 
-        if ($isInterstate) {
-            $cgst = 0.0;
-            $sgst = 0.0;
-            $igst = $totalGst;
+        if (! $gstApplicable) {
+            return [
+                'taxable_amount' => $totalAmount,
+                'gst_rate' => 0.0,
+                'cgst_amount' => 0.0,
+                'sgst_amount' => 0.0,
+                'igst_amount' => 0.0,
+                'gst_amount' => 0.0,
+                'is_interstate' => $isInterstate,
+                'tax_recorded' => true,
+                'gst_applicable' => false,
+            ];
+        }
+
+        $cgst = data_get($pricing, 'cgst_amount');
+        $sgst = data_get($pricing, 'sgst_amount');
+        $igst = data_get($pricing, 'igst_amount');
+        $gstAmount = data_get($pricing, 'gst_amount');
+
+        if (is_numeric($cgst) && is_numeric($sgst)) {
+            $cgstAmount = round((float) $cgst, 2);
+            $sgstAmount = round((float) $sgst, 2);
+            $igstAmount = is_numeric($igst) ? round((float) $igst, 2) : 0.0;
+            $taxAmount = $cgstAmount + $sgstAmount + $igstAmount;
+        } elseif (is_numeric($gstAmount)) {
+            if ($isInterstate) {
+                $cgstAmount = 0.0;
+                $sgstAmount = 0.0;
+                $igstAmount = round((float) $gstAmount, 2);
+            } else {
+                $cgstAmount = round((float) $gstAmount / 2, 2);
+                $sgstAmount = round((float) $gstAmount - $cgstAmount, 2);
+                $igstAmount = 0.0;
+            }
+            $taxAmount = round((float) $gstAmount, 2);
         } else {
-            $cgst = round($totalGst / 2, 2);
-            $sgst = round($totalGst - $cgst, 2);
-            $igst = 0.0;
+            return [
+                'taxable_amount' => $totalAmount,
+                'gst_rate' => $gstRate,
+                'cgst_amount' => null,
+                'sgst_amount' => null,
+                'igst_amount' => null,
+                'gst_amount' => 0.0,
+                'is_interstate' => $isInterstate,
+                'tax_recorded' => false,
+                'gst_applicable' => true,
+            ];
         }
 
         return [
-            'taxable_amount' => $taxable,
+            'taxable_amount' => max(0, round($totalAmount - $taxAmount, 2)),
             'gst_rate' => $gstRate,
-            'cgst_amount' => $cgst,
-            'sgst_amount' => $sgst,
-            'igst_amount' => $igst,
-            'gst_amount' => $totalGst,
+            'cgst_amount' => $cgstAmount,
+            'sgst_amount' => $sgstAmount,
+            'igst_amount' => $igstAmount,
+            'gst_amount' => $taxAmount,
             'is_interstate' => $isInterstate,
             'tax_recorded' => true,
             'gst_applicable' => true,
@@ -313,7 +354,7 @@ class InvoiceDocumentService
         }
 
         if ($number < 1000) {
-            return $this->numberInWords(intdiv($number, 100)).' Hundred'.($number % 100 !== 0 ? ' and '.$this->numberInWords($number % 100) : '');
+            return $this->numberInWords(intdiv($number, 100)).' Hundred'.($number % 100 !== 0 ? ' '.$this->numberInWords($number % 100) : '');
         }
 
         if ($number < 100000) {

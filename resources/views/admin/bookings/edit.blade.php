@@ -95,16 +95,67 @@
                     </select>
                 </div>
 
-                <div class="grid grid-2 gap-3 mb-3">
+                <!-- Google Maps & Routing Coordinate Hidden Fields -->
+                <input type="hidden" name="pickup_latitude" id="adminPickupLat" value="{{ old('pickup_latitude', $booking->pickup_latitude) }}">
+                <input type="hidden" name="pickup_longitude" id="adminPickupLng" value="{{ old('pickup_longitude', $booking->pickup_longitude) }}">
+                <input type="hidden" name="pickup_place_id" id="adminPickupPlaceId" value="{{ old('pickup_place_id', $booking->pickup_place_id) }}">
+
+                <input type="hidden" name="via_latitude" id="adminViaLat" value="{{ old('via_latitude', $booking->via_latitude) }}">
+                <input type="hidden" name="via_longitude" id="adminViaLng" value="{{ old('via_longitude', $booking->via_longitude) }}">
+                <input type="hidden" name="via_place_id" id="adminViaPlaceId" value="{{ old('via_place_id', $booking->via_place_id) }}">
+
+                <input type="hidden" name="destination_latitude" id="adminDestinationLat" value="{{ old('destination_latitude', $booking->destination_latitude) }}">
+                <input type="hidden" name="destination_longitude" id="adminDestinationLng" value="{{ old('destination_longitude', $booking->destination_longitude) }}">
+                <input type="hidden" name="destination_place_id" id="adminDestinationPlaceId" value="{{ old('destination_place_id', $booking->destination_place_id) }}">
+
+                <input type="hidden" name="route_distance_km" id="adminRouteDistanceKm" value="{{ old('route_distance_km', $booking->route_distance_km) }}">
+                <input type="hidden" name="route_duration_text" id="adminRouteDurationText" value="{{ old('route_duration_text', $booking->route_duration_text) }}">
+                <input type="hidden" name="route_duration_minutes" id="adminRouteDurationMinutes" value="{{ old('route_duration_minutes', $booking->route_duration_minutes) }}">
+                <input type="hidden" name="route_geometry" id="adminRouteGeometry" value="{{ old('route_geometry', $booking->route_geometry) }}">
+
+                <div class="grid grid-3 gap-3 mb-3">
                     <div class="form-group">
-                        <label for="pickup_location" class="form-label">Pickup Location *</label>
+                        <div class="d-flex justify-between align-center mb-1">
+                            <label for="pickup_location" class="form-label" style="margin: 0;">Pickup Location *</label>
+                            <button type="button" class="btn btn-xs btn-outline btn-admin-select-map" data-target="pickup" style="font-size: 11px; padding: 1px 6px; border-radius: 4px; color: #2563EB; border-color: #BFDBFE; background: #EFF6FF;">🗺️ Pick Map</button>
+                        </div>
                         <input type="text" name="pickup_location" id="pickup_location" class="form-control" value="{{ old('pickup_location', $booking->pickup_location) }}" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="destination" class="form-label">Drop Destination *</label>
+                        <div class="d-flex justify-between align-center mb-1">
+                            <label for="via_location" class="form-label" style="margin: 0;">Via Location (Round-Trip)</label>
+                            <button type="button" class="btn btn-xs btn-outline btn-admin-select-map" data-target="via" style="font-size: 11px; padding: 1px 6px; border-radius: 4px; color: #2563EB; border-color: #BFDBFE; background: #EFF6FF;">🗺️ Pick Map</button>
+                        </div>
+                        <input type="text" name="via_location" id="via_location" class="form-control" placeholder="Optional via stop" value="{{ old('via_location', $booking->via_location) }}">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="d-flex justify-between align-center mb-1">
+                            <label for="destination" class="form-label" style="margin: 0;">Drop Destination *</label>
+                            <button type="button" class="btn btn-xs btn-outline btn-admin-select-map" data-target="destination" style="font-size: 11px; padding: 1px 6px; border-radius: 4px; color: #2563EB; border-color: #BFDBFE; background: #EFF6FF;">🗺️ Pick Map</button>
+                        </div>
                         <input type="text" name="destination" id="destination" class="form-control" value="{{ old('destination', $booking->destination) }}" required>
                     </div>
+                </div>
+
+                <!-- Admin Route & Distance Preview Container -->
+                <div id="adminRoutePreviewBox" style="margin-bottom: 1rem; border: 1px solid #BFDBFE; border-radius: 8px; overflow: hidden; background: #EFF6FF;">
+                    <div style="padding: 0.6rem 0.85rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; border-bottom: 1px solid #BFDBFE; background: #DBEAFE;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span>🛣️</span>
+                            <strong style="color: #1E40AF; font-size: 12.5px;">Google Road Route & Driving Distance</strong>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span id="adminRouteDistDisplay" style="font-weight: 800; font-size: 13px; color: #1D4ED8; background: #fff; padding: 2px 7px; border-radius: 4px; border: 1px solid #BFDBFE;">{{ $booking->route_distance_km ? number_format($booking->route_distance_km, 1) . ' KM' : '-- KM' }}</span>
+                            <span id="adminRouteDurDisplay" style="font-size: 12px; color: #1E40AF; background: #fff; padding: 2px 7px; border-radius: 4px; border: 1px solid #BFDBFE;">{{ $booking->route_duration_text ?: '--' }}</span>
+                            <button type="button" id="btnAdminRecalcRoute" class="btn btn-xs btn-outline" style="font-size: 11px; padding: 2px 8px; background: #fff; border-color: #2563EB; color: #2563EB;">🔄 Calculate</button>
+                        </div>
+                    </div>
+                    <div style="height: 200px; width: 100%;">
+                        <div id="adminRouteMapCanvas" style="width: 100%; height: 100%;"></div>
+                    </div>
+                    <div id="adminRouteLegsList" style="padding: 0.4rem 0.85rem; font-size: 11px; color: #1E40AF; display: flex; gap: 6px; flex-wrap: wrap;"></div>
                 </div>
 
                 <div class="grid grid-3 gap-3 mb-3">
@@ -203,4 +254,202 @@
         </div>
     </div>
 </form>
+
+<x-location-picker-modal />
+
+<script>
+    let adminRouteMap = null;
+    let adminRoutePolyline = null;
+    let adminRouteMarkers = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Location picker button triggers
+        document.querySelectorAll('.btn-admin-select-map').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.dataset.target;
+                let inputEl, latEl, lngEl, placeIdEl, label;
+
+                if (target === 'pickup') {
+                    inputEl = document.getElementById('pickup_location');
+                    latEl = document.getElementById('adminPickupLat');
+                    lngEl = document.getElementById('adminPickupLng');
+                    placeIdEl = document.getElementById('adminPickupPlaceId');
+                    label = 'Pickup Origin';
+                } else if (target === 'via') {
+                    inputEl = document.getElementById('via_location');
+                    latEl = document.getElementById('adminViaLat');
+                    lngEl = document.getElementById('adminViaLng');
+                    placeIdEl = document.getElementById('adminViaPlaceId');
+                    label = 'Via Intermediate Stop';
+                } else {
+                    inputEl = document.getElementById('destination');
+                    latEl = document.getElementById('adminDestinationLat');
+                    lngEl = document.getElementById('adminDestinationLng');
+                    placeIdEl = document.getElementById('adminDestinationPlaceId');
+                    label = 'Drop Destination';
+                }
+
+                if (window.VaishnaviLocationPicker) {
+                    window.VaishnaviLocationPicker.open({
+                        targetLabel: label,
+                        inputEl: inputEl,
+                        latEl: latEl,
+                        lngEl: lngEl,
+                        placeIdEl: placeIdEl,
+                        currentLat: latEl ? parseFloat(latEl.value) : null,
+                        currentLng: lngEl ? parseFloat(lngEl.value) : null,
+                        currentName: inputEl ? inputEl.value : '',
+                        onConfirm: () => {
+                            calculateAdminRoute();
+                        }
+                    });
+                }
+            });
+        });
+
+        // Recalculate button trigger
+        document.getElementById('btnAdminRecalcRoute')?.addEventListener('click', calculateAdminRoute);
+
+        // Location input changes
+        ['pickup_location', 'destination', 'via_location'].forEach(id => {
+            document.getElementById(id)?.addEventListener('change', calculateAdminRoute);
+        });
+
+        // Initial render if coordinates or locations exist
+        setTimeout(calculateAdminRoute, 500);
+    });
+
+    async function calculateAdminRoute() {
+        const pickup = document.getElementById('pickup_location')?.value.trim();
+        const destination = document.getElementById('destination')?.value.trim();
+        const via = document.getElementById('via_location')?.value.trim();
+        const tripType = document.getElementById('trip_type')?.value || '';
+        const isRoundTrip = tripType.toLowerCase().includes('round');
+
+        if (!pickup || !destination) return;
+
+        const payload = {
+            pickup_location: pickup,
+            destination: destination,
+            via_location: via || null,
+            trip_type: isRoundTrip ? 'Round-Trip' : 'One-Way',
+            pickup_latitude: document.getElementById('adminPickupLat')?.value || null,
+            pickup_longitude: document.getElementById('adminPickupLng')?.value || null,
+            pickup_place_id: document.getElementById('adminPickupPlaceId')?.value || null,
+            via_latitude: document.getElementById('adminViaLat')?.value || null,
+            via_longitude: document.getElementById('adminViaLng')?.value || null,
+            via_place_id: document.getElementById('adminViaPlaceId')?.value || null,
+            destination_latitude: document.getElementById('adminDestinationLat')?.value || null,
+            destination_longitude: document.getElementById('adminDestinationLng')?.value || null,
+            destination_place_id: document.getElementById('adminDestinationPlaceId')?.value || null
+        };
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+        try {
+            const resp = await fetch('/api/maps/calculate-route', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken || ''
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await resp.json();
+            if (data && data.status === 'success') {
+                const distEl = document.getElementById('adminRouteDistDisplay');
+                const durEl = document.getElementById('adminRouteDurDisplay');
+                const legsEl = document.getElementById('adminRouteLegsList');
+
+                if (distEl) distEl.textContent = `${data.total_distance_km} KM`;
+                if (durEl) durEl.textContent = data.total_duration_text || '';
+
+                const distInput = document.getElementById('adminRouteDistanceKm');
+                const durInput = document.getElementById('adminRouteDurationText');
+                const geomInput = document.getElementById('adminRouteGeometry');
+
+                if (distInput) distInput.value = data.total_distance_km;
+                if (durInput) durInput.value = data.total_duration_text || '';
+                if (geomInput && data.geometry) geomInput.value = data.geometry;
+
+                // Sync lat/lng if geocoded by backend
+                if (data.origin_coordinates) {
+                    const pLat = document.getElementById('adminPickupLat');
+                    const pLng = document.getElementById('adminPickupLng');
+                    if (pLat && !pLat.value) pLat.value = data.origin_coordinates.lat;
+                    if (pLng && !pLng.value) pLng.value = data.origin_coordinates.lng;
+                }
+                if (data.destination_coordinates) {
+                    const dLat = document.getElementById('adminDestinationLat');
+                    const dLng = document.getElementById('adminDestinationLng');
+                    if (dLat && !dLat.value) dLat.value = data.destination_coordinates.lat;
+                    if (dLng && !dLng.value) dLng.value = data.destination_coordinates.lng;
+                }
+
+                if (legsEl && data.legs) {
+                    legsEl.innerHTML = data.legs.map((leg, i) => `
+                        <div style="background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #BFDBFE;">
+                            <strong>Leg ${i + 1}:</strong> ${leg.from_name} &rarr; ${leg.to_name} (<b>${leg.distance_km} KM</b>)
+                        </div>
+                    `).join('');
+                }
+
+                renderAdminRouteMap(data);
+            }
+        } catch (e) {
+            console.error('Admin route calc error:', e);
+        }
+    }
+
+    function renderAdminRouteMap(data) {
+        const canvas = document.getElementById('adminRouteMapCanvas');
+        if (!canvas || typeof L === 'undefined') return;
+
+        if (!adminRouteMap) {
+            adminRouteMap = L.map(canvas).setView([22.0797, 82.1409], 8);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: '© OpenStreetMap | Vaishnavi Tours'
+            }).addTo(adminRouteMap);
+        }
+
+        adminRouteMarkers.forEach(m => adminRouteMap.removeLayer(m));
+        adminRouteMarkers = [];
+        if (adminRoutePolyline) adminRouteMap.removeLayer(adminRoutePolyline);
+
+        const points = [];
+        if (data.legs) {
+            data.legs.forEach((leg, idx) => {
+                if (leg.start_location && leg.start_location.lat) {
+                    const startPos = [leg.start_location.lat, leg.start_location.lng];
+                    if (idx === 0) {
+                        const m = L.marker(startPos).addTo(adminRouteMap).bindPopup(`🟢 ${leg.from_name}`);
+                        adminRouteMarkers.push(m);
+                        points.push(startPos);
+                    }
+                }
+                if (leg.end_location && leg.end_location.lat) {
+                    const endPos = [leg.end_location.lat, leg.end_location.lng];
+                    const label = (idx === data.legs.length - 1) ? (data.is_round_trip ? '🏁 Return Drop' : '🔴 Destination') : `🟡 Via ${leg.to_name}`;
+                    const m = L.marker(endPos).addTo(adminRouteMap).bindPopup(`${label}: ${leg.to_name}`);
+                    adminRouteMarkers.push(m);
+                    points.push(endPos);
+                }
+            });
+        }
+
+        if (points.length >= 2) {
+            adminRoutePolyline = L.polyline(points, {
+                color: '#2563EB',
+                weight: 4,
+                opacity: 0.9,
+                dashArray: data.is_round_trip ? '6, 5' : '0'
+            }).addTo(adminRouteMap);
+            adminRouteMap.fitBounds(adminRoutePolyline.getBounds(), { padding: [20, 20] });
+        }
+        setTimeout(() => adminRouteMap.invalidateSize(), 200);
+    }
+</script>
 @endsection

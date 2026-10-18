@@ -231,6 +231,71 @@
                 </div>
             </div>
 
+            <!-- Google Maps, Places & Routes API Configuration -->
+            <div class="card mb-4" style="border: 2px solid #BFDBFE; background: #FFFFFF;">
+                <div class="d-flex justify-between align-center mb-3">
+                    <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <span>🗺️</span>
+                        Google Maps Platform, Places &amp; Routes API Configuration
+                    </h3>
+                    <span class="badge" style="background: #EFF6FF; color: #1D4ED8; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 9999px;">
+                        Interactive Map &amp; Road Routing
+                    </span>
+                </div>
+
+                <!-- API Setup Guide Alert -->
+                <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 12px 16px; margin-bottom: 1.25rem;">
+                    <strong style="color: #166534; font-size: 0.85rem; display: block; margin-bottom: 4px;">
+                        🔑 Required Google Cloud Console APIs &amp; Security Restrictions:
+                    </strong>
+                    <div style="font-size: 0.785rem; color: #15803D; line-height: 1.5;">
+                        <ul style="margin: 0; padding-left: 1.2rem;">
+                            <li><strong>Client Key:</strong> Enable <em>Maps JavaScript API</em> &amp; <em>Places API</em>. Under <strong>API Restrictions</strong>, lock to these 2 APIs. Under <strong>Application Restrictions</strong>, set <em>HTTP Referrers</em> to your domains (e.g. <code>https://vaishnavitours.com/*</code>, <code>https://vaishnavitours.vercel.app/*</code>).</li>
+                            <li><strong>Server Key:</strong> Enable <em>Routes API</em>, <em>Directions API</em>, and <em>Geocoding API</em>. Under <strong>Application Restrictions</strong>, restrict by server IP or leave unrestricted behind backend env. Kept completely private on server.</li>
+                            <li><em>Note: If API keys are left blank, Vaishnavi Tours automatically activates the calibrated fallback mapping engine with zero downtime.</em></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="grid grid-2 gap-3 mb-3">
+                    <div class="form-group">
+                        <label for="google_maps_client_api_key" class="form-label">
+                            Browser / Client API Key (Public JavaScript)
+                        </label>
+                        <input type="text" name="google_maps_client_api_key" id="google_maps_client_api_key" class="form-control" value="{{ old('google_maps_client_api_key', $settings['google_maps_client_api_key']->value ?? config('vaishnavi.google_maps_client_api_key')) }}" placeholder="AIzaSy...">
+                        <small style="color: var(--slate-500); font-size: 0.775rem;">Used in client browser for Places Autocomplete and interactive map picker. Restrict by HTTP referrer.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="google_maps_server_api_key" class="form-label">
+                            Server-Side API Key (Private Backend)
+                        </label>
+                        <input type="password" name="google_maps_server_api_key" id="google_maps_server_api_key" class="form-control" value="{{ old('google_maps_server_api_key', $settings['google_maps_server_api_key']->value ?? config('vaishnavi.google_maps_server_api_key')) }}" placeholder="AIzaSy... (Kept private)">
+                        <small style="color: var(--slate-500); font-size: 0.775rem;">Used strictly on server for Routes API &amp; Geocoding. Never sent to frontend or public users.</small>
+                    </div>
+                </div>
+
+                <div class="grid grid-3 gap-3 mb-2">
+                    <div class="form-group">
+                        <label for="map_center_lat" class="form-label">Default Center Latitude</label>
+                        <input type="number" step="0.0001" name="map_center_lat" id="map_center_lat" class="form-control" value="{{ old('map_center_lat', $settings['map_center_lat']->value ?? config('vaishnavi.map_center_lat', 22.0797)) }}">
+                        <small style="color: var(--slate-500); font-size: 0.775rem;">Default: 22.0797 (Bilaspur)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="map_center_lng" class="form-label">Default Center Longitude</label>
+                        <input type="number" step="0.0001" name="map_center_lng" id="map_center_lng" class="form-control" value="{{ old('map_center_lng', $settings['map_center_lng']->value ?? config('vaishnavi.map_center_lng', 82.1409)) }}">
+                        <small style="color: var(--slate-500); font-size: 0.775rem;">Default: 82.1409 (Bilaspur)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="map_default_zoom" class="form-label">Default Map Zoom</label>
+                        <input type="number" name="map_default_zoom" id="map_default_zoom" class="form-control" value="{{ old('map_default_zoom', $settings['map_default_zoom']->value ?? config('vaishnavi.map_default_zoom', 12)) }}">
+                        <small style="color: var(--slate-500); font-size: 0.775rem;">Default: 12</small>
+                    </div>
+                </div>
+            </div>
+
             <!-- Booking Policy Terms -->
             <div class="card mb-4">
                 <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">📄 Booking Policy Terms & Conditions</h3>

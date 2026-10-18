@@ -26,18 +26,23 @@
         @csrf
 
         <div class="mb-3">
-            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">City / Area Name *</label>
-            <input type="text" name="name" class="form-control form-control-sm" placeholder="e.g. Korba, Champa, Janjgir, Raigarh" required>
+            <div class="d-flex justify-between align-center mb-1">
+                <label style="font-size: 12px; font-weight: 600; margin: 0;">City / Area Name *</label>
+                <button type="button" id="btnLocationSelectMap" class="btn btn-xs btn-outline" style="font-size: 11px; padding: 2px 7px; color: #2563EB; border-color: #BFDBFE; background: #EFF6FF;">
+                    🗺️ Select on Map
+                </button>
+            </div>
+            <input type="text" name="name" id="locNameInput" class="form-control form-control-sm" placeholder="e.g. Korba, Champa, Janjgir, Raigarh" required>
         </div>
 
         <div class="mb-3">
             <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">State</label>
-            <input type="text" name="state" class="form-control form-control-sm" value="Chhattisgarh">
+            <input type="text" name="state" id="locStateInput" class="form-control form-control-sm" value="Chhattisgarh">
         </div>
 
         <div class="mb-3">
             <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Address / Landmark</label>
-            <input type="text" name="address" class="form-control form-control-sm" placeholder="e.g. Railway Station Main Exit, Airport Gate 1">
+            <input type="text" name="address" id="locAddressInput" class="form-control form-control-sm" placeholder="e.g. Railway Station Main Exit, Airport Gate 1">
         </div>
 
         <div class="grid grid-2 gap-2 mb-3">
@@ -57,4 +62,34 @@
         </div>
     </form>
 </div>
+
+<x-location-picker-modal />
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const btn = document.getElementById('btnLocationSelectMap');
+    const nameInput = document.getElementById('locNameInput');
+    const addrInput = document.getElementById('locAddressInput');
+
+    if (btn) {
+        btn.addEventListener('click', function () {
+            if (window.VaishnaviLocationPicker) {
+                window.VaishnaviLocationPicker.open({
+                    targetLabel: 'Pickup Location Hub',
+                    inputEl: nameInput,
+                    currentName: nameInput ? nameInput.value : '',
+                    onConfirm: function (selected) {
+                        if (nameInput && selected.name) {
+                            nameInput.value = selected.name;
+                        }
+                        if (addrInput && selected.address) {
+                            addrInput.value = selected.address;
+                        }
+                    }
+                });
+            }
+        });
+    }
+});
+</script>
 @endsection

@@ -92,5 +92,12 @@ return [
     'google_rating' => env('GOOGLE_RATING', '4.9'),
     'google_review_count' => env('GOOGLE_REVIEW_COUNT', '160+'),
 
+    // Google Maps Platform & Routing Integration Keys
+    'google_maps_client_api_key' => env('GOOGLE_MAPS_CLIENT_API_KEY', env('GOOGLE_MAPS_API_KEY', '')),
+    'google_maps_server_api_key' => env('GOOGLE_MAPS_SERVER_API_KEY', env('GOOGLE_MAPS_API_KEY', '')),
+    'map_center_lat' => (float) env('MAP_CENTER_LAT', 22.0797),
+    'map_center_lng' => (float) env('MAP_CENTER_LNG', 82.1409),
+    'map_default_zoom' => (int) env('MAP_DEFAULT_ZOOM', 12),
+
     'booking_terms' => env('BOOKING_TERMS', 'Toll plaza taxes, state border permits & parking fees are extra if applicable. Night driving allowance applies between 10:00 PM and 06:00 AM.'),
 ];

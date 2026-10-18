@@ -44,6 +44,8 @@ class Setting extends Model
             'google_place_id' => 'vaishnavi.google_place_id',
             'google_rating' => 'vaishnavi.google_rating',
             'google_review_count' => 'vaishnavi.google_review_count',
+            'google_maps_client_api_key' => 'vaishnavi.google_maps_client_api_key',
+            'google_maps_server_api_key' => 'vaishnavi.google_maps_server_api_key',
         ];
 
         if (isset($configMap[$key])) {

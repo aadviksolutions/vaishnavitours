@@ -85,7 +85,7 @@
                 @forelse($enquiries as $item)
                 <tr>
                     <td>
-                        <span style="font-weight: 700; color: #2563EB;">{{ $item->enquiry_id }}</span>
+                        <a href="{{ route('admin.enquiries.show', $item->id) }}" style="font-weight: 700; color: #2563EB; text-decoration: none;">{{ $item->enquiry_id }}</a>
                         <div style="font-size: 10.5px; color: var(--slate-400);">{{ $item->created_at->format('d M, h:i A') }}</div>
                     </td>
                     <td>

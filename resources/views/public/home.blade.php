@@ -177,6 +177,17 @@
                     <input type="hidden" name="is_custom_query" id="isCustomQueryInput" value="{{ old('is_custom_query', '0') }}">
                     <input type="hidden" name="terms_accepted" value="1">
 
+                    <!-- Google Maps Coordinate Fields -->
+                    <input type="hidden" name="pickup_latitude" id="homePickupLat" value="{{ old('pickup_latitude') }}">
+                    <input type="hidden" name="pickup_longitude" id="homePickupLng" value="{{ old('pickup_longitude') }}">
+                    <input type="hidden" name="pickup_place_id" id="homePickupPlaceId" value="{{ old('pickup_place_id') }}">
+                    <input type="hidden" name="destination_latitude" id="homeDestinationLat" value="{{ old('destination_latitude') }}">
+                    <input type="hidden" name="destination_longitude" id="homeDestinationLng" value="{{ old('destination_longitude') }}">
+                    <input type="hidden" name="destination_place_id" id="homeDestinationPlaceId" value="{{ old('destination_place_id') }}">
+                    <input type="hidden" name="route_distance_km" id="homeRouteDistanceKm" value="{{ old('route_distance_km') }}">
+                    <input type="hidden" name="route_duration_text" id="homeRouteDurationText" value="{{ old('route_duration_text') }}">
+                    <input type="hidden" name="route_duration_minutes" id="homeRouteDurationMinutes" value="{{ old('route_duration_minutes') }}">
+
                     <!-- Airport Transfer Sub-Toggle (Airport Drop vs Airport Pickup) -->
                     <div id="airportDirectionWrap" style="display: none; margin-bottom: 0.85rem;">
                         <div style="display: flex; gap: 8px; align-items: center; background: var(--slate-100); padding: 4px; border-radius: var(--radius-sm); border: 1px solid var(--slate-200); width: fit-content;">
@@ -206,7 +217,10 @@
                         <div class="grid grid-2 gap-2 align-end" style="grid-template-columns: 1fr auto 1fr;">
                             <!-- Pickup Location Searchable Dropdown -->
                             <div class="form-group" style="margin-bottom: 0;">
-                                <label class="form-label" id="pickupLabelText">Pickup Location</label>
+                                <div class="d-flex justify-between align-center mb-1">
+                                    <label class="form-label" id="pickupLabelText" style="margin: 0;">Pickup Location</label>
+                                    <button type="button" class="btn btn-xs btn-outline btn-home-select-map" data-target="pickup" style="font-size: 10px; padding: 1px 6px; border-radius: 4px; color: #2563EB; border-color: #BFDBFE; background: #EFF6FF;">🗺️ Map</button>
+                                </div>
                                 <div class="searchable-select-wrap" id="pickupSelectWrap">
                                     <button type="button" class="searchable-select-trigger" id="pickupSelectBtn" aria-haspopup="listbox" aria-expanded="false">
                                         <span class="searchable-select-text" id="pickupSelectDisplay">{{ old('pickup_location', 'Bilaspur') }}</span>
@@ -257,7 +271,10 @@
 
                             <!-- Destination Searchable Dropdown -->
                             <div class="form-group" style="margin-bottom: 0;" id="destinationFormGroup">
-                                <label class="form-label" id="destinationLabelText">Destination</label>
+                                <div class="d-flex justify-between align-center mb-1">
+                                    <label class="form-label" id="destinationLabelText" style="margin: 0;">Destination</label>
+                                    <button type="button" class="btn btn-xs btn-outline btn-home-select-map" data-target="destination" style="font-size: 10px; padding: 1px 6px; border-radius: 4px; color: #2563EB; border-color: #BFDBFE; background: #EFF6FF;">🗺️ Map</button>
+                                </div>
                                 <div class="searchable-select-wrap" id="destinationSelectWrap">
                                     <button type="button" class="searchable-select-trigger" id="destinationSelectBtn" aria-haspopup="listbox" aria-expanded="false">
                                         <span class="searchable-select-text" id="destinationSelectDisplay">{{ old('destination', 'Raipur Airport') }}</span>
@@ -947,11 +964,59 @@
         </div>
     </section>
 
+    <x-location-picker-modal />
 @endsection
 
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Google Maps Location Picker Trigger for Home Booking Widget
+    document.querySelectorAll('.btn-home-select-map').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = this.dataset.target;
+            if (target === 'pickup') {
+                window.VaishnaviLocationPicker.open({
+                    label: 'Pickup Location',
+                    currentValue: document.getElementById('pickupLocationInput')?.value || '',
+                    latEl: document.getElementById('homePickupLat'),
+                    lngEl: document.getElementById('homePickupLng'),
+                    placeIdEl: document.getElementById('homePickupPlaceId'),
+                    onConfirm: (loc) => {
+                        if (typeof setSelectLocation === 'function') {
+                            setSelectLocation('pickup', loc.name);
+                        } else {
+                            const pInput = document.getElementById('pickupLocationInput');
+                            if (pInput) pInput.value = loc.name;
+                            const pDisplay = document.getElementById('pickupSelectDisplay');
+                            if (pDisplay) pDisplay.textContent = loc.name;
+                        }
+                        if (typeof updateFareQuote === 'function') updateFareQuote();
+                    }
+                });
+            } else if (target === 'destination') {
+                window.VaishnaviLocationPicker.open({
+                    label: 'Destination Location',
+                    currentValue: document.getElementById('destinationLocationInput')?.value || '',
+                    latEl: document.getElementById('homeDestinationLat'),
+                    lngEl: document.getElementById('homeDestinationLng'),
+                    placeIdEl: document.getElementById('homeDestinationPlaceId'),
+                    onConfirm: (loc) => {
+                        if (typeof setSelectLocation === 'function') {
+                            setSelectLocation('destination', loc.name);
+                        } else {
+                            const dInput = document.getElementById('destinationLocationInput');
+                            if (dInput) dInput.value = loc.name;
+                            const dDisplay = document.getElementById('destinationSelectDisplay');
+                            if (dDisplay) dDisplay.textContent = loc.name;
+                        }
+                        if (typeof updateFareQuote === 'function') updateFareQuote();
+                    }
+                });
+            }
+        });
+    });
+
     const rateOptions = @json($rateOptions);
     const form = document.getElementById('homeBookingForm');
     const formTripType = document.getElementById('formTripType');

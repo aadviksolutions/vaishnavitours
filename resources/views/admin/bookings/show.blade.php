@@ -187,6 +187,9 @@
             </div>
         </div>
 
+        <!-- Calculated Road Route & Distance Map Card -->
+        <x-route-map-card :booking="$booking" :editable="true" />
+
         @if($booking->booking_category === 'TP' || $booking->travel_partner_name)
             <!-- Travel Partner / Agent Details Card -->
             <div class="card mb-4" style="border-left: 4px solid #D97706; background: #FFFDF5;">

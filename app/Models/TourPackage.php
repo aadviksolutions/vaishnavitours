@@ -23,6 +23,11 @@ class TourPackage extends Model
         'innova_price',
         'terms',
         'is_active',
+        'route_distance_km',
+        'route_duration_text',
+        'route_legs',
+        'route_geometry',
+        'route_locations',
     ];
 
     protected $casts = [
@@ -30,6 +35,9 @@ class TourPackage extends Model
         'sedan_price' => 'decimal:2',
         'ertiga_price' => 'decimal:2',
         'innova_price' => 'decimal:2',
+        'route_distance_km' => 'decimal:2',
+        'route_legs' => 'array',
+        'route_locations' => 'array',
         'is_active' => 'boolean',
     ];
 

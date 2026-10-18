@@ -48,8 +48,13 @@
         </div>
 
         <div class="mb-3">
-            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Destinations Covered (Comma separated)</label>
-            <input type="text" name="destinations" class="form-control form-control-sm" placeholder="e.g. Narmada Udgam, Kapildhara, Mai ki Bagiya, Sonmuda">
+            <div class="d-flex justify-between align-center mb-1">
+                <label style="font-size: 12px; font-weight: 600; margin: 0;">Destinations Covered (Comma separated)</label>
+                <button type="button" id="btnTourDestMap" class="btn btn-xs btn-outline" style="font-size: 11px; padding: 2px 7px; color: #2563EB; border-color: #BFDBFE; background: #EFF6FF;">
+                    🗺️ Pick on Map
+                </button>
+            </div>
+            <input type="text" name="destinations" id="tourDestInput" class="form-control form-control-sm" placeholder="e.g. Narmada Udgam, Kapildhara, Mai ki Bagiya, Sonmuda">
         </div>
 
         <div class="mb-3">
@@ -75,4 +80,34 @@
         </div>
     </form>
 </div>
+
+<x-location-picker-modal />
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const btn = document.getElementById('btnTourDestMap');
+    const destInput = document.getElementById('tourDestInput');
+
+    if (btn && destInput) {
+        btn.addEventListener('click', function () {
+            if (window.VaishnaviLocationPicker) {
+                window.VaishnaviLocationPicker.open({
+                    targetLabel: 'Tour Package Destination',
+                    inputEl: destInput,
+                    onConfirm: function (selected) {
+                        if (selected.name) {
+                            const cur = destInput.value.trim();
+                            if (cur.length > 0) {
+                                destInput.value = cur + ', ' + selected.name;
+                            } else {
+                                destInput.value = selected.name;
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    }
+});
+</script>
 @endsection

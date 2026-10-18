@@ -49,7 +49,7 @@
 
             <div style="text-align: center; margin-bottom: 1.75rem;">
                 <span style="color: var(--accent-gold); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.8px;">Direct Reservation & Quotations</span>
-                <h1 style="font-size: 1.65rem; font-weight: 700; margin-top: 0.25rem; color: var(--dark-900);">Vaishnavi Tour Cab Booking</h1>
+                <h1 style="font-size: 1.65rem; font-weight: 700; margin-top: 0.25rem; color: var(--dark-900);">Book Your Cab with Vaishnavi Tours</h1>
                 <p style="color: var(--slate-500); font-size: 0.875rem; margin-top: 0.35rem;">Clean air-conditioned fleet, polite experienced chauffeurs, and transparent GST invoices.</p>
             </div>
 
@@ -70,6 +70,24 @@
 
                     <input type="hidden" name="rate_category" id="rateCategory" value="{{ $defaultRateCategory }}">
                     <input type="hidden" name="is_custom_query" id="isCustomQuery" value="{{ old('is_custom_query', '0') }}">
+
+                    <!-- Google Maps & Routing Hidden Coordinate Fields -->
+                    <input type="hidden" name="pickup_latitude" id="pickupLatitude" value="{{ old('pickup_latitude') }}">
+                    <input type="hidden" name="pickup_longitude" id="pickupLongitude" value="{{ old('pickup_longitude') }}">
+                    <input type="hidden" name="pickup_place_id" id="pickupPlaceId" value="{{ old('pickup_place_id') }}">
+
+                    <input type="hidden" name="via_latitude" id="viaLatitude" value="{{ old('via_latitude') }}">
+                    <input type="hidden" name="via_longitude" id="viaLongitude" value="{{ old('via_longitude') }}">
+                    <input type="hidden" name="via_place_id" id="viaPlaceId" value="{{ old('via_place_id') }}">
+
+                    <input type="hidden" name="destination_latitude" id="destinationLatitude" value="{{ old('destination_latitude') }}">
+                    <input type="hidden" name="destination_longitude" id="destinationLongitude" value="{{ old('destination_longitude') }}">
+                    <input type="hidden" name="destination_place_id" id="destinationPlaceId" value="{{ old('destination_place_id') }}">
+
+                    <input type="hidden" name="route_distance_km" id="routeDistanceKm" value="{{ old('route_distance_km') }}">
+                    <input type="hidden" name="route_duration_text" id="routeDurationText" value="{{ old('route_duration_text') }}">
+                    <input type="hidden" name="route_duration_minutes" id="routeDurationMinutes" value="{{ old('route_duration_minutes') }}">
+                    <input type="hidden" name="route_geometry" id="routeGeometry" value="{{ old('route_geometry') }}">
 
                     <!-- 1. Trip Type -->
                     <div class="form-group" style="margin-bottom: 1.25rem;">
@@ -99,9 +117,14 @@
                         <div class="grid grid-3 gap-2" id="routeFieldsGrid">
                             <!-- 1. Pickup Location -->
                             <div>
-                                <label for="pickupLocation" style="font-size: 0.75rem; color: var(--slate-600); font-weight: 600; display: block; margin-bottom: 0.25rem;">
-                                    1. Pickup Location *
-                                </label>
+                                <div class="d-flex justify-between align-center mb-1">
+                                    <label for="pickupLocation" style="font-size: 0.75rem; color: var(--slate-600); font-weight: 600; margin: 0;">
+                                        1. Pickup Location *
+                                    </label>
+                                    <button type="button" class="btn btn-xs btn-outline btn-select-map" data-target="pickup" style="font-size: 10.5px; padding: 1px 6px; color: #2563EB; border-color: #BFDBFE; display: inline-flex; align-items: center; gap: 3px; border-radius: 4px; background: #EFF6FF;">
+                                        🗺️ Map
+                                    </button>
+                                </div>
                                 <select id="pickupLocation" name="pickup_location" class="form-select form-select-sm" required style="width: 100%;">
                                     <option value="">Select pickup city</option>
                                     @foreach($locations as $location)
@@ -110,24 +133,37 @@
                                     <option value="Other" {{ old('pickup_location') === 'Other' || old('pickup_other') ? 'selected' : '' }}>➕ Other Location (Specify below)</option>
                                 </select>
                                 <div id="pickupOtherGroup" style="display: {{ old('pickup_other') || old('pickup_location') === 'Other' ? 'block' : 'none' }}; margin-top: 0.35rem;">
-                                    <input type="text" name="pickup_other" id="pickupOtherInput" class="form-control form-control-sm" placeholder="Enter custom pickup city / area..." value="{{ old('pickup_other') }}" style="border-color: #3B82F6; background: #F0F9FF;">
+                                    <div class="d-flex gap-1">
+                                        <input type="text" name="pickup_other" id="pickupOtherInput" class="form-control form-control-sm" placeholder="Enter custom pickup city / area..." value="{{ old('pickup_other') }}" style="border-color: #3B82F6; background: #F0F9FF;">
+                                        <button type="button" class="btn btn-xs btn-primary btn-select-map" data-target="pickup_other" style="padding: 2px 8px; font-size: 11px; white-space: nowrap;">🗺️ Pick</button>
+                                    </div>
                                     <div style="font-size: 10.5px; color: #1E40AF; margin-top: 2px;">* Custom location: No immediate fare shown. Quote will be sent by dispatch.</div>
                                 </div>
                             </div>
 
                             <!-- 2. Via Location (Required principally for Round-Trip) -->
                             <div id="viaLocationGroup">
-                                <label for="viaLocation" style="font-size: 0.75rem; color: var(--slate-600); font-weight: 600; display: block; margin-bottom: 0.25rem;">
-                                    2. Via Location <span style="font-weight: 400; color: var(--slate-400);">(Optional / Round-Trip)</span>
-                                </label>
+                                <div class="d-flex justify-between align-center mb-1">
+                                    <label for="viaLocation" style="font-size: 0.75rem; color: var(--slate-600); font-weight: 600; margin: 0;">
+                                        2. Via Location <span style="font-weight: 400; color: var(--slate-400);">(Round-Trip)</span>
+                                    </label>
+                                    <button type="button" class="btn btn-xs btn-outline btn-select-map" data-target="via" style="font-size: 10.5px; padding: 1px 6px; color: #2563EB; border-color: #BFDBFE; display: inline-flex; align-items: center; gap: 3px; border-radius: 4px; background: #EFF6FF;">
+                                        🗺️ Map
+                                    </button>
+                                </div>
                                 <input type="text" id="viaLocation" name="via_location" class="form-control form-control-sm" placeholder="e.g. Amarkantak, Ratanpur..." value="{{ old('via_location') }}">
                             </div>
 
                             <!-- 3. Final Drop Location -->
                             <div>
-                                <label for="destinationLocation" style="font-size: 0.75rem; color: var(--slate-600); font-weight: 600; display: block; margin-bottom: 0.25rem;">
-                                    3. Final Drop Location *
-                                </label>
+                                <div class="d-flex justify-between align-center mb-1">
+                                    <label for="destinationLocation" style="font-size: 0.75rem; color: var(--slate-600); font-weight: 600; margin: 0;">
+                                        3. Final Drop Location *
+                                    </label>
+                                    <button type="button" class="btn btn-xs btn-outline btn-select-map" data-target="destination" style="font-size: 10.5px; padding: 1px 6px; color: #2563EB; border-color: #BFDBFE; display: inline-flex; align-items: center; gap: 3px; border-radius: 4px; background: #EFF6FF;">
+                                        🗺️ Map
+                                    </button>
+                                </div>
                                 <select id="destinationLocation" name="destination" class="form-select form-select-sm" required style="width: 100%;">
                                     <option value="">Select final drop</option>
                                     @foreach($locations as $location)
@@ -136,10 +172,50 @@
                                     <option value="Other" {{ old('destination') === 'Other' || old('destination_other') ? 'selected' : '' }}>➕ Other Location (Specify below)</option>
                                 </select>
                                 <div id="destinationOtherGroup" style="display: {{ old('destination_other') || old('destination') === 'Other' ? 'block' : 'none' }}; margin-top: 0.35rem;">
-                                    <input type="text" name="destination_other" id="destinationOtherInput" class="form-control form-control-sm" placeholder="Enter custom drop city / area..." value="{{ old('destination_other') }}" style="border-color: #3B82F6; background: #F0F9FF;">
+                                    <div class="d-flex gap-1">
+                                        <input type="text" name="destination_other" id="destinationOtherInput" class="form-control form-control-sm" placeholder="Enter custom drop city / area..." value="{{ old('destination_other') }}" style="border-color: #3B82F6; background: #F0F9FF;">
+                                        <button type="button" class="btn btn-xs btn-primary btn-select-map" data-target="destination_other" style="padding: 2px 8px; font-size: 11px; white-space: nowrap;">🗺️ Pick</button>
+                                    </div>
                                     <div style="font-size: 10.5px; color: #1E40AF; margin-top: 2px;">* Custom location: No immediate fare shown. Quote will be sent by dispatch.</div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Interactive Route Map & Road Distance Preview Container -->
+                        <div id="bookingRouteMapContainer" style="display: none; margin-top: 0.9rem; border: 1px solid #E2E8F0; border-radius: 8px; overflow: hidden; background: #ffffff;">
+                            <div style="padding: 0.65rem 0.9rem; background: #F8FAFC; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span style="font-size: 16px;">🛣️</span>
+                                    <div>
+                                        <strong style="font-size: 12.5px; color: #0F172A;" id="routeMapTitle">Road Route & Planned Distance</strong>
+                                        <div style="font-size: 10.5px; color: #64748B;" id="routeMapSubtitle">Genuine highway driving path</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <div style="background: #EFF6FF; border: 1px solid #BFDBFE; padding: 2px 8px; border-radius: 4px; font-size: 12px; color: #1D4ED8; font-weight: 700;">
+                                        <span id="routeDistanceDisplay">-- KM</span>
+                                    </div>
+                                    <div style="background: #F1F5F9; border: 1px solid #E2E8F0; padding: 2px 8px; border-radius: 4px; font-size: 11.5px; color: #334155; font-weight: 600;" id="routeDurationBadge">
+                                        <span id="routeDurationDisplay">--</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="position: relative; height: 240px; width: 100%; background: #E2E8F0;">
+                                <div id="bookingRouteMapCanvas" style="width: 100%; height: 100%;"></div>
+                                <div id="routeCalcSpinner" style="display: none; position: absolute; inset: 0; background: rgba(255,255,255,0.75); z-index: 500; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 600; color: #2563EB;">
+                                    <span>🔄 Calculating road route & distance...</span>
+                                </div>
+                            </div>
+
+                            <!-- Error notice if route calculation fails -->
+                            <div id="routeCalcErrorBanner" style="display: none; padding: 6px 10px; background: #FEF2F2; border-top: 1px solid #FECACA; color: #991B1B; font-size: 11.5px; align-items: center; justify-content: space-between;">
+                                <span id="routeCalcErrorMsg">Could not calculate road distance between selected locations.</span>
+                                <button type="button" id="btnRetryRouteCalc" class="btn btn-xs btn-outline" style="border-color: #F87171; color: #991B1B; padding: 1px 6px; font-size: 10.5px;">Retry</button>
+                            </div>
+
+                            <!-- Route legs breakdown -->
+                            <div id="routeLegsContainer" style="padding: 0.5rem 0.9rem; background: #FAFAFA; border-top: 1px solid #E2E8F0; font-size: 11px; display: flex; gap: 6px; flex-wrap: wrap;"></div>
                         </div>
                     </div>
 
@@ -287,6 +363,8 @@
         </form>
     </div>
 </div>
+
+<x-location-picker-modal />
 @endsection
 
 @push('scripts')
@@ -498,61 +576,262 @@
     [pickupInput, destinationInput].forEach((input) => input.addEventListener('change', updateRatePreview));
     updateRatePreview();
 
-    // Inline "Add New Location" Modal Logic
-    const modal = document.getElementById('newLocationModal');
-    const btnOpen = document.getElementById('btnOpenNewLocationModal');
-    const btnClose = document.getElementById('btnCloseNewLocationModal');
-    const btnCancel = document.getElementById('btnCancelLocationModal');
-    const quickForm = document.getElementById('quickLocationForm');
+    // Google Maps & Location Picker Integration
+    const pickupLatInput = document.getElementById('pickupLatitude');
+    const pickupLngInput = document.getElementById('pickupLongitude');
+    const pickupPlaceIdInput = document.getElementById('pickupPlaceId');
 
-    btnOpen.addEventListener('click', () => { modal.style.display = 'flex'; });
-    btnClose.addEventListener('click', () => { modal.style.display = 'none'; });
-    btnCancel.addEventListener('click', () => { modal.style.display = 'none'; });
+    const viaLatInput = document.getElementById('viaLatitude');
+    const viaLngInput = document.getElementById('viaLongitude');
+    const viaPlaceIdInput = document.getElementById('viaPlaceId');
 
-    quickForm.addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const name = document.getElementById('newLocName').value.trim();
-        const state = document.getElementById('newLocState').value.trim();
-        const address = document.getElementById('newLocAddress').value.trim();
+    const destLatInput = document.getElementById('destinationLatitude');
+    const destLngInput = document.getElementById('destinationLongitude');
+    const destPlaceIdInput = document.getElementById('destinationPlaceId');
 
-        if (!name) return;
+    const routeDistanceKmInput = document.getElementById('routeDistanceKm');
+    const routeDurationTextInput = document.getElementById('routeDurationText');
+    const routeDurationMinutesInput = document.getElementById('routeDurationMinutes');
+    const routeGeometryInput = document.getElementById('routeGeometry');
+
+    const routeMapContainer = document.getElementById('bookingRouteMapContainer');
+    const routeMapCanvas = document.getElementById('bookingRouteMapCanvas');
+    const routeDistanceDisplay = document.getElementById('routeDistanceDisplay');
+    const routeDurationDisplay = document.getElementById('routeDurationDisplay');
+    const routeCalcSpinner = document.getElementById('routeCalcSpinner');
+    const routeCalcErrorBanner = document.getElementById('routeCalcErrorBanner');
+    const routeCalcErrorMsg = document.getElementById('routeCalcErrorMsg');
+    const btnRetryRouteCalc = document.getElementById('btnRetryRouteCalc');
+    const routeLegsContainer = document.getElementById('routeLegsContainer');
+
+    let bookingRouteMap = null;
+    let bookingRoutePolyline = null;
+    let bookingRouteMarkers = [];
+
+    // Attach click listeners to all "🗺️ Map" buttons
+    document.querySelectorAll('.btn-select-map').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = this.dataset.target;
+
+            if (target === 'pickup') {
+                window.VaishnaviLocationPicker.open({
+                    label: 'Pickup Location',
+                    inputEl: pickupInput,
+                    latEl: pickupLatInput,
+                    lngEl: pickupLngInput,
+                    placeIdEl: pickupPlaceIdInput,
+                    onConfirm: () => {
+                        updateRatePreview();
+                        triggerRouteCalculation();
+                    }
+                });
+            } else if (target === 'pickup_other') {
+                window.VaishnaviLocationPicker.open({
+                    label: 'Custom Pickup Area / Landmark',
+                    inputEl: pickupOtherInput,
+                    latEl: pickupLatInput,
+                    lngEl: pickupLngInput,
+                    placeIdEl: pickupPlaceIdInput,
+                    onConfirm: () => {
+                        updateRatePreview();
+                        triggerRouteCalculation();
+                    }
+                });
+            } else if (target === 'via') {
+                window.VaishnaviLocationPicker.open({
+                    label: 'Via Intermediate Location (Round-Trip)',
+                    inputEl: viaLocationInput,
+                    latEl: viaLatInput,
+                    lngEl: viaLngInput,
+                    placeIdEl: viaPlaceIdInput,
+                    onConfirm: () => {
+                        triggerRouteCalculation();
+                    }
+                });
+            } else if (target === 'destination') {
+                window.VaishnaviLocationPicker.open({
+                    label: 'Final Destination Drop',
+                    inputEl: destinationInput,
+                    latEl: destLatInput,
+                    lngEl: destLngInput,
+                    placeIdEl: destPlaceIdInput,
+                    onConfirm: () => {
+                        updateRatePreview();
+                        triggerRouteCalculation();
+                    }
+                });
+            } else if (target === 'destination_other') {
+                window.VaishnaviLocationPicker.open({
+                    label: 'Custom Destination Area / Landmark',
+                    inputEl: destinationOtherInput,
+                    latEl: destLatInput,
+                    lngEl: destLngInput,
+                    placeIdEl: destPlaceIdInput,
+                    onConfirm: () => {
+                        updateRatePreview();
+                        triggerRouteCalculation();
+                    }
+                });
+            }
+        });
+    });
+
+    // Auto-calculate route when locations change
+    pickupInput.addEventListener('change', triggerRouteCalculation);
+    destinationInput.addEventListener('change', triggerRouteCalculation);
+    if (viaLocationInput) viaLocationInput.addEventListener('change', triggerRouteCalculation);
+    if (pickupOtherInput) pickupOtherInput.addEventListener('change', triggerRouteCalculation);
+    if (destinationOtherInput) destinationOtherInput.addEventListener('change', triggerRouteCalculation);
+    btnRetryRouteCalc?.addEventListener('click', triggerRouteCalculation);
+
+    async function triggerRouteCalculation() {
+        const originVal = (pickupInput.value === 'Other' && pickupOtherInput) ? pickupOtherInput.value.trim() : pickupInput.value;
+        const destVal = (destinationInput.value === 'Other' && destinationOtherInput) ? destinationOtherInput.value.trim() : destinationInput.value;
+        const viaVal = viaLocationInput ? viaLocationInput.value.trim() : '';
+
+        if (!originVal || !destVal) {
+            if (routeMapContainer) routeMapContainer.style.display = 'none';
+            return;
+        }
+
+        const selectedTrip = document.querySelector('input[name="trip_type"]:checked');
+        const isRoundTrip = selectedTrip ? (selectedTrip.value === 'Round-Trip' || selectedTrip.dataset.rateCategory === 'round_trip') : false;
+
+        // Origin parameter (lat/lng object if available, else text)
+        const originParam = (pickupLatInput && pickupLatInput.value && pickupLngInput && pickupLngInput.value)
+            ? { lat: parseFloat(pickupLatInput.value), lng: parseFloat(pickupLngInput.value), address: originVal }
+            : originVal;
+
+        const destParam = (destLatInput && destLatInput.value && destLngInput && destLngInput.value)
+            ? { lat: parseFloat(destLatInput.value), lng: parseFloat(destLngInput.value), address: destVal }
+            : destVal;
+
+        const viaParam = viaVal
+            ? ((viaLatInput && viaLatInput.value && viaLngInput && viaLngInput.value)
+                ? { lat: parseFloat(viaLatInput.value), lng: parseFloat(viaLngInput.value), address: viaVal }
+                : viaVal)
+            : null;
+
+        if (routeMapContainer) routeMapContainer.style.display = 'block';
+        if (routeCalcSpinner) routeCalcSpinner.style.display = 'flex';
+        if (routeCalcErrorBanner) routeCalcErrorBanner.style.display = 'none';
 
         try {
-            const resp = await fetch('{{ route("locations.quick-store") }}', {
+            const resp = await fetch('{{ route("api.maps.calculate-route") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Accept': 'application/json',
+                    'Accept': 'application/json'
                 },
-                body: JSON.stringify({ name: name, state: state, address: address })
+                body: JSON.stringify({
+                    origin: originParam,
+                    destination: destParam,
+                    via: viaParam,
+                    is_round_trip: isRoundTrip
+                })
             });
 
-            const result = await resp.json();
+            const data = await resp.json();
+            if (routeCalcSpinner) routeCalcSpinner.style.display = 'none';
 
-            if (result.success) {
-                // Add option to pickup and destination selects
-                const opt1 = new Option(result.location.name, result.location.name, true, true);
-                const opt2 = new Option(result.location.name, result.location.name, false, false);
-                pickupInput.add(opt1);
-                destinationInput.add(opt2);
-                modal.style.display = 'none';
-                quickForm.reset();
-                updateRatePreview();
+            if (data && data.success) {
+                // Populate hidden inputs
+                if (routeDistanceKmInput) routeDistanceKmInput.value = data.total_distance_km;
+                if (routeDurationTextInput) routeDurationTextInput.value = data.total_duration_text;
+                if (routeDurationMinutesInput) routeDurationMinutesInput.value = data.total_duration_minutes;
+                if (routeGeometryInput) routeGeometryInput.value = data.route_geometry || '';
+
+                // Also sync estimatedKm field if present
+                if (estimatedKmInput && isRoundTrip) {
+                    estimatedKmInput.value = data.total_distance_km;
+                }
+
+                // Update UI badges
+                if (routeDistanceDisplay) routeDistanceDisplay.textContent = `${data.total_distance_km} KM`;
+                if (routeDurationDisplay) routeDurationDisplay.textContent = `⏱️ ${data.total_duration_text}`;
+
+                // Render Route Legs
+                if (routeLegsContainer && data.legs) {
+                    routeLegsContainer.innerHTML = data.legs.map((leg, idx) => `
+                        <div style="background: #fff; border: 1px solid #CBD5E1; padding: 3px 8px; border-radius: 4px; display: flex; align-items: center; gap: 4px;">
+                            <strong style="color: #2563EB;">Leg ${idx + 1}:</strong>
+                            <span>${leg.from_name} &rarr; ${leg.to_name}</span>
+                            <span style="font-weight: 700; color: #0F172A; background: #F1F5F9; padding: 1px 4px; border-radius: 2px;">${leg.distance_km} KM</span>
+                            <span style="color: #64748B;">(${leg.duration_text})</span>
+                        </div>
+                    `).join('');
+                }
+
+                renderRouteMap(data);
             } else {
-                alert(result.message || 'Error saving location.');
+                throw new Error(data.message || 'Route calculation could not be completed.');
             }
         } catch (err) {
-            console.error(err);
-            // Fallback: Add option directly to client UI
-            const opt1 = new Option(name, name, true, true);
-            const opt2 = new Option(name, name, false, false);
-            pickupInput.add(opt1);
-            destinationInput.add(opt2);
-            modal.style.display = 'none';
-            quickForm.reset();
-            updateRatePreview();
+            console.error('Route calculation error:', err);
+            if (routeCalcSpinner) routeCalcSpinner.style.display = 'none';
+            if (routeCalcErrorBanner) {
+                routeCalcErrorBanner.style.display = 'flex';
+                if (routeCalcErrorMsg) routeCalcErrorMsg.textContent = 'Notice: Road routing calculation failed. ' + (err.message || 'Please check selected locations and click Retry.');
+            }
         }
-    });
+    }
+
+    function renderRouteMap(data) {
+        if (!routeMapCanvas || typeof L === 'undefined') return;
+
+        if (!bookingRouteMap) {
+            bookingRouteMap = L.map(routeMapCanvas).setView([22.0797, 82.1409], 8);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: '© OpenStreetMap | Vaishnavi Tours'
+            }).addTo(bookingRouteMap);
+        }
+
+        // Clear existing markers and polylines
+        bookingRouteMarkers.forEach(m => bookingRouteMap.removeLayer(m));
+        bookingRouteMarkers = [];
+        if (bookingRoutePolyline) {
+            bookingRouteMap.removeLayer(bookingRoutePolyline);
+        }
+
+        const points = [];
+        if (data.legs && data.legs.length > 0) {
+            data.legs.forEach((leg, idx) => {
+                if (leg.start_location && leg.start_location.lat) {
+                    const startPos = [leg.start_location.lat, leg.start_location.lng];
+                    if (idx === 0) {
+                        const m = L.marker(startPos, { title: leg.from_name }).addTo(bookingRouteMap)
+                            .bindPopup(`<strong>🟢 Pickup:</strong> ${leg.from_name}`);
+                        bookingRouteMarkers.push(m);
+                        points.push(startPos);
+                    }
+                }
+                if (leg.end_location && leg.end_location.lat) {
+                    const endPos = [leg.end_location.lat, leg.end_location.lng];
+                    const isLast = (idx === data.legs.length - 1);
+                    const label = isLast ? (data.is_round_trip ? '🏁 Return Drop' : '🔴 Destination') : `🟡 Via: ${leg.to_name}`;
+                    const m = L.marker(endPos, { title: leg.to_name }).addTo(bookingRouteMap)
+                        .bindPopup(`<strong>${label}:</strong> ${leg.to_name}`);
+                    bookingRouteMarkers.push(m);
+                    points.push(endPos);
+                }
+            });
+        }
+
+        if (points.length >= 2) {
+            bookingRoutePolyline = L.polyline(points, {
+                color: '#2563EB',
+                weight: 5,
+                opacity: 0.85,
+                dashArray: data.is_round_trip ? '8, 6' : '0'
+            }).addTo(bookingRouteMap);
+
+            bookingRouteMap.fitBounds(bookingRoutePolyline.getBounds(), { padding: [25, 25] });
+        }
+
+        setTimeout(() => bookingRouteMap.invalidateSize(), 250);
+    }
 </script>
 @endpush

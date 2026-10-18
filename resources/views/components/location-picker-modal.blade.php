@@ -1,0 +1,544 @@
+{{-- Reusable Google Maps & Places Location Picker Modal --}}
+@once
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+@endonce
+<div id="vaishnaviLocationPickerModal" class="location-picker-modal" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 1rem;" role="dialog" aria-modal="true" aria-labelledby="pickerModalTitle">
+    <div class="location-picker-dialog" style="background: #ffffff; border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); width: 100%; max-width: 780px; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #E2E8F0;">
+        
+        <!-- Header -->
+        <div style="padding: 1rem 1.25rem; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; background: #F8FAFC;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 34px; height: 34px; border-radius: 8px; background: #EFF6FF; color: #2563EB; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                    📍
+                </div>
+                <div>
+                    <h3 id="pickerModalTitle" style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #0F172A;">
+                        Select Location on Map
+                    </h3>
+                    <div id="pickerTargetFieldBadge" style="font-size: 11.5px; color: #64748B;">
+                        Selecting location for <strong id="pickerTargetLabel" style="color: #2563EB;">Pickup Location</strong>
+                    </div>
+                </div>
+            </div>
+            <button type="button" id="btnCloseLocationPicker" style="background: transparent; border: none; font-size: 20px; line-height: 1; cursor: pointer; color: #64748B; padding: 6px; border-radius: 6px;" aria-label="Close modal">
+                ✕
+            </button>
+        </div>
+
+        <!-- Search & Preset Hub Chips -->
+        <div style="padding: 0.85rem 1.25rem; background: #FFFFFF; border-bottom: 1px solid #F1F5F9;">
+            <div style="position: relative; margin-bottom: 0.5rem;">
+                <input type="text" id="pickerSearchInput" class="form-control" placeholder="Search address, landmark, railway station, airport..." style="padding-left: 2.25rem; font-size: 13.5px; border-radius: 8px; width: 100%;" autocomplete="off">
+                <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 14px; color: #94A3B8;">🔍</span>
+                <button type="button" id="pickerClearSearchBtn" style="display: none; position: absolute; right: 0.65rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94A3B8; font-size: 14px; cursor: pointer;">✕</button>
+                <div id="pickerSearchResultsDropdown" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 1px solid #E2E8F0; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); max-height: 220px; overflow-y: auto; z-index: 100;"></div>
+            </div>
+
+            <!-- Quick Regional Hub Chips -->
+            <div style="display: flex; align-items: center; gap: 6px; overflow-x: auto; padding-bottom: 2px;">
+                <span style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; white-space: nowrap; margin-right: 2px;">Quick Hubs:</span>
+                @foreach([
+                    'Bilaspur' => [22.0797, 82.1409],
+                    'Raipur Airport' => [21.1804, 81.7389],
+                    'Raipur City' => [21.2514, 81.6296],
+                    'Korba' => [22.3595, 82.7501],
+                    'Raigarh' => [21.8974, 83.3950],
+                    'Amarkantak' => [22.6756, 81.7588],
+                    'Ambikapur' => [23.1188, 83.1979],
+                    'Bhilai' => [21.1938, 81.3509],
+                    'Champa' => [22.0500, 82.6500],
+                ] as $hubName => $coords)
+                    <button type="button" class="picker-quick-chip" data-name="{{ $hubName }}" data-lat="{{ $coords[0] }}" data-lng="{{ $coords[1] }}" style="background: #F1F5F9; border: 1px solid #E2E8F0; color: #334155; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; cursor: pointer; white-space: nowrap; transition: all 0.15s ease;">
+                        {{ $hubName }}
+                    </button>
+                @endforeach
+            </div>
+        </div>
+
+        <!-- Map Body Area -->
+        <div style="position: relative; flex: 1; min-height: 340px; background: #E2E8F0;">
+            <div id="locationPickerMapCanvas" style="width: 100%; height: 380px;"></div>
+            
+            <!-- Instructions Overlay (Subtle pill) -->
+            <div style="position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: rgba(15, 23, 42, 0.85); color: #fff; padding: 5px 14px; border-radius: 20px; font-size: 11.5px; font-weight: 600; pointer-events: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 500;">
+                👆 Click map or drag marker to set exact location
+            </div>
+
+            <!-- API Key Missing Notice (if in fallback mode) -->
+            <div id="pickerApiKeyNotice" style="display: none; position: absolute; bottom: 8px; left: 8px; right: 8px; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 6px; padding: 6px 10px; font-size: 11px; color: #92400E; z-index: 500; display: flex; align-items: center; justify-content: space-between;">
+                <span>ℹ️ <strong>Google Maps Notice:</strong> Using interactive fallback map calibrated with Chhattisgarh highway network. Set your Google Maps API key in Admin Settings for live satellite & Places autocomplete.</span>
+                <a href="{{ route('admin.settings.index') }}" target="_blank" style="color: #B45309; font-weight: 700; text-decoration: underline; margin-left: 6px; white-space: nowrap;">Settings ↗</a>
+            </div>
+        </div>
+
+        <!-- Selected Location Details & Actions -->
+        <div style="padding: 1rem 1.25rem; background: #F8FAFC; border-top: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+            <div style="flex: 1; min-width: 260px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
+                    <strong id="pickerSelectedName" style="color: #0F172A; font-size: 14px;">Select a point on the map</strong>
+                    <span id="pickerCoordsBadge" style="font-size: 11px; background: #EFF6FF; color: #1D4ED8; padding: 1px 7px; border-radius: 4px; font-family: monospace; border: 1px solid #BFDBFE;">22.0797, 82.1409</span>
+                </div>
+                <div id="pickerSelectedAddress" style="color: #475569; font-size: 12px; line-height: 1.35; max-width: 480px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+                    Click anywhere on the map above or search to select location address.
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button type="button" id="btnCancelLocationPicker" class="btn btn-secondary btn-sm" style="padding: 7px 14px; font-weight: 600;">
+                    Cancel
+                </button>
+                <button type="button" id="btnConfirmLocationPicker" class="btn btn-primary btn-sm" style="padding: 7px 18px; font-weight: 700; background: #2563EB; color: #fff;">
+                    ✓ Confirm Location
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{{-- Leaflet OpenStreetMap styling for resilient fallback if Google Maps JS is not yet loaded --}}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script>
+/**
+ * Vaishnavi Tours - Universal Location Picker Engine
+ * Integrates Google Maps JavaScript SDK, Places Autocomplete, and calibrated Leaflet fallback.
+ */
+window.VaishnaviLocationPicker = (function () {
+    let modalEl = null;
+    let mapCanvasEl = null;
+    let searchInputEl = null;
+    let searchResultsDropdown = null;
+    let selectedNameEl = null;
+    let selectedAddressEl = null;
+    let coordsBadgeEl = null;
+    let targetLabelEl = null;
+    let apiKeyNoticeEl = null;
+
+    let googleMap = null;
+    let googleMarker = null;
+    let googleGeocoder = null;
+    let googleAutocomplete = null;
+
+    let leafletMap = null;
+    let leafletMarker = null;
+
+    let mapMode = 'loading'; // 'google' | 'leaflet'
+    let clientApiKey = '';
+    let centerLat = 22.0797;
+    let centerLng = 82.1409;
+    let defaultZoom = 12;
+
+    let currentTarget = null; // { targetField, inputEl, latEl, lngEl, placeIdEl, onConfirm }
+    let selectedLocation = {
+        name: 'Bilaspur, Chhattisgarh',
+        address: 'Bilaspur, Chhattisgarh, India',
+        lat: 22.0797,
+        lng: 82.1409,
+        place_id: null
+    };
+
+    async function init() {
+        modalEl = document.getElementById('vaishnaviLocationPickerModal');
+        mapCanvasEl = document.getElementById('locationPickerMapCanvas');
+        searchInputEl = document.getElementById('pickerSearchInput');
+        searchResultsDropdown = document.getElementById('pickerSearchResultsDropdown');
+        selectedNameEl = document.getElementById('pickerSelectedName');
+        selectedAddressEl = document.getElementById('pickerSelectedAddress');
+        coordsBadgeEl = document.getElementById('pickerCoordsBadge');
+        targetLabelEl = document.getElementById('pickerTargetLabel');
+        apiKeyNoticeEl = document.getElementById('pickerApiKeyNotice');
+
+        if (!modalEl) return;
+
+        // Fetch client config from backend (safe client API key)
+        try {
+            const resp = await fetch('/api/maps/config');
+            const data = await resp.json();
+            if (data && data.status === 'success') {
+                clientApiKey = data.client_api_key || '';
+                if (data.center) {
+                    centerLat = data.center.lat || 22.0797;
+                    centerLng = data.center.lng || 82.1409;
+                }
+                defaultZoom = data.zoom || 12;
+            }
+        } catch (e) {
+            console.warn('Could not load /api/maps/config:', e);
+        }
+
+        // Attach modal event listeners
+        document.getElementById('btnCloseLocationPicker')?.addEventListener('click', close);
+        document.getElementById('btnCancelLocationPicker')?.addEventListener('click', close);
+        document.getElementById('btnConfirmLocationPicker')?.addEventListener('click', confirmSelection);
+
+        // Close on backdrop click
+        modalEl.addEventListener('click', (e) => {
+            if (e.target === modalEl) close();
+        });
+
+        // Quick Hub Chips
+        document.querySelectorAll('.picker-quick-chip').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const lat = parseFloat(btn.dataset.lat);
+                const lng = parseFloat(btn.dataset.lng);
+                const name = btn.dataset.name;
+                setLocation(lat, lng, name, `${name}, Chhattisgarh, India`);
+            });
+        });
+
+        // Search Input listeners
+        let debounceTimer = null;
+        searchInputEl?.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            const query = searchInputEl.value.trim();
+            if (query.length < 2) {
+                if (searchResultsDropdown) searchResultsDropdown.style.display = 'none';
+                return;
+            }
+            debounceTimer = setTimeout(() => searchAddress(query), 300);
+        });
+
+        // Initialize Map engine (Google or Leaflet fallback)
+        if (clientApiKey && clientApiKey.length > 5) {
+            loadGoogleMapsScript(clientApiKey);
+        } else {
+            initLeafletMap();
+            if (apiKeyNoticeEl) apiKeyNoticeEl.style.display = 'flex';
+        }
+    }
+
+    function loadGoogleMapsScript(key) {
+        if (window.google && window.google.maps) {
+            initGoogleMap();
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=places,geometry&callback=__vaishnaviMapsCallback`;
+        script.async = true;
+        script.defer = true;
+        window.__vaishnaviMapsCallback = () => {
+            initGoogleMap();
+        };
+        script.onerror = () => {
+            console.warn('Google Maps script failed to load. Falling back to calibrated Leaflet map.');
+            initLeafletMap();
+            if (apiKeyNoticeEl) apiKeyNoticeEl.style.display = 'flex';
+        };
+        document.head.appendChild(script);
+    }
+
+    function initGoogleMap() {
+        mapMode = 'google';
+        if (apiKeyNoticeEl) apiKeyNoticeEl.style.display = 'none';
+
+        const mapOptions = {
+            center: { lat: centerLat, lng: centerLng },
+            zoom: defaultZoom,
+            streetViewControl: false,
+            mapTypeControl: true,
+            fullscreenControl: false,
+            zoomControl: true,
+            styles: [
+                { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'on' }] }
+            ]
+        };
+
+        googleMap = new google.maps.Map(mapCanvasEl, mapOptions);
+        googleGeocoder = new google.maps.Geocoder();
+
+        googleMarker = new google.maps.Marker({
+            position: { lat: centerLat, lng: centerLng },
+            map: googleMap,
+            draggable: true,
+            animation: google.maps.Animation.DROP,
+            title: 'Selected Location'
+        });
+
+        // Marker dragend
+        googleMarker.addListener('dragend', (e) => {
+            const lat = e.latLng.lat();
+            const lng = e.latLng.lng();
+            reverseGeocode(lat, lng);
+        });
+
+        // Map click
+        googleMap.addListener('click', (e) => {
+            const lat = e.latLng.lat();
+            const lng = e.latLng.lng();
+            googleMarker.setPosition(e.latLng);
+            reverseGeocode(lat, lng);
+        });
+
+        // Google Places Autocomplete on search input
+        if (google.maps.places && searchInputEl) {
+            googleAutocomplete = new google.maps.places.Autocomplete(searchInputEl, {
+                componentRestrictions: { country: 'in' },
+                fields: ['place_id', 'geometry', 'name', 'formatted_address']
+            });
+
+            googleAutocomplete.addListener('place_changed', () => {
+                const place = googleAutocomplete.getPlace();
+                if (!place.geometry || !place.geometry.location) {
+                    return;
+                }
+                const lat = place.geometry.location.lat();
+                const lng = place.geometry.location.lng();
+                const name = place.name || 'Selected Place';
+                const address = place.formatted_address || name;
+                selectedLocation = {
+                    name: name,
+                    address: address,
+                    lat: lat,
+                    lng: lng,
+                    place_id: place.place_id || null
+                };
+                googleMap.setCenter(place.geometry.location);
+                googleMap.setZoom(15);
+                googleMarker.setPosition(place.geometry.location);
+                updateDisplay();
+            });
+        }
+    }
+
+    function initLeafletMap() {
+        if (leafletMap || typeof L === 'undefined') return;
+        mapMode = 'leaflet';
+
+        leafletMap = L.map(mapCanvasEl).setView([centerLat, centerLng], defaultZoom);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors | Vaishnavi Tours'
+        }).addTo(leafletMap);
+
+        leafletMarker = L.marker([centerLat, centerLng], { draggable: true }).addTo(leafletMap);
+
+        leafletMarker.on('dragend', function (e) {
+            const pos = leafletMarker.getLatLng();
+            reverseGeocode(pos.lat, pos.lng);
+        });
+
+        leafletMap.on('click', function (e) {
+            leafletMarker.setLatLng(e.latlng);
+            reverseGeocode(e.latlng.lat, e.latlng.lng);
+        });
+    }
+
+    async function reverseGeocode(lat, lng) {
+        selectedLocation.lat = lat;
+        selectedLocation.lng = lng;
+        selectedLocation.name = 'Locating address...';
+        selectedLocation.address = `Coordinates: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        updateDisplay();
+
+        // If Google Geocoder is ready, use it
+        if (mapMode === 'google' && googleGeocoder) {
+            googleGeocoder.geocode({ location: { lat, lng } }, (results, status) => {
+                if (status === 'OK' && results[0]) {
+                    const r = results[0];
+                    const name = r.address_components[0] ? r.address_components[0].long_name : 'Selected Point';
+                    selectedLocation.name = name;
+                    selectedLocation.address = r.formatted_address;
+                    selectedLocation.place_id = r.place_id;
+                    updateDisplay();
+                    return;
+                }
+                // Fallback to backend reverse geocode
+                callBackendReverseGeocode(lat, lng);
+            });
+        } else {
+            callBackendReverseGeocode(lat, lng);
+        }
+    }
+
+    async function callBackendReverseGeocode(lat, lng) {
+        try {
+            const resp = await fetch('/api/maps/reverse-geocode', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({ lat, lng })
+            });
+            const res = await resp.json();
+            if (res.status === 'success' && res.data) {
+                selectedLocation.name = res.data.name;
+                selectedLocation.address = res.data.formatted_address;
+                selectedLocation.place_id = res.data.place_id;
+            }
+        } catch (e) {
+            selectedLocation.name = 'Selected Point';
+            selectedLocation.address = `Latitude: ${lat.toFixed(5)}, Longitude: ${lng.toFixed(5)}`;
+        }
+        updateDisplay();
+    }
+
+    async function searchAddress(query) {
+        try {
+            const resp = await fetch('/api/maps/geocode', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({ address: query })
+            });
+            const res = await resp.json();
+            if (res.status === 'success' && res.data) {
+                renderSearchResults([res.data]);
+            } else {
+                renderSearchResults([]);
+            }
+        } catch (e) {
+            renderSearchResults([]);
+        }
+    }
+
+    function renderSearchResults(items) {
+        if (!searchResultsDropdown) return;
+        if (!items || items.length === 0) {
+            searchResultsDropdown.innerHTML = '<div style="padding: 10px; font-size: 12px; color: #64748B;">No matching address found. Try moving the map pin directly.</div>';
+            searchResultsDropdown.style.display = 'block';
+            return;
+        }
+
+        searchResultsDropdown.innerHTML = items.map(item => `
+            <div class="picker-search-result-item" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #F1F5F9; font-size: 13px;" data-name="${encodeURIComponent(item.name)}" data-addr="${encodeURIComponent(item.formatted_address)}" data-lat="${item.lat}" data-lng="${item.lng}" data-pid="${item.place_id || ''}">
+                <div style="font-weight: 700; color: #0F172A;">${item.name}</div>
+                <div style="font-size: 11px; color: #64748B;">${item.formatted_address}</div>
+            </div>
+        `).join('');
+        searchResultsDropdown.style.display = 'block';
+
+        searchResultsDropdown.querySelectorAll('.picker-search-result-item').forEach(el => {
+            el.addEventListener('click', () => {
+                const lat = parseFloat(el.dataset.lat);
+                const lng = parseFloat(el.dataset.lng);
+                const name = decodeURIComponent(el.dataset.name);
+                const addr = decodeURIComponent(el.dataset.addr);
+                const pid = el.dataset.pid || null;
+                setLocation(lat, lng, name, addr, pid);
+                searchResultsDropdown.style.display = 'none';
+                if (searchInputEl) searchInputEl.value = name;
+            });
+        });
+    }
+
+    function setLocation(lat, lng, name, address, place_id = null) {
+        selectedLocation.lat = lat;
+        selectedLocation.lng = lng;
+        selectedLocation.name = name || 'Selected Location';
+        selectedLocation.address = address || name;
+        selectedLocation.place_id = place_id;
+
+        if (mapMode === 'google' && googleMap && googleMarker) {
+            const pos = new google.maps.LatLng(lat, lng);
+            googleMap.setCenter(pos);
+            googleMap.setZoom(14);
+            googleMarker.setPosition(pos);
+        } else if (leafletMap && leafletMarker) {
+            leafletMap.setView([lat, lng], 14);
+            leafletMarker.setLatLng([lat, lng]);
+            leafletMap.invalidateSize();
+        }
+
+        updateDisplay();
+    }
+
+    function updateDisplay() {
+        if (selectedNameEl) selectedNameEl.textContent = selectedLocation.name || 'Selected Point';
+        if (selectedAddressEl) selectedAddressEl.textContent = selectedLocation.address || 'Address updating...';
+        if (coordsBadgeEl) coordsBadgeEl.textContent = `${selectedLocation.lat.toFixed(5)}, ${selectedLocation.lng.toFixed(5)}`;
+    }
+
+    /**
+     * Open the picker for a specific form input.
+     */
+    function open(options) {
+        currentTarget = options;
+        if (!modalEl) return;
+
+        modalEl.style.display = 'flex';
+        if (targetLabelEl) targetLabelEl.textContent = options.label || 'Location Field';
+
+        // Check if there is an existing address or coordinates
+        let initialAddress = options.currentValue || (options.inputEl ? options.inputEl.value : '');
+        let initialLat = options.latEl && options.latEl.value ? parseFloat(options.latEl.value) : null;
+        let initialLng = options.lngEl && options.lngEl.value ? parseFloat(options.lngEl.value) : null;
+
+        setTimeout(() => {
+            if (mapMode === 'google' && googleMap) {
+                google.maps.event.trigger(googleMap, 'resize');
+            } else if (mapMode === 'leaflet' && leafletMap) {
+                leafletMap.invalidateSize();
+            }
+
+            if (initialLat && initialLng && !isNaN(initialLat) && !isNaN(initialLng)) {
+                setLocation(initialLat, initialLng, initialAddress || 'Saved Point', initialAddress || 'Saved Point');
+            } else if (initialAddress && initialAddress.trim().length > 1) {
+                searchAddress(initialAddress.trim());
+            } else {
+                setLocation(centerLat, centerLng, 'Bilaspur, Chhattisgarh', 'Bilaspur, Chhattisgarh, India');
+            }
+        }, 150);
+    }
+
+    function close() {
+        if (!modalEl) return;
+        modalEl.style.display = 'none';
+        if (searchResultsDropdown) searchResultsDropdown.style.display = 'none';
+    }
+
+    function confirmSelection() {
+        if (!currentTarget) return;
+
+        // Set address to the input element or select element
+        if (currentTarget.inputEl) {
+            if (currentTarget.inputEl.tagName === 'SELECT') {
+                // If it's a select element, check if the option exists, otherwise add it
+                let opt = Array.from(currentTarget.inputEl.options).find(o => o.value === selectedLocation.name);
+                if (!opt) {
+                    opt = new Option(selectedLocation.name, selectedLocation.name, true, true);
+                    currentTarget.inputEl.add(opt);
+                }
+                currentTarget.inputEl.value = selectedLocation.name;
+                currentTarget.inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+            } else {
+                currentTarget.inputEl.value = selectedLocation.name;
+                currentTarget.inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+                currentTarget.inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+
+        // Set coordinates and place ID to hidden inputs
+        if (currentTarget.latEl) currentTarget.latEl.value = selectedLocation.lat;
+        if (currentTarget.lngEl) currentTarget.lngEl.value = selectedLocation.lng;
+        if (currentTarget.placeIdEl) currentTarget.placeIdEl.value = selectedLocation.place_id || '';
+
+        // Callback if provided
+        if (typeof currentTarget.onConfirm === 'function') {
+            currentTarget.onConfirm(selectedLocation);
+        }
+
+        close();
+    }
+
+    // Auto-init on DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+    return {
+        open,
+        close,
+        setLocation,
+        getSelection: () => selectedLocation
+    };
+})();
+</script>

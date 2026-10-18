@@ -146,8 +146,11 @@ class BookingService
                     $ratePrice = $quote['price'];
                     $pricingDetails = array_merge($quote['details'], ['total_amount' => $quote['total_amount']]);
                     // Authoritative pricing: prevent client-side fare tampering
-                    // If an administrator or custom fare override is provided, use custom manual amount
-                    $totalAmount = ($isAdmin && isset($data['total_amount']) && (float) $data['total_amount'] > 0)
+                    // If custom fare override is explicitly provided, use custom manual amount
+                    $hasCustomFare = ! empty($data['is_custom_fare'])
+                        || in_array($data['booking_category'] ?? '', [Booking::CATEGORY_CORP, Booking::CATEGORY_TP], true);
+
+                    $totalAmount = ($hasCustomFare && isset($data['total_amount']) && (float) $data['total_amount'] > 0)
                         ? (float) $data['total_amount']
                         : $quote['total_amount'];
                 } elseif (isset($data['total_amount']) && (float) $data['total_amount'] > 0) {
@@ -276,14 +279,67 @@ class BookingService
                 $igst = 0.00;
             }
 
+            // Route & Distance Calculation (Genuine Road Distance)
+            $routeDistanceKm = isset($data['route_distance_km']) && is_numeric($data['route_distance_km']) ? (float) $data['route_distance_km'] : null;
+            $routeDurationText = $data['route_duration_text'] ?? null;
+            $routeDurationMinutes = isset($data['route_duration_minutes']) && is_numeric($data['route_duration_minutes']) ? (int) $data['route_duration_minutes'] : null;
+            $routeLegs = isset($data['route_legs']) && is_array($data['route_legs']) ? $data['route_legs'] : null;
+            $routeGeometry = $data['route_geometry'] ?? null;
+            $routedAt = ! empty($data['routed_at']) ? Carbon::parse($data['routed_at']) : null;
+
+            if (! $routeDistanceKm && ! empty($data['pickup_location']) && ! empty($data['destination'])) {
+                try {
+                    $routingService = app(GoogleMapsRoutingService::class);
+                    $originInput = (! empty($data['pickup_latitude']) && ! empty($data['pickup_longitude']))
+                        ? ['lat' => (float) $data['pickup_latitude'], 'lng' => (float) $data['pickup_longitude'], 'address' => $data['pickup_location']]
+                        : $data['pickup_location'];
+                    $destInput = (! empty($data['destination_latitude']) && ! empty($data['destination_longitude']))
+                        ? ['lat' => (float) $data['destination_latitude'], 'lng' => (float) $data['destination_longitude'], 'address' => $data['destination']]
+                        : $data['destination'];
+                    $viaInput = ! empty($data['via_location'])
+                        ? ((! empty($data['via_latitude']) && ! empty($data['via_longitude']))
+                            ? ['lat' => (float) $data['via_latitude'], 'lng' => (float) $data['via_longitude'], 'address' => $data['via_location']]
+                            : $data['via_location'])
+                        : null;
+                    $isRoundTrip = ($tripType === 'Round-Trip' || ($data['rate_category'] ?? '') === 'round_trip');
+
+                    $calc = $routingService->calculateRoadRoute($originInput, $destInput, $viaInput, $isRoundTrip);
+                    if ($calc['success']) {
+                        $routeDistanceKm = $calc['total_distance_km'];
+                        $routeDurationText = $calc['total_duration_text'];
+                        $routeDurationMinutes = $calc['total_duration_minutes'];
+                        $routeLegs = $calc['legs'];
+                        $routeGeometry = $calc['route_geometry'];
+                        $routedAt = now();
+                    }
+                } catch (\Throwable $e) {
+                    // Non-fatal fallback
+                }
+            }
+
             $booking = Booking::create([
                 'booking_id' => Booking::generateBookingId($bookingCategory),
                 'booking_category' => $bookingCategory,
                 'customer_id' => $user->id,
                 'trip_type' => $tripType,
                 'pickup_location' => $data['pickup_location'],
+                'pickup_latitude' => isset($data['pickup_latitude']) && is_numeric($data['pickup_latitude']) ? (float) $data['pickup_latitude'] : null,
+                'pickup_longitude' => isset($data['pickup_longitude']) && is_numeric($data['pickup_longitude']) ? (float) $data['pickup_longitude'] : null,
+                'pickup_place_id' => $data['pickup_place_id'] ?? null,
                 'via_location' => $data['via_location'] ?? null,
+                'via_latitude' => isset($data['via_latitude']) && is_numeric($data['via_latitude']) ? (float) $data['via_latitude'] : null,
+                'via_longitude' => isset($data['via_longitude']) && is_numeric($data['via_longitude']) ? (float) $data['via_longitude'] : null,
+                'via_place_id' => $data['via_place_id'] ?? null,
                 'destination' => $data['destination'],
+                'destination_latitude' => isset($data['destination_latitude']) && is_numeric($data['destination_latitude']) ? (float) $data['destination_latitude'] : null,
+                'destination_longitude' => isset($data['destination_longitude']) && is_numeric($data['destination_longitude']) ? (float) $data['destination_longitude'] : null,
+                'destination_place_id' => $data['destination_place_id'] ?? null,
+                'route_distance_km' => $routeDistanceKm,
+                'route_duration_text' => $routeDurationText,
+                'route_duration_minutes' => $routeDurationMinutes,
+                'route_legs' => $routeLegs,
+                'route_geometry' => $routeGeometry,
+                'routed_at' => $routedAt ?: now(),
                 'travel_date' => $data['travel_date'],
                 'travel_time' => $data['travel_time'],
                 'return_date' => $data['return_date'] ?? null,

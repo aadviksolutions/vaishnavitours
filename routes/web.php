@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\AdminSettingController;
 use App\Http\Controllers\Admin\AdminTourPackageController;
 use App\Http\Controllers\Admin\AdminTripController;
 use App\Http\Controllers\Admin\AdminVehicleController;
+use App\Http\Controllers\Api\GoogleMapsApiController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Customer\CustomerBookingController;
 use App\Http\Controllers\Customer\CustomerDashboardController;
@@ -63,6 +64,14 @@ Route::get('/tour-packages', [PublicWebsiteController::class, 'tourPackages'])->
 Route::post('/locations/quick-store', [PublicWebsiteController::class, 'storeQuickLocation'])->name('locations.quick-store');
 Route::get('/enquiry', [PublicWebsiteController::class, 'enquiry'])->name('enquiry');
 Route::post('/enquiry', [PublicWebsiteController::class, 'storeEnquiry'])->name('enquiry.store');
+
+// Google Maps & Routing APIs
+Route::prefix('api/maps')->name('api.maps.')->group(function () {
+    Route::get('/config', [GoogleMapsApiController::class, 'config'])->name('config');
+    Route::post('/calculate-route', [GoogleMapsApiController::class, 'calculateRoute'])->name('calculate-route');
+    Route::post('/geocode', [GoogleMapsApiController::class, 'geocode'])->name('geocode');
+    Route::post('/reverse-geocode', [GoogleMapsApiController::class, 'reverseGeocode'])->name('reverse-geocode');
+});
 
 // Section 19: Dedicated print-friendly invoice route protected by BookingPolicy
 Route::get('/invoice/{booking}', [CustomerInvoiceController::class, 'bookingInvoice'])->name('invoice.show')->middleware('auth');
@@ -136,6 +145,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/bookings/{booking}/payment', [AdminBookingController::class, 'updatePayment'])->name('bookings.payment');
     Route::post('/bookings/{booking}/status', [AdminBookingController::class, 'updateStatus'])->name('bookings.status');
     Route::post('/bookings/{booking}/cancel', [AdminBookingController::class, 'cancel'])->name('bookings.cancel');
+    Route::post('/bookings/{booking}/recalculate-route', [AdminBookingController::class, 'recalculateRoute'])->name('bookings.recalculate-route');
 
     // Trips
     Route::get('/trips', [AdminTripController::class, 'index'])->name('trips.index');

@@ -18,6 +18,7 @@ use App\Models\Trip;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\BookingService;
+use App\Services\GoogleMapsRoutingService;
 use App\Services\PaymentService;
 use App\Services\RateQuoteService;
 use Illuminate\Http\Request;
@@ -132,6 +133,10 @@ class AdminBookingController extends Controller
             $customerMode = 'new';
         }
 
+        if (! $request->filled('booking_category')) {
+            $request->merge(['booking_category' => 'MAN']);
+        }
+
         $request->merge([
             'trip_type' => match ($request->input('rate_category')) {
                 'airport' => 'Airport Transfer',
@@ -173,6 +178,19 @@ class AdminBookingController extends Controller
             'is_custom_fare' => 'nullable|string|max:10',
             'from_enquiry_id' => 'nullable|exists:enquiries,id',
             'tour_package_id' => 'nullable|exists:tour_packages,id',
+            'pickup_latitude' => 'nullable|numeric',
+            'pickup_longitude' => 'nullable|numeric',
+            'pickup_place_id' => 'nullable|string|max:255',
+            'via_latitude' => 'nullable|numeric',
+            'via_longitude' => 'nullable|numeric',
+            'via_place_id' => 'nullable|string|max:255',
+            'destination_latitude' => 'nullable|numeric',
+            'destination_longitude' => 'nullable|numeric',
+            'destination_place_id' => 'nullable|string|max:255',
+            'route_distance_km' => 'nullable|numeric',
+            'route_duration_text' => 'nullable|string|max:100',
+            'route_duration_minutes' => 'nullable|integer',
+            'route_geometry' => 'nullable|string',
         ];
 
         if ($customerMode === 'new') {
@@ -188,7 +206,7 @@ class AdminBookingController extends Controller
         $data = $request->validate($rules);
 
         $data['is_admin_booking'] = true;
-        $data['is_custom_fare'] = $request->input('is_custom_fare') === '1' || $request->filled('total_amount');
+        $data['is_custom_fare'] = $request->boolean('is_custom_fare');
         $data['corporate_company_name'] = $request->input('company_name') ?: $request->input('corporate_company_name');
         $data['corporate_billing_address'] = $request->input('billing_address') ?: $request->input('corporate_billing_address');
         $data['travel_partner_name'] = $request->input('travel_partner_name');
@@ -323,6 +341,7 @@ class AdminBookingController extends Controller
             'customer_id' => 'required|exists:users,id',
             'trip_type' => 'required|string',
             'pickup_location' => 'required|string|max:255',
+            'via_location' => 'nullable|string|max:255',
             'destination' => 'required|string|max:255',
             'travel_date' => 'required|date',
             'travel_time' => 'required',
@@ -340,6 +359,19 @@ class AdminBookingController extends Controller
             'travel_partner_address' => 'nullable|string|max:500',
             'travel_partner_commission' => 'nullable|numeric|min:0',
             'travel_partner_notes' => 'nullable|string|max:1000',
+            'pickup_latitude' => 'nullable|numeric',
+            'pickup_longitude' => 'nullable|numeric',
+            'pickup_place_id' => 'nullable|string|max:255',
+            'via_latitude' => 'nullable|numeric',
+            'via_longitude' => 'nullable|numeric',
+            'via_place_id' => 'nullable|string|max:255',
+            'destination_latitude' => 'nullable|numeric',
+            'destination_longitude' => 'nullable|numeric',
+            'destination_place_id' => 'nullable|string|max:255',
+            'route_distance_km' => 'nullable|numeric',
+            'route_duration_text' => 'nullable|string|max:100',
+            'route_duration_minutes' => 'nullable|integer',
+            'route_geometry' => 'nullable|string',
         ]);
 
         $totalAmount = (float) $data['total_amount'];
@@ -355,10 +387,11 @@ class AdminBookingController extends Controller
         $oldStatus = $booking->booking_status;
         $newStatus = $data['booking_status'];
 
-        $booking->update([
+        $updateFields = [
             'customer_id' => $data['customer_id'],
             'trip_type' => $data['trip_type'],
             'pickup_location' => $data['pickup_location'],
+            'via_location' => $data['via_location'] ?? null,
             'destination' => $data['destination'],
             'travel_date' => $data['travel_date'],
             'travel_time' => $data['travel_time'],
@@ -377,7 +410,32 @@ class AdminBookingController extends Controller
             'travel_partner_address' => $data['travel_partner_address'] ?? $booking->travel_partner_address,
             'travel_partner_commission' => array_key_exists('travel_partner_commission', $data) ? $data['travel_partner_commission'] : $booking->travel_partner_commission,
             'travel_partner_notes' => $data['travel_partner_notes'] ?? $booking->travel_partner_notes,
-        ]);
+        ];
+
+        if (array_key_exists('pickup_latitude', $data)) {
+            $updateFields['pickup_latitude'] = $data['pickup_latitude'];
+            $updateFields['pickup_longitude'] = $data['pickup_longitude'] ?? null;
+            $updateFields['pickup_place_id'] = $data['pickup_place_id'] ?? null;
+        }
+        if (array_key_exists('via_latitude', $data)) {
+            $updateFields['via_latitude'] = $data['via_latitude'];
+            $updateFields['via_longitude'] = $data['via_longitude'] ?? null;
+            $updateFields['via_place_id'] = $data['via_place_id'] ?? null;
+        }
+        if (array_key_exists('destination_latitude', $data)) {
+            $updateFields['destination_latitude'] = $data['destination_latitude'];
+            $updateFields['destination_longitude'] = $data['destination_longitude'] ?? null;
+            $updateFields['destination_place_id'] = $data['destination_place_id'] ?? null;
+        }
+        if (isset($data['route_distance_km']) && is_numeric($data['route_distance_km'])) {
+            $updateFields['route_distance_km'] = (float) $data['route_distance_km'];
+            $updateFields['route_duration_text'] = $data['route_duration_text'] ?? $booking->route_duration_text;
+            $updateFields['route_duration_minutes'] = isset($data['route_duration_minutes']) ? (int) $data['route_duration_minutes'] : $booking->route_duration_minutes;
+            $updateFields['route_geometry'] = $data['route_geometry'] ?? $booking->route_geometry;
+            $updateFields['routed_at'] = now();
+        }
+
+        $booking->update($updateFields);
 
         // Sync Trip
         if ($booking->trip) {
@@ -560,6 +618,47 @@ class AdminBookingController extends Controller
         $bookingService->cancelBooking($booking, $request->cancellation_reason, Auth::user());
 
         return back()->with('success', "Booking #{$booking->booking_id} has been cancelled.");
+    }
+
+    /**
+     * Recalculate genuine road route, distance, legs, and duration using Google Maps Routing.
+     */
+    public function recalculateRoute(Booking $booking, GoogleMapsRoutingService $routingService)
+    {
+        $origin = (! empty($booking->pickup_latitude) && ! empty($booking->pickup_longitude))
+            ? ['lat' => (float) $booking->pickup_latitude, 'lng' => (float) $booking->pickup_longitude, 'address' => $booking->pickup_location]
+            : $booking->pickup_location;
+        $destination = (! empty($booking->destination_latitude) && ! empty($booking->destination_longitude))
+            ? ['lat' => (float) $booking->destination_latitude, 'lng' => (float) $booking->destination_longitude, 'address' => $booking->destination]
+            : $booking->destination;
+        $via = ! empty($booking->via_location)
+            ? ((! empty($booking->via_latitude) && ! empty($booking->via_longitude))
+                ? ['lat' => (float) $booking->via_latitude, 'lng' => (float) $booking->via_longitude, 'address' => $booking->via_location]
+                : $booking->via_location)
+            : null;
+        $isRoundTrip = ($booking->trip_type === 'Round-Trip' || $booking->rate_category === 'round_trip');
+
+        $res = $routingService->calculateRoadRoute($origin, $destination, $via, $isRoundTrip);
+
+        if (empty($res['success'])) {
+            return redirect()->route('admin.bookings.show', $booking->id)
+                ->with('error', 'Routing calculation failed: '.($res['message'] ?? 'Unable to calculate road distance.'));
+        }
+
+        $booking->update([
+            'route_distance_km' => $res['total_distance_km'] ?? $res['distance_km'],
+            'route_duration_text' => $res['total_duration_text'] ?? $res['duration_text'],
+            'route_duration_minutes' => $res['total_duration_minutes'] ?? $res['duration_minutes'],
+            'route_legs' => $res['legs'] ?? [],
+            'route_geometry' => $res['route_geometry'] ?? ($res['geometry'] ?? null),
+            'routed_at' => now(),
+        ]);
+
+        $dist = $booking->route_distance_km;
+        $dur = $booking->route_duration_text;
+
+        return redirect()->route('admin.bookings.show', $booking->id)
+            ->with('success', "Road route recalculated successfully! Driving distance: {$dist} KM ({$dur}).");
     }
 
     public function destroy(Booking $booking)

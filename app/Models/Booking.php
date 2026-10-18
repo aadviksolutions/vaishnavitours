@@ -37,8 +37,17 @@ class Booking extends Model
         'customer_id',
         'trip_type',
         'pickup_location',
+        'pickup_latitude',
+        'pickup_longitude',
+        'pickup_place_id',
         'via_location',
+        'via_latitude',
+        'via_longitude',
+        'via_place_id',
         'destination',
+        'destination_latitude',
+        'destination_longitude',
+        'destination_place_id',
         'travel_date',
         'travel_time',
         'return_date',
@@ -46,6 +55,12 @@ class Booking extends Model
         'duration_days',
         'duration_hours',
         'duration_notes',
+        'route_distance_km',
+        'route_duration_text',
+        'route_duration_minutes',
+        'route_legs',
+        'route_geometry',
+        'routed_at',
         'vehicle_id',
         'driver_id',
         'tour_package_id',
@@ -92,8 +107,18 @@ class Booking extends Model
         'travel_date' => 'date',
         'return_date' => 'date',
         'cancelled_at' => 'datetime',
+        'routed_at' => 'datetime',
         'duration_days' => 'integer',
         'duration_hours' => 'decimal:2',
+        'route_distance_km' => 'decimal:2',
+        'route_duration_minutes' => 'integer',
+        'route_legs' => 'array',
+        'pickup_latitude' => 'decimal:7',
+        'pickup_longitude' => 'decimal:7',
+        'via_latitude' => 'decimal:7',
+        'via_longitude' => 'decimal:7',
+        'destination_latitude' => 'decimal:7',
+        'destination_longitude' => 'decimal:7',
         'taxable_amount' => 'decimal:2',
         'gst_rate' => 'decimal:2',
         'cgst_amount' => 'decimal:2',
@@ -113,7 +138,31 @@ class Booking extends Model
 
     public static function generateBookingId(?string $category = null): string
     {
-        $prefix = strtoupper(trim((string) ($category ?: self::CATEGORY_WEB)));
+        if ($category === null) {
+            $recentBookingIds = static::where('booking_id', 'like', 'VT-%')
+                ->orderBy('id', 'desc')
+                ->take(100)
+                ->pluck('booking_id');
+
+            $maxNumber = 1000;
+            foreach ($recentBookingIds as $bid) {
+                if (preg_match('/^VT-(\d+)$/', (string) $bid, $matches)) {
+                    $num = (int) $matches[1];
+                    if ($num > $maxNumber) {
+                        $maxNumber = $num;
+                    }
+                }
+            }
+
+            if ($maxNumber === 1000) {
+                $count = static::count();
+                $maxNumber = 1000 + $count;
+            }
+
+            return 'VT-'.($maxNumber + 1);
+        }
+
+        $prefix = strtoupper(trim((string) $category));
         if (! in_array($prefix, [self::CATEGORY_CORP, self::CATEGORY_WEB, self::CATEGORY_MAN, self::CATEGORY_TP], true)) {
             $prefix = self::CATEGORY_WEB;
         }

@@ -181,7 +181,7 @@ class BookingTest extends TestCase
         $booking = Booking::where('pickup_location', 'Bilaspur')->first();
         $this->assertNotNull($booking);
         $this->assertEquals('Pending', $booking->booking_status);
-        $this->assertMatchesRegularExpression('/^VT-\\d+$/', $booking->booking_id);
+        $this->assertMatchesRegularExpression('/^(VT|WEB)-\\d+$/', $booking->booking_id);
         $this->assertEquals($vehicle->id, $booking->vehicle_id);
         $this->assertSame('airport', $booking->rate_category);
         $this->assertSame('4500.00', $booking->total_amount);
@@ -246,7 +246,7 @@ class BookingTest extends TestCase
         $response->assertRedirect(route('booking.success', $booking->id));
     }
 
-    public function test_post_booking_rejects_unconfigured_routes_without_creating_a_booking(): void
+    public function test_post_booking_unconfigured_route_converts_to_quotation_query(): void
     {
         $response = $this->from('/booking')->post('/booking', [
             'customer_name' => 'Guest Traveler',
@@ -261,11 +261,11 @@ class BookingTest extends TestCase
             'terms_accepted' => '1',
         ]);
 
-        $response->assertRedirect('/booking');
-        $response->assertSessionHasErrors([
-            'destination' => 'Rate not configured. Please contact Vaishnavi Tours.',
-        ]);
-        $this->assertDatabaseMissing('bookings', ['destination' => 'Ambikapur']);
+        $booking = Booking::where('destination', 'Ambikapur')->first();
+        $this->assertNotNull($booking);
+        $this->assertEquals(0.00, (float) $booking->total_amount);
+        $this->assertTrue($booking->pricing_details['is_query'] ?? false);
+        $response->assertRedirect(route('booking.success', $booking->id));
     }
 
     public function test_booking_id_generation_sequential(): void

@@ -344,8 +344,29 @@
                     @if(!empty($document['totals']['igst_amount']) && $document['totals']['igst_amount'] > 0)
                         <div class="invoice-total-row"><span>IGST (5%)</span><strong>₹{{ number_format($document['totals']['igst_amount'], 2) }}</strong></div>
                     @else
-                        <div class="invoice-total-row"><span>CGST (2.5%)</span><strong>₹{{ number_format($document['totals']['cgst_amount'], 2) }}</strong></div>
-                        <div class="invoice-total-row"><span>SGST (2.5%)</span><strong>₹{{ number_format($document['totals']['sgst_amount'], 2) }}</strong></div>
+                        <div class="invoice-total-row">
+                            <span>CGST (2.5%)</span>
+                            <strong>
+                                @if ($document['totals']['tax_recorded'])
+                                    ₹{{ number_format($document['totals']['cgst_amount'] ?? 0, 2) }}
+                                @else
+                                    Not recorded
+                                @endif
+                            </strong>
+                        </div>
+                        <div class="invoice-total-row">
+                            <span>SGST (2.5%)</span>
+                            <strong>
+                                @if ($document['totals']['tax_recorded'])
+                                    ₹{{ number_format($document['totals']['sgst_amount'] ?? 0, 2) }}
+                                @else
+                                    Not recorded
+                                @endif
+                            </strong>
+                        </div>
+                    @endif
+                    @if (($document['service']['tax']['gst_applicable'] ?? false) && ! ($document['totals']['tax_recorded'] ?? true))
+                        <div class="invoice-tax-note">GST is marked applicable for this booking, but no tax amount was saved with its rate details. No tax has been estimated.</div>
                     @endif
                     <div class="invoice-total-row"><span>Total Tax</span><strong>₹{{ number_format($document['totals']['gst_amount'], 2) }}</strong></div>
                     <div class="invoice-total-row invoice-total-grand"><span>Invoice Total</span><strong>₹{{ number_format($document['totals']['total_amount'], 2) }}</strong></div>
