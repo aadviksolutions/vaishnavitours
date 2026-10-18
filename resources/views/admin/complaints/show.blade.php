@@ -1,0 +1,96 @@
+@extends('layouts.admin')
+
+@section('title', 'Complaint / Review ' . $complaint->complaint_number)
+@section('page_title', 'Complaint Details')
+
+@section('content')
+<div class="mb-3">
+    <a href="{{ route('admin.complaints.index') }}" style="font-size: 13px; color: var(--slate-600); font-weight: 600; text-decoration: none;">
+        ← Back to Complaints
+    </a>
+    <div class="d-flex align-center gap-2 mt-1">
+        <h1 style="font-size: 18px; font-weight: 700; margin: 0; color: var(--dark-900);">
+            Quality Audit #{{ $complaint->complaint_number }}
+        </h1>
+        <span class="badge {{ $complaint->complaint_type === 'driver' ? 'badge-primary' : 'badge-success' }}">
+            {{ $complaint->complaint_type === 'driver' ? 'Driver Review' : 'Vehicle Review' }}
+        </span>
+    </div>
+</div>
+
+@if(session('success'))
+    <div class="alert alert-success mb-3" style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 0.75rem 1rem; border-radius: 6px;">
+        ✓ {{ session('success') }}
+    </div>
+@endif
+
+<div class="grid grid-3 gap-3">
+    <div style="grid-column: span 2;">
+        <div class="card mb-3" style="background: #fff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 1.25rem;">
+            <div class="d-flex justify-between align-center mb-2">
+                <h3 style="font-size: 15px; font-weight: 700; margin: 0; color: var(--dark-900);">{{ $complaint->title }}</h3>
+                <span style="font-size: 14px; font-weight: 700; color: {{ $complaint->rating <= 2 ? '#DC2626' : '#059669' }};">
+                    ⭐ {{ $complaint->rating }} / 5 Stars
+                </span>
+            </div>
+            <p style="font-size: 13px; color: var(--slate-700); line-height: 1.5; background: var(--slate-50); padding: 0.85rem; border-radius: 6px;">
+                {{ $complaint->description }}
+            </p>
+
+            <div class="grid grid-2 gap-2 mt-3" style="font-size: 12.5px;">
+                <div>
+                    <span style="color: var(--slate-500); font-weight: 600; font-size: 11px; text-transform: uppercase;">Customer Details</span>
+                    <div style="font-weight: 700;">{{ $complaint->customer_name }}</div>
+                    <div style="color: var(--slate-600);">📞 {{ $complaint->customer_phone }}</div>
+                </div>
+                <div>
+                    <span style="color: var(--slate-500); font-weight: 600; font-size: 11px; text-transform: uppercase;">Entity Audited</span>
+                    @if($complaint->complaint_type === 'driver' && $complaint->driver)
+                        <div style="font-weight: 700;">Chauffeur: {{ $complaint->driver->name }}</div>
+                        <div style="font-size: 11px; color: var(--slate-600);">License: {{ $complaint->driver->license_number }}</div>
+                    @elseif($complaint->vehicle)
+                        <div style="font-weight: 700;">Vehicle: {{ $complaint->vehicle->name }}</div>
+                        <div style="font-size: 11px; font-family: monospace; color: #2563EB;">{{ $complaint->vehicle->registration_number }}</div>
+                    @else
+                        <div>-</div>
+                    @endif
+                </div>
+            </div>
+
+            @if($complaint->resolution_notes)
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--slate-200);">
+                    <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #059669;">Resolution Remarks:</span>
+                    <p style="font-size: 12.5px; color: var(--slate-700); margin: 4px 0 0 0;">
+                        {{ $complaint->resolution_notes }}
+                    </p>
+                    <div style="font-size: 11px; color: var(--slate-400); margin-top: 2px;">
+                        Resolved on {{ $complaint->resolved_at?->format('d M Y, h:i A') }}
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    <div>
+        <div class="card" style="background: #fff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 1.25rem;">
+            <h4 style="font-size: 13.5px; font-weight: 700; margin: 0 0 0.75rem 0; color: var(--dark-900);">Update Resolution Status</h4>
+            <form action="{{ route('admin.complaints.status', $complaint->id) }}" method="POST">
+                @csrf
+                <div class="mb-3">
+                    <label style="font-size: 11.5px; font-weight: 600; display: block; margin-bottom: 2px;">Status</label>
+                    <select name="status" class="form-select form-select-sm" required>
+                        @foreach(['Open', 'Under Investigation', 'Resolved', 'Rejected'] as $st)
+                            <option value="{{ $st }}" {{ $complaint->status === $st ? 'selected' : '' }}>{{ $st }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label style="font-size: 11.5px; font-weight: 600; display: block; margin-bottom: 2px;">Resolution / Corrective Action Notes</label>
+                    <textarea name="resolution_notes" class="form-control form-control-sm" rows="3" placeholder="Action taken with driver / vehicle maintenance scheduled...">{{ $complaint->resolution_notes }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm w-100">Update Resolution</button>
+            </form>
+        </div>
+    </div>
+</div>
+@endsection

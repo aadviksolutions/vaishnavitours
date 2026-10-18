@@ -22,8 +22,116 @@
     </div>
 @endif
 
+@if(isset($prefill) && $prefill)
+    <div class="alert alert-info mb-4" style="background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; padding: 0.85rem 1.25rem; border-radius: 8px;">
+        <strong style="display: flex; align-items: center; gap: 6px;">
+            <x-icon name="mail" size="16" /> 
+            Converting Enquiry #{{ $prefill->enquiry_id }} ({{ $prefill->name }} · {{ $prefill->phone }})
+        </strong>
+        <p style="margin: 0.25rem 0 0 0; font-size: 0.825rem;">
+            Customer and trip route details have been automatically filled from the original enquiry record.
+        </p>
+        <input type="hidden" name="from_enquiry_id" value="{{ $prefill->id }}">
+    </div>
+@endif
+
 <form action="{{ route('admin.bookings.store') }}" method="POST">
     @csrf
+
+    <!-- SECTION 4: Mandatory Booking Category Selection (CORP, MAN, TP) -->
+    <div class="card mb-4" style="background: #fff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 1.25rem;">
+        <div style="font-weight: 800; font-size: 1rem; color: var(--dark-900); margin-bottom: 0.75rem;">
+            🏷️ 1. Booking Category / Source Classification *
+        </div>
+        <p style="font-size: 0.8rem; color: var(--slate-500); margin: 0 0 0.85rem 0;">
+            Select the booking source. Unique collision-safe booking ID sequence will be assigned with appropriate prefix (CORP, MAN, TP).
+        </p>
+        <div class="grid grid-3 gap-3">
+            <label style="border: 2px solid {{ old('booking_category', isset($prefill) && $prefill->source === 'corporate' ? 'CORP' : (isset($prefill) && $prefill->source === 'third_party' ? 'TP' : 'MAN')) === 'MAN' ? '#2563EB' : 'var(--slate-200)' }}; background: {{ old('booking_category', 'MAN') === 'MAN' ? '#EFF6FF' : '#fff' }}; padding: 0.75rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px;" id="lblCatMan">
+                <input type="radio" name="booking_category" value="MAN" {{ old('booking_category', isset($prefill) && $prefill->source === 'corporate' ? 'CORP' : (isset($prefill) && $prefill->source === 'third_party' ? 'TP' : 'MAN')) === 'MAN' ? 'checked' : '' }} onchange="toggleCategoryFields()">
+                <div>
+                    <strong style="color: #1E40AF; display: block; font-size: 13px;">MAN — Manual Booking</strong>
+                    <span style="font-size: 11px; color: var(--slate-500);">Direct phone / walk-in customer</span>
+                </div>
+            </label>
+
+            <label style="border: 2px solid {{ old('booking_category') === 'CORP' ? '#7C3AED' : 'var(--slate-200)' }}; background: {{ old('booking_category') === 'CORP' ? '#F5F3FF' : '#fff' }}; padding: 0.75rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px;" id="lblCatCorp">
+                <input type="radio" name="booking_category" value="CORP" {{ old('booking_category', isset($prefill) && $prefill->source === 'corporate' ? 'CORP' : '') === 'CORP' ? 'checked' : '' }} onchange="toggleCategoryFields()">
+                <div>
+                    <strong style="color: #6D28D9; display: block; font-size: 13px;">CORP — Corporate Booking</strong>
+                    <span style="font-size: 11px; color: var(--slate-500);">B2B Company account & GST billing</span>
+                </div>
+            </label>
+
+            <label style="border: 2px solid {{ old('booking_category') === 'TP' ? '#D97706' : 'var(--slate-200)' }}; background: {{ old('booking_category') === 'TP' ? '#FFFBEB' : '#fff' }}; padding: 0.75rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px;" id="lblCatTp">
+                <input type="radio" name="booking_category" value="TP" {{ old('booking_category', isset($prefill) && $prefill->source === 'third_party' ? 'TP' : '') === 'TP' ? 'checked' : '' }} onchange="toggleCategoryFields()">
+                <div>
+                    <strong style="color: #B45309; display: block; font-size: 13px;">TP — Travel Partner / Agent</strong>
+                    <span style="font-size: 11px; color: var(--slate-500);">Third-party partner reservation</span>
+                </div>
+            </label>
+        </div>
+
+        <!-- Corporate Dedicated Workflow Fields (Section 4 requirement) -->
+        <div id="corporateFieldsCard" style="display: {{ old('booking_category', isset($prefill) && $prefill->source === 'corporate' ? 'CORP' : 'MAN') === 'CORP' ? 'block' : 'none' }}; margin-top: 1rem; padding: 1rem; background: #F5F3FF; border: 1px solid #DDD6FE; border-radius: 6px;">
+            <div style="font-weight: 700; font-size: 13px; color: #5B21B6; margin-bottom: 0.5rem;">
+                🏢 Corporate Account & GST Billing Profile
+            </div>
+            <div class="grid grid-3 gap-2 mb-2">
+                <div>
+                    <label style="font-size: 11px; font-weight: 600; color: #4C1D95; display: block; margin-bottom: 2px;">Company / Client Name *</label>
+                    <input type="text" name="company_name" class="form-control form-control-sm" placeholder="e.g. Jindal Steel / NTPC Limited" value="{{ old('company_name') }}">
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: 600; color: #4C1D95; display: block; margin-bottom: 2px;">Contact Person</label>
+                    <input type="text" name="corporate_contact_person" class="form-control form-control-sm" placeholder="e.g. Mr. Anil Verma (Admin Manager)" value="{{ old('corporate_contact_person') }}">
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: 600; color: #4C1D95; display: block; margin-bottom: 2px;">Corporate GSTIN</label>
+                    <input type="text" name="corporate_gstin" class="form-control form-control-sm" placeholder="e.g. 22AAAAA0000A1Z5" value="{{ old('corporate_gstin') }}">
+                </div>
+            </div>
+            <div>
+                <label style="font-size: 11px; font-weight: 600; color: #4C1D95; display: block; margin-bottom: 2px;">Corporate Billing Address</label>
+                <input type="text" name="billing_address" class="form-control form-control-sm" placeholder="Registered office address for tax invoice..." value="{{ old('billing_address') }}">
+            </div>
+        </div>
+
+        <!-- Travel Partner Dedicated Workflow Fields -->
+        <div id="travelPartnerFieldsCard" style="display: {{ old('booking_category', isset($prefill) && $prefill->source === 'third_party' ? 'TP' : 'MAN') === 'TP' ? 'block' : 'none' }}; margin-top: 1rem; padding: 1.15rem; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px;">
+            <div style="font-weight: 800; font-size: 13.5px; color: #92400E; margin-bottom: 0.65rem; display: flex; align-items: center; gap: 6px;">
+                🤝 Travel Partner / Agent Referral Details
+            </div>
+            <div class="grid grid-3 gap-3 mb-2">
+                <div>
+                    <label style="font-size: 11px; font-weight: 700; color: #78350F; display: block; margin-bottom: 3px;">Travel Partner / Agency Name *</label>
+                    <input type="text" name="travel_partner_name" class="form-control form-control-sm" placeholder="e.g. MakeMyTrip, Sharma Tour & Travels" value="{{ old('travel_partner_name', isset($prefill) && $prefill->source === 'third_party' ? $prefill->name : '') }}">
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: 700; color: #78350F; display: block; margin-bottom: 3px;">Partner Mobile / Phone *</label>
+                    <input type="text" name="travel_partner_phone" class="form-control form-control-sm" placeholder="e.g. 9876543210" value="{{ old('travel_partner_phone', isset($prefill) && $prefill->source === 'third_party' ? $prefill->phone : '') }}">
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: 700; color: #78350F; display: block; margin-bottom: 3px;">Partner Email</label>
+                    <input type="email" name="travel_partner_email" class="form-control form-control-sm" placeholder="e.g. partner@travelagency.com" value="{{ old('travel_partner_email', isset($prefill) && $prefill->source === 'third_party' ? $prefill->email : '') }}">
+                </div>
+            </div>
+            <div class="grid grid-2 gap-3 mb-2">
+                <div>
+                    <label style="font-size: 11px; font-weight: 700; color: #78350F; display: block; margin-bottom: 3px;">Partner Office Address</label>
+                    <input type="text" name="travel_partner_address" class="form-control form-control-sm" placeholder="Shop / Office address, City, Pin..." value="{{ old('travel_partner_address') }}">
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: 700; color: #78350F; display: block; margin-bottom: 3px;">Partner Commission / Payout (₹)</label>
+                    <input type="number" step="0.01" name="travel_partner_commission" class="form-control form-control-sm" placeholder="e.g. 500.00" value="{{ old('travel_partner_commission') }}">
+                </div>
+            </div>
+            <div>
+                <label style="font-size: 11px; font-weight: 700; color: #78350F; display: block; margin-bottom: 3px;">Partner Reference Notes / Special Agreement</label>
+                <input type="text" name="travel_partner_notes" class="form-control form-control-sm" placeholder="e.g. Reference Voucher #MMT-8921, Payout after trip completion" value="{{ old('travel_partner_notes') }}">
+            </div>
+        </div>
+    </div>
 
     <div class="grid grid-3 gap-4">
         <!-- Left 2 Cols: Customer & Trip Details -->
@@ -31,7 +139,7 @@
             <!-- Customer Selection Card -->
             <div class="card mb-4">
                 <div class="d-flex justify-between align-center flex-wrap gap-2 mb-3">
-                    <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">👤 Customer & Passenger Details</h3>
+                    <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">👤 2. Passenger & Customer Details</h3>
                     <!-- Mode Switch Buttons -->
                     <div class="d-flex gap-1" style="background: var(--slate-100); padding: 4px; border-radius: 8px;">
                         <button type="button" id="modeExistingBtn" class="btn btn-sm" onclick="setCustomerMode('existing')" style="border-radius: 6px; font-weight: 700; font-size: 0.8rem; padding: 5px 14px; transition: all 0.2s;">
@@ -43,7 +151,7 @@
                     </div>
                 </div>
 
-                <input type="hidden" name="customer_mode" id="customer_mode" value="{{ old('customer_mode', (old('new_customer_name') || old('new_customer_phone')) ? 'new' : 'existing') }}">
+                <input type="hidden" name="customer_mode" id="customer_mode" value="{{ old('customer_mode', (isset($prefill) || old('new_customer_name') || old('new_customer_phone')) ? 'new' : 'existing') }}">
 
                 <!-- Existing Customer Mode -->
                 <div id="existingCustomerSection">
@@ -77,19 +185,19 @@
                     <div class="grid grid-2 gap-3 mb-3">
                         <div class="form-group">
                             <label for="new_customer_name" class="form-label">Full Name *</label>
-                            <input type="text" name="new_customer_name" id="new_customer_name" class="form-control" placeholder="e.g. Rajesh Sharma" value="{{ old('new_customer_name') }}">
+                            <input type="text" name="new_customer_name" id="new_customer_name" class="form-control" placeholder="e.g. Rajesh Sharma" value="{{ old('new_customer_name', $prefill->name ?? '') }}">
                         </div>
 
                         <div class="form-group">
                             <label for="new_customer_phone" class="form-label">Mobile / WhatsApp Number *</label>
-                            <input type="tel" name="new_customer_phone" id="new_customer_phone" class="form-control" placeholder="e.g. 9876543210" value="{{ old('new_customer_phone') }}">
+                            <input type="tel" name="new_customer_phone" id="new_customer_phone" class="form-control" placeholder="e.g. 9876543210" value="{{ old('new_customer_phone', $prefill->phone ?? '') }}">
                         </div>
                     </div>
 
                     <div class="grid grid-3 gap-3">
                         <div class="form-group">
                             <label for="new_customer_email" class="form-label">Email Address (Optional)</label>
-                            <input type="email" name="new_customer_email" id="new_customer_email" class="form-control" placeholder="e.g. customer@gmail.com" value="{{ old('new_customer_email') }}">
+                            <input type="email" name="new_customer_email" id="new_customer_email" class="form-control" placeholder="e.g. customer@gmail.com" value="{{ old('new_customer_email', $prefill->email ?? '') }}">
                         </div>
 
                         <div class="form-group">
@@ -107,32 +215,51 @@
 
             <!-- Route & Schedule Card -->
             <div class="card mb-4">
-                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">🚖 Route & Schedule Information</h3>
-
-                <div class="form-group mb-3">
-                    <label for="trip_type" class="form-label">Trip Type *</label>
-                    <select name="rate_category" id="rate_category" class="form-select" required>
-                        @foreach(['outstation' => 'Outstation Route', 'airport' => 'Quick Airport Booking', 'round_trip' => 'Round Trip', 'local_8h_80km' => 'Local 8 Hours / 80 KM', 'local_4h_40km' => 'Local 4 Hours / 40 KM'] as $key => $label)
-                            <option value="{{ $key }}" {{ old('rate_category', 'outstation') === $key ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">🚖 3. Route & Schedule Information</h3>
 
                 <div class="grid grid-2 gap-3 mb-3">
                     <div class="form-group">
-                        <label for="pickup_location" class="form-label">Pickup Location *</label>
-                        <select name="pickup_location" id="pickup_location" class="form-select" required>
-                            <option value="">Select pickup</option>
-                            @foreach($locations as $location)<option value="{{ $location }}" {{ old('pickup_location') === $location ? 'selected' : '' }}>{{ $location }}</option>@endforeach
+                        <label for="trip_type" class="form-label">Trip Type *</label>
+                        <select name="rate_category" id="rate_category" class="form-select" required>
+                            @foreach(['outstation' => 'Outstation Route', 'airport' => 'Quick Airport Booking', 'round_trip' => 'Round Trip', 'local_8h_80km' => 'Local 8 Hours / 80 KM', 'local_4h_40km' => 'Local 4 Hours / 40 KM'] as $key => $label)
+                                <option value="{{ $key }}" {{ old('rate_category', isset($prefill) && $prefill->booking_type === 'Round-Trip' ? 'round_trip' : 'outstation') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label for="destination" class="form-label">Drop Destination *</label>
-                        <select name="destination" id="destination" class="form-select" required>
-                            <option value="">Select destination</option>
-                            @foreach($locations as $location)<option value="{{ $location }}" {{ old('destination') === $location ? 'selected' : '' }}>{{ $location }}</option>@endforeach
+                        <label for="tour_package_id" class="form-label">Linked Tour Package (Optional)</label>
+                        <select name="tour_package_id" id="tour_package_id" class="form-select">
+                            <option value="">-- No Tour Package --</option>
+                            @if(isset($tourPackages))
+                                @foreach($tourPackages as $tp)
+                                    <option value="{{ $tp->id }}" {{ old('tour_package_id') == $tp->id ? 'selected' : '' }}>{{ $tp->name }} ({{ $tp->duration_days }} Days)</option>
+                                @endforeach
+                            @endif
                         </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-3 gap-3 mb-3">
+                    <div class="form-group">
+                        <label for="pickup_location" class="form-label">Pickup Location *</label>
+                        <input type="text" name="pickup_location" id="pickup_location" class="form-control" list="pickupLocationsList" value="{{ old('pickup_location', $prefill->pickup_location ?? 'Bilaspur') }}" required>
+                        <datalist id="pickupLocationsList">
+                            @foreach($locations as $location)<option value="{{ $location }}">@endforeach
+                        </datalist>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="via_location" class="form-label">Via Location (Round-Trip)</label>
+                        <input type="text" name="via_location" id="via_location" class="form-control" placeholder="e.g. Amarkantak" value="{{ old('via_location', $prefill->via_location ?? '') }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="destination" class="form-label">Drop Destination *</label>
+                        <input type="text" name="destination" id="destination" class="form-control" list="destinationLocationsList" value="{{ old('destination', $prefill->destination ?? 'Raipur') }}" required>
+                        <datalist id="destinationLocationsList">
+                            @foreach($locations as $location)<option value="{{ $location }}">@endforeach
+                        </datalist>
                     </div>
                 </div>
 
@@ -228,6 +355,7 @@
                         </label>
                     </div>
                     <input type="number" step="0.01" name="total_amount" id="total_amount" class="form-control" value="{{ old('total_amount', '0.00') }}" readonly required>
+                    <input type="hidden" name="is_custom_fare" id="is_custom_fare" value="{{ old('is_custom_fare', '0') }}">
                     <div id="fareDetails" style="font-size: 0.8rem; color: var(--slate-600); margin-top: 0.35rem;" aria-live="polite">Select route and vehicle category.</div>
                 </div>
 
@@ -276,8 +404,11 @@
         const key = [category, globalRate ? '' : pickup.value, globalRate ? '' : destination.value, vehicleCategory.value].join('|');
         const quote = rateOptions[key];
         if (!quote) {
-            totalAmount.value = '0.00';
-            fareDetails.textContent = 'Rate not configured. Check "Custom Fare" to set manual price.';
+            const isCustom = document.getElementById('customFareToggle')?.checked;
+            if (!isCustom) {
+                totalAmount.value = (totalAmount.value && Number(totalAmount.value) > 0) ? totalAmount.value : '0.00';
+                fareDetails.innerHTML = '<span style="color:#D97706; font-weight:700;">⚠️ Rate not pre-configured for this route.</span> Please tick <label for="customFareToggle" style="text-decoration:underline; cursor:pointer; font-weight:700; color:#2563EB;">Custom Fare</label> above to enter custom trip fare.';
+            }
             return;
         }
         let amount = Number(quote.total_amount);
@@ -295,14 +426,24 @@
     }
 
     function toggleCustomFare(checkbox) {
+        const customInput = document.getElementById('is_custom_fare');
         if (checkbox.checked) {
             totalAmount.removeAttribute('readonly');
             totalAmount.style.background = '#fff';
-            fareDetails.textContent = '✏️ Manual fare mode enabled. Enter any custom amount.';
+            totalAmount.style.borderColor = '#2563EB';
+            totalAmount.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.15)';
+            if (customInput) customInput.value = '1';
+            fareDetails.innerHTML = '✏️ <strong style="color:#2563EB;">Custom Fare Active:</strong> Enter your custom trip fare. Booking will be confirmed with this rate.';
             totalAmount.focus();
+            if (totalAmount.value === '0.00') {
+                totalAmount.select();
+            }
         } else {
             totalAmount.setAttribute('readonly', 'readonly');
             totalAmount.style.background = '';
+            totalAmount.style.borderColor = '';
+            totalAmount.style.boxShadow = '';
+            if (customInput) customInput.value = '0';
             updateFare();
         }
     }
@@ -356,6 +497,25 @@
 
     const initialCustomerMode = "{{ old('customer_mode', (old('new_customer_name') || old('new_customer_phone')) ? 'new' : 'existing') }}";
     setCustomerMode(initialCustomerMode);
+
+    function toggleCategoryFields() {
+        const selected = document.querySelector('input[name="booking_category"]:checked')?.value || 'MAN';
+        const corpCard = document.getElementById('corporateFieldsCard');
+        const tpCard = document.getElementById('travelPartnerFieldsCard');
+        if (corpCard) {
+            corpCard.style.display = (selected === 'CORP') ? 'block' : 'none';
+        }
+        if (tpCard) {
+            tpCard.style.display = (selected === 'TP') ? 'block' : 'none';
+        }
+        const lblMan = document.getElementById('lblCatMan');
+        const lblCorp = document.getElementById('lblCatCorp');
+        const lblTp = document.getElementById('lblCatTp');
+        if (lblMan) lblMan.style.borderColor = (selected === 'MAN') ? '#2563EB' : 'var(--slate-200)';
+        if (lblCorp) lblCorp.style.borderColor = (selected === 'CORP') ? '#7C3AED' : 'var(--slate-200)';
+        if (lblTp) lblTp.style.borderColor = (selected === 'TP') ? '#D97706' : 'var(--slate-200)';
+    }
+    toggleCategoryFields();
 
     [rateCategory, pickup, destination, vehicleCategory, estimatedKm].forEach((input) => input.addEventListener('change', updateFare));
     updateFare();

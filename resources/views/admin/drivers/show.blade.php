@@ -108,6 +108,46 @@
                         @endforelse
                     </tbody>
                 </table>
+        <!-- Driver Quality Reviews & Complaints (Section 3 requirement) -->
+        <div class="card mb-4" style="background: #fff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 1.25rem; margin-top: 1rem;">
+            <div class="d-flex justify-between align-center mb-2">
+                <h3 style="font-size: 14px; font-weight: 700; margin: 0; color: var(--dark-900);">
+                    ⭐ Chauffeur Conduct & Quality Audit Reviews
+                </h3>
+                <a href="{{ route('admin.complaints.create') }}" class="btn btn-outline btn-sm" style="font-size: 11px;">
+                    + Log Driver Review
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table" style="width: 100%; font-size: 12px;">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Rating</th>
+                            <th>Issue / Review</th>
+                            <th>Customer</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($driver->complaints as $dc)
+                            <tr>
+                                <td>{{ \Carbon\Carbon::parse($dc->complaint_date)->format('d M Y') }}</td>
+                                <td style="font-weight: 700;">⭐ {{ $dc->rating }}/5</td>
+                                <td>
+                                    <strong>{{ $dc->title }}</strong>
+                                    <div style="font-size: 11px; color: var(--slate-500);">{{ Str::limit($dc->description, 50) }}</div>
+                                </td>
+                                <td>{{ $dc->customer_name }}</td>
+                                <td><span class="badge badge-secondary">{{ $dc->status }}</span></td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--slate-400); padding: 0.75rem;">No chauffeur complaints or conduct issues recorded. Clean record.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

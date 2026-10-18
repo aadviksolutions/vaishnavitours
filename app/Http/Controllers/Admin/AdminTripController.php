@@ -23,6 +23,22 @@ class AdminTripController extends Controller
             });
         }
 
+        if ($request->filled('trip_status')) {
+            $query->where('trip_status', $request->trip_status);
+        }
+
+        if ($request->filled('payment_status')) {
+            if ($request->payment_status === 'pending_payment') {
+                $query->whereHas('booking', function ($bq) {
+                    $bq->where('balance_amount', '>', 0);
+                });
+            } elseif ($request->payment_status === 'paid') {
+                $query->whereHas('booking', function ($bq) {
+                    $bq->where('balance_amount', '<=', 0);
+                });
+            }
+        }
+
         if ($request->filled('search')) {
             $s = $request->search;
             $query->where(function ($q) use ($s) {
@@ -35,14 +51,20 @@ class AdminTripController extends Controller
             });
         }
 
-        $trips = $query->latest()->paginate(15);
+        $trips = $query->latest()->paginate(15)->withQueryString();
 
-        return view('admin.trips.index', compact('trips'));
+        $openCount = Trip::where('trip_status', 'Open')->count();
+        $unpaidCompletedTripsCount = Trip::where('journey_status', 'Journey Completed')
+            ->where('trip_status', 'Open')
+            ->whereHas('booking', fn ($b) => $b->where('balance_amount', '>', 0))
+            ->count();
+
+        return view('admin.trips.index', compact('trips', 'openCount', 'unpaidCompletedTripsCount'));
     }
 
     public function show(Trip $trip)
     {
-        $trip->load(['booking.customer', 'booking.statusHistories.changer', 'vehicle', 'driver']);
+        $trip->load(['booking.customer', 'booking.statusHistories.changer', 'booking.payments', 'booking.expenses', 'vehicle', 'driver', 'closedByUser']);
 
         return view('admin.trips.show', compact('trip'));
     }
@@ -60,7 +82,6 @@ class AdminTripController extends Controller
 
         $update = [
             'status' => $newStatus,
-            'trip_status' => $newStatus,
             'start_odometer' => $data['start_odometer'],
             'end_odometer' => $data['end_odometer'],
             'route_notes' => $data['route_notes'],
@@ -69,8 +90,24 @@ class AdminTripController extends Controller
 
         if ($newStatus === 'Trip Started' && ! $trip->started_at) {
             $update['started_at'] = now();
-        } elseif ($newStatus === 'Completed' && ! $trip->completed_at) {
-            $update['completed_at'] = now();
+            $update['journey_status'] = 'Ongoing';
+            $update['trip_status'] = 'Open';
+        } elseif ($newStatus === 'Completed' || $newStatus === 'Journey Completed') {
+            if (! $trip->completed_at) {
+                $update['completed_at'] = now();
+            }
+            $update['journey_status'] = 'Journey Completed';
+
+            // Critical Business Rule: Trip remains Open / Incomplete if balance is pending
+            $booking = $trip->booking;
+            if ($booking && (float) $booking->balance_amount > 0) {
+                $update['trip_status'] = 'Open';
+            } else {
+                $update['trip_status'] = 'Closed';
+                $update['closed_at'] = now();
+                $update['closed_by'] = Auth::id();
+                $update['closure_reason'] = 'Payment and journey both completed.';
+            }
         }
 
         $trip->update($update);
@@ -79,7 +116,6 @@ class AdminTripController extends Controller
             try {
                 $bookingService->updateStatus($trip->booking, $newStatus, "Trip tracking updated status to {$newStatus}.", Auth::user());
             } catch (ValidationException $e) {
-                // If direct status progression requires specific transition, update booking directly and log history
                 $oldStatus = $trip->booking->booking_status;
                 $trip->booking->update(['booking_status' => $newStatus]);
 
@@ -105,7 +141,7 @@ class AdminTripController extends Controller
         }
 
         // Automatic final fare recalculation based on actual odometer distance
-        if ($newStatus === 'Completed' && $data['start_odometer'] !== null && $data['end_odometer'] !== null && $trip->booking) {
+        if (($newStatus === 'Completed' || $newStatus === 'Journey Completed') && $data['start_odometer'] !== null && $data['end_odometer'] !== null && $trip->booking) {
             $startOdo = (int) $data['start_odometer'];
             $endOdo = (int) $data['end_odometer'];
             if ($endOdo > $startOdo) {
@@ -136,7 +172,6 @@ class AdminTripController extends Controller
                             'pricing_details' => $details,
                         ]);
                     } else {
-                        // Extra KM rate is not configured - do not calculate invented charges
                         $details['actual_km'] = $actualKm;
                         $details['extra_km'] = $extraKm;
                         $details['extra_km_unconfigured'] = true;
@@ -150,5 +185,40 @@ class AdminTripController extends Controller
         }
 
         return back()->with('success', "Trip #{$trip->id} status and operational records updated!");
+    }
+
+    public function closeTrip(Request $request, Trip $trip)
+    {
+        $booking = $trip->booking;
+        $balance = (float) ($booking?->balance_amount ?? 0);
+
+        if ($balance > 0 && ! $request->boolean('credit_exception')) {
+            return back()->with('error', 'Trip cannot be closed: Pending balance of ₹'.number_format($balance, 2).' remains unpaid. Please collect payment or provide an authorized credit exception reason.');
+        }
+
+        $reason = $balance > 0
+            ? 'Authorized credit exception: '.$request->input('exception_reason', 'Corporate / Credit terms approved by Admin')
+            : 'Full payment received and journey verified.';
+
+        $trip->update([
+            'trip_status' => 'Closed',
+            'closed_at' => now(),
+            'closed_by' => Auth::id(),
+            'closure_reason' => $reason,
+        ]);
+
+        if ($booking) {
+            BookingStatusHistory::create([
+                'booking_id' => $booking->id,
+                'changed_by' => Auth::id(),
+                'old_status' => $booking->booking_status,
+                'new_status' => 'Completed',
+                'remarks' => "Trip officially closed: {$reason}",
+                'comment' => "Trip officially closed: {$reason}",
+                'created_at' => now(),
+            ]);
+        }
+
+        return back()->with('success', "Trip #{$trip->id} has been formally closed.");
     }
 }

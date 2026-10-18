@@ -251,6 +251,8 @@
             <section class="invoice-meta-bar" aria-label="Invoice information">
                 <div class="invoice-meta-item"><strong>Invoice No.:</strong><span>{{ $document['invoice']['number'] ?? '' }}</span></div>
                 <div class="invoice-meta-item"><strong>Invoice Date:</strong><span>{{ $document['invoice']['date']?->format('d/m/Y') ?? '' }}</span></div>
+                <div class="invoice-meta-item"><strong>Booking ID:</strong><span>{{ $booking->booking_id }}</span></div>
+                <div class="invoice-meta-item"><strong>Category:</strong><span style="font-weight:700; background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:3px;">{{ $document['invoice']['category_label'] }} ({{ $document['invoice']['category'] }})</span></div>
             </section>
 
             <section class="invoice-parties" aria-label="Customer and travel allocation">
@@ -267,7 +269,10 @@
                     <h2 class="invoice-section-heading">Travel Allocation</h2>
                     @if ($document['driver']['name'])<div class="invoice-detail-line"><strong>Driver Name:</strong> {{ $document['driver']['name'] }}</div>@endif
                     @if ($document['vehicle']['number'])<div class="invoice-detail-line"><strong>Vehicle No.:</strong> {{ $document['vehicle']['number'] }}</div>@endif
-                    <div class="invoice-detail-line"><strong>Booking Ref:</strong> {{ $booking->booking_id }}</div>
+                    <div class="invoice-detail-line"><strong>Booking Ref:</strong> {{ $booking->booking_id }} [{{ $document['invoice']['category'] }}]</div>
+                    @if(!empty($document['booking']['via']))
+                        <div class="invoice-detail-line"><strong>Via Route:</strong> {{ $document['booking']['via'] }}</div>
+                    @endif
                 </div>
             </section>
 
@@ -334,39 +339,24 @@
                 </div>
 
                 <div class="invoice-totals">
-                    <div class="invoice-total-row"><span>Taxable Amount</span><strong>₹{{ number_format($document['totals']['taxable_amount'], 2) }}</strong></div>
-                    <div class="invoice-total-row">
-                        <span>CGST</span>
-                        <strong>
-                            @if ($document['totals']['tax_recorded'])
-                                ₹{{ number_format($document['totals']['cgst_amount'] ?? 0, 2) }}
-                            @else
-                                Not recorded
-                            @endif
-                        </strong>
-                    </div>
-                    <div class="invoice-total-row">
-                        <span>SGST</span>
-                        <strong>
-                            @if ($document['totals']['tax_recorded'])
-                                ₹{{ number_format($document['totals']['sgst_amount'] ?? 0, 2) }}
-                            @else
-                                Not recorded
-                            @endif
-                        </strong>
-                    </div>
-                    @if ($document['service']['tax']['gst_applicable'] && ! $document['totals']['tax_recorded'])
-                        <div class="invoice-tax-note">GST is marked applicable for this booking, but no tax amount was saved with its rate details. No tax has been estimated.</div>
+                    <div class="invoice-total-row"><span>Taxable Value</span><strong>₹{{ number_format($document['totals']['taxable_amount'], 2) }}</strong></div>
+                    <div class="invoice-total-row"><span>GST Rate</span><strong>{{ number_format($document['totals']['gst_rate'], 1) }}%</strong></div>
+                    @if(!empty($document['totals']['igst_amount']) && $document['totals']['igst_amount'] > 0)
+                        <div class="invoice-total-row"><span>IGST (5%)</span><strong>₹{{ number_format($document['totals']['igst_amount'], 2) }}</strong></div>
+                    @else
+                        <div class="invoice-total-row"><span>CGST (2.5%)</span><strong>₹{{ number_format($document['totals']['cgst_amount'], 2) }}</strong></div>
+                        <div class="invoice-total-row"><span>SGST (2.5%)</span><strong>₹{{ number_format($document['totals']['sgst_amount'], 2) }}</strong></div>
                     @endif
-                    <div class="invoice-total-row invoice-total-grand"><span>Total Amount</span><strong>₹{{ number_format($document['totals']['total_amount'], 2) }}</strong></div>
+                    <div class="invoice-total-row"><span>Total Tax</span><strong>₹{{ number_format($document['totals']['gst_amount'], 2) }}</strong></div>
+                    <div class="invoice-total-row invoice-total-grand"><span>Invoice Total</span><strong>₹{{ number_format($document['totals']['total_amount'], 2) }}</strong></div>
                     <div class="invoice-total-row"><span>Received Amount</span><strong>₹{{ number_format($document['totals']['received_amount'], 2) }}</strong></div>
-                    <div class="invoice-total-row invoice-total-balance"><span>Balance</span><strong>₹{{ number_format($document['totals']['balance_amount'], 2) }}</strong></div>
+                    <div class="invoice-total-row invoice-total-balance"><span>Balance Due</span><strong>₹{{ number_format($document['totals']['balance_amount'], 2) }}</strong></div>
                 </div>
             </section>
 
             <div class="invoice-words"><strong>Total Amount (in words):</strong> {{ $document['totals']['amount_in_words'] }}</div>
 
-            <footer class="invoice-footer">
+            <footer class="invoice-footer" style="display:flex; flex-direction:column; gap:16px;">
                 <div>
                     <h2 class="invoice-section-heading">Terms &amp; Conditions</h2>
                     @if ($document['terms'])
@@ -375,10 +365,8 @@
                         <div class="invoice-terms">Refer to the <a href="{{ route('terms-and-conditions') }}">Vaishnavi Tours Terms &amp; Conditions</a>.</div>
                     @endif
                 </div>
-                <div class="invoice-signatory">
-                    <div class="invoice-signature-space"></div>
-                    <div class="invoice-signatory-label">AUTHORISED SIGNATORY FOR</div>
-                    <div class="invoice-signatory-company">{{ $document['company']['name'] }}</div>
+                <div style="padding:10px; border:1px dashed #176a78; background:#edf5f6; text-align:center; font-weight:800; font-size:11px; letter-spacing:0.5px; color:#176a78; border-radius:4px;">
+                    THIS IS A SYSTEM-GENERATED INVOICE. SIGNATURE NOT REQUIRED.
                 </div>
             </footer>
         </article>

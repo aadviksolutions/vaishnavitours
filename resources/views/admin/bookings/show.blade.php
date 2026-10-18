@@ -187,6 +187,84 @@
             </div>
         </div>
 
+        @if($booking->booking_category === 'TP' || $booking->travel_partner_name)
+            <!-- Travel Partner / Agent Details Card -->
+            <div class="card mb-4" style="border-left: 4px solid #D97706; background: #FFFDF5;">
+                <div class="d-flex justify-between align-center mb-2">
+                    <h3 style="font-size: 1rem; font-weight: 800; color: #92400E; margin: 0; display: flex; align-items: center; gap: 6px;">
+                        🤝 Travel Partner / Agent Details
+                    </h3>
+                    <span class="badge" style="background: #FEF3C7; color: #92400E; font-weight: 700;">
+                        TP Category [{{ $booking->booking_id }}]
+                    </span>
+                </div>
+                <div class="grid grid-3 gap-3" style="font-size: 0.9rem;">
+                    <div>
+                        <span style="color: var(--slate-500); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; display: block;">Partner Name:</span>
+                        <strong style="color: var(--dark-900);">{{ $booking->travel_partner_name ?: 'N/A' }}</strong>
+                    </div>
+                    <div>
+                        <span style="color: var(--slate-500); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; display: block;">Phone / Mobile:</span>
+                        @if($booking->travel_partner_phone)
+                            <a href="tel:{{ $booking->travel_partner_phone }}" style="color: #D97706; font-weight: 700; text-decoration: none;">
+                                📞 {{ $booking->travel_partner_phone }}
+                            </a>
+                        @else
+                            <span style="color: var(--slate-400);">N/A</span>
+                        @endif
+                    </div>
+                    <div>
+                        <span style="color: var(--slate-500); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; display: block;">Email:</span>
+                        <span style="color: var(--slate-700);">{{ $booking->travel_partner_email ?: 'N/A' }}</span>
+                    </div>
+                </div>
+                @if($booking->travel_partner_address || $booking->travel_partner_commission || $booking->travel_partner_notes)
+                    <div class="grid grid-3 gap-3 mt-2 pt-2" style="border-top: 1px dashed #FDE68A; font-size: 0.85rem;">
+                        <div>
+                            <span style="color: var(--slate-500); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; display: block;">Partner Office Address:</span>
+                            <span style="color: var(--slate-700);">{{ $booking->travel_partner_address ?: 'N/A' }}</span>
+                        </div>
+                        <div>
+                            <span style="color: var(--slate-500); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; display: block;">Commission / Payout:</span>
+                            <strong style="color: #059669;">{{ $booking->travel_partner_commission ? '₹' . number_format($booking->travel_partner_commission, 2) : 'Not specified' }}</strong>
+                        </div>
+                        <div>
+                            <span style="color: var(--slate-500); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; display: block;">Partner Notes:</span>
+                            <span style="color: var(--slate-600);">{{ $booking->travel_partner_notes ?: 'None' }}</span>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        @endif
+
+        @if($booking->booking_category === 'CORP' || $booking->corporate_company_name)
+            <!-- Corporate Account Card -->
+            <div class="card mb-4" style="border-left: 4px solid #7C3AED; background: #FDFCFF;">
+                <div class="d-flex justify-between align-center mb-2">
+                    <h3 style="font-size: 1rem; font-weight: 800; color: #5B21B6; margin: 0; display: flex; align-items: center; gap: 6px;">
+                        🏢 Corporate Client Account
+                    </h3>
+                    <span class="badge" style="background: #EDE9FE; color: #5B21B6; font-weight: 700;">
+                        CORP Category
+                    </span>
+                </div>
+                <div class="grid grid-3 gap-3" style="font-size: 0.9rem;">
+                    <div>
+                        <span style="color: var(--slate-500); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; display: block;">Company Name:</span>
+                        <strong style="color: var(--dark-900);">{{ $booking->corporate_company_name ?: 'N/A' }}</strong>
+                    </div>
+                    <div>
+                        <span style="color: var(--slate-500); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; display: block;">GSTIN:</span>
+                        <span style="font-family: monospace; font-weight: 700; color: #6D28D9;">{{ $booking->corporate_gstin ?: 'N/A' }}</span>
+                    </div>
+                    <div>
+                        <span style="color: var(--slate-500); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; display: block;">Contact Person:</span>
+                        <span style="color: var(--slate-700);">{{ $booking->corporate_contact_person ?: 'N/A' }}</span>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- 2. Vehicle Information & Driver Information -->
         <div class="grid grid-2 gap-3 mb-4">
             <!-- Vehicle Information Card -->

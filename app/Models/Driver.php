@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Driver extends Model
 {
@@ -27,24 +29,39 @@ class Driver extends Model
         'rating' => 'decimal:2',
     ];
 
-    public function assignedVehicle()
+    public function assignedVehicle(): BelongsTo
     {
         return $this->belongsTo(Vehicle::class, 'assigned_vehicle_id');
     }
 
-    public function bookings()
+    public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
     }
 
-    public function trips()
+    public function trips(): HasMany
     {
         return $this->hasMany(Trip::class);
+    }
+
+    public function complaints(): HasMany
+    {
+        return $this->hasMany(Complaint::class);
     }
 
     public function scopeAvailable($query)
     {
         return $query->where('status', 'Available');
+    }
+
+    public function scopeAssigned($query)
+    {
+        return $query->whereNotNull('assigned_vehicle_id');
+    }
+
+    public function scopeUnassigned($query)
+    {
+        return $query->whereNull('assigned_vehicle_id');
     }
 
     public function getLicenseStatus(): array

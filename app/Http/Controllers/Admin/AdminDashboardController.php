@@ -5,29 +5,137 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Driver;
+use App\Models\Enquiry;
+use App\Models\Expense;
+use App\Models\Invoice;
 use App\Models\Notification;
 use App\Models\Payment;
+use App\Models\Trip;
 use App\Models\Vehicle;
 
 class AdminDashboardController extends Controller
 {
     public function index()
     {
-        $today = date('Y-m-d');
+        $today = now()->toDateString();
 
-        $totalBookings = Booking::count();
-        $todaysTrips = Booking::whereDate('travel_date', $today)->count();
-        $upcomingTrips = Booking::where('travel_date', '>', $today)
-            ->whereIn('booking_status', ['Pending', 'Confirmed', 'Vehicle Assigned', 'Driver Assigned'])
+        // 11 Specific Dashboard Summary Cards required by specification:
+        $todaysBookings = Booking::whereDate('travel_date', $today)->count();
+        $upcomingBookings = Booking::where('travel_date', '>', $today)
+            ->whereNotIn('booking_status', ['Completed', 'Cancelled'])
             ->count();
-
-        $totalRevenue = Booking::where('booking_status', '!=', 'Cancelled')->sum('total_amount');
-        $collectedAmount = Payment::where('status', 'Success')->sum('amount');
-        $pendingPayments = Booking::where('booking_status', '!=', 'Cancelled')->sum('balance_amount');
-
-        $activeVehicles = Vehicle::where('status', '!=', 'Inactive')->count();
+        $pendingEnquiries = Enquiry::whereIn('status', ['New', 'Contacted'])
+            ->orWhereNull('status')
+            ->count();
+        $unassignedBookings = Booking::where(function ($q) {
+            $q->whereNull('driver_id')->orWhereNull('vehicle_id');
+        })->whereNotIn('booking_status', ['Completed', 'Cancelled'])->count();
         $availableVehicles = Vehicle::where('status', 'Available')->count();
-        $activeDrivers = Driver::where('status', '!=', 'Inactive')->count();
+        $availableDrivers = Driver::where('status', 'Available')->count();
+        $ongoingTrips = Trip::where('journey_status', 'Ongoing')
+            ->orWhere('status', 'Trip Started')
+            ->count();
+        $incompleteTrips = Trip::where('trip_status', 'Open')
+            ->whereHas('booking', fn ($b) => $b->where('balance_amount', '>', 0))
+            ->count();
+        $pendingPayments = (float) Booking::where('booking_status', '!=', 'Cancelled')->sum('balance_amount');
+        $outstandingExpenses = (float) Expense::sum('amount');
+        $gstInvoicesCount = Invoice::count();
+
+        // Summary Card Data Structure
+        $summaryCards = [
+            'todays_bookings' => [
+                'title' => "Today's Bookings",
+                'value' => $todaysBookings,
+                'icon' => 'calendar',
+                'color' => 'blue',
+                'route' => route('admin.bookings.index', ['date' => $today]),
+            ],
+            'upcoming_bookings' => [
+                'title' => 'Upcoming Bookings',
+                'value' => $upcomingBookings,
+                'icon' => 'clock',
+                'color' => 'indigo',
+                'route' => route('admin.bookings.index', ['filter' => 'upcoming']),
+            ],
+            'pending_enquiries' => [
+                'title' => 'Pending Enquiries',
+                'value' => $pendingEnquiries,
+                'icon' => 'inbox',
+                'color' => 'amber',
+                'route' => route('admin.enquiries.index', ['status' => 'New']),
+            ],
+            'unassigned_bookings' => [
+                'title' => 'Unassigned Bookings',
+                'value' => $unassignedBookings,
+                'icon' => 'alert-triangle',
+                'color' => 'rose',
+                'route' => route('admin.bookings.index', ['filter' => 'unassigned']),
+            ],
+            'available_vehicles' => [
+                'title' => 'Available Vehicles',
+                'value' => $availableVehicles,
+                'icon' => 'truck',
+                'color' => 'emerald',
+                'route' => route('admin.vehicles.index', ['status' => 'Available']),
+            ],
+            'available_drivers' => [
+                'title' => 'Available Drivers',
+                'value' => $availableDrivers,
+                'icon' => 'user-check',
+                'color' => 'teal',
+                'route' => route('admin.drivers.index', ['filter' => 'unassigned']),
+            ],
+            'ongoing_trips' => [
+                'title' => 'Ongoing Trips',
+                'value' => $ongoingTrips,
+                'icon' => 'navigation',
+                'color' => 'purple',
+                'route' => route('admin.trips.index', ['status' => 'Trip Started']),
+            ],
+            'incomplete_trips' => [
+                'title' => 'Incomplete Trips',
+                'value' => $incompleteTrips,
+                'icon' => 'pause-circle',
+                'color' => 'orange',
+                'route' => route('admin.trips.index', ['trip_status' => 'Open', 'payment_status' => 'pending_payment']),
+            ],
+            'pending_payments' => [
+                'title' => 'Pending Payments',
+                'value' => '₹'.number_format($pendingPayments, 2),
+                'icon' => 'credit-card',
+                'color' => 'red',
+                'route' => route('admin.bookings.index', ['payment_status' => 'Pending']),
+            ],
+            'outstanding_expenses' => [
+                'title' => 'Total Expenses',
+                'value' => '₹'.number_format($outstandingExpenses, 2),
+                'icon' => 'dollar-sign',
+                'color' => 'slate',
+                'route' => route('admin.expenses.index'),
+            ],
+            'gst_invoices' => [
+                'title' => 'GST Invoices',
+                'value' => $gstInvoicesCount,
+                'icon' => 'file-text',
+                'color' => 'cyan',
+                'route' => route('admin.invoices.index'),
+            ],
+        ];
+
+        // 10 Specific Quick-Action Buttons required:
+        $quickActions = [
+            ['title' => 'Create Booking', 'route' => route('admin.bookings.create'), 'icon' => 'plus-circle', 'bg' => 'bg-emerald-600 hover:bg-emerald-700 text-white'],
+            ['title' => 'Assign Driver', 'route' => route('admin.bookings.index', ['filter' => 'unassigned_driver']), 'icon' => 'user-plus', 'bg' => 'bg-indigo-600 hover:bg-indigo-700 text-white'],
+            ['title' => 'Assign Vehicle', 'route' => route('admin.bookings.index', ['filter' => 'unassigned_vehicle']), 'icon' => 'truck', 'bg' => 'bg-blue-600 hover:bg-blue-700 text-white'],
+            ['title' => 'Add Driver', 'route' => route('admin.drivers.create'), 'icon' => 'user-check', 'bg' => 'bg-slate-700 hover:bg-slate-800 text-white'],
+            ['title' => 'Add Vehicle', 'route' => route('admin.vehicles.create'), 'icon' => 'plus', 'bg' => 'bg-slate-700 hover:bg-slate-800 text-white'],
+            ['title' => 'Add Pickup Location', 'route' => route('admin.locations.create'), 'icon' => 'map-pin', 'bg' => 'bg-amber-600 hover:bg-amber-700 text-white'],
+            ['title' => 'Add Tour Package', 'route' => route('admin.tour-packages.create'), 'icon' => 'compass', 'bg' => 'bg-teal-600 hover:bg-teal-700 text-white'],
+            ['title' => 'Add Expense', 'route' => route('admin.expenses.create'), 'icon' => 'dollar-sign', 'bg' => 'bg-rose-600 hover:bg-rose-700 text-white'],
+            ['title' => 'Create Invoice', 'route' => route('admin.invoices.index'), 'icon' => 'file-text', 'bg' => 'bg-cyan-600 hover:bg-cyan-700 text-white'],
+            ['title' => 'View Enquiries', 'route' => route('admin.enquiries.index'), 'icon' => 'inbox', 'bg' => 'bg-purple-600 hover:bg-purple-700 text-white'],
+        ];
 
         $recentBookings = Booking::with(['customer', 'vehicle', 'driver'])
             ->latest()
@@ -39,16 +147,9 @@ class AdminDashboardController extends Controller
             ->take(6)
             ->get();
 
-        // Status breakdown
-        $statusCounts = Booking::selectRaw('booking_status, count(*) as count')
-            ->groupBy('booking_status')
-            ->pluck('count', 'booking_status')
-            ->toArray();
-
-        // Notification count
         $unreadNotificationsCount = Notification::whereNull('user_id')->where('is_read', false)->count();
 
-        // Revenue chart data: last 6 months (Real database records)
+        // Revenue chart data: last 6 months
         $revenueMonths = [];
         $revenueData = [];
         for ($i = 5; $i >= 0; $i--) {
@@ -62,45 +163,25 @@ class AdminDashboardController extends Controller
             $revenueData[] = round((float) $rev, 2);
         }
 
-        // Module 1: Daily, Weekly, and Monthly Booking & Revenue Statistics
-        $dailyStats = [
-            'bookings' => Booking::whereDate('created_at', now()->toDateString())->count(),
-            'travels_today' => Booking::whereDate('travel_date', now()->toDateString())->count(),
-            'completed' => Booking::whereDate('travel_date', now()->toDateString())->where('booking_status', 'Completed')->count(),
-            'revenue' => (float) Payment::where('status', 'Success')->whereDate('created_at', now()->toDateString())->sum('amount'),
-        ];
-
-        $weeklyStats = [
-            'bookings' => Booking::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
-            'completed' => Booking::whereBetween('travel_date', [now()->startOfWeek(), now()->endOfWeek()])->where('booking_status', 'Completed')->count(),
-            'revenue' => (float) Payment::where('status', 'Success')->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->sum('amount'),
-        ];
-
-        $monthlyStats = [
-            'bookings' => Booking::whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])->count(),
-            'completed' => Booking::whereBetween('travel_date', [now()->startOfMonth(), now()->endOfMonth()])->where('booking_status', 'Completed')->count(),
-            'revenue' => (float) Payment::where('status', 'Success')->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])->sum('amount'),
-        ];
-
         return view('admin.dashboard', compact(
-            'totalBookings',
-            'todaysTrips',
-            'upcomingTrips',
-            'totalRevenue',
-            'collectedAmount',
-            'pendingPayments',
-            'activeVehicles',
+            'summaryCards',
+            'quickActions',
+            'todaysBookings',
+            'upcomingBookings',
+            'pendingEnquiries',
+            'unassignedBookings',
             'availableVehicles',
-            'activeDrivers',
+            'availableDrivers',
+            'ongoingTrips',
+            'incompleteTrips',
+            'pendingPayments',
+            'outstandingExpenses',
+            'gstInvoicesCount',
             'recentBookings',
             'recentPayments',
-            'statusCounts',
             'unreadNotificationsCount',
             'revenueMonths',
-            'revenueData',
-            'dailyStats',
-            'weeklyStats',
-            'monthlyStats'
+            'revenueData'
         ));
     }
 }

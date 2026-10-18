@@ -47,16 +47,22 @@
                 <x-icon name="route" size="15" /> Trips & Tracking
             </a>
             <a href="{{ route('admin.enquiries.index') }}" class="admin-nav-item {{ request()->routeIs('admin.enquiries.*') ? 'active' : '' }}">
-                <x-icon name="mail" size="15" /> Website Enquiries
+                <x-icon name="mail" size="15" /> Enquiries (Web/Manual)
             </a>
             <a href="{{ route('admin.vehicles.index') }}" class="admin-nav-item {{ request()->routeIs('admin.vehicles.*') ? 'active' : '' }}">
                 <x-icon name="car-front" size="15" /> Vehicles Fleet
             </a>
-            <a href="{{ route('admin.rates.index') }}" class="admin-nav-item {{ request()->routeIs('admin.rates.*') ? 'active' : '' }}">
-                <x-icon name="indian-rupee" size="15" /> Rates Matrix
-            </a>
             <a href="{{ route('admin.drivers.index') }}" class="admin-nav-item {{ request()->routeIs('admin.drivers.*') ? 'active' : '' }}">
-                <x-icon name="user-check" size="15" /> Chauffeurs / Drivers
+                <x-icon name="user-check" size="15" /> Drivers & Chauffeurs
+            </a>
+            <a href="{{ route('admin.tour-packages.index') }}" class="admin-nav-item {{ request()->routeIs('admin.tour-packages.*') ? 'active' : '' }}">
+                <x-icon name="compass" size="15" /> Tour Packages
+            </a>
+            <a href="{{ route('admin.locations.index') }}" class="admin-nav-item {{ request()->routeIs('admin.locations.*') ? 'active' : '' }}">
+                <x-icon name="map-pin" size="15" /> Pickup Locations
+            </a>
+            <a href="{{ route('admin.booking-categories.index') }}" class="admin-nav-item {{ request()->routeIs('admin.booking-categories.*') ? 'active' : '' }}">
+                <x-icon name="layers" size="15" /> Booking Categories
             </a>
             <a href="{{ route('admin.customers.index') }}" class="admin-nav-item {{ request()->routeIs('admin.customers.*') ? 'active' : '' }}">
                 <x-icon name="users" size="15" /> Customers
@@ -66,11 +72,20 @@
             <a href="{{ route('admin.payments.index') }}" class="admin-nav-item {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}">
                 <x-icon name="credit-card" size="15" /> Payments
             </a>
+            <a href="{{ route('admin.expenses.index') }}" class="admin-nav-item {{ request()->routeIs('admin.expenses.*') ? 'active' : '' }}">
+                <x-icon name="dollar-sign" size="15" /> Expenses (Fuel/Toll)
+            </a>
             <a href="{{ route('admin.invoices.index') }}" class="admin-nav-item {{ request()->routeIs('admin.invoices.*') ? 'active' : '' }}">
-                <x-icon name="receipt" size="15" /> Invoices
+                <x-icon name="receipt" size="15" /> GST Invoices
             </a>
 
-            <div class="admin-menu-heading">Insights & Tools</div>
+            <div class="admin-menu-heading">Insights & Quality</div>
+            <a href="{{ route('admin.complaints.index') }}" class="admin-nav-item {{ request()->routeIs('admin.complaints.*') ? 'active' : '' }}">
+                <x-icon name="alert-triangle" size="15" /> Driver & Vehicle Complaints
+            </a>
+            <a href="{{ route('admin.rates.index') }}" class="admin-nav-item {{ request()->routeIs('admin.rates.*') ? 'active' : '' }}">
+                <x-icon name="indian-rupee" size="15" /> Rates Matrix
+            </a>
             <a href="{{ route('admin.notifications.index') }}" class="admin-nav-item {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}">
                 <x-icon name="bell" size="15" /> Notifications
             </a>

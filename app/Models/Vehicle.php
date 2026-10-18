@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Vehicle extends Model
 {
@@ -25,6 +27,14 @@ class Vehicle extends Model
         'status',
         'image',
         'notes',
+        'is_third_party',
+        'vendor_name',
+        'vendor_phone',
+        'vendor_email',
+        'vendor_agreed_amount',
+        'vendor_paid_amount',
+        'vendor_balance_amount',
+        'vendor_payment_status',
     ];
 
     protected $casts = [
@@ -35,26 +45,123 @@ class Vehicle extends Model
         'fitness_expiry' => 'date',
         'permit_expiry' => 'date',
         'puc_expiry' => 'date',
+        'is_third_party' => 'boolean',
+        'vendor_agreed_amount' => 'decimal:2',
+        'vendor_paid_amount' => 'decimal:2',
+        'vendor_balance_amount' => 'decimal:2',
     ];
 
-    public function bookings()
+    public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
     }
 
-    public function trips()
+    public function trips(): HasMany
     {
         return $this->hasMany(Trip::class);
     }
 
-    public function assignedDriver()
+    public function assignedDriver(): HasOne
     {
         return $this->hasOne(Driver::class, 'assigned_vehicle_id');
+    }
+
+    public function complaints(): HasMany
+    {
+        return $this->hasMany(Complaint::class);
+    }
+
+    public function thirdPartyPayments(): HasMany
+    {
+        return $this->hasMany(ThirdPartyPayment::class);
     }
 
     public function scopeAvailable($query)
     {
         return $query->where('status', 'Available');
+    }
+
+    public function scopeOwned($query)
+    {
+        return $query->where('is_third_party', false);
+    }
+
+    public function scopeThirdParty($query)
+    {
+        return $query->where('is_third_party', true);
+    }
+
+    public function recalculateVendorBalance(): void
+    {
+        $agreed = (float) $this->vendor_agreed_amount;
+        $paid = (float) $this->thirdPartyPayments()->sum('amount');
+        $this->vendor_paid_amount = $paid;
+        $this->vendor_balance_amount = max(0, round($agreed - $paid, 2));
+
+        if ($agreed > 0 && $paid >= $agreed) {
+            $this->vendor_payment_status = 'Paid';
+        } elseif ($paid > 0) {
+            $this->vendor_payment_status = 'Partial';
+        } else {
+            $this->vendor_payment_status = 'Pending';
+        }
+
+        $this->saveQuietly();
+    }
+
+    /**
+     * Check if mandatory documents (Insurance, PUC) are expired.
+     */
+    public function hasExpiredMandatoryDocuments(): bool
+    {
+        $today = now()->startOfDay();
+
+        if ($this->insurance_expiry && $this->insurance_expiry->startOfDay()->isPast()) {
+            return true;
+        }
+
+        if ($this->puc_expiry && $this->puc_expiry->startOfDay()->isPast()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Get detailed status of a specific document (Valid, Expiring Soon, Expired, Missing).
+     */
+    public function getDocumentStatus(string $field): array
+    {
+        $date = $this->{$field};
+        if (! $date) {
+            return ['status' => 'missing', 'label' => 'Not Uploaded', 'class' => 'bg-gray-100 text-gray-700 border-gray-300'];
+        }
+
+        $today = now()->startOfDay();
+        $expiry = $date->startOfDay();
+
+        if ($expiry->isPast()) {
+            return [
+                'status' => 'expired',
+                'label' => 'Expired ('.$expiry->format('d M Y').')',
+                'class' => 'bg-red-100 text-red-800 border-red-300',
+            ];
+        }
+
+        $days = (int) $today->diffInDays($expiry);
+        if ($days <= 30) {
+            return [
+                'status' => 'expiring_soon',
+                'label' => "Expiring Soon ({$days}d)",
+                'class' => 'bg-amber-100 text-amber-800 border-amber-300',
+            ];
+        }
+
+        return [
+            'status' => 'valid',
+            'label' => 'Valid till '.$expiry->format('d M Y'),
+            'class' => 'bg-emerald-100 text-emerald-800 border-emerald-300',
+        ];
     }
 
     public function getIconUrlAttribute(): string
@@ -75,7 +182,6 @@ class Vehicle extends Model
             }
         }
 
-        // Map by vehicle name to genuine fleet photo
         $name = strtolower($this->name ?? '');
         if (str_contains($name, 'dzire')) {
             return asset('assets/vehicles/maruti-suzuki-dzire.jpg');
@@ -93,7 +199,6 @@ class Vehicle extends Model
             return asset('assets/vehicles/tata-tiago-wagonr.jpg');
         }
 
-        // Map by vehicle type
         $type = strtolower($this->vehicle_type ?? '');
         if (str_contains($type, 'sedan')) {
             return asset('assets/vehicles/maruti-suzuki-dzire.jpg');
@@ -101,10 +206,7 @@ class Vehicle extends Model
         if (str_contains($type, 'innova') || str_contains($type, 'crysta')) {
             return asset('assets/vehicles/toyota-innova-crysta.jpg');
         }
-        if (str_contains($type, 'muv')) {
-            return asset('assets/vehicles/maruti-suzuki-ertiga.jpg');
-        }
-        if (str_contains($type, 'suv')) {
+        if (str_contains($type, 'muv') || str_contains($type, 'suv')) {
             return asset('assets/vehicles/maruti-suzuki-ertiga.jpg');
         }
         if (str_contains($type, 'tempo') || str_contains($type, 'traveller')) {
@@ -117,9 +219,6 @@ class Vehicle extends Model
         return asset('assets/vehicles/maruti-suzuki-dzire.jpg');
     }
 
-    /**
-     * Get list of documents that are expired or expiring within $days.
-     */
     public function getExpiringDocuments(int $days = 30): array
     {
         $threshold = now()->addDays($days)->toDateString();

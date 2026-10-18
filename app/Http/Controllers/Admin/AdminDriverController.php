@@ -11,15 +11,43 @@ class AdminDriverController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Driver::with(['assignedVehicle', 'trips']);
+        $query = Driver::with(['assignedVehicle', 'trips.booking', 'complaints']);
+
+        // Assigned vs Unassigned filtering
+        if ($request->query('filter') === 'unassigned') {
+            $query->unassigned();
+        } elseif ($request->query('filter') === 'assigned') {
+            $query->assigned();
+        }
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        $drivers = $query->latest()->paginate(10);
+        // Sorting for unassigned or general drivers
+        $sortBy = $request->query('sort', 'latest');
+        match ($sortBy) {
+            'name_asc' => $query->orderBy('name', 'asc'),
+            'name_desc' => $query->orderBy('name', 'desc'),
+            'rating_desc' => $query->orderBy('rating', 'desc'),
+            'experience' => $query->orderBy('experience_years', 'desc'),
+            default => $query->latest(),
+        };
 
-        return view('admin.drivers.index', compact('drivers'));
+        $drivers = $query->paginate(12)->withQueryString();
+
+        $stats = [
+            'total' => Driver::count(),
+            'active' => Driver::where('status', '!=', 'Inactive')->count(),
+            'available_unassigned' => Driver::where('status', 'Available')
+                ->whereDoesntHave('trips', fn ($t) => $t->whereIn('status', ['Trip Started', 'Ongoing', 'Assigned']))
+                ->count(),
+            'assigned' => Driver::whereHas('trips', fn ($t) => $t->whereIn('status', ['Trip Started', 'Ongoing', 'Assigned']))
+                ->orWhereNotNull('assigned_vehicle_id')
+                ->count(),
+        ];
+
+        return view('admin.drivers.index', compact('drivers', 'stats'));
     }
 
     public function create()
@@ -41,6 +69,7 @@ class AdminDriverController extends Controller
             'status' => 'required|string',
             'assigned_vehicle_id' => 'nullable|exists:vehicles,id',
             'rating' => 'nullable|numeric|min:1|max:5',
+            'experience_years' => 'nullable|integer|min:0',
             'notes' => 'nullable|string',
         ]);
 
@@ -52,7 +81,7 @@ class AdminDriverController extends Controller
 
     public function show(Driver $driver)
     {
-        $driver->load(['assignedVehicle', 'bookings.customer', 'trips.booking']);
+        $driver->load(['assignedVehicle', 'bookings.customer', 'trips.booking', 'complaints.booking']);
 
         return view('admin.drivers.show', compact('driver'));
     }
@@ -76,6 +105,7 @@ class AdminDriverController extends Controller
             'status' => 'required|string',
             'assigned_vehicle_id' => 'nullable|exists:vehicles,id',
             'rating' => 'nullable|numeric|min:1|max:5',
+            'experience_years' => 'nullable|integer|min:0',
             'notes' => 'nullable|string',
         ]);
 

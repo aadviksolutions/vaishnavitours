@@ -1,0 +1,127 @@
+@extends('layouts.admin')
+
+@section('title', 'Log Complaint / Review - Vaishnavi Tours')
+@section('page_title', 'File Complaint / Review')
+
+@section('content')
+<div class="mb-3">
+    <a href="{{ route('admin.complaints.index') }}" style="font-size: 13px; color: var(--slate-600); font-weight: 600; text-decoration: none;">
+        ← Back to Complaints
+    </a>
+    <h1 style="font-size: 18px; font-weight: 700; margin: 4px 0 0 0; color: var(--dark-900);">Log Driver or Vehicle Review / Complaint</h1>
+    <p style="font-size: 12px; color: var(--slate-500); margin: 2px 0 0 0;">
+        Critical business requirement: Driver ratings and vehicle ratings are maintained separately and never mixed.
+    </p>
+</div>
+
+<div class="card" style="max-width: 640px; background: #fff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 1.5rem;">
+    @if($errors->any())
+        <div class="alert alert-danger mb-3" style="background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; padding: 0.75rem 1rem; border-radius: 6px;">
+            <ul style="margin: 0; padding-left: 1.25rem; font-size: 13px;">
+                @foreach($errors->all() as $err)
+                    <li>{{ $err }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form action="{{ route('admin.complaints.store') }}" method="POST">
+        @csrf
+
+        <!-- Category Stream -->
+        <div class="mb-3">
+            <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 4px;">Audit Category *</label>
+            <div class="grid grid-2 gap-2">
+                <label style="border: 2px solid #BFDBFE; background: #EFF6FF; padding: 0.75rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    <input type="radio" name="complaint_type" value="driver" id="radioDriver" checked onchange="toggleComplaintType()">
+                    <div>
+                        <strong style="color: #1E40AF; display: block; font-size: 13px;">1. Driver Review / Complaint</strong>
+                        <span style="font-size: 11px; color: var(--slate-500);">Chauffeur behavior, punctuality, driving</span>
+                    </div>
+                </label>
+                <label style="border: 2px solid #99F6E4; background: #F0FDFA; padding: 0.75rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    <input type="radio" name="complaint_type" value="vehicle" id="radioVehicle" onchange="toggleComplaintType()">
+                    <div>
+                        <strong style="color: #115E59; display: block; font-size: 13px;">2. Vehicle Review / Complaint</strong>
+                        <span style="font-size: 11px; color: var(--slate-500);">AC cooling, cleanliness, seat comfort, mechanical</span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div class="grid grid-2 gap-2 mb-3">
+            <div id="driverSelectGroup">
+                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Target Driver *</label>
+                <select name="driver_id" id="driverSelect" class="form-select form-select-sm">
+                    <option value="">Select Chauffeur</option>
+                    @foreach($drivers as $d)
+                        <option value="{{ $d->id }}">{{ $d->name }} ({{ $d->mobile }})</option>
+                    @endforeach
+                </select>
+            </div>
+            <div id="vehicleSelectGroup" style="display: none;">
+                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Target Vehicle *</label>
+                <select name="vehicle_id" id="vehicleSelect" class="form-select form-select-sm">
+                    <option value="">Select Fleet Vehicle</option>
+                    @foreach($vehicles as $v)
+                        <option value="{{ $v->id }}">{{ $v->name }} ({{ $v->registration_number }})</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Booking Reference (Optional)</label>
+                <select name="booking_id" class="form-select form-select-sm">
+                    <option value="">-- No specific booking --</option>
+                    @foreach($bookings as $b)
+                        <option value="{{ $b->id }}">{{ $b->booking_id }} ({{ $b->customer->name ?? 'Guest' }})</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+
+        <div class="grid grid-3 gap-2 mb-3">
+            <div>
+                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Customer Name *</label>
+                <input type="text" name="customer_name" class="form-control form-control-sm" required>
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Customer Mobile *</label>
+                <input type="tel" name="customer_phone" class="form-control form-control-sm" required>
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Rating (1 to 5 Stars)</label>
+                <select name="rating" class="form-select form-select-sm">
+                    <option value="1">⭐ 1 - Very Poor / Serious Issue</option>
+                    <option value="2">⭐⭐ 2 - Unsatisfactory</option>
+                    <option value="3">⭐⭐⭐ 3 - Average</option>
+                    <option value="4">⭐⭐⭐⭐ 4 - Good</option>
+                    <option value="5" selected>⭐⭐⭐⭐⭐ 5 - Excellent</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Incident / Review Title *</label>
+            <input type="text" name="title" class="form-control form-control-sm" placeholder="e.g. AC cooling inadequate during afternoon or Driver late by 30 mins" required>
+        </div>
+
+        <div class="mb-3">
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Full Description *</label>
+            <textarea name="description" class="form-control form-control-sm" rows="3" placeholder="Provide full details of the incident or feedback..." required></textarea>
+        </div>
+
+        <div class="d-flex justify-end gap-2">
+            <a href="{{ route('admin.complaints.index') }}" class="btn btn-secondary btn-sm">Cancel</a>
+            <button type="submit" class="btn btn-primary btn-sm">Save Quality Record</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleComplaintType() {
+    const isDriver = document.getElementById('radioDriver').checked;
+    document.getElementById('driverSelectGroup').style.display = isDriver ? 'block' : 'none';
+    document.getElementById('vehicleSelectGroup').style.display = isDriver ? 'none' : 'block';
+}
+</script>
+@endsection

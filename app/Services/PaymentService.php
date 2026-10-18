@@ -85,11 +85,26 @@ class PaymentService
             $status = 'Partially Paid';
         }
 
+        $totalAmount = (float) $booking->total_amount;
+        $taxableAmount = (float) ($booking->taxable_amount > 0 ? $booking->taxable_amount : round($totalAmount / 1.05, 2));
+        $gstAmount = (float) ($booking->gst_amount > 0 ? $booking->gst_amount : round($totalAmount - $taxableAmount, 2));
+        $cgstAmount = (float) ($booking->cgst_amount > 0 ? $booking->cgst_amount : round($gstAmount / 2, 2));
+        $sgstAmount = (float) ($booking->sgst_amount > 0 ? $booking->sgst_amount : round($gstAmount / 2, 2));
+        $igstAmount = (float) ($booking->igst_amount ?? 0.00);
+
         return Invoice::updateOrCreate(
             ['booking_id' => $booking->id],
             [
                 'customer_id' => $booking->customer_id,
-                'total_amount' => $booking->total_amount,
+                'total_amount' => $totalAmount,
+                'taxable_amount' => $taxableAmount,
+                'gst_rate' => 5.00,
+                'cgst_amount' => $cgstAmount,
+                'sgst_amount' => $sgstAmount,
+                'igst_amount' => $igstAmount,
+                'gst_amount' => $gstAmount,
+                'customer_gstin' => $booking->corporate_gstin,
+                'booking_category' => $booking->booking_category ?? Booking::CATEGORY_WEB,
                 'paid_amount' => $booking->paid_amount,
                 'balance_amount' => $booking->balance_amount,
                 'status' => $status,

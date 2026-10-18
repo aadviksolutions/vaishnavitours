@@ -68,8 +68,10 @@
                 </div>
 
                 <div class="card mb-4" style="background: var(--slate-50); border: 1px solid var(--slate-200);">
-                    <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 0.75rem;">📑 Compliance & Document Records</h3>
-                    <p style="font-size: 0.8rem; color: var(--slate-500); margin-top: -0.5rem; margin-bottom: 1rem;">Set document expiry dates for automated compliance reminders.</p>
+                    <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 0.75rem;">📑 Compliance & Document Records (Mandatory Expiry Dates)</h3>
+                    <p style="font-size: 0.8rem; color: var(--slate-500); margin-top: -0.5rem; margin-bottom: 1rem;">
+                        Insurance and Pollution Under Control (PUC) expiry dates are mandatory to prevent assigning vehicles with lapsed compliance.
+                    </p>
 
                     <div class="grid grid-2 gap-3 mb-3">
                         <div class="form-group">
@@ -78,28 +80,71 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="insurance_expiry" class="form-label">Insurance Expiry Date</label>
-                            <input type="date" name="insurance_expiry" id="insurance_expiry" class="form-control" value="{{ old('insurance_expiry') }}">
+                            <label for="insurance_expiry" class="form-label">Insurance Expiry Date * (Mandatory)</label>
+                            <input type="date" name="insurance_expiry" id="insurance_expiry" class="form-control" value="{{ old('insurance_expiry') }}" required>
                         </div>
                     </div>
 
                     <div class="grid grid-3 gap-3 mb-2">
+                        <div class="form-group">
+                            <label for="puc_expiry" class="form-label">PUC Expiry Date * (Mandatory)</label>
+                            <input type="date" name="puc_expiry" id="puc_expiry" class="form-control" value="{{ old('puc_expiry') }}" required>
+                        </div>
+
                         <div class="form-group">
                             <label for="fitness_expiry" class="form-label">Fitness Expiry</label>
                             <input type="date" name="fitness_expiry" id="fitness_expiry" class="form-control" value="{{ old('fitness_expiry') }}">
                         </div>
 
                         <div class="form-group">
-                            <label for="permit_expiry" class="form-label">Permit Expiry</label>
+                            <label for="permit_expiry" class="form-label">Commercial Permit Expiry</label>
                             <input type="date" name="permit_expiry" id="permit_expiry" class="form-control" value="{{ old('permit_expiry') }}">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="puc_expiry" class="form-label">PUC Expiry</label>
-                            <input type="date" name="puc_expiry" id="puc_expiry" class="form-control" value="{{ old('puc_expiry') }}">
                         </div>
                     </div>
                 </div>
+
+                <!-- Third-Party Vehicle Vendor Profile (Requirement: Section 3) -->
+                <div class="card mb-4" style="background: #fff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 1.25rem;">
+                    <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 0.75rem;">🤝 Ownership & Vendor Tracking</h3>
+                    <div class="grid grid-2 gap-3 mb-3">
+                        <div class="form-group">
+                            <label class="form-label">Ownership Type *</label>
+                            <select name="ownership_type" id="ownership_type" class="form-select" onchange="toggleVendorFields(this.value)" required>
+                                <option value="owned" {{ old('ownership_type', 'owned') === 'owned' ? 'selected' : '' }}>Company Owned Fleet</option>
+                                <option value="third_party" {{ old('ownership_type') === 'third_party' ? 'selected' : '' }}>Third-Party / Vendor Attached Vehicle</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="vendorFieldsCard" style="display: {{ old('ownership_type') === 'third_party' ? 'block' : 'none' }}; background: #FFFBEB; border: 1px solid #FDE68A; padding: 1rem; border-radius: 6px;">
+                        <div style="font-weight: 700; font-size: 13px; color: #92400E; margin-bottom: 0.5rem;">
+                            Vendor / Vehicle Owner Details
+                        </div>
+                        <div class="grid grid-3 gap-2 mb-2">
+                            <div>
+                                <label style="font-size: 11px; font-weight: 600; color: #92400E; display: block; margin-bottom: 2px;">Owner / Vendor Name *</label>
+                                <input type="text" name="vendor_name" id="vendor_name" class="form-control form-control-sm" placeholder="e.g. Maa Sharda Travels" value="{{ old('vendor_name') }}">
+                            </div>
+                            <div>
+                                <label style="font-size: 11px; font-weight: 600; color: #92400E; display: block; margin-bottom: 2px;">Vendor Phone</label>
+                                <input type="tel" name="vendor_phone" class="form-control form-control-sm" placeholder="e.g. 9827100000" value="{{ old('vendor_phone') }}">
+                            </div>
+                            <div>
+                                <label style="font-size: 11px; font-weight: 600; color: #92400E; display: block; margin-bottom: 2px;">Agreed Hire Cost (₹)</label>
+                                <input type="number" step="0.01" name="agreed_vendor_amount" class="form-control form-control-sm" placeholder="0.00" value="{{ old('agreed_vendor_amount') }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                function toggleVendorFields(val) {
+                    const card = document.getElementById('vendorFieldsCard');
+                    const vName = document.getElementById('vendor_name');
+                    if (card) card.style.display = (val === 'third_party') ? 'block' : 'none';
+                    if (vName) vName.required = (val === 'third_party');
+                }
+                </script>
 
                 <div class="form-group">
                     <label for="notes" class="form-label">Maintenance Notes / Special Equipment</label>

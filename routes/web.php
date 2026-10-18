@@ -1,18 +1,23 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminBookingCategoryController;
 use App\Http\Controllers\Admin\AdminBookingController;
 use App\Http\Controllers\Admin\AdminCalendarController;
+use App\Http\Controllers\Admin\AdminComplaintController;
 use App\Http\Controllers\Admin\AdminCustomerController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminDriverController;
 use App\Http\Controllers\Admin\AdminEnquiryController;
+use App\Http\Controllers\Admin\AdminExpenseController;
 use App\Http\Controllers\Admin\AdminFeedbackController;
 use App\Http\Controllers\Admin\AdminInvoiceController;
 use App\Http\Controllers\Admin\AdminNotificationController;
 use App\Http\Controllers\Admin\AdminPaymentController;
+use App\Http\Controllers\Admin\AdminPickupLocationController;
 use App\Http\Controllers\Admin\AdminRateController;
 use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AdminSettingController;
+use App\Http\Controllers\Admin\AdminTourPackageController;
 use App\Http\Controllers\Admin\AdminTripController;
 use App\Http\Controllers\Admin\AdminVehicleController;
 use App\Http\Controllers\Auth\AuthController;
@@ -54,6 +59,8 @@ Route::get('/about', [PublicWebsiteController::class, 'about'])->name('about');
 Route::get('/feedback', [PublicWebsiteController::class, 'feedback'])->name('feedback');
 Route::post('/feedback', [PublicWebsiteController::class, 'storeFeedback'])->name('feedback.store');
 Route::get('/contact', [PublicWebsiteController::class, 'contact'])->name('contact');
+Route::get('/tour-packages', [PublicWebsiteController::class, 'tourPackages'])->name('tour-packages');
+Route::post('/locations/quick-store', [PublicWebsiteController::class, 'storeQuickLocation'])->name('locations.quick-store');
 Route::get('/enquiry', [PublicWebsiteController::class, 'enquiry'])->name('enquiry');
 Route::post('/enquiry', [PublicWebsiteController::class, 'storeEnquiry'])->name('enquiry.store');
 
@@ -134,12 +141,30 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/trips', [AdminTripController::class, 'index'])->name('trips.index');
     Route::get('/trips/{trip}', [AdminTripController::class, 'show'])->name('trips.show');
     Route::put('/trips/{trip}', [AdminTripController::class, 'update'])->name('trips.update');
+    Route::post('/trips/{trip}/close', [AdminTripController::class, 'closeTrip'])->name('trips.close');
 
     // Advance Booking Calendar
     Route::get('/calendar', [AdminCalendarController::class, 'index'])->name('calendar.index');
 
-    // Vehicles CRUD
+    // Vehicles CRUD & Vendor Payments
     Route::resource('vehicles', AdminVehicleController::class);
+    Route::post('/vehicles/{vehicle}/payments', [AdminVehicleController::class, 'storeThirdPartyPayment'])->name('vehicles.payments.store');
+
+    // Tour Packages
+    Route::resource('tour-packages', AdminTourPackageController::class);
+
+    // Pickup Locations
+    Route::resource('locations', AdminPickupLocationController::class);
+
+    // Expenses
+    Route::resource('expenses', AdminExpenseController::class);
+
+    // Complaints System (Drivers & Vehicles)
+    Route::resource('complaints', AdminComplaintController::class);
+    Route::post('/complaints/{complaint}/status', [AdminComplaintController::class, 'updateStatus'])->name('complaints.status');
+
+    // Booking Categories (Configurable)
+    Route::resource('booking-categories', AdminBookingCategoryController::class);
 
     // Rate configuration
     Route::resource('rates', AdminRateController::class)->except(['show']);
@@ -162,6 +187,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/invoices/{invoice}', [AdminInvoiceController::class, 'show'])->name('invoices.show');
 
     // Enquiries Inbox
+    Route::get('/enquiries/{enquiry}/convert', [AdminEnquiryController::class, 'convert'])->name('enquiries.convert');
+    Route::post('/enquiries/manual', [AdminEnquiryController::class, 'storeManual'])->name('enquiries.store-manual');
     Route::resource('enquiries', AdminEnquiryController::class)->only(['index', 'show', 'update', 'destroy']);
 
     // Customer Feedback Moderation

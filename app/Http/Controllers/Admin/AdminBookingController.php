@@ -4,12 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\BookingCategory;
 use App\Models\BookingStatusHistory;
 use App\Models\Customer;
 use App\Models\Driver;
+use App\Models\Enquiry;
 use App\Models\Payment;
+use App\Models\PickupLocation;
 use App\Models\RateRoute;
 use App\Models\RateVehiclePrice;
+use App\Models\TourPackage;
 use App\Models\Trip;
 use App\Models\User;
 use App\Models\Vehicle;
@@ -28,6 +32,29 @@ class AdminBookingController extends Controller
 
         if ($request->filled('status')) {
             $query->where('booking_status', $request->status);
+        }
+
+        if ($request->filled('category')) {
+            $query->where('booking_category', $request->category);
+        }
+
+        if ($request->filled('filter')) {
+            $f = $request->filter;
+            if ($f === 'unassigned') {
+                $query->where(function ($q) {
+                    $q->whereNull('driver_id')->orWhereNull('vehicle_id');
+                })->whereNotIn('booking_status', ['Completed', 'Cancelled']);
+            } elseif ($f === 'unassigned_driver') {
+                $query->whereNull('driver_id')->whereNotIn('booking_status', ['Completed', 'Cancelled']);
+            } elseif ($f === 'unassigned_vehicle') {
+                $query->whereNull('vehicle_id')->whereNotIn('booking_status', ['Completed', 'Cancelled']);
+            } elseif ($f === 'upcoming') {
+                $query->where('travel_date', '>', now()->toDateString())->whereNotIn('booking_status', ['Completed', 'Cancelled']);
+            }
+        }
+
+        if ($request->filled('date')) {
+            $query->whereDate('travel_date', $request->date);
         }
 
         if ($request->filled('payment_status')) {
@@ -51,7 +78,7 @@ class AdminBookingController extends Controller
             });
         }
 
-        $bookings = $query->latest()->paginate(15);
+        $bookings = $query->latest()->paginate(15)->withQueryString();
 
         // Pass only Available vehicles and drivers for assignments
         $availableVehicles = Vehicle::where('status', 'Available')->get();
@@ -62,7 +89,7 @@ class AdminBookingController extends Controller
         return view('admin.bookings.index', compact('bookings', 'availableVehicles', 'availableDrivers', 'allVehicles', 'allDrivers'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $customers = User::where('role', 'customer')->orderBy('name')->get();
         $vehicles = Vehicle::where('status', 'Available')->get();
@@ -86,7 +113,16 @@ class AdminBookingController extends Controller
             }
         }
 
-        return view('admin.bookings.create', compact('customers', 'vehicles', 'drivers', 'locations', 'vehicleCategories', 'rateOptions'));
+        $prefill = null;
+        if ($request->filled('from_enquiry')) {
+            $prefill = Enquiry::find($request->from_enquiry);
+        }
+
+        $pickupLocations = PickupLocation::where('is_active', true)->get();
+        $tourPackages = TourPackage::where('is_active', true)->get();
+        $bookingCategories = BookingCategory::where('is_active', true)->get();
+
+        return view('admin.bookings.create', compact('customers', 'vehicles', 'drivers', 'locations', 'vehicleCategories', 'rateOptions', 'prefill', 'pickupLocations', 'tourPackages', 'bookingCategories'));
     }
 
     public function store(Request $request, BookingService $bookingService)
@@ -106,8 +142,10 @@ class AdminBookingController extends Controller
         ]);
 
         $rules = [
+            'booking_category' => 'required|in:CORP,MAN,TP',
             'trip_type' => 'required|string',
             'pickup_location' => 'required|string|max:255',
+            'via_location' => 'nullable|string|max:255',
             'destination' => 'required|string|max:255',
             'rate_category' => 'required|in:airport,outstation,round_trip,local_8h_80km,local_4h_40km',
             'vehicle_category' => 'required|string|max:80',
@@ -122,6 +160,19 @@ class AdminBookingController extends Controller
             'booking_status' => 'required|string',
             'payment_status' => 'required|string',
             'notes' => 'nullable|string',
+            'company_name' => 'nullable|string|max:255',
+            'corporate_contact_person' => 'nullable|string|max:255',
+            'corporate_gstin' => 'nullable|string|max:50',
+            'billing_address' => 'nullable|string',
+            'travel_partner_name' => 'nullable|string|max:255',
+            'travel_partner_phone' => 'nullable|string|max:50',
+            'travel_partner_email' => 'nullable|email|max:255',
+            'travel_partner_address' => 'nullable|string|max:500',
+            'travel_partner_commission' => 'nullable|numeric|min:0',
+            'travel_partner_notes' => 'nullable|string|max:1000',
+            'is_custom_fare' => 'nullable|string|max:10',
+            'from_enquiry_id' => 'nullable|exists:enquiries,id',
+            'tour_package_id' => 'nullable|exists:tour_packages,id',
         ];
 
         if ($customerMode === 'new') {
@@ -135,6 +186,17 @@ class AdminBookingController extends Controller
         }
 
         $data = $request->validate($rules);
+
+        $data['is_admin_booking'] = true;
+        $data['is_custom_fare'] = $request->input('is_custom_fare') === '1' || $request->filled('total_amount');
+        $data['corporate_company_name'] = $request->input('company_name') ?: $request->input('corporate_company_name');
+        $data['corporate_billing_address'] = $request->input('billing_address') ?: $request->input('corporate_billing_address');
+        $data['travel_partner_name'] = $request->input('travel_partner_name');
+        $data['travel_partner_phone'] = $request->input('travel_partner_phone');
+        $data['travel_partner_email'] = $request->input('travel_partner_email');
+        $data['travel_partner_address'] = $request->input('travel_partner_address');
+        $data['travel_partner_commission'] = $request->filled('travel_partner_commission') ? (float) $request->input('travel_partner_commission') : null;
+        $data['travel_partner_notes'] = $request->input('travel_partner_notes');
 
         if (isset($data['paid_amount']) && (float) $data['paid_amount'] > (float) $data['total_amount']) {
             throw ValidationException::withMessages([
@@ -201,10 +263,23 @@ class AdminBookingController extends Controller
             'paid_amount' => $paid,
             'balance_amount' => $balance,
             'driver_id' => $data['driver_id'] ?? null,
+            'travel_partner_name' => $data['travel_partner_name'] ?? null,
+            'travel_partner_phone' => $data['travel_partner_phone'] ?? null,
+            'travel_partner_email' => $data['travel_partner_email'] ?? null,
+            'travel_partner_address' => $data['travel_partner_address'] ?? null,
+            'travel_partner_commission' => $data['travel_partner_commission'] ?? null,
+            'travel_partner_notes' => $data['travel_partner_notes'] ?? null,
         ]);
 
+        if ($request->filled('from_enquiry_id')) {
+            Enquiry::where('id', $request->from_enquiry_id)->update([
+                'status' => 'Converted',
+                'converted_booking_id' => $booking->id,
+            ]);
+        }
+
         return redirect()->route('admin.bookings.show', $booking->id)
-            ->with('success', "Booking #{$booking->booking_id} created successfully for customer {$user->name}!");
+            ->with('success', "Booking #{$booking->booking_id} [{$booking->booking_category}] created successfully for customer {$user->name}!");
     }
 
     public function show(Booking $booking)
@@ -259,6 +334,12 @@ class AdminBookingController extends Controller
             'payment_status' => 'required|string',
             'booking_status' => 'required|string',
             'notes' => 'nullable|string',
+            'travel_partner_name' => 'nullable|string|max:255',
+            'travel_partner_phone' => 'nullable|string|max:50',
+            'travel_partner_email' => 'nullable|email|max:255',
+            'travel_partner_address' => 'nullable|string|max:500',
+            'travel_partner_commission' => 'nullable|numeric|min:0',
+            'travel_partner_notes' => 'nullable|string|max:1000',
         ]);
 
         $totalAmount = (float) $data['total_amount'];
@@ -290,6 +371,12 @@ class AdminBookingController extends Controller
             'payment_status' => $data['payment_status'],
             'booking_status' => $newStatus,
             'notes' => $data['notes'] ?? null,
+            'travel_partner_name' => $data['travel_partner_name'] ?? $booking->travel_partner_name,
+            'travel_partner_phone' => $data['travel_partner_phone'] ?? $booking->travel_partner_phone,
+            'travel_partner_email' => $data['travel_partner_email'] ?? $booking->travel_partner_email,
+            'travel_partner_address' => $data['travel_partner_address'] ?? $booking->travel_partner_address,
+            'travel_partner_commission' => array_key_exists('travel_partner_commission', $data) ? $data['travel_partner_commission'] : $booking->travel_partner_commission,
+            'travel_partner_notes' => $data['travel_partner_notes'] ?? $booking->travel_partner_notes,
         ]);
 
         // Sync Trip

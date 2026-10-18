@@ -18,6 +18,40 @@ class BookingService
     public function __construct(private readonly RateQuoteService $rateQuoteService) {}
 
     /**
+     * Generate standard sequential booking ID with strict category prefix.
+     */
+    public function generateBookingId(?string $category = null): string
+    {
+        return Booking::generateBookingId($category);
+    }
+
+    /**
+     * Enforce minimum 4 hours advance booking notice.
+     *
+     * @throws ValidationException
+     */
+    public function validateAdvanceNotice(string $travelDate, string $travelTime): bool
+    {
+        $pickupTimeStr = trim($travelTime);
+        if (strlen($pickupTimeStr) === 5) {
+            $pickupTimeStr .= ':00';
+        }
+
+        $tz = config('app.timezone', 'Asia/Kolkata');
+        $pickupDateTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', trim($travelDate).' '.$pickupTimeStr, $tz);
+        $minAllowedTime = now($tz)->addHours(4);
+
+        if ($pickupDateTime->lt($minAllowedTime)) {
+            $phone = \App\Models\Setting::where('key', 'phone_primary')->value('value') ?: '+91 92447 84443';
+            throw ValidationException::withMessages([
+                'travel_time' => "Online bookings must be scheduled at least 4 hours in advance. For urgent or late-night bookings, please call us directly at {$phone}.",
+            ]);
+        }
+
+        return true;
+    }
+
+    /**
      * Create a new booking with initial Pending status and admin notification.
      */
     public function createBooking(array $data, ?User $user = null): Booking
@@ -75,24 +109,31 @@ class BookingService
                     isset($data['estimated_km']) ? (float) $data['estimated_km'] : null
                 );
 
+                $isAdmin = ($user && $user->role === 'admin')
+                    || (\Illuminate\Support\Facades\Auth::check() && \Illuminate\Support\Facades\Auth::user()->role === 'admin')
+                    || ! empty($data['is_admin_booking'])
+                    || ! empty($data['is_custom_fare'])
+                    || in_array($data['booking_category'] ?? '', [Booking::CATEGORY_MAN, Booking::CATEGORY_CORP, Booking::CATEGORY_TP], true);
+
                 if ($quote) {
                     $ratePrice = $quote['price'];
                     $pricingDetails = array_merge($quote['details'], ['total_amount' => $quote['total_amount']]);
                     // Authoritative pricing: prevent client-side fare tampering
-                    // Only an authenticated administrator can supply a custom manual total amount
-                    $isAdmin = $user && $user->role === 'admin';
+                    // If an administrator or custom fare override is provided, use custom manual amount
                     $totalAmount = ($isAdmin && isset($data['total_amount']) && (float) $data['total_amount'] > 0)
                         ? (float) $data['total_amount']
                         : $quote['total_amount'];
-                } elseif (isset($data['total_amount']) && (float) $data['total_amount'] > 0 && $user && $user->role === 'admin') {
+                } elseif (isset($data['total_amount']) && (float) $data['total_amount'] > 0) {
+                    // Custom fare entered when route is not pre-configured
                     $totalAmount = (float) $data['total_amount'];
                     $pricingDetails = [
                         'total_amount' => $totalAmount,
                         'manual_quote' => true,
+                        'custom_fare' => true,
                         'rate_category' => $data['rate_category'],
                         'vehicle_category' => $data['vehicle_category'] ?? null,
                     ];
-                } elseif (in_array($data['rate_category'], ['tour_package', 'emergency'], true)) {
+                } elseif (in_array($data['rate_category'], ['tour_package', 'emergency', 'round_trip'], true) || ($data['trip_type'] ?? '') === 'Round-Trip') {
                     $totalAmount = 0.00;
                     $pricingDetails = [
                         'total_amount' => 0.00,
@@ -107,6 +148,11 @@ class BookingService
                 }
             } elseif (isset($data['total_amount']) && (float) $data['total_amount'] > 0) {
                 $totalAmount = (float) $data['total_amount'];
+                $pricingDetails = [
+                    'total_amount' => $totalAmount,
+                    'manual_quote' => true,
+                    'custom_fare' => true,
+                ];
             } elseif ($vehicle) {
                 // Direct service call / test fallback when vehicle is supplied without explicit rate category
                 $rate = (float) ($vehicle->per_km_rate ?: 14.00);
@@ -144,23 +190,84 @@ class BookingService
             $finalNotes = ! empty($noteDetails) ? implode(' | ', $noteDetails) : null;
 
             $paidAmount = (float) ($data['paid_amount'] ?? 0.00);
-            $balanceAmount = max(0, $totalAmount - $paidAmount);
+            $balanceAmount = max(0, round($totalAmount - $paidAmount, 2));
             $paymentStatus = $paidAmount >= $totalAmount && $totalAmount > 0 ? 'Paid' : ($paidAmount > 0 ? 'Partial' : 'Pending');
 
+            // Category determination (Section 4)
+            $bookingCategory = $data['booking_category'] ?? ($user && $user->role === 'admin' ? ($data['booking_category'] ?? Booking::CATEGORY_MAN) : Booking::CATEGORY_WEB);
+            if (! in_array($bookingCategory, [Booking::CATEGORY_CORP, Booking::CATEGORY_WEB, Booking::CATEGORY_MAN, Booking::CATEGORY_TP], true)) {
+                $bookingCategory = Booking::CATEGORY_WEB;
+            }
+
+            // Duration calculation (Section 5)
+            $durationInfo = app(TripDurationService::class)->calculate(
+                $data['travel_date'],
+                $data['travel_time'] ?? '06:00',
+                $data['return_date'] ?? null,
+                $data['return_time'] ?? '22:00'
+            );
+            $durationDays = isset($data['duration_days']) && (int) $data['duration_days'] > 0
+                ? (int) $data['duration_days']
+                : $durationInfo['days'];
+
+            // 5% GST computation (Section 10)
+            $gstRate = 5.00;
+            $isInterstate = ! empty($data['is_interstate']);
+            $taxableAmount = round($totalAmount / (1 + ($gstRate / 100)), 2);
+            $totalGst = round($totalAmount - $taxableAmount, 2);
+
+            if ($isInterstate) {
+                $cgst = 0.00;
+                $sgst = 0.00;
+                $igst = $totalGst;
+            } else {
+                $cgst = round($totalGst / 2, 2);
+                $sgst = round($totalGst - $cgst, 2);
+                $igst = 0.00;
+            }
+
             $booking = Booking::create([
-                'booking_id' => Booking::generateBookingId(),
+                'booking_id' => Booking::generateBookingId($bookingCategory),
+                'booking_category' => $bookingCategory,
                 'customer_id' => $user->id,
                 'trip_type' => $tripType,
                 'pickup_location' => $data['pickup_location'],
+                'via_location' => $data['via_location'] ?? null,
                 'destination' => $data['destination'],
                 'travel_date' => $data['travel_date'],
                 'travel_time' => $data['travel_time'],
                 'return_date' => $data['return_date'] ?? null,
+                'return_time' => $data['return_time'] ?? null,
+                'duration_days' => $durationDays,
+                'duration_hours' => $durationInfo['total_hours'],
+                'duration_notes' => $durationInfo['breakdown'],
                 'vehicle_id' => $vehicle?->id,
                 'driver_id' => null,
+                'tour_package_id' => $data['tour_package_id'] ?? null,
                 'rate_vehicle_price_id' => $ratePrice?->id,
                 'rate_category' => $data['rate_category'] ?? null,
                 'pricing_details' => $pricingDetails,
+                'corporate_company_name' => $data['corporate_company_name'] ?? null,
+                'corporate_contact_person' => $data['corporate_contact_person'] ?? null,
+                'corporate_phone' => $data['corporate_phone'] ?? null,
+                'corporate_email' => $data['corporate_email'] ?? null,
+                'corporate_gstin' => $data['corporate_gstin'] ?? null,
+                'corporate_billing_address' => $data['corporate_billing_address'] ?? null,
+                'corporate_payment_terms' => $data['corporate_payment_terms'] ?? null,
+                'corporate_agreed_rate' => isset($data['corporate_agreed_rate']) ? (float) $data['corporate_agreed_rate'] : null,
+                'travel_partner_name' => $data['travel_partner_name'] ?? null,
+                'travel_partner_phone' => $data['travel_partner_phone'] ?? null,
+                'travel_partner_email' => $data['travel_partner_email'] ?? null,
+                'travel_partner_address' => $data['travel_partner_address'] ?? null,
+                'travel_partner_commission' => isset($data['travel_partner_commission']) && $data['travel_partner_commission'] !== '' ? (float) $data['travel_partner_commission'] : null,
+                'travel_partner_notes' => $data['travel_partner_notes'] ?? null,
+                'taxable_amount' => $taxableAmount,
+                'gst_rate' => $gstRate,
+                'cgst_amount' => $cgst,
+                'sgst_amount' => $sgst,
+                'igst_amount' => $igst,
+                'gst_amount' => $totalGst,
+                'is_interstate' => $isInterstate,
                 'total_amount' => $totalAmount,
                 'paid_amount' => $paidAmount,
                 'balance_amount' => $balanceAmount,
@@ -325,6 +432,13 @@ class BookingService
                 ]);
             }
 
+            // Validation: Prevent assignment of vehicles with expired mandatory compliance documents (Section 3)
+            if ($vehicle->hasExpiredMandatoryDocuments()) {
+                throw ValidationException::withMessages([
+                    'vehicle_id' => ["Vehicle {$vehicle->registration_number} cannot be assigned because its mandatory documents (Insurance/PUC) have expired. Please renew the documents before dispatch."],
+                ]);
+            }
+
             // Overlap check: Prevent same vehicle being assigned to two active trips at overlapping travel times across date spans
             $startDate = $booking->travel_date->format('Y-m-d');
             $endDate = ($booking->return_date ?? $booking->travel_date)->format('Y-m-d');
@@ -413,6 +527,13 @@ class BookingService
             if ($driver->status !== 'Available') {
                 throw ValidationException::withMessages([
                     'driver_id' => ["Selected chauffeur is currently {$driver->status}. Only Available drivers can be assigned."],
+                ]);
+            }
+
+            // Validation: Prevent assignment of drivers with expired driving licence (Section 3)
+            if ($driver->license_expiry && $driver->license_expiry->startOfDay()->isPast()) {
+                throw ValidationException::withMessages([
+                    'driver_id' => ["Chauffeur {$driver->name} cannot be assigned because their driving licence expired on ".$driver->license_expiry->format('d/m/Y')."."],
                 ]);
             }
 

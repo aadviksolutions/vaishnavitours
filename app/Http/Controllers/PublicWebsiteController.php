@@ -5,11 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Enquiry;
 use App\Models\Feedback;
+use App\Models\PickupLocation;
 use App\Models\RateRoute;
 use App\Models\RateVehiclePrice;
+use App\Models\Setting;
+use App\Models\TourPackage;
 use App\Models\Vehicle;
 use App\Services\BookingService;
 use App\Services\RateQuoteService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -72,10 +76,13 @@ class PublicWebsiteController extends Controller
         }
 
         $routes = RateRoute::query()->where('active', true)->with('vehiclePrices')->get();
+        $savedLocations = PickupLocation::where('is_active', true)->pluck('name');
         $locations = $routes->flatMap(fn (RateRoute $route): array => array_filter([$route->origin, $route->destination]))
+            ->concat($savedLocations)
             ->unique()
             ->sort()
             ->values();
+        $tourPackages = TourPackage::where('is_active', true)->get();
         $vehicleCategories = RateVehiclePrice::query()->distinct()->orderBy('vehicle_category')->pluck('vehicle_category');
         $rateOptions = [];
         foreach ($routes as $route) {
@@ -95,7 +102,7 @@ class PublicWebsiteController extends Controller
             }
         }
 
-        return compact('vehicles', 'fleetVehicles', 'routes', 'locations', 'vehicleCategories', 'rateOptions');
+        return compact('vehicles', 'fleetVehicles', 'routes', 'locations', 'vehicleCategories', 'rateOptions', 'tourPackages');
     }
 
     public function storeBooking(Request $request, BookingService $bookingService)
@@ -148,25 +155,51 @@ class PublicWebsiteController extends Controller
             ]);
         }
 
+        // Section 12: Minimum advance notice validation (at least 4 hours before scheduled pickup time)
+        if ($request->filled('travel_date') && $request->filled('travel_time')) {
+            $pickupTimeStr = $request->input('travel_time');
+            if (strlen($pickupTimeStr) === 5) {
+                $pickupTimeStr .= ':00';
+            }
+            try {
+                $tz = config('app.timezone', 'Asia/Kolkata');
+                $pickupDateTime = Carbon::createFromFormat('Y-m-d H:i:s', $request->input('travel_date').' '.$pickupTimeStr, $tz);
+                $minAllowedTime = now($tz)->addHours(4);
+
+                if ($pickupDateTime->lt($minAllowedTime)) {
+                    $phone = Setting::where('key', 'phone_primary')->value('value') ?: '+91 92447 84443';
+
+                    return back()->withInput()->withErrors([
+                        'travel_time' => "Online bookings must be scheduled at least 4 hours in advance. For urgent or late-night bookings, please call us directly at {$phone}.",
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                // If date parsing fails, let standard validator catch it
+            }
+        }
+
         $data = $request->validate([
             'customer_name' => 'required|string|max:255',
             'mobile' => 'required|string|max:20',
             'email' => 'nullable|email|max:255',
             'trip_type' => 'required|string',
             'pickup_location' => 'required|string|max:255',
+            'via_location' => 'nullable|string|max:255',
             'destination' => 'required|string|max:255',
             'rate_category' => 'required|in:airport,outstation,round_trip,local_8h_80km,local_4h_40km,tour_package,emergency',
             'vehicle_category' => 'required|string|max:80',
-            'estimated_km' => 'nullable|required_if:rate_category,round_trip|numeric|min:0.01',
+            'estimated_km' => 'nullable|numeric|min:0.01',
             'travel_date' => 'required|date|after_or_equal:today',
             'travel_time' => 'required',
             'return_date' => 'nullable|required_if:trip_type,Round-Trip|date|after_or_equal:travel_date',
             'return_time' => 'nullable',
+            'duration_days' => 'nullable|integer|min:1',
             'passenger_count' => 'nullable|integer|min:1|max:50',
             'flight_number' => 'nullable|string|max:50',
             'package_duration' => 'nullable|string|max:100',
             'service_category' => 'nullable|string|max:100',
             'vehicle_id' => 'nullable|exists:vehicles,id',
+            'tour_package_id' => 'nullable|exists:tour_packages,id',
             'notes' => 'nullable|string|max:1000',
             'terms_accepted' => 'required|accepted',
         ], [
@@ -185,11 +218,78 @@ class PublicWebsiteController extends Controller
         ]);
 
         $data['terms_version'] = '1.0';
+        $data['booking_category'] = Booking::CATEGORY_WEB;
+
+        // Section 5: Round-trip customer bookings are treated as quotation queries without automatic calculation
+        if ($data['trip_type'] === 'Round-Trip' || $data['rate_category'] === 'round_trip') {
+            $data['total_amount'] = 0.00;
+        }
 
         $booking = $bookingService->createBooking($data, Auth::user());
 
-        return redirect()->route('booking.success', $booking->id)
-            ->with('success', "Booking request received! Your Booking ID is #{$booking->booking_id}.");
+        // For round-trip queries or general enquiries, also log an Enquiry record for tracking
+        if ($data['trip_type'] === 'Round-Trip' || $data['rate_category'] === 'round_trip') {
+            Enquiry::create([
+                'source' => Enquiry::SOURCE_WEBSITE,
+                'name' => $data['customer_name'],
+                'email' => $data['email'] ?? null,
+                'phone' => $data['mobile'],
+                'booking_type' => 'Round-Trip',
+                'pickup_location' => $data['pickup_location'],
+                'via_location' => $data['via_location'] ?? null,
+                'destination' => $data['destination'],
+                'travel_date' => $data['travel_date'],
+                'return_date' => $data['return_date'] ?? null,
+                'duration_days' => $data['duration_days'] ?? 1,
+                'vehicle_preference' => $data['vehicle_category'],
+                'subject' => 'Round-Trip Taxi Quotation Query',
+                'message' => 'Customer submitted a round-trip quotation request: '.$data['pickup_location'].' via '.($data['via_location'] ?? 'Direct').' to '.$data['destination'].'.',
+                'converted_booking_id' => $booking->id,
+                'status' => Enquiry::STATUS_NEW,
+            ]);
+        }
+
+        $successMsg = ($data['trip_type'] === 'Round-Trip' || $data['rate_category'] === 'round_trip')
+            ? "Your round-trip quotation query has been received! Booking reference is #{$booking->booking_id}. Our dispatch team will review and share a custom quotation shortly."
+            : "Booking request received! Your Booking ID is #{$booking->booking_id}.";
+
+        return redirect()->route('booking.success', $booking->id)->with('success', $successMsg);
+    }
+
+    public function tourPackages()
+    {
+        $packages = TourPackage::where('is_active', true)->get();
+
+        return view('public.tour-packages', compact('packages'));
+    }
+
+    public function storeQuickLocation(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'city' => 'nullable|string|max:100',
+            'address' => 'nullable|string|max:255',
+        ]);
+
+        $location = PickupLocation::firstOrCreate(
+            ['name' => trim($data['name'])],
+            [
+                'city' => $data['city'] ?: 'Bilaspur',
+                'address' => $data['address'] ?? null,
+                'state' => 'Chhattisgarh',
+                'is_active' => true,
+                'created_by' => Auth::id(),
+            ]
+        );
+
+        return response()->json([
+            'success' => true,
+            'location' => [
+                'id' => $location->id,
+                'name' => $location->name,
+                'city' => $location->city,
+            ],
+        ]);
     }
 
     public function bookingSuccess(Booking $booking)

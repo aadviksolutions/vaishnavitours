@@ -45,6 +45,43 @@
                 </div>
             </div>
 
+            @if($booking->booking_category === 'TP' || $booking->travel_partner_name)
+                <!-- Travel Partner Dedicated Workflow Fields -->
+                <div class="card mb-4" style="background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px;">
+                    <h3 style="font-size: 1.15rem; font-weight: 800; color: #92400E; margin-bottom: 1rem;">
+                        🤝 Travel Partner / Agent Referral Details
+                    </h3>
+                    <div class="grid grid-3 gap-3 mb-3">
+                        <div>
+                            <label class="form-label" style="font-weight: 700; color: #78350F;">Partner / Agency Name</label>
+                            <input type="text" name="travel_partner_name" class="form-control" value="{{ old('travel_partner_name', $booking->travel_partner_name) }}" placeholder="e.g. MakeMyTrip, Agency">
+                        </div>
+                        <div>
+                            <label class="form-label" style="font-weight: 700; color: #78350F;">Partner Mobile / Phone</label>
+                            <input type="text" name="travel_partner_phone" class="form-control" value="{{ old('travel_partner_phone', $booking->travel_partner_phone) }}" placeholder="e.g. 9876543210">
+                        </div>
+                        <div>
+                            <label class="form-label" style="font-weight: 700; color: #78350F;">Partner Email</label>
+                            <input type="email" name="travel_partner_email" class="form-control" value="{{ old('travel_partner_email', $booking->travel_partner_email) }}" placeholder="e.g. partner@agency.com">
+                        </div>
+                    </div>
+                    <div class="grid grid-2 gap-3 mb-3">
+                        <div>
+                            <label class="form-label" style="font-weight: 700; color: #78350F;">Partner Office Address</label>
+                            <input type="text" name="travel_partner_address" class="form-control" value="{{ old('travel_partner_address', $booking->travel_partner_address) }}" placeholder="Office / Shop Address">
+                        </div>
+                        <div>
+                            <label class="form-label" style="font-weight: 700; color: #78350F;">Partner Commission / Payout (₹)</label>
+                            <input type="number" step="0.01" name="travel_partner_commission" class="form-control" value="{{ old('travel_partner_commission', $booking->travel_partner_commission) }}" placeholder="500.00">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label" style="font-weight: 700; color: #78350F;">Partner Notes / Reference</label>
+                        <textarea name="travel_partner_notes" class="form-control" rows="2" placeholder="Special partner instructions...">{{ old('travel_partner_notes', $booking->travel_partner_notes) }}</textarea>
+                    </div>
+                </div>
+            @endif
+
             <!-- Route & Schedule -->
             <div class="card mb-4">
                 <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">🚖 Route & Schedule Information</h3>

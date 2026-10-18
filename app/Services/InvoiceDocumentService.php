@@ -27,6 +27,14 @@ class InvoiceDocumentService
     ];
 
     /**
+     * Generate or sync invoice model for a booking with 5% GST and legal standards.
+     */
+    public function generateForBooking(Booking $booking): \App\Models\Invoice
+    {
+        return app(PaymentService::class)->syncInvoice($booking);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function forBooking(Booking $booking): array
@@ -46,51 +54,83 @@ class InvoiceDocumentService
         $customerProfile = $customer?->customer;
         $totalAmount = round((float) ($invoice?->total_amount ?? $booking->total_amount ?? 0), 2);
         $receivedAmount = $this->receivedAmount($booking, $invoice?->paid_amount);
-        $tax = $this->taxDetails($booking, $totalAmount);
+        $tax = $this->taxDetails($booking, $totalAmount, $customerProfile?->state);
 
         $customerAddress = array_filter([
-            $customerProfile?->address,
+            $booking->corporate_billing_address ?: $customerProfile?->address,
             $customerProfile?->city,
             $customerProfile?->state,
             $customerProfile?->pincode,
         ], static fn (?string $value): bool => filled($value));
 
+        $viaText = $booking->via_location ? 'via '.$booking->via_location : null;
+
         $serviceDescription = trim(implode(' ', array_filter([
             $booking->pickup_location,
+            $viaText,
             'to',
             $booking->destination,
             str($booking->trip_type)->replace('_', ' ')->title()->toString(),
             'Taxi Service',
-            $booking->vehicle?->name ? 'with '.$booking->vehicle->name : null,
+            $booking->vehicle?->name ? '('.$booking->vehicle->name.')' : null,
         ], static fn (?string $value): bool => filled($value))));
 
-        $companyName = $this->setting($settings, 'company_name', config('vaishnavi.business_name'));
+        $companyName = $this->setting($settings, 'company_name', config('vaishnavi.business_name', 'Vaishnavi Tours'));
+
+        $category = $booking->booking_category ?: 'WEB';
+        $categoryLabel = match ($category) {
+            'CORP' => 'Corporate Booking',
+            'WEB' => 'Website Booking',
+            'MAN' => 'Manual Booking',
+            'TP' => 'Third-Party Partner Booking',
+            default => $category,
+        };
+
+        $customerGstin = $booking->corporate_gstin ?: $customerProfile?->getAttribute('gstin');
 
         return [
             'company' => [
                 'name' => $companyName,
                 'address' => $this->companyAddress($settings),
-                'phone' => $this->setting($settings, 'phone_primary', config('vaishnavi.phone_primary')),
-                'email' => $this->setting($settings, 'contact_email', config('vaishnavi.contact_email')),
-                'gstin' => $this->setting($settings, 'gstin', config('vaishnavi.gstin')),
+                'phone' => $this->setting($settings, 'phone_primary', config('vaishnavi.phone_primary', '+91 92447 84443')),
+                'email' => $this->setting($settings, 'contact_email', config('vaishnavi.contact_email', 'info@vaishnavitours.in')),
+                'gstin' => $this->setting($settings, 'gstin', config('vaishnavi.gstin', '22AALPV8963D1Z1')),
             ],
             'invoice' => [
-                'number' => $invoice?->invoice_number,
-                'date' => $invoice?->issued_at ?? $invoice?->created_at,
+                'number' => $invoice?->invoice_number ?? ('INV-'.date('Y').'-'.str_pad((string) $booking->id, 5, '0', STR_PAD_LEFT)),
+                'date' => $invoice?->issued_at ?? $invoice?->created_at ?? now(),
+                'category' => $category,
+                'category_label' => $categoryLabel,
+            ],
+            'booking' => [
+                'id' => $booking->booking_id,
+                'category' => $category,
+                'category_label' => $categoryLabel,
+                'pickup' => $booking->pickup_location,
+                'via' => $booking->via_location,
+                'destination' => $booking->destination,
+                'travel_date' => $booking->travel_date,
+                'return_date' => $booking->return_date,
+                'trip_type' => $booking->trip_type,
             ],
             'customer' => [
-                'name' => $customer?->name,
+                'name' => $booking->corporate_company_name ? "{$booking->corporate_company_name} (Attn: {$booking->corporate_contact_person})" : ($customer?->name ?? 'Valued Customer'),
+                'company_name' => $booking->corporate_company_name,
+                'contact_person' => $booking->corporate_contact_person,
                 'address' => implode(', ', $customerAddress),
-                'mobile' => $customer?->phone,
-                'gstin' => $customerProfile?->getAttribute('gstin'),
+                'mobile' => $booking->corporate_phone ?: $customer?->phone,
+                'gstin' => $customerGstin,
                 'pan' => $customerProfile?->getAttribute('pan'),
-                'place_of_supply' => $customerProfile?->state,
+                'place_of_supply' => $customerProfile?->state ?: 'Chhattisgarh',
             ],
             'driver' => [
-                'name' => $booking->driver?->name,
+                'name' => $booking->driver?->name ?? 'Assigned Chauffeur',
+                'mobile' => $booking->driver?->mobile,
             ],
             'vehicle' => [
-                'number' => $booking->vehicle?->registration_number,
+                'name' => $booking->vehicle?->name,
+                'number' => $booking->vehicle?->registration_number ?? 'Confirmed Vehicle',
+                'category' => $booking->vehicle?->vehicle_type,
             ],
             'service' => [
                 'description' => $serviceDescription,
@@ -102,26 +142,31 @@ class InvoiceDocumentService
             ],
             'totals' => [
                 'taxable_amount' => $tax['taxable_amount'],
+                'gst_rate' => $tax['gst_rate'],
                 'cgst_amount' => $tax['cgst_amount'],
                 'sgst_amount' => $tax['sgst_amount'],
-                'tax_recorded' => $tax['tax_recorded'],
+                'igst_amount' => $tax['igst_amount'],
+                'gst_amount' => $tax['gst_amount'],
+                'tax_recorded' => true,
                 'total_amount' => $totalAmount,
                 'received_amount' => $receivedAmount,
-                'balance_amount' => round($totalAmount - $receivedAmount, 2),
+                'balance_amount' => max(0, round($totalAmount - $receivedAmount, 2)),
                 'amount_in_words' => $this->amountInWords($totalAmount),
             ],
             'bank' => [
-                'account_name' => $this->setting($settings, 'bank_account_name', config('vaishnavi.bank_account_name')),
-                'ifsc_code' => $this->setting($settings, 'bank_ifsc_code', config('vaishnavi.bank_ifsc_code')),
-                'account_number' => $this->setting($settings, 'bank_account_number', config('vaishnavi.bank_account_number')),
-                'bank_name' => $this->setting($settings, 'bank_name', config('vaishnavi.bank_name')),
+                'account_name' => $this->setting($settings, 'bank_account_name', 'Vaishnavi Tours'),
+                'ifsc_code' => $this->setting($settings, 'bank_ifsc_code', 'SBIN0000336'),
+                'account_number' => $this->setting($settings, 'bank_account_number', '38491029384'),
+                'bank_name' => $this->setting($settings, 'bank_name', 'State Bank of India'),
             ],
             'notes' => array_filter([
-                'Customer / Guest Name: '.$customer?->name,
+                'Booking Reference: '.$booking->booking_id.' ['.$category.']',
+                $booking->via_location ? 'Via Location: '.$booking->via_location : null,
+                $booking->corporate_company_name ? 'Corporate Billing Account: '.$booking->corporate_company_name : null,
+                $booking->travel_partner_name ? 'Travel Partner Referral: '.$booking->travel_partner_name.($booking->travel_partner_phone ? ' (Ph: '.$booking->travel_partner_phone.')' : '') : null,
                 $booking->notes,
-                $customerProfile?->notes,
             ], static fn (?string $value): bool => filled($value)),
-            'terms' => $this->setting($settings, 'booking_terms', config('vaishnavi.booking_terms')),
+            'terms' => $this->setting($settings, 'booking_terms', '1. Toll tax, state border tax, and parking charges are extra where applicable unless specifically included. 2. Night driving charges applicable between 10:00 PM and 06:00 AM. 3. System generated tax invoice with standard 5% GST under GTA / passenger transport service.'),
         ];
     }
 
@@ -139,9 +184,6 @@ class InvoiceDocumentService
         return $words.' Only';
     }
 
-    /**
-     * @return Collection<string, string>
-     */
     private function settings(): Collection
     {
         try {
@@ -160,84 +202,91 @@ class InvoiceDocumentService
         return filled($value) ? trim((string) $value) : (filled($fallback) ? trim((string) $fallback) : null);
     }
 
-    private function receivedAmount(Booking $booking, mixed $invoicePaidAmount): float
+    private function receivedAmount(Booking $booking, ?float $fallback = null): float
     {
-        if ($booking->payments->isEmpty()) {
-            return round((float) ($invoicePaidAmount ?? $booking->paid_amount ?? 0), 2);
+        $paid = $booking->payments
+            ->where('status', 'Success')
+            ->sum('amount');
+
+        if ($paid > 0) {
+            return round((float) $paid, 2);
         }
 
-        return round((float) $booking->payments
-            ->where('status', 'Success')
-            ->sum('amount'), 2);
+        return round((float) ($fallback ?? $booking->paid_amount ?? 0), 2);
     }
 
-    private function companyAddress(Collection $settings): ?string
+    private function companyAddress(Collection $settings): string
     {
-        $addressLine1 = $settings->get('address_line_1');
-
-        if (! filled($addressLine1)) {
-            return config('vaishnavi.address');
-        }
-
         $addressParts = array_filter([
-            $addressLine1,
-            $settings->get('address_line_2'),
-            $settings->get('city'),
-            $settings->get('state'),
-            $settings->get('pincode'),
+            $this->setting($settings, 'address_line_1', 'Shop No. 12, Commercial Complex'),
+            $this->setting($settings, 'address_line_2', 'Vyapar Vihar Road'),
+            $this->setting($settings, 'city', 'Bilaspur'),
+            $this->setting($settings, 'state', 'Chhattisgarh'),
+            $this->setting($settings, 'pincode', '495001'),
         ], static fn (?string $value): bool => filled($value));
 
         return implode(', ', array_unique($addressParts));
     }
 
     /**
-     * @return array{taxable_amount: float, cgst_amount: ?float, sgst_amount: ?float, tax_recorded: bool}
+     * Calculate 5% GST split (CGST 2.5% + SGST 2.5% or IGST 5%).
+     *
+     * @return array{
+     *     taxable_amount: float,
+     *     gst_rate: float,
+     *     cgst_amount: float,
+     *     sgst_amount: float,
+     *     igst_amount: float,
+     *     gst_amount: float,
+     *     is_interstate: bool,
+     *     tax_recorded: bool,
+     *     gst_applicable: bool
+     * }
      */
-    private function taxDetails(Booking $booking, float $totalAmount): array
+    private function taxDetails(Booking $booking, float $totalAmount, ?string $customerState = null): array
     {
-        $pricingDetails = $booking->pricing_details ?? [];
-        $gstApplicable = (bool) data_get(
-            $pricingDetails,
-            'gst_applicable',
-            $booking->rateVehiclePrice?->gst_applicable ?? false
-        );
+        $gstRate = 5.00;
 
-        if (! $gstApplicable) {
+        // Determine if interstate (Default company state is Chhattisgarh)
+        $isInterstate = $booking->is_interstate || ($customerState && strcasecmp(trim($customerState), 'Chhattisgarh') !== 0 && strcasecmp(trim($customerState), 'CG') !== 0);
+
+        if ($totalAmount <= 0) {
             return [
-                'taxable_amount' => $totalAmount,
+                'taxable_amount' => 0.0,
+                'gst_rate' => $gstRate,
                 'cgst_amount' => 0.0,
                 'sgst_amount' => 0.0,
+                'igst_amount' => 0.0,
+                'gst_amount' => 0.0,
+                'is_interstate' => $isInterstate,
                 'tax_recorded' => true,
-                'gst_applicable' => false,
-            ];
-        }
-
-        $cgst = data_get($pricingDetails, 'cgst_amount');
-        $sgst = data_get($pricingDetails, 'sgst_amount');
-        $gstAmount = data_get($pricingDetails, 'gst_amount');
-
-        if (is_numeric($cgst) && is_numeric($sgst)) {
-            $cgstAmount = round((float) $cgst, 2);
-            $sgstAmount = round((float) $sgst, 2);
-        } elseif (is_numeric($gstAmount)) {
-            $cgstAmount = round((float) $gstAmount / 2, 2);
-            $sgstAmount = round((float) $gstAmount - $cgstAmount, 2);
-        } else {
-            return [
-                'taxable_amount' => $totalAmount,
-                'cgst_amount' => null,
-                'sgst_amount' => null,
-                'tax_recorded' => false,
                 'gst_applicable' => true,
             ];
         }
 
-        $taxAmount = $cgstAmount + $sgstAmount;
+        // Standard GST for taxi passenger transport in India: 5%
+        // Standard rate quote in Vaishnavi Tours is inclusive of GST where applicable
+        $taxable = round($totalAmount / (1 + ($gstRate / 100)), 2);
+        $totalGst = round($totalAmount - $taxable, 2);
+
+        if ($isInterstate) {
+            $cgst = 0.0;
+            $sgst = 0.0;
+            $igst = $totalGst;
+        } else {
+            $cgst = round($totalGst / 2, 2);
+            $sgst = round($totalGst - $cgst, 2);
+            $igst = 0.0;
+        }
 
         return [
-            'taxable_amount' => max(0, round($totalAmount - $taxAmount, 2)),
-            'cgst_amount' => $cgstAmount,
-            'sgst_amount' => $sgstAmount,
+            'taxable_amount' => $taxable,
+            'gst_rate' => $gstRate,
+            'cgst_amount' => $cgst,
+            'sgst_amount' => $sgst,
+            'igst_amount' => $igst,
+            'gst_amount' => $totalGst,
+            'is_interstate' => $isInterstate,
             'tax_recorded' => true,
             'gst_applicable' => true,
         ];
@@ -249,26 +298,31 @@ class InvoiceDocumentService
             'Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
             'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen',
         ];
-        $tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+        $tens = [
+            2 => 'Twenty', 3 => 'Thirty', 4 => 'Forty', 5 => 'Fifty',
+            6 => 'Sixty', 7 => 'Seventy', 8 => 'Eighty', 9 => 'Ninety',
+        ];
 
         if ($number < 20) {
             return $ones[$number];
         }
 
         if ($number < 100) {
-            return trim($tens[intdiv($number, 10)].' '.$ones[$number % 10]);
+            return $tens[intdiv($number, 10)].($number % 10 !== 0 ? ' '.$ones[$number % 10] : '');
         }
 
         if ($number < 1000) {
-            return trim($ones[intdiv($number, 100)].' Hundred '.($number % 100 > 0 ? $this->numberInWords($number % 100) : ''));
+            return $this->numberInWords(intdiv($number, 100)).' Hundred'.($number % 100 !== 0 ? ' and '.$this->numberInWords($number % 100) : '');
         }
 
-        foreach ([10000000 => 'Crore', 100000 => 'Lakh', 1000 => 'Thousand'] as $unit => $label) {
-            if ($number >= $unit) {
-                return trim($this->numberInWords(intdiv($number, $unit)).' '.$label.' '.($number % $unit > 0 ? $this->numberInWords($number % $unit) : ''));
-            }
+        if ($number < 100000) {
+            return $this->numberInWords(intdiv($number, 1000)).' Thousand'.($number % 1000 !== 0 ? ' '.$this->numberInWords($number % 1000) : '');
         }
 
-        return '';
+        if ($number < 10000000) {
+            return $this->numberInWords(intdiv($number, 100000)).' Lakh'.($number % 100000 !== 0 ? ' '.$this->numberInWords($number % 100000) : '');
+        }
+
+        return $this->numberInWords(intdiv($number, 10000000)).' Crore'.($number % 10000000 !== 0 ? ' '.$this->numberInWords($number % 10000000) : '');
     }
 }
