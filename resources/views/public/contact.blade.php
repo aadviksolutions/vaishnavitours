@@ -18,11 +18,11 @@
 @endpush
 
 @section('content')
-<section style="background: var(--navy-900); color: #fff; padding: 2.25rem 0; border-bottom: 1px solid var(--navy-800);">
+<section style="background: #F8FAFC; color: #172033; padding: 2.25rem 0; border-bottom: 1px solid #E2E8F0;">
     <div class="container text-center">
-        <span style="color: var(--accent-gold); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.8px;">Connect With Us</span>
-        <h1 style="color: #fff; font-size: 1.65rem; font-weight: 600; margin-top: 0.25rem;">Contact Vaishnavi Tours</h1>
-        <p style="color: var(--slate-300); max-width: 580px; margin: 0.35rem auto 0; font-size: 0.875rem;">24/7 central dispatch desk, airport transfers, and corporate travel coordination.</p>
+        <span style="color: #B45309; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.8px;">Connect With Us</span>
+        <h1 style="color: #172033; font-size: 1.65rem; font-weight: 700; margin-top: 0.25rem;">Contact Vaishnavi Tours</h1>
+        <p style="color: #374151; max-width: 580px; margin: 0.35rem auto 0; font-size: 0.875rem;">24/7 central dispatch desk, airport transfers, and corporate travel coordination.</p>
     </div>
 </section>
 

@@ -134,7 +134,7 @@
     <!-- Minimal Header with Vaishnavi Tours Logo -->
     <header style="background: #0F172A; padding: 1rem 0; border-bottom: 1px solid #1E293B;">
         <div class="container d-flex align-center justify-between">
-            <a href="{{ route('home') }}" class="logo">
+            <a href="{{ route('home') }}" class="logo brand-logo-dark">
                 <div class="brand-logo-badge">
                     <img src="{{ asset('assets/branding/vaishnavi-tours-logo.png') }}" alt="Vaishnavi Tours Logo">
                 </div>
