@@ -35,9 +35,12 @@
                 <div id="pickerSearchResultsDropdown" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 1px solid #E2E8F0; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); max-height: 220px; overflow-y: auto; z-index: 100;"></div>
             </div>
 
-            <!-- Quick Regional Hub Chips -->
+            <!-- Quick Regional Hub Chips & GPS Current Location -->
             <div style="display: flex; align-items: center; gap: 6px; overflow-x: auto; padding-bottom: 2px;">
-                <span style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; white-space: nowrap; margin-right: 2px;">Quick Hubs:</span>
+                <button type="button" id="btnPickerCurrentLocation" style="background: #EFF6FF; border: 1px solid #3B82F6; color: #1D4ED8; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;" title="Get GPS current location">
+                    <span style="font-size: 12px;">🎯</span> Use Current Location
+                </button>
+                <span style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; white-space: nowrap; margin-right: 2px; margin-left: 4px;">Quick Hubs:</span>
                 @foreach([
                     'Bilaspur' => [22.0797, 82.1409],
                     'Raipur Airport' => [21.1804, 81.7389],
@@ -178,6 +181,9 @@ window.VaishnaviLocationPicker = (function () {
         modalEl.addEventListener('click', (e) => {
             if (e.target === modalEl) close();
         });
+
+        // GPS Current Location Button
+        document.getElementById('btnPickerCurrentLocation')?.addEventListener('click', useCurrentLocation);
 
         // Quick Hub Chips
         document.querySelectorAll('.picker-quick-chip').forEach(btn => {
@@ -447,6 +453,62 @@ window.VaishnaviLocationPicker = (function () {
         }
 
         updateDisplay();
+    }
+
+    function useCurrentLocation() {
+        if (!navigator.geolocation) {
+            alert('Geolocation is not supported by your browser or device.');
+            return;
+        }
+
+        const btn = document.getElementById('btnPickerCurrentLocation');
+        const origHtml = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.innerHTML = '⏳ Locating GPS...';
+            btn.disabled = true;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                if (mapMode === 'google' && googleMap && googleMarker) {
+                    const pos = new google.maps.LatLng(lat, lng);
+                    googleMap.setCenter(pos);
+                    googleMap.setZoom(16);
+                    googleMarker.setPosition(pos);
+                } else if (leafletMap && leafletMarker) {
+                    leafletMap.setView([lat, lng], 16);
+                    leafletMarker.setLatLng([lat, lng]);
+                    leafletMap.invalidateSize();
+                }
+
+                await reverseGeocode(lat, lng);
+
+                if (btn) {
+                    btn.innerHTML = origHtml;
+                    btn.disabled = false;
+                }
+            },
+            (error) => {
+                console.warn('Geolocation error:', error);
+                let msg = 'Could not get current location.';
+                if (error.code === 1) { // PERMISSION_DENIED
+                    msg = 'Location permission was denied. Please allow location access in your browser.';
+                } else if (error.code === 2) { // POSITION_UNAVAILABLE
+                    msg = 'Location information is currently unavailable.';
+                } else if (error.code === 3) { // TIMEOUT
+                    msg = 'Location request timed out. Please try again.';
+                }
+                alert(msg);
+                if (btn) {
+                    btn.innerHTML = origHtml;
+                    btn.disabled = false;
+                }
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
     }
 
     function updateDisplay() {
