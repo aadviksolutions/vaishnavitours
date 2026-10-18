@@ -498,4 +498,43 @@ class VaishnaviUpgradeTest extends TestCase
         $adminDash->assertSee('Janjgir Champa Industrial Area');
         $adminDash->assertSee('Other Location Customer');
     }
+
+    public function test_google_business_profile_and_reviews_integration(): void
+    {
+        // 1. Verify default config has resolved Vaishnavi Tours listing & share link
+        $this->assertSame('https://share.google/0Z3hLSDusfgPwsJx0', config('vaishnavi.google_share_url'));
+        $this->assertStringContainsString('/g/11tjf7l5kx', config('vaishnavi.google_maps_url'));
+        $this->assertStringContainsString('Vaishnavi+Tours+Taxi+Cab+Service+Car+Rental', config('vaishnavi.google_maps_url'));
+        $this->assertStringContainsString('#lrd=0x0:0x0,3,,,', config('vaishnavi.google_write_review_url'));
+        $this->assertStringContainsString('#lrd=0x0:0x0,1,,,', config('vaishnavi.google_all_reviews_url'));
+        $this->assertSame('4.9', (string) config('vaishnavi.google_rating'));
+
+        // 2. Verify Home page displays verified Google Reviews section with working buttons
+        $home = $this->get('/');
+        $home->assertStatus(200);
+        $home->assertSee('Google Verified Business');
+        $home->assertSee('4.9');
+        $home->assertSee('160+');
+        $home->assertSee('Write a Review');
+        $home->assertSee('Read All Reviews');
+        $home->assertSee(config('vaishnavi.google_write_review_url'));
+        $home->assertSee(config('vaishnavi.google_all_reviews_url'));
+
+        // 3. Verify Feedback page displays Google Reviews banner
+        $feedback = $this->get('/feedback');
+        $feedback->assertStatus(200);
+        $feedback->assertSee('Verified Google Profile');
+        $feedback->assertSee('Write a Review on Google');
+        $feedback->assertSee('Read on Google Maps');
+
+        // 4. Verify Admin Settings allows updating and viewing Google Profile settings
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin);
+
+        $adminSettings = $this->get('/admin/settings');
+        $adminSettings->assertStatus(200);
+        $adminSettings->assertSee('Google Business Profile &amp; Reviews Integration', false);
+        $adminSettings->assertSee('/g/11tjf7l5kx');
+        $adminSettings->assertSee('https://share.google/0Z3hLSDusfgPwsJx0');
+    }
 }

@@ -10,9 +10,9 @@ class TripDurationService
      * Calculate round-trip journey duration details.
      *
      * @param  string|Carbon  $pickupDate  (Y-m-d)
-     * @param  string|null    $pickupTime  (H:i:s or H:i)
+     * @param  string|null  $pickupTime  (H:i:s or H:i)
      * @param  string|Carbon|null  $returnDate  (Y-m-d)
-     * @param  string|null    $returnTime  (H:i:s or H:i)
+     * @param  string|null  $returnTime  (H:i:s or H:i)
      * @return array{
      *     days: int,
      *     calendar_days: int,

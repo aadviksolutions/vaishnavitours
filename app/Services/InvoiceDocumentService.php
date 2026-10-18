@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Booking;
+use App\Models\Invoice;
 use App\Models\Setting;
 use Illuminate\Support\Collection;
 use Throwable;
@@ -29,7 +30,7 @@ class InvoiceDocumentService
     /**
      * Generate or sync invoice model for a booking with 5% GST and legal standards.
      */
-    public function generateForBooking(Booking $booking): \App\Models\Invoice
+    public function generateForBooking(Booking $booking): Invoice
     {
         return app(PaymentService::class)->syncInvoice($booking);
     }

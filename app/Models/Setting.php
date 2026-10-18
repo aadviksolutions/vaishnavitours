@@ -37,6 +37,13 @@ class Setting extends Model
             'state' => 'vaishnavi.state',
             'contact_email' => 'vaishnavi.contact_email',
             'support_email' => 'vaishnavi.support_email',
+            'google_share_url' => 'vaishnavi.google_share_url',
+            'google_maps_url' => 'vaishnavi.google_maps_url',
+            'google_all_reviews_url' => 'vaishnavi.google_all_reviews_url',
+            'google_write_review_url' => 'vaishnavi.google_write_review_url',
+            'google_place_id' => 'vaishnavi.google_place_id',
+            'google_rating' => 'vaishnavi.google_rating',
+            'google_review_count' => 'vaishnavi.google_review_count',
         ];
 
         if (isset($configMap[$key])) {

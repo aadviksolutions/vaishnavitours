@@ -143,6 +143,94 @@
                 </div>
             </div>
 
+            <!-- Google Business Profile & Google Reviews Integration -->
+            <div class="card mb-4" style="border: 2px solid #E0E7FF; background: #FFFFFF;">
+                <div class="d-flex justify-between align-center mb-3">
+                    <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+                        </svg>
+                        Google Business Profile &amp; Reviews Integration
+                    </h3>
+                    <span class="badge" style="background: #DEF7EC; color: #03543F; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 9999px;">
+                        ✓ Verified Listing
+                    </span>
+                </div>
+
+                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px 16px; margin-bottom: 1.25rem;">
+                    <div style="font-size: 0.85rem; font-weight: 700; color: #1E293B; margin-bottom: 4px;">
+                        Resolved Business Profile: <span style="color: #2563EB;">Vaishnavi Tours Taxi Cab Service Car Rental</span>
+                    </div>
+                    <div style="font-size: 0.775rem; color: #64748B;">
+                        Knowledge Graph Machine ID (kgmid): <code>/g/11tjf7l5kx</code> &bull; Location: Bilaspur, Chhattisgarh
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="google_share_url" class="form-label">Official Google Maps Share Link</label>
+                    <input type="url" name="google_share_url" id="google_share_url" class="form-control" value="{{ old('google_share_url', $settings['google_share_url']->value ?? config('vaishnavi.google_share_url')) }}" placeholder="https://share.google/0Z3hLSDusfgPwsJx0">
+                    <small style="color: var(--slate-500); font-size: 0.775rem;">Official short link used for customer sharing and app redirection.</small>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="google_maps_url" class="form-label">Resolved Google Maps / Business Profile URL *</label>
+                    <div class="d-flex gap-2">
+                        <input type="url" name="google_maps_url" id="google_maps_url" class="form-control" value="{{ old('google_maps_url', $settings['google_maps_url']->value ?? config('vaishnavi.google_maps_url')) }}" required>
+                        <a href="{{ $settings['google_maps_url']->value ?? config('vaishnavi.google_maps_url') }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="white-space: nowrap; font-size: 0.8rem; padding: 0.5rem 0.875rem;">
+                            ↗ Test Link
+                        </a>
+                    </div>
+                    <small style="color: var(--slate-500); font-size: 0.775rem;">Target destination for website "View on Google Maps" and business verification.</small>
+                </div>
+
+                <div class="grid grid-2 gap-3 mb-3">
+                    <div class="form-group">
+                        <label for="google_write_review_url" class="form-label">Direct "Write a Review" URL *</label>
+                        <div class="d-flex gap-2">
+                            <input type="url" name="google_write_review_url" id="google_write_review_url" class="form-control" value="{{ old('google_write_review_url', $settings['google_write_review_url']->value ?? config('vaishnavi.google_write_review_url')) }}" required>
+                            <a href="{{ $settings['google_write_review_url']->value ?? config('vaishnavi.google_write_review_url') }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="white-space: nowrap; font-size: 0.8rem; padding: 0.5rem 0.875rem;">
+                                ↗ Test
+                            </a>
+                        </div>
+                        <small style="color: var(--slate-500); font-size: 0.775rem;">Opens Google's review modal directly for customers.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="google_all_reviews_url" class="form-label">Direct "Read All Reviews" URL *</label>
+                        <div class="d-flex gap-2">
+                            <input type="url" name="google_all_reviews_url" id="google_all_reviews_url" class="form-control" value="{{ old('google_all_reviews_url', $settings['google_all_reviews_url']->value ?? config('vaishnavi.google_all_reviews_url')) }}" required>
+                            <a href="{{ $settings['google_all_reviews_url']->value ?? config('vaishnavi.google_all_reviews_url') }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="white-space: nowrap; font-size: 0.8rem; padding: 0.5rem 0.875rem;">
+                                ↗ Test
+                            </a>
+                        </div>
+                        <small style="color: var(--slate-500); font-size: 0.775rem;">Opens all verified reviews in Google Maps/Search.</small>
+                    </div>
+                </div>
+
+                <div class="grid grid-3 gap-3 mb-2">
+                    <div class="form-group">
+                        <label for="google_place_id" class="form-label">Google Place ID (Optional)</label>
+                        <input type="text" name="google_place_id" id="google_place_id" class="form-control" value="{{ old('google_place_id', $settings['google_place_id']->value ?? config('vaishnavi.google_place_id')) }}" placeholder="e.g. ChIJ...">
+                        <small style="color: var(--slate-500); font-size: 0.775rem;">Place ID if provided by Google Cloud Console.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="google_rating" class="form-label">Google Star Rating *</label>
+                        <input type="text" name="google_rating" id="google_rating" class="form-control" value="{{ old('google_rating', $settings['google_rating']->value ?? config('vaishnavi.google_rating', '4.9')) }}" required>
+                        <small style="color: var(--slate-500); font-size: 0.775rem;">Verified score (e.g. 4.9 out of 5).</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="google_review_count" class="form-label">Verified Review Count *</label>
+                        <input type="text" name="google_review_count" id="google_review_count" class="form-control" value="{{ old('google_review_count', $settings['google_review_count']->value ?? config('vaishnavi.google_review_count', '160+')) }}" required>
+                        <small style="color: var(--slate-500); font-size: 0.775rem;">Total verified reviews count.</small>
+                    </div>
+                </div>
+            </div>
+
             <!-- Booking Policy Terms -->
             <div class="card mb-4">
                 <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">📄 Booking Policy Terms & Conditions</h3>

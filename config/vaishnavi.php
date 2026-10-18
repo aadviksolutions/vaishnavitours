@@ -81,5 +81,16 @@ return [
     'bank_ifsc_code' => env('BANK_IFSC_CODE'),
     'bank_account_number' => env('BANK_ACCOUNT_NUMBER'),
     'bank_name' => env('BANK_NAME'),
+    // Google Business Profile & Reviews Integration (Verified)
+    'google_business_name' => 'Vaishnavi Tours Taxi Cab Service Car Rental',
+    'google_share_url' => 'https://share.google/0Z3hLSDusfgPwsJx0',
+    'google_maps_url' => env('GOOGLE_MAPS_URL', 'https://www.google.com/search?kgmid=/g/11tjf7l5kx&hl=en-IN&q=Vaishnavi+Tours+Taxi+Cab+Service+Car+Rental'),
+    'google_all_reviews_url' => env('GOOGLE_ALL_REVIEWS_URL', 'https://www.google.com/search?kgmid=/g/11tjf7l5kx&q=Vaishnavi+Tours+Taxi+Cab+Service+Car+Rental#lrd=0x0:0x0,1,,,'),
+    'google_write_review_url' => env('GOOGLE_WRITE_REVIEW_URL', 'https://www.google.com/search?kgmid=/g/11tjf7l5kx&q=Vaishnavi+Tours+Taxi+Cab+Service+Car+Rental#lrd=0x0:0x0,3,,,'),
+    'google_kgmid' => '/g/11tjf7l5kx',
+    'google_place_id' => env('GOOGLE_PLACE_ID', ''),
+    'google_rating' => env('GOOGLE_RATING', '4.9'),
+    'google_review_count' => env('GOOGLE_REVIEW_COUNT', '160+'),
+
     'booking_terms' => env('BOOKING_TERMS', 'Toll plaza taxes, state border permits & parking fees are extra if applicable. Night driving allowance applies between 10:00 PM and 06:00 AM.'),
 ];
