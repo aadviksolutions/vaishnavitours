@@ -110,9 +110,13 @@
                     </div>
                 </div>
                 <div>
-                    <span style="color: var(--slate-500); font-size: 0.75rem; text-transform: uppercase; font-weight: 700;">Registration</span>
-                    <div style="font-weight: 700; font-family: monospace;">
-                        {{ $upcomingTrip->vehicle ? $upcomingTrip->vehicle->registration_number : 'Pending' }}
+                    <span style="color: var(--slate-500); font-size: 0.75rem; text-transform: uppercase; font-weight: 700;">Cab Number</span>
+                    <div style="font-weight: 700;">
+                        @if(in_array($upcomingTrip->booking_status, ['Started', 'On Trip', 'Completed']) && $upcomingTrip->vehicle)
+                            <span style="font-family: monospace;">{{ $upcomingTrip->vehicle->registration_number }}</span>
+                        @else
+                            <span style="color: var(--slate-500); font-size: 0.825rem; font-weight: 500;">Shared on dispatch</span>
+                        @endif
                     </div>
                 </div>
                 <div>

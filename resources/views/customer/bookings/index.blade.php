@@ -108,7 +108,11 @@
                                 <td>
                                     @if($booking->vehicle)
                                         <div style="font-weight: 700;">{{ $booking->vehicle->name }}</div>
-                                        <div style="font-size: 0.75rem; color: var(--slate-500); font-family: monospace;">{{ $booking->vehicle->registration_number }}</div>
+                                        @if(in_array($booking->booking_status, ['Started', 'On Trip', 'Completed']))
+                                            <div style="font-size: 0.75rem; color: var(--slate-500); font-family: monospace;">{{ $booking->vehicle->registration_number }}</div>
+                                        @else
+                                            <div style="font-size: 0.75rem; color: var(--slate-500);">{{ $booking->vehicle->vehicle_type }} • <span style="font-style: italic;">Cab number shared on dispatch</span></div>
+                                        @endif
                                     @else
                                         <span style="font-size: 0.8rem; color: var(--slate-400); font-style: italic;">Vehicle allocation pending</span>
                                     @endif

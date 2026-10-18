@@ -158,9 +158,15 @@
                             <div>
                                 <h4 style="margin: 0; font-size: 1.1rem; font-weight: 800;">{{ $booking->vehicle->name }}</h4>
                                 <div style="color: var(--slate-500); font-size: 0.85rem;">{{ $booking->vehicle->vehicle_type }} • {{ $booking->vehicle->seating_capacity }} Seater ({{ $booking->vehicle->ac_non_ac }})</div>
-                                <span class="badge badge-outline mt-1" style="font-size: 0.85rem; font-family: monospace; font-weight: 700;">
-                                    {{ $booking->vehicle->registration_number }}
-                                </span>
+                                @if(in_array($booking->booking_status, ['Started', 'On Trip', 'Completed']) && $booking->vehicle)
+                                    <span class="badge badge-outline mt-1" style="font-size: 0.85rem; font-family: monospace; font-weight: 700;">
+                                        {{ $booking->vehicle->registration_number }}
+                                    </span>
+                                @else
+                                    <span class="badge badge-outline mt-1" style="font-size: 0.75rem; color: var(--slate-500); font-weight: 600;">
+                                        Vehicle number shared on dispatch
+                                    </span>
+                                @endif
                             </div>
                         </div>
                     @else
@@ -214,7 +220,7 @@
                             @endif
                         </div>
                         <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--slate-700);">
-                            {{ $history->remarks ?: $history->comment }}
+                            {{ preg_replace('/\s*\([A-Z0-9\s-]{4,15}\)/', '', $history->remarks ?: $history->comment) }}
                         </p>
                     </div>
                 @empty

@@ -63,7 +63,7 @@ class VaishnaviUpgradeTest extends TestCase
 
     public function test_trip_duration_service_calculates_days_and_hours(): void
     {
-        $service = new TripDurationService();
+        $service = new TripDurationService;
         $pickupDate = Carbon::today()->format('Y-m-d');
         $returnDate = Carbon::today()->addDays(2)->format('Y-m-d');
 
@@ -294,5 +294,68 @@ class VaishnaviUpgradeTest extends TestCase
         $this->assertSame('Jharsuguda', $booking->destination);
         $this->assertEquals(5500.00, (float) $booking->total_amount);
         $this->assertTrue($booking->pricing_details['custom_fare'] ?? false);
+    }
+
+    public function test_vehicle_number_not_shown_to_customer_during_booking(): void
+    {
+        $customer = User::create([
+            'name' => 'Privacy Conscious Passenger',
+            'email' => 'privacy@example.com',
+            'phone' => '9876543219',
+            'password' => bcrypt('Password@123'),
+            'role' => 'customer',
+        ]);
+
+        $vehicle = Vehicle::create([
+            'name' => 'Maruti Suzuki Dzire',
+            'registration_number' => 'CG-10-SECRET-44',
+            'vehicle_type' => 'Sedan',
+            'seating_capacity' => 4,
+            'ac_non_ac' => 'AC',
+            'status' => 'Available',
+        ]);
+
+        $booking = Booking::create([
+            'booking_id' => 'VT-WEB-7788',
+            'booking_category' => 'WEB',
+            'customer_id' => $customer->id,
+            'trip_type' => 'One-Way',
+            'pickup_location' => 'Bilaspur',
+            'destination' => 'Raipur',
+            'travel_date' => Carbon::now()->addDays(1)->format('Y-m-d'),
+            'travel_time' => '10:00',
+            'vehicle_id' => $vehicle->id,
+            'booking_status' => 'Confirmed', // During booking stage
+            'total_amount' => 2200.00,
+            'paid_amount' => 0.00,
+            'balance_amount' => 2200.00,
+            'payment_status' => 'Pending',
+        ]);
+
+        $this->actingAs($customer);
+
+        // 1. Customer Dashboard
+        $dashResponse = $this->get('/customer/dashboard');
+        $dashResponse->assertStatus(200);
+        $dashResponse->assertDontSee('CG-10-SECRET-44');
+        $dashResponse->assertSee('Shared on dispatch');
+
+        // 2. Customer Bookings Index
+        $indexResponse = $this->get('/customer/bookings');
+        $indexResponse->assertStatus(200);
+        $indexResponse->assertDontSee('CG-10-SECRET-44');
+        $indexResponse->assertSee('Cab number shared on dispatch');
+
+        // 3. Customer Booking Show
+        $showResponse = $this->get('/customer/bookings/'.$booking->id);
+        $showResponse->assertStatus(200);
+        $showResponse->assertDontSee('CG-10-SECRET-44');
+        $showResponse->assertSee('Vehicle number shared on dispatch');
+
+        // 4. Once trip is Started, active cab plate is visible to customer
+        $booking->update(['booking_status' => 'Started']);
+        $startedResponse = $this->get('/customer/bookings/'.$booking->id);
+        $startedResponse->assertStatus(200);
+        $startedResponse->assertSee('CG-10-SECRET-44');
     }
 }
