@@ -135,18 +135,23 @@
                     </a>
                     @auth
                         @if(Auth::user()->isAdmin())
-                            <a href="{{ route('admin.dashboard') }}" style="font-weight: 700; color: var(--primary);"><x-icon name="settings" size="14" style="margin-right: 4px;" /> Admin Panel</a>
+                            <a href="{{ route('admin.dashboard') }}" class="top-bar-auth-link" style="color: #F59E0B !important; font-weight: 700; text-decoration: none;">
+                                <x-icon name="settings" size="14" style="color: #F59E0B; margin-right: 3px;" /> Admin Panel
+                            </a>
                         @else
-                            <a href="{{ route('customer.dashboard') }}" style="font-weight: 700; color: var(--primary);"><x-icon name="user" size="14" style="margin-right: 4px;" /> My Account</a>
+                            <a href="{{ route('customer.dashboard') }}" class="top-bar-auth-link" style="color: #F59E0B !important; font-weight: 700; text-decoration: none;">
+                                <x-icon name="user" size="14" style="color: #F59E0B; margin-right: 3px;" /> My Account
+                            </a>
                         @endif
+                        <span style="color: #475569; margin: 0 2px;">|</span>
                         <form action="{{ route('logout') }}" method="POST" style="display: inline;">
                             @csrf
-                            <button type="submit" style="background: none; border: none; color: var(--slate-300); cursor: pointer; font-size: 0.85rem;">Logout</button>
+                            <button type="submit" class="top-bar-logout-btn" style="background: none; border: none; color: #CBD5E1; cursor: pointer; font-size: 11.5px; font-weight: 600; padding: 0;">Logout</button>
                         </form>
                     @else
-                        <a href="{{ route('login') }}">Login</a>
-                        <span>|</span>
-                        <a href="{{ route('register') }}">Register</a>
+                        <a href="{{ route('login') }}" style="color: #E2E8F0; font-weight: 600;">Login</a>
+                        <span style="color: #475569; margin: 0 2px;">|</span>
+                        <a href="{{ route('register') }}" style="color: #E2E8F0; font-weight: 600;">Register</a>
                     @endauth
                 </div>
             </div>
@@ -154,7 +159,7 @@
             <!-- Mobile Top Bar Content (Compact, no horizontal scroll, verified numbers 9244784443) -->
             <div class="top-bar-mobile">
                 <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" class="top-bar-mobile-call">
-                    <x-icon name="phone" size="13" class="text-primary" style="margin-right: 4px;" />
+                    <x-icon name="phone" size="13" style="color: #F59E0B; margin-right: 4px;" />
                     <span>Call: <strong>{{ config('vaishnavi.phone_primary') }}</strong></span>
                 </a>
                 <a href="{{ route('contact') }}#emergency" class="top-badge-emergency" style="font-size: 0.72rem; padding: 2px 7px;">
@@ -194,9 +199,9 @@
                 <a href="{{ route('contact') }}" class="nav-link {{ request()->routeIs('contact') ? 'active' : '' }}">Contact</a>
                 @auth
                     @if(Auth::user()->isAdmin())
-                        <a href="{{ route('admin.dashboard') }}" class="nav-link" style="color: var(--primary-dark); font-weight: 700;">Admin</a>
+                        <a href="{{ route('admin.dashboard') }}" class="nav-link" style="color: #D97706; font-weight: 700;">Admin Panel</a>
                     @else
-                        <a href="{{ route('customer.dashboard') }}" class="nav-link" style="color: var(--primary-dark); font-weight: 700;">Dashboard</a>
+                        <a href="{{ route('customer.dashboard') }}" class="nav-link" style="color: #D97706; font-weight: 700;">My Account</a>
                     @endif
                 @else
                     <a href="{{ route('login') }}" class="nav-link {{ request()->routeIs('login') ? 'active' : '' }}">Login</a>
@@ -244,9 +249,9 @@
                 <a href="{{ route('contact') }}" class="mobile-nav-link {{ request()->routeIs('contact') ? 'active' : '' }}">Contact</a>
                 @auth
                     @if(Auth::user()->isAdmin())
-                        <a href="{{ route('admin.dashboard') }}" class="mobile-nav-link" style="color: var(--primary-dark); font-weight: 700;">Admin Panel</a>
+                        <a href="{{ route('admin.dashboard') }}" class="mobile-nav-link" style="color: #D97706; font-weight: 700;">Admin Panel</a>
                     @else
-                        <a href="{{ route('customer.dashboard') }}" class="mobile-nav-link" style="color: var(--primary-dark); font-weight: 700;">My Account</a>
+                        <a href="{{ route('customer.dashboard') }}" class="mobile-nav-link" style="color: #D97706; font-weight: 700;">My Account</a>
                     @endif
                 @else
                     <a href="{{ route('login') }}" class="mobile-nav-link {{ request()->routeIs('login') ? 'active' : '' }}">Login</a>

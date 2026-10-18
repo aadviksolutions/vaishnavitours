@@ -249,6 +249,35 @@ ul {
   border-color: #94A3B8;
   color: #202124 !important;
 }
+.top-bar-auth-link {
+  color: #F59E0B !important;
+  font-weight: 700 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  font-size: 11.5px;
+  transition: color 0.15s ease;
+}
+.top-bar-auth-link:hover {
+  color: #FBBF24 !important;
+}
+.top-bar-logout-btn {
+  background: none;
+  border: none;
+  color: #CBD5E1;
+  cursor: pointer;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transition: color 0.15s ease;
+}
+.top-bar-logout-btn:hover {
+  color: #EF4444;
+}
 .top-bar-inner {
   width: 100%;
 }
