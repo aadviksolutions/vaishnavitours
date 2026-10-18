@@ -127,6 +127,101 @@
     </a>
 </div>
 
+<!-- Route Queries & Pricing Notifications Alert Banner -->
+@if($recentQueries->isNotEmpty() || $unreadNotifications->isNotEmpty())
+    <div class="card mb-3" style="background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%); border: 1.5px solid #FCD34D; border-radius: 8px; padding: 1rem 1.25rem; box-shadow: 0 2px 8px rgba(217,119,6,0.08);">
+        <div class="d-flex justify-between align-center mb-2 flex-wrap gap-2">
+            <div class="d-flex align-center gap-2">
+                <span style="background: #F59E0B; color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; flex-shrink: 0;">
+                    🔔
+                </span>
+                <div>
+                    <h3 style="font-size: 14.5px; font-weight: 800; color: #92400E; margin: 0; display: flex; align-items: center; gap: 6px;">
+                        <span>Urgent Route Queries & Custom Quotations</span>
+                        <span class="badge" style="background: #DC2626; color: #fff; font-size: 11px; padding: 2px 6px;">{{ $recentQueries->count() }} Pending</span>
+                    </h3>
+                    <span style="font-size: 12px; color: #B45309;">
+                        Routes where rate was not pre-configured or round-trip queries automatically converted into quotation enquiries.
+                    </span>
+                </div>
+            </div>
+            <div class="d-flex align-center gap-2">
+                <a href="{{ route('admin.enquiries.index', ['status' => 'New']) }}" class="btn btn-sm" style="background: #D97706; color: #fff; font-weight: 700; font-size: 11.5px; padding: 4px 10px;">
+                    View All Enquiries ({{ $pendingEnquiries }}) →
+                </a>
+            </div>
+        </div>
+
+        @if($recentQueries->isNotEmpty())
+            <div class="table-responsive" style="margin-top: 0.65rem; background: #fff; border-radius: 6px; border: 1px solid #FDE68A;">
+                <table class="data-table" style="width: 100%; font-size: 12px; margin-bottom: 0;">
+                    <thead style="background: #FEF9C3;">
+                        <tr>
+                            <th style="color: #854D0E; font-weight: 700;">Query ID</th>
+                            <th style="color: #854D0E; font-weight: 700;">Customer & Contact</th>
+                            <th style="color: #854D0E; font-weight: 700;">Requested Route</th>
+                            <th style="color: #854D0E; font-weight: 700;">Travel Date</th>
+                            <th style="color: #854D0E; font-weight: 700;">Vehicle</th>
+                            <th style="color: #854D0E; font-weight: 700;">Status</th>
+                            <th style="color: #854D0E; font-weight: 700; text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($recentQueries as $query)
+                            <tr>
+                                <td style="font-weight: 700; font-family: monospace; color: #B45309;">
+                                    {{ $query->enquiry_id }}
+                                </td>
+                                <td>
+                                    <div style="font-weight: 700; color: var(--dark-900);">{{ $query->name }}</div>
+                                    <div style="font-size: 11px;">
+                                        <a href="tel:{{ $query->phone }}" style="color: #2563EB; text-decoration: none;">📞 {{ $query->phone }}</a>
+                                        @php $cPhone = preg_replace('/[^0-9]/', '', $query->phone); @endphp
+                                        <a href="https://wa.me/{{ strlen($cPhone) === 10 ? '91'.$cPhone : $cPhone }}" target="_blank" style="color: #16A34A; margin-left: 6px; text-decoration: none; font-weight: 600;">💬 WA</a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="font-weight: 600; color: var(--dark-900);">
+                                        {{ $query->pickup_location }} ➔ {{ $query->destination }}
+                                    </div>
+                                    <div style="font-size: 11px; color: #B45309;">
+                                        {{ $query->booking_type ?? 'One-Way' }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>{{ $query->travel_date ? \Carbon\Carbon::parse($query->travel_date)->format('d M Y') : 'Immediate' }}</div>
+                                    <div style="font-size: 10.5px; color: var(--slate-500);">Received {{ $query->created_at->diffForHumans() }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge" style="background: #FEF3C7; color: #92400E; font-weight: 600;">
+                                        {{ $query->vehicle_preference ?? 'Standard AC' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge" style="background: #FEE2E2; color: #991B1B; font-weight: 700;">
+                                        Awaiting Quote
+                                    </span>
+                                </td>
+                                <td style="text-align: right; white-space: nowrap;">
+                                    @if($query->converted_booking_id)
+                                        <a href="{{ route('admin.bookings.show', $query->converted_booking_id) }}" class="btn btn-sm btn-primary" style="font-size: 11px; padding: 3px 8px;">
+                                            Quote Fare & Dispatch →
+                                        </a>
+                                    @else
+                                        <a href="{{ route('admin.enquiries.show', $query) }}" class="btn btn-sm btn-primary" style="font-size: 11px; padding: 3px 8px;">
+                                            Review Query →
+                                        </a>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </div>
+@endif
+
 <!-- Section 2: 11 Functional Summary Cards -->
 <div class="kpi-grid-11 mb-3">
     <!-- 1. Today's bookings -->

@@ -6,10 +6,14 @@ use App\Models\Booking;
 use App\Models\BookingStatusHistory;
 use App\Models\Customer;
 use App\Models\Driver;
+use App\Models\Enquiry;
 use App\Models\Notification;
+use App\Models\Setting;
 use App\Models\Trip;
 use App\Models\User;
 use App\Models\Vehicle;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -38,11 +42,11 @@ class BookingService
         }
 
         $tz = config('app.timezone', 'Asia/Kolkata');
-        $pickupDateTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', trim($travelDate).' '.$pickupTimeStr, $tz);
+        $pickupDateTime = Carbon::createFromFormat('Y-m-d H:i:s', trim($travelDate).' '.$pickupTimeStr, $tz);
         $minAllowedTime = now($tz)->addHours(4);
 
         if ($pickupDateTime->lt($minAllowedTime)) {
-            $phone = \App\Models\Setting::where('key', 'phone_primary')->value('value') ?: '+91 92447 84443';
+            $phone = Setting::where('key', 'phone_primary')->value('value') ?: '+91 92447 84443';
             throw ValidationException::withMessages([
                 'travel_time' => "Online bookings must be scheduled at least 4 hours in advance. For urgent or late-night bookings, please call us directly at {$phone}.",
             ]);
@@ -100,6 +104,8 @@ class BookingService
             $tripType = $data['trip_type'] ?? 'One-Way';
             $ratePrice = null;
             $pricingDetails = null;
+            $isAutoQuery = false;
+
             if (! empty($data['rate_category'])) {
                 $quote = $this->rateQuoteService->quote(
                     $data['rate_category'],
@@ -110,7 +116,7 @@ class BookingService
                 );
 
                 $isAdmin = ($user && $user->role === 'admin')
-                    || (\Illuminate\Support\Facades\Auth::check() && \Illuminate\Support\Facades\Auth::user()->role === 'admin')
+                    || (Auth::check() && Auth::user()->role === 'admin')
                     || ! empty($data['is_admin_booking'])
                     || ! empty($data['is_custom_fare'])
                     || in_array($data['booking_category'] ?? '', [Booking::CATEGORY_MAN, Booking::CATEGORY_CORP, Booking::CATEGORY_TP], true);
@@ -142,9 +148,18 @@ class BookingService
                         'vehicle_category' => $data['vehicle_category'] ?? null,
                     ];
                 } else {
-                    throw ValidationException::withMessages([
-                        'destination' => ['Rate not configured. Please contact Vaishnavi Tours.'],
-                    ]);
+                    // Route rate is not configured -> automatically convert into query
+                    $isAutoQuery = true;
+                    $totalAmount = 0.00;
+                    $pricingDetails = [
+                        'total_amount' => 0.00,
+                        'quote_type' => 'unconfigured_route_query',
+                        'is_query' => true,
+                        'rate_category' => $data['rate_category'],
+                        'vehicle_category' => $data['vehicle_category'] ?? null,
+                        'pickup_location' => $data['pickup_location'] ?? null,
+                        'destination' => $data['destination'] ?? null,
+                    ];
                 }
             } elseif (isset($data['total_amount']) && (float) $data['total_amount'] > 0) {
                 $totalAmount = (float) $data['total_amount'];
@@ -166,12 +181,24 @@ class BookingService
                     'vehicle_id' => $vehicle->id,
                 ];
             } else {
-                throw ValidationException::withMessages([
-                    'rate_category' => ['Rate not configured. Please contact Vaishnavi Tours.'],
-                ]);
+                // Route rate is not configured -> automatically convert into query
+                $isAutoQuery = true;
+                $totalAmount = 0.00;
+                $pricingDetails = [
+                    'total_amount' => 0.00,
+                    'quote_type' => 'unconfigured_route_query',
+                    'is_query' => true,
+                    'rate_category' => $data['rate_category'] ?? 'outstation',
+                    'vehicle_category' => $data['vehicle_category'] ?? null,
+                    'pickup_location' => $data['pickup_location'] ?? null,
+                    'destination' => $data['destination'] ?? null,
+                ];
             }
 
             $noteDetails = [];
+            if ($isAutoQuery) {
+                $noteDetails[] = 'Auto Query: Rate not configured for this route (Pending Admin Quotation)';
+            }
             if (! empty($data['passenger_count'])) {
                 $noteDetails[] = 'Passengers: '.$data['passenger_count'];
             }
@@ -285,28 +312,72 @@ class BookingService
                 'changed_by' => $user->id,
                 'old_status' => null,
                 'new_status' => 'Pending',
-                'remarks' => 'Booking request submitted by customer. Awaiting confirmation.',
-                'comment' => 'Booking request submitted by customer. Awaiting confirmation.',
+                'remarks' => $isAutoQuery
+                    ? 'Rate not pre-configured for this route. Automatically converted to quotation query for dispatch review.'
+                    : 'Booking request submitted by customer. Awaiting confirmation.',
+                'comment' => $isAutoQuery
+                    ? 'Rate not pre-configured for this route. Automatically converted to quotation query for dispatch review.'
+                    : 'Booking request submitted by customer. Awaiting confirmation.',
                 'created_at' => now(),
             ]);
 
-            // Admin notification: Section 15: "New booking VT-1006 received."
-            Notification::create([
-                'user_id' => null, // Broadcast to admins
-                'title' => 'New Booking: #'.$booking->booking_id,
-                'message' => 'New booking '.$booking->booking_id.' received.',
-                'type' => 'booking',
-                'action_url' => '/admin/bookings/'.$booking->id,
-            ]);
+            if ($isAutoQuery) {
+                // Admin Query notification for Admin Dashboard
+                Notification::create([
+                    'user_id' => null, // Broadcast to admins
+                    'title' => '⚡ Route Query Awaiting Quotation: '.$data['pickup_location'].' ➔ '.$data['destination'],
+                    'message' => 'Rate not configured for '.$data['pickup_location'].' to '.$data['destination'].' ('.($data['vehicle_category'] ?? 'Sedan').'). Converted to Query #'.$booking->booking_id.'. Please provide quotation on dashboard.',
+                    'type' => 'query',
+                    'action_url' => '/admin/bookings/'.$booking->id,
+                ]);
 
-            // Customer notification
-            Notification::create([
-                'user_id' => $user->id,
-                'title' => 'Booking Request Received: #'.$booking->booking_id,
-                'message' => 'Your booking request '.$booking->booking_id.' has been received. Our dispatch team will confirm shortly.',
-                'type' => 'booking',
-                'action_url' => '/customer/bookings/'.$booking->id,
-            ]);
+                // Create Enquiry record so it appears in enquiries list, counts & dashboard
+                Enquiry::create([
+                    'source' => Enquiry::SOURCE_WEBSITE,
+                    'name' => $data['customer_name'] ?? ($user?->name ?? 'Customer'),
+                    'email' => $data['email'] ?? ($user?->email ?? null),
+                    'phone' => $data['mobile'] ?? ($user?->phone ?? ''),
+                    'booking_type' => $tripType,
+                    'pickup_location' => $data['pickup_location'] ?? '',
+                    'via_location' => $data['via_location'] ?? null,
+                    'destination' => $data['destination'] ?? '',
+                    'travel_date' => $data['travel_date'],
+                    'return_date' => $data['return_date'] ?? null,
+                    'duration_days' => $durationDays,
+                    'vehicle_preference' => $data['vehicle_category'] ?? 'Sedan',
+                    'subject' => 'Unconfigured Route Query: '.($data['pickup_location'] ?? '').' ➔ '.($data['destination'] ?? ''),
+                    'message' => 'Rate was not configured for '.($data['pickup_location'] ?? '').' to '.($data['destination'] ?? '').' ('.($data['vehicle_category'] ?? 'Sedan').'). Automatically converted into a quotation query.',
+                    'converted_booking_id' => $booking->id,
+                    'status' => Enquiry::STATUS_NEW,
+                ]);
+
+                // Customer notification
+                Notification::create([
+                    'user_id' => $user->id,
+                    'title' => 'Route Quotation Query Received: #'.$booking->booking_id,
+                    'message' => 'Your trip request for '.$data['pickup_location'].' to '.$data['destination'].' has been received as a quotation query. Our dispatch team will share a custom quote shortly.',
+                    'type' => 'booking',
+                    'action_url' => '/customer/bookings/'.$booking->id,
+                ]);
+            } else {
+                // Admin notification: Section 15: "New booking VT-1006 received."
+                Notification::create([
+                    'user_id' => null, // Broadcast to admins
+                    'title' => 'New Booking: #'.$booking->booking_id,
+                    'message' => 'New booking '.$booking->booking_id.' received.',
+                    'type' => 'booking',
+                    'action_url' => '/admin/bookings/'.$booking->id,
+                ]);
+
+                // Customer notification
+                Notification::create([
+                    'user_id' => $user->id,
+                    'title' => 'Booking Request Received: #'.$booking->booking_id,
+                    'message' => 'Your booking request '.$booking->booking_id.' has been received. Our dispatch team will confirm shortly.',
+                    'type' => 'booking',
+                    'action_url' => '/customer/bookings/'.$booking->id,
+                ]);
+            }
 
             return $booking;
         });
@@ -533,7 +604,7 @@ class BookingService
             // Validation: Prevent assignment of drivers with expired driving licence (Section 3)
             if ($driver->license_expiry && $driver->license_expiry->startOfDay()->isPast()) {
                 throw ValidationException::withMessages([
-                    'driver_id' => ["Chauffeur {$driver->name} cannot be assigned because their driving licence expired on ".$driver->license_expiry->format('d/m/Y')."."],
+                    'driver_id' => ["Chauffeur {$driver->name} cannot be assigned because their driving licence expired on ".$driver->license_expiry->format('d/m/Y').'.'],
                 ]);
             }
 

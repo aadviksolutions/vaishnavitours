@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Booking;
 use App\Models\Driver;
+use App\Models\Enquiry;
+use App\Models\Notification;
 use App\Models\Trip;
 use App\Models\User;
 use App\Models\Vehicle;
@@ -357,5 +359,74 @@ class VaishnaviUpgradeTest extends TestCase
         $startedResponse = $this->get('/customer/bookings/'.$booking->id);
         $startedResponse->assertStatus(200);
         $startedResponse->assertSee('CG-10-SECRET-44');
+    }
+
+    public function test_unconfigured_route_automatically_converts_to_query_and_creates_admin_notification(): void
+    {
+        $admin = User::create([
+            'name' => 'Dispatch Command Admin',
+            'email' => 'admin-query@vaishnavitours.in',
+            'phone' => '9179484443',
+            'password' => bcrypt('Password@123'),
+            'role' => 'admin',
+        ]);
+
+        $customer = User::create([
+            'name' => 'Unconfigured Route Customer',
+            'email' => 'unconfigured@example.com',
+            'phone' => '9131613010',
+            'password' => bcrypt('Password@123'),
+            'role' => 'customer',
+        ]);
+
+        $bookingService = app(BookingService::class);
+
+        // Submit route without pre-configured pricing in rate_routes table
+        $data = [
+            'customer_name' => 'Unconfigured Route Customer',
+            'mobile' => '9131613010',
+            'email' => 'unconfigured@example.com',
+            'trip_type' => 'One-Way',
+            'rate_category' => 'outstation',
+            'pickup_location' => 'Bilaspur',
+            'destination' => 'Jagdalpur Remote Bastar Hub',
+            'vehicle_category' => 'Sedan',
+            'travel_date' => Carbon::now()->addDays(2)->format('Y-m-d'),
+            'travel_time' => '07:30',
+            'terms_accepted' => '1',
+        ];
+
+        // Should NOT throw "Rate not configured" validation exception
+        $booking = $bookingService->createBooking($data, $customer);
+
+        $this->assertNotNull($booking->id);
+        $this->assertSame('Bilaspur', $booking->pickup_location);
+        $this->assertSame('Jagdalpur Remote Bastar Hub', $booking->destination);
+        $this->assertEquals(0.00, (float) $booking->total_amount);
+        $this->assertTrue($booking->pricing_details['is_query'] ?? false);
+        $this->assertSame('unconfigured_route_query', $booking->pricing_details['quote_type'] ?? '');
+
+        // 1. Verify Enquiry record was automatically created
+        $enquiry = Enquiry::where('converted_booking_id', $booking->id)->first();
+        $this->assertNotNull($enquiry);
+        $this->assertSame('Bilaspur', $enquiry->pickup_location);
+        $this->assertSame('Jagdalpur Remote Bastar Hub', $enquiry->destination);
+        $this->assertSame('9131613010', $enquiry->phone);
+
+        // 2. Verify Admin Notification was created
+        $adminNotif = Notification::whereNull('user_id')
+            ->where('type', 'query')
+            ->latest()
+            ->first();
+        $this->assertNotNull($adminNotif);
+        $this->assertStringContainsString('Jagdalpur Remote Bastar Hub', $adminNotif->message);
+
+        // 3. Verify Admin Dashboard displays this query alert
+        $this->actingAs($admin);
+        $adminDash = $this->get('/admin/dashboard');
+        $adminDash->assertStatus(200);
+        $adminDash->assertSee('Urgent Route Queries');
+        $adminDash->assertSee('Jagdalpur Remote Bastar Hub');
+        $adminDash->assertSee('Unconfigured Route Customer');
     }
 }

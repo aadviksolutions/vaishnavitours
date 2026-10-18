@@ -10,16 +10,29 @@
                 ⏳
             </div>
 
-            <span class="badge badge-warning" style="font-size: 0.95rem; padding: 0.4rem 1.25rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem; display: inline-block;">
-                Booking Request Received
-            </span>
+            @if((float)($booking->total_amount ?? 0) <= 0 || ($booking->pricing_details['is_query'] ?? false))
+                <span class="badge" style="font-size: 0.95rem; padding: 0.4rem 1.25rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem; display: inline-block; background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D;">
+                    Route Query Received
+                </span>
 
-            <h1 style="font-size: 2.15rem; font-weight: 900; margin-bottom: 0.5rem; color: var(--dark-950);">
-                Thank You, {{ $booking->customer?->name ?? 'Customer' }}!
-            </h1>
-            <p style="color: var(--slate-600); font-size: 1.05rem; margin-bottom: 2rem;">
-                Your cab booking request has been received by our Bilaspur dispatch team. We are assigning your vehicle & chauffeur.
-            </p>
+                <h1 style="font-size: 2.15rem; font-weight: 900; margin-bottom: 0.5rem; color: var(--dark-950);">
+                    Thank You, {{ $booking->customer?->name ?? 'Customer' }}!
+                </h1>
+                <p style="color: var(--slate-600); font-size: 1.05rem; margin-bottom: 2rem;">
+                    Your custom route query for <strong>{{ $booking->pickup_location }} to {{ $booking->destination }}</strong> has been received. Our dispatch team will review route parameters and share a customized quotation shortly.
+                </p>
+            @else
+                <span class="badge badge-warning" style="font-size: 0.95rem; padding: 0.4rem 1.25rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem; display: inline-block;">
+                    Booking Request Received
+                </span>
+
+                <h1 style="font-size: 2.15rem; font-weight: 900; margin-bottom: 0.5rem; color: var(--dark-950);">
+                    Thank You, {{ $booking->customer?->name ?? 'Customer' }}!
+                </h1>
+                <p style="color: var(--slate-600); font-size: 1.05rem; margin-bottom: 2rem;">
+                    Your cab booking request has been received by our Bilaspur dispatch team. We are assigning your vehicle & chauffeur.
+                </p>
+            @endif
 
             <!-- Booking Summary Card -->
             <div style="background: #ffffff; border: 1.5px solid var(--slate-200); border-radius: var(--radius-md); padding: 1.75rem; text-align: left; margin-bottom: 2rem; box-shadow: var(--shadow-sm);">
@@ -46,7 +59,7 @@
                     <div>
                         <span style="color: var(--slate-500); font-size: 0.8rem; font-weight: 600;">Vehicle:</span>
                         <div style="font-weight: 700; color: var(--dark-900);">
-                            {{ $booking->vehicle ? $booking->vehicle->name . ' (' . $booking->vehicle->vehicle_type . ')' : 'AC Cab Category' }}
+                            {{ $booking->vehicle ? $booking->vehicle->name . ' (' . $booking->vehicle->vehicle_type . ')' : ($booking->rateVehiclePrice?->vehicle_category ?? 'AC Cab Category') }}
                         </div>
                     </div>
                     <div>
@@ -68,8 +81,14 @@
                 </div>
 
                 <div class="d-flex justify-between align-center" style="border-top: 1.5px solid var(--slate-100); padding-top: 1rem; margin-top: 1.25rem;">
-                    <span style="color: var(--slate-600); font-weight: 700;">Estimated Base Fare:</span>
-                    <strong style="font-size: 1.35rem; color: var(--dark-950);">₹{{ number_format((float)($booking->total_amount ?? 0), 2) }}</strong>
+                    <span style="color: var(--slate-600); font-weight: 700;">Quotation Fare:</span>
+                    @if((float)($booking->total_amount ?? 0) > 0)
+                        <strong style="font-size: 1.35rem; color: var(--dark-950);">₹{{ number_format((float)($booking->total_amount ?? 0), 2) }}</strong>
+                    @else
+                        <span class="badge" style="background: #FEF3C7; color: #92400E; font-size: 0.95rem; font-weight: 800; padding: 0.35rem 0.85rem; border: 1px solid #FDE68A;">
+                            Custom Quotation on Review
+                        </span>
+                    @endif
                 </div>
 
                 <!-- Terms Agreement Notice -->

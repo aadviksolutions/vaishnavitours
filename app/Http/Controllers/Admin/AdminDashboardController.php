@@ -149,6 +149,20 @@ class AdminDashboardController extends Controller
 
         $unreadNotificationsCount = Notification::whereNull('user_id')->where('is_read', false)->count();
 
+        // Urgent route queries awaiting custom quotation
+        $recentQueries = Enquiry::with('convertedBooking')
+            ->whereIn('status', ['New', 'Contacted'])
+            ->orWhereNull('status')
+            ->latest()
+            ->take(6)
+            ->get();
+
+        $unreadNotifications = Notification::whereNull('user_id')
+            ->where('is_read', false)
+            ->latest()
+            ->take(5)
+            ->get();
+
         // Revenue chart data: last 6 months
         $revenueMonths = [];
         $revenueData = [];
@@ -180,6 +194,8 @@ class AdminDashboardController extends Controller
             'recentBookings',
             'recentPayments',
             'unreadNotificationsCount',
+            'recentQueries',
+            'unreadNotifications',
             'revenueMonths',
             'revenueData'
         ));

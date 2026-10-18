@@ -123,8 +123,13 @@
                     + New Booking
                 </a>
 
-                <a href="{{ route('admin.notifications.index') }}" class="btn btn-outline btn-sm" title="Notifications" style="padding: 0 8px; color: var(--slate-600);">
+                <a href="{{ route('admin.notifications.index') }}" class="btn btn-outline btn-sm" title="Notifications" style="padding: 0 8px; color: var(--slate-600); position: relative;">
                     <x-icon name="bell" size="15" />
+                    @if(isset($unreadNotificationsCount) && $unreadNotificationsCount > 0)
+                        <span style="position: absolute; top: -5px; right: -5px; background: #DC2626; color: #fff; font-size: 10px; font-weight: 800; border-radius: 9999px; min-width: 16px; height: 16px; padding: 0 4px; display: inline-flex; align-items: center; justify-content: center; line-height: 1; box-shadow: 0 1px 3px rgba(0,0,0,0.2);">
+                            {{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }}
+                        </span>
+                    @endif
                 </a>
 
                 <div class="d-flex align-center gap-2" style="border-left: 1px solid var(--slate-200); padding-left: 0.75rem; margin-left: 0.25rem;">
