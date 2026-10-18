@@ -429,4 +429,73 @@ class VaishnaviUpgradeTest extends TestCase
         $adminDash->assertSee('Jagdalpur Remote Bastar Hub');
         $adminDash->assertSee('Unconfigured Route Customer');
     }
+
+    public function test_other_location_booking_converts_to_query_without_price_and_shows_on_admin_dashboard(): void
+    {
+        $admin = User::create([
+            'name' => 'Dispatch Admin 2',
+            'email' => 'dispatch2@vaishnavitours.com',
+            'phone' => '9131613012',
+            'password' => bcrypt('Admin@123'),
+            'role' => 'admin',
+        ]);
+
+        $postData = [
+            'customer_name' => 'Other Location Customer',
+            'mobile' => '9131613099',
+            'email' => 'otherloc@example.com',
+            'trip_type' => 'One-Way',
+            'rate_category' => 'outstation',
+            'pickup_location' => 'Other',
+            'pickup_other' => 'Janjgir Champa Industrial Area',
+            'destination' => 'Bilaspur',
+            'vehicle_category' => 'Sedan',
+            'travel_date' => Carbon::now()->addDays(2)->format('Y-m-d'),
+            'travel_time' => '10:00',
+            'is_custom_query' => '1',
+            'terms_accepted' => '1',
+        ];
+
+        // 1. Submit through the public booking store route
+        $response = $this->post(route('booking.store'), $postData);
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect();
+
+        // 2. Verify booking is created as query with 0 price
+        $booking = Booking::where('destination', 'Bilaspur')
+            ->where('pickup_location', 'Janjgir Champa Industrial Area')
+            ->first();
+
+        $this->assertNotNull($booking);
+        $this->assertSame('Janjgir Champa Industrial Area', $booking->pickup_location);
+        $this->assertSame('Bilaspur', $booking->destination);
+        $this->assertEquals(0.00, (float) $booking->total_amount);
+        $this->assertTrue($booking->pricing_details['is_query'] ?? false);
+        $this->assertSame('custom_location_query', $booking->pricing_details['quote_type'] ?? '');
+
+        // 3. Verify Enquiry record was automatically created
+        $enquiry = Enquiry::where('converted_booking_id', $booking->id)->first();
+        $this->assertNotNull($enquiry);
+        $this->assertSame('Janjgir Champa Industrial Area', $enquiry->pickup_location);
+        $this->assertSame('Bilaspur', $enquiry->destination);
+        $this->assertSame('9131613099', $enquiry->phone);
+        $this->assertStringContainsString('Custom Location Query', $enquiry->subject);
+
+        // 4. Verify Admin Notification
+        $adminNotif = Notification::whereNull('user_id')
+            ->where('type', 'query')
+            ->where('title', 'like', '%Custom Location Query%')
+            ->latest()
+            ->first();
+        $this->assertNotNull($adminNotif);
+        $this->assertStringContainsString('Janjgir Champa Industrial Area', $adminNotif->title);
+
+        // 5. Verify Admin Dashboard shows the query alert
+        $this->actingAs($admin);
+        $adminDash = $this->get('/admin/dashboard');
+        $adminDash->assertStatus(200);
+        $adminDash->assertSee('Urgent Route Queries');
+        $adminDash->assertSee('Janjgir Champa Industrial Area');
+        $adminDash->assertSee('Other Location Customer');
+    }
 }

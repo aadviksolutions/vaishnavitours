@@ -147,6 +147,14 @@ class PublicWebsiteController extends Controller
             $request->merge(['destination' => $request->input('pickup_location', 'Local Service').' (Local)']);
         }
 
+        // Handle "Other" custom location inputs
+        if ($request->input('pickup_location') === 'Other' && $request->filled('pickup_other')) {
+            $request->merge(['pickup_location' => trim((string) $request->input('pickup_other'))]);
+        }
+        if ($request->input('destination') === 'Other' && $request->filled('destination_other')) {
+            $request->merge(['destination' => trim((string) $request->input('destination_other'))]);
+        }
+
         // For non-round-trip bookings, clear return_date and return_time so they never trigger validation errors
         if ($request->input('trip_type') !== 'Round-Trip' || ! $request->filled('return_date')) {
             $request->merge([
@@ -184,8 +192,11 @@ class PublicWebsiteController extends Controller
             'email' => 'nullable|email|max:255',
             'trip_type' => 'required|string',
             'pickup_location' => 'required|string|max:255',
+            'pickup_other' => 'nullable|string|max:255',
             'via_location' => 'nullable|string|max:255',
             'destination' => 'required|string|max:255',
+            'destination_other' => 'nullable|string|max:255',
+            'is_custom_query' => 'nullable',
             'rate_category' => 'required|in:airport,outstation,round_trip,local_8h_80km,local_4h_40km,tour_package,emergency',
             'vehicle_category' => 'required|string|max:80',
             'estimated_km' => 'nullable|numeric|min:0.01',
@@ -219,6 +230,13 @@ class PublicWebsiteController extends Controller
 
         $data['terms_version'] = '1.0';
         $data['booking_category'] = Booking::CATEGORY_WEB;
+
+        // Mark custom location queries and round-trip queries as zero-amount enquiries
+        $isCustomLocationQuery = ! empty($request->input('is_custom_query')) || $request->filled('pickup_other') || $request->filled('destination_other');
+        if ($isCustomLocationQuery) {
+            $data['is_custom_query'] = true;
+            $data['total_amount'] = 0.00;
+        }
 
         // Section 5: Round-trip customer bookings are treated as quotation queries without automatic calculation
         if ($data['trip_type'] === 'Round-Trip' || $data['rate_category'] === 'round_trip') {

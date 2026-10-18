@@ -69,6 +69,7 @@
                     @csrf
 
                     <input type="hidden" name="rate_category" id="rateCategory" value="{{ $defaultRateCategory }}">
+                    <input type="hidden" name="is_custom_query" id="isCustomQuery" value="{{ old('is_custom_query', '0') }}">
 
                     <!-- 1. Trip Type -->
                     <div class="form-group" style="margin-bottom: 1.25rem;">
@@ -106,7 +107,12 @@
                                     @foreach($locations as $location)
                                         <option value="{{ $location }}" {{ old('pickup_location', request('pickup_location')) === $location ? 'selected' : '' }}>{{ $location }}</option>
                                     @endforeach
+                                    <option value="Other" {{ old('pickup_location') === 'Other' || old('pickup_other') ? 'selected' : '' }}>➕ Other Location (Specify below)</option>
                                 </select>
+                                <div id="pickupOtherGroup" style="display: {{ old('pickup_other') || old('pickup_location') === 'Other' ? 'block' : 'none' }}; margin-top: 0.35rem;">
+                                    <input type="text" name="pickup_other" id="pickupOtherInput" class="form-control form-control-sm" placeholder="Enter custom pickup city / area..." value="{{ old('pickup_other') }}" style="border-color: #3B82F6; background: #F0F9FF;">
+                                    <div style="font-size: 10.5px; color: #1E40AF; margin-top: 2px;">* Custom location: No immediate fare shown. Quote will be sent by dispatch.</div>
+                                </div>
                             </div>
 
                             <!-- 2. Via Location (Required principally for Round-Trip) -->
@@ -127,7 +133,12 @@
                                     @foreach($locations as $location)
                                         <option value="{{ $location }}" {{ old('destination', request('destination')) === $location ? 'selected' : '' }}>{{ $location }}</option>
                                     @endforeach
+                                    <option value="Other" {{ old('destination') === 'Other' || old('destination_other') ? 'selected' : '' }}>➕ Other Location (Specify below)</option>
                                 </select>
+                                <div id="destinationOtherGroup" style="display: {{ old('destination_other') || old('destination') === 'Other' ? 'block' : 'none' }}; margin-top: 0.35rem;">
+                                    <input type="text" name="destination_other" id="destinationOtherInput" class="form-control form-control-sm" placeholder="Enter custom drop city / area..." value="{{ old('destination_other') }}" style="border-color: #3B82F6; background: #F0F9FF;">
+                                    <div style="font-size: 10.5px; color: #1E40AF; margin-top: 2px;">* Custom location: No immediate fare shown. Quote will be sent by dispatch.</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -313,6 +324,33 @@
     travelTimeInput.addEventListener('change', checkFourHourNotice);
     travelDateInput.addEventListener('change', checkFourHourNotice);
 
+    const pickupOtherGroup = document.querySelector('#pickupOtherGroup');
+    const pickupOtherInput = document.querySelector('#pickupOtherInput');
+    const destinationOtherGroup = document.querySelector('#destinationOtherGroup');
+    const destinationOtherInput = document.querySelector('#destinationOtherInput');
+    const isCustomQueryInput = document.querySelector('#isCustomQuery');
+
+    function toggleOtherLocationInputs() {
+        if (pickupInput.value === 'Other') {
+            pickupOtherGroup.style.display = 'block';
+            pickupOtherInput.focus();
+        } else {
+            pickupOtherGroup.style.display = 'none';
+        }
+
+        if (destinationInput.value === 'Other') {
+            destinationOtherGroup.style.display = 'block';
+            destinationOtherInput.focus();
+        } else {
+            destinationOtherGroup.style.display = 'none';
+        }
+    }
+
+    pickupInput.addEventListener('change', toggleOtherLocationInputs);
+    destinationInput.addEventListener('change', toggleOtherLocationInputs);
+    if (pickupOtherInput) pickupOtherInput.addEventListener('input', updateRatePreview);
+    if (destinationOtherInput) destinationOtherInput.addEventListener('input', updateRatePreview);
+
     function updateRatePreview() {
         const selectedTrip = document.querySelector('input[name="trip_type"]:checked');
         const selectedVehicle = document.querySelector('input[name="vehicle_category"]:checked');
@@ -322,6 +360,30 @@
 
         const category = categoryInput.value;
         const isRoundTrip = (category === 'round_trip');
+
+        // Check if user selected "Other" location -> NO PRICE SHOWN, BECOMES A QUERY
+        const isCustomPickup = pickupInput.value === 'Other' || (pickupOtherInput && pickupOtherInput.value.trim().length > 0);
+        const isCustomDest = destinationInput.value === 'Other' || (destinationOtherInput && destinationOtherInput.value.trim().length > 0);
+        const isOtherLocation = isCustomPickup || isCustomDest;
+
+        if (isOtherLocation) {
+            if (isCustomQueryInput) isCustomQueryInput.value = '1';
+            estimatedKmGroup.style.display = 'none';
+            standardRatePreview.style.display = 'block';
+            roundTripQuotationNotice.style.display = 'none';
+
+            previewAmount.innerHTML = '<span style="color: #D97706; font-size: 1.15rem; font-weight: 700;">Price on Request (Custom Quote)</span>';
+            previewDetails.textContent = 'Custom location selected. Price is not calculated automatically. A quotation query will be sent to the admin dashboard for pricing.';
+
+            btnSubmitBooking.textContent = 'Submit Travel Query';
+            btnSubmitBooking.classList.remove('btn-primary');
+            btnSubmitBooking.classList.add('bg-amber-600', 'hover:bg-amber-700', 'text-white');
+            submitHeaderTitle.textContent = 'Custom Location Quotation Query';
+            submitHeaderSub.textContent = 'No immediate charge. Our dispatch team will review your location and send a customized quote.';
+            return;
+        }
+
+        if (isCustomQueryInput) isCustomQueryInput.value = '0';
 
         // Toggle UI modes for Round-Trip vs One-Way
         if (isRoundTrip) {
@@ -377,6 +439,46 @@
 
         const gstText = ' + 5% GST';
         previewAmount.textContent = `₹${Number(quote.total_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}${gstText}`;
+    }
+
+    // Form submit validation & sync
+    const bookingFormEl = document.querySelector('#bookingForm');
+    if (bookingFormEl) {
+        bookingFormEl.addEventListener('submit', function(e) {
+            if (pickupInput.value === 'Other' || (pickupOtherInput && pickupOtherInput.value.trim().length > 0)) {
+                const val = pickupOtherInput ? pickupOtherInput.value.trim() : '';
+                if (!val) {
+                    alert('Please enter your custom pickup location.');
+                    if (pickupOtherInput) pickupOtherInput.focus();
+                    e.preventDefault();
+                    return false;
+                }
+                let opt = Array.from(pickupInput.options).find(o => o.value === val);
+                if (!opt) {
+                    opt = new Option(val, val, true, true);
+                    pickupInput.add(opt);
+                }
+                pickupInput.value = val;
+                if (isCustomQueryInput) isCustomQueryInput.value = '1';
+            }
+
+            if (destinationInput.value === 'Other' || (destinationOtherInput && destinationOtherInput.value.trim().length > 0)) {
+                const val = destinationOtherInput ? destinationOtherInput.value.trim() : '';
+                if (!val) {
+                    alert('Please enter your custom drop location.');
+                    if (destinationOtherInput) destinationOtherInput.focus();
+                    e.preventDefault();
+                    return false;
+                }
+                let opt = Array.from(destinationInput.options).find(o => o.value === val);
+                if (!opt) {
+                    opt = new Option(val, val, true, true);
+                    destinationInput.add(opt);
+                }
+                destinationInput.value = val;
+                if (isCustomQueryInput) isCustomQueryInput.value = '1';
+            }
+        });
     }
 
     // Trip type selection styling

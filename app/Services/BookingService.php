@@ -105,8 +105,29 @@ class BookingService
             $ratePrice = null;
             $pricingDetails = null;
             $isAutoQuery = false;
+            $isCustomLocation = ! empty($data['is_custom_query'])
+                || ! empty($data['is_other_location'])
+                || ($data['pickup_location'] ?? '') === 'Other'
+                || ($data['destination'] ?? '') === 'Other'
+                || ! empty($data['pickup_other'])
+                || ! empty($data['destination_other'])
+                || ($data['quote_type'] ?? '') === 'custom_location_query';
 
-            if (! empty($data['rate_category'])) {
+            if ($isCustomLocation) {
+                // User chose Other/Custom location -> strictly convert to query with 0 price
+                $isAutoQuery = true;
+                $totalAmount = 0.00;
+                $pricingDetails = [
+                    'total_amount' => 0.00,
+                    'quote_type' => 'custom_location_query',
+                    'is_query' => true,
+                    'is_custom_location' => true,
+                    'rate_category' => $data['rate_category'] ?? 'outstation',
+                    'vehicle_category' => $data['vehicle_category'] ?? null,
+                    'pickup_location' => $data['pickup_location'] ?? null,
+                    'destination' => $data['destination'] ?? null,
+                ];
+            } elseif (! empty($data['rate_category'])) {
                 $quote = $this->rateQuoteService->quote(
                     $data['rate_category'],
                     $data['pickup_location'],
@@ -196,7 +217,9 @@ class BookingService
             }
 
             $noteDetails = [];
-            if ($isAutoQuery) {
+            if ($isCustomLocation) {
+                $noteDetails[] = 'Custom Location Query: Price on Request (Pending Admin Quotation)';
+            } elseif ($isAutoQuery) {
                 $noteDetails[] = 'Auto Query: Rate not configured for this route (Pending Admin Quotation)';
             }
             if (! empty($data['passenger_count'])) {
@@ -312,12 +335,16 @@ class BookingService
                 'changed_by' => $user->id,
                 'old_status' => null,
                 'new_status' => 'Pending',
-                'remarks' => $isAutoQuery
-                    ? 'Rate not pre-configured for this route. Automatically converted to quotation query for dispatch review.'
-                    : 'Booking request submitted by customer. Awaiting confirmation.',
-                'comment' => $isAutoQuery
-                    ? 'Rate not pre-configured for this route. Automatically converted to quotation query for dispatch review.'
-                    : 'Booking request submitted by customer. Awaiting confirmation.',
+                'remarks' => $isCustomLocation
+                    ? 'Custom/Other location requested. Automatically converted to quotation query for dispatch review.'
+                    : ($isAutoQuery
+                        ? 'Rate not pre-configured for this route. Automatically converted to quotation query for dispatch review.'
+                        : 'Booking request submitted by customer. Awaiting confirmation.'),
+                'comment' => $isCustomLocation
+                    ? 'Custom/Other location requested. Automatically converted to quotation query for dispatch review.'
+                    : ($isAutoQuery
+                        ? 'Rate not pre-configured for this route. Automatically converted to quotation query for dispatch review.'
+                        : 'Booking request submitted by customer. Awaiting confirmation.'),
                 'created_at' => now(),
             ]);
 
@@ -325,8 +352,10 @@ class BookingService
                 // Admin Query notification for Admin Dashboard
                 Notification::create([
                     'user_id' => null, // Broadcast to admins
-                    'title' => '⚡ Route Query Awaiting Quotation: '.$data['pickup_location'].' ➔ '.$data['destination'],
-                    'message' => 'Rate not configured for '.$data['pickup_location'].' to '.$data['destination'].' ('.($data['vehicle_category'] ?? 'Sedan').'). Converted to Query #'.$booking->booking_id.'. Please provide quotation on dashboard.',
+                    'title' => ($isCustomLocation ? '⚡ Custom Location Query: ' : '⚡ Route Query Awaiting Quotation: ').$data['pickup_location'].' ➔ '.$data['destination'],
+                    'message' => $isCustomLocation
+                        ? 'Custom location selected for '.$data['pickup_location'].' to '.$data['destination'].' ('.($data['vehicle_category'] ?? 'Sedan').'). Query #'.$booking->booking_id.'. Price not shown during booking; please quote fare on dashboard.'
+                        : 'Rate not configured for '.$data['pickup_location'].' to '.$data['destination'].' ('.($data['vehicle_category'] ?? 'Sedan').'). Converted to Query #'.$booking->booking_id.'. Please provide quotation on dashboard.',
                     'type' => 'query',
                     'action_url' => '/admin/bookings/'.$booking->id,
                 ]);
@@ -345,8 +374,10 @@ class BookingService
                     'return_date' => $data['return_date'] ?? null,
                     'duration_days' => $durationDays,
                     'vehicle_preference' => $data['vehicle_category'] ?? 'Sedan',
-                    'subject' => 'Unconfigured Route Query: '.($data['pickup_location'] ?? '').' ➔ '.($data['destination'] ?? ''),
-                    'message' => 'Rate was not configured for '.($data['pickup_location'] ?? '').' to '.($data['destination'] ?? '').' ('.($data['vehicle_category'] ?? 'Sedan').'). Automatically converted into a quotation query.',
+                    'subject' => ($isCustomLocation ? 'Custom Location Query: ' : 'Unconfigured Route Query: ').($data['pickup_location'] ?? '').' ➔ '.($data['destination'] ?? ''),
+                    'message' => $isCustomLocation
+                        ? 'Customer selected other/custom location: '.($data['pickup_location'] ?? '').' to '.($data['destination'] ?? '').' ('.($data['vehicle_category'] ?? 'Sedan').'). No price was shown during booking. Converted into quotation query for admin pricing.'
+                        : 'Rate was not configured for '.($data['pickup_location'] ?? '').' to '.($data['destination'] ?? '').' ('.($data['vehicle_category'] ?? 'Sedan').'). Automatically converted into a quotation query.',
                     'converted_booking_id' => $booking->id,
                     'status' => Enquiry::STATUS_NEW,
                 ]);
@@ -354,7 +385,7 @@ class BookingService
                 // Customer notification
                 Notification::create([
                     'user_id' => $user->id,
-                    'title' => 'Route Quotation Query Received: #'.$booking->booking_id,
+                    'title' => ($isCustomLocation ? 'Custom Location Query Received: #' : 'Route Quotation Query Received: #').$booking->booking_id,
                     'message' => 'Your trip request for '.$data['pickup_location'].' to '.$data['destination'].' has been received as a quotation query. Our dispatch team will share a custom quote shortly.',
                     'type' => 'booking',
                     'action_url' => '/customer/bookings/'.$booking->id,

@@ -174,6 +174,7 @@
                     <input type="hidden" name="rate_category" id="formRateCategory" value="{{ old('rate_category', 'outstation') }}">
                     <input type="hidden" name="pickup_location" id="pickupLocationInput" value="{{ old('pickup_location', 'Bilaspur') }}" required>
                     <input type="hidden" name="destination" id="destinationLocationInput" value="{{ old('destination', 'Raipur Airport') }}" required>
+                    <input type="hidden" name="is_custom_query" id="isCustomQueryInput" value="{{ old('is_custom_query', '0') }}">
                     <input type="hidden" name="terms_accepted" value="1">
 
                     <!-- Airport Transfer Sub-Toggle (Airport Drop vs Airport Pickup) -->
@@ -225,11 +226,23 @@
                                                     @endif
                                                 </li>
                                             @endforeach
+                                            <li class="searchable-select-item is-other-item" data-value="Other" role="option" tabindex="0" style="border-top: 1px dashed var(--slate-300); color: var(--primary); font-weight: 700; background: #F8FAFC;">
+                                                <span>➕ Other Location (Specify below)</span>
+                                                <span style="font-size: 10px; color: var(--accent); font-weight: 700; background: #EFF6FF; padding: 2px 5px; border-radius: 3px;">Custom</span>
+                                            </li>
                                         </ul>
                                         <div class="searchable-select-empty" id="pickupSelectEmpty" style="display: none;">
-                                            <div>No matching location available.</div>
-                                            <a href="{{ route('contact') }}" style="color: var(--primary); font-weight: 600; text-decoration: underline; font-size: 11px;">Contact for custom route</a>
+                                            <div>No matching location in quick list.</div>
+                                            <button type="button" id="btnPickupCustomFallback" style="margin-top: 4px; background: none; border: none; color: var(--primary); font-weight: 700; text-decoration: underline; font-size: 11px; cursor: pointer; padding: 0;">
+                                                ➕ Specify custom location
+                                            </button>
                                         </div>
+                                    </div>
+                                </div>
+                                <div id="pickupOtherWrap" style="display: {{ old('pickup_other') || old('pickup_location') === 'Other' ? 'block' : 'none' }}; margin-top: 0.4rem;">
+                                    <input type="text" name="pickup_other" id="pickupOtherInput" class="form-control form-control-sm" placeholder="Enter your custom pickup city / area / address..." value="{{ old('pickup_other') }}" style="border-color: #3B82F6; background: #F0F9FF; font-size: 12px;">
+                                    <div style="font-size: 10px; color: #1E40AF; margin-top: 2px; font-weight: 500;">
+                                        * Custom location: No immediate price charged. Admin will quote customized rate.
                                     </div>
                                 </div>
                                 @error('pickup_location') <div class="form-error">{{ $message }}</div> @enderror
@@ -266,11 +279,23 @@
                                                     @endif
                                                 </li>
                                             @endforeach
+                                            <li class="searchable-select-item is-other-item" data-value="Other" role="option" tabindex="0" style="border-top: 1px dashed var(--slate-300); color: var(--primary); font-weight: 700; background: #F8FAFC;">
+                                                <span>➕ Other Location (Specify below)</span>
+                                                <span style="font-size: 10px; color: var(--accent); font-weight: 700; background: #EFF6FF; padding: 2px 5px; border-radius: 3px;">Custom</span>
+                                            </li>
                                         </ul>
                                         <div class="searchable-select-empty" id="destinationSelectEmpty" style="display: none;">
-                                            <div>No matching location available.</div>
-                                            <a href="{{ route('contact') }}" style="color: var(--primary); font-weight: 600; text-decoration: underline; font-size: 11px;">Contact for custom route</a>
+                                            <div>No matching destination in quick list.</div>
+                                            <button type="button" id="btnDestinationCustomFallback" style="margin-top: 4px; background: none; border: none; color: var(--primary); font-weight: 700; text-decoration: underline; font-size: 11px; cursor: pointer; padding: 0;">
+                                                ➕ Specify custom destination
+                                            </button>
                                         </div>
+                                    </div>
+                                </div>
+                                <div id="destinationOtherWrap" style="display: {{ old('destination_other') || old('destination') === 'Other' ? 'block' : 'none' }}; margin-top: 0.4rem;">
+                                    <input type="text" name="destination_other" id="destinationOtherInput" class="form-control form-control-sm" placeholder="Enter your custom drop city / area / address..." value="{{ old('destination_other') }}" style="border-color: #3B82F6; background: #F0F9FF; font-size: 12px;">
+                                    <div style="font-size: 10px; color: #1E40AF; margin-top: 2px; font-weight: 500;">
+                                        * Custom location: No immediate price charged. Admin will quote customized rate.
                                     </div>
                                 </div>
                                 @error('destination') <div class="form-error">{{ $message }}</div> @enderror
@@ -1113,9 +1138,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const hiddenInput = document.getElementById(type + 'LocationInput');
         const displaySpan = document.getElementById(type + 'SelectDisplay');
         const list = document.getElementById(type + 'SelectList');
+        const otherWrap = document.getElementById(type + 'OtherWrap');
+        const otherInput = document.getElementById(type + 'OtherInput');
+        const isCustomQueryInput = document.getElementById('isCustomQueryInput');
 
         if (hiddenInput) hiddenInput.value = value;
-        if (displaySpan) displaySpan.textContent = value;
+        if (displaySpan) displaySpan.textContent = value === 'Other' ? 'Other Location (Custom)' : value;
 
         if (list) {
             list.querySelectorAll('.searchable-select-item').forEach(item => {
@@ -1125,9 +1153,25 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
+        if (value === 'Other') {
+            if (otherWrap) otherWrap.style.display = 'block';
+            if (otherInput) {
+                setTimeout(() => otherInput.focus(), 80);
+            }
+            if (isCustomQueryInput) isCustomQueryInput.value = '1';
+        } else {
+            if (otherWrap) otherWrap.style.display = 'none';
+            if (otherInput) otherInput.value = '';
+            const otherType = (type === 'pickup') ? 'destination' : 'pickup';
+            const otherHidden = document.getElementById(otherType + 'LocationInput');
+            if (isCustomQueryInput && (!otherHidden || otherHidden.value !== 'Other')) {
+                isCustomQueryInput.value = '0';
+            }
+        }
+
         // Prevent identical pickup and drop
         if (sameLocationWarning) {
-            if (pickupInput.value && destinationInput.value && pickupInput.value === destinationInput.value && currentTab !== 'local') {
+            if (pickupInput.value && destinationInput.value && pickupInput.value === destinationInput.value && currentTab !== 'local' && pickupInput.value !== 'Other') {
                 sameLocationWarning.style.display = 'block';
             } else {
                 sameLocationWarning.style.display = 'none';
@@ -1137,6 +1181,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
     setupSearchableSelect('pickup');
     setupSearchableSelect('destination');
+
+    // Custom fallback button clicks
+    const btnPickupCustomFallback = document.getElementById('btnPickupCustomFallback');
+    if (btnPickupCustomFallback) {
+        btnPickupCustomFallback.addEventListener('click', function(e) {
+            e.stopPropagation();
+            setSelectLocation('pickup', 'Other');
+            const pickupMenu = document.getElementById('pickupSelectMenu');
+            if (pickupMenu) pickupMenu.style.display = 'none';
+            const pickupBtn = document.getElementById('pickupSelectBtn');
+            if (pickupBtn) pickupBtn.classList.remove('is-open');
+            updateFareQuote();
+        });
+    }
+    const btnDestinationCustomFallback = document.getElementById('btnDestinationCustomFallback');
+    if (btnDestinationCustomFallback) {
+        btnDestinationCustomFallback.addEventListener('click', function(e) {
+            e.stopPropagation();
+            setSelectLocation('destination', 'Other');
+            const destMenu = document.getElementById('destinationSelectMenu');
+            if (destMenu) destMenu.style.display = 'none';
+            const destBtn = document.getElementById('destinationSelectBtn');
+            if (destBtn) destBtn.classList.remove('is-open');
+            updateFareQuote();
+        });
+    }
+
+    // Custom text input listeners
+    const pickupOtherInput = document.getElementById('pickupOtherInput');
+    const destinationOtherInput = document.getElementById('destinationOtherInput');
+    if (pickupOtherInput) {
+        pickupOtherInput.addEventListener('input', function() {
+            if (this.value.trim().length > 0) {
+                document.getElementById('isCustomQueryInput').value = '1';
+            }
+            updateFareQuote();
+        });
+    }
+    if (destinationOtherInput) {
+        destinationOtherInput.addEventListener('input', function() {
+            if (this.value.trim().length > 0) {
+                document.getElementById('isCustomQueryInput').value = '1';
+            }
+            updateFareQuote();
+        });
+    }
 
     // 6. Swap Locations Control
     if (swapLocationsBtn) {
@@ -1181,6 +1271,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const pickup = pickupInput.value || '';
         const destination = destinationInput.value || '';
         const category = formRateCategory.value;
+        const isCustomQueryVal = document.getElementById('isCustomQueryInput') ? document.getElementById('isCustomQueryInput').value : '0';
+
+        // Check if user selected "Other" location -> NO PRICE SHOWN, BECOMES A QUERY
+        const isCustomPickup = pickup === 'Other' || (pickupOtherInput && pickupOtherInput.value.trim().length > 0);
+        const isCustomDest = destination === 'Other' || (destinationOtherInput && destinationOtherInput.value.trim().length > 0);
+        const isCustomLocationActive = isCustomPickup || isCustomDest || isCustomQueryVal === '1';
+
+        if (isCustomLocationActive && currentTab !== 'tour' && currentTab !== 'ambulance') {
+            fareLabel.textContent = 'Custom Location Quotation';
+            farePrice.innerHTML = '<span style="color: #D97706; font-size: 1.15rem; font-weight: 800;">Price on Request</span>';
+            fareInclusions.textContent = 'Custom location selected. No immediate price displayed. Our dispatch desk will review your query and send a custom quote.';
+            fareBadge.textContent = 'Quotation Query';
+            fareBadge.className = 'badge badge-pending';
+            submitText.textContent = 'Submit Travel Query';
+            return;
+        }
 
         // Custom Tour Package
         if (currentTab === 'tour') {
@@ -1298,12 +1404,37 @@ document.addEventListener('DOMContentLoaded', function() {
         fareInclusions.textContent = 'Direct route fare is not configured in fixed tariff. Our dispatch desk will confirm rate upon submission.';
         fareBadge.textContent = 'Custom Route';
         fareBadge.className = 'badge badge-pending';
-        submitText.textContent = 'Check Fare & Reserve';
+        submitText.textContent = 'Submit Travel Query';
     }
 
     // 9. Prevent Duplicate Submission
     if (form) {
         form.addEventListener('submit', function(e) {
+            // Handle custom pickup/drop if Other was selected
+            if (pickupInput.value === 'Other' || (pickupOtherInput && pickupOtherInput.value.trim().length > 0)) {
+                const val = pickupOtherInput ? pickupOtherInput.value.trim() : '';
+                if (!val) {
+                    alert('Please enter your custom pickup location.');
+                    if (pickupOtherInput) pickupOtherInput.focus();
+                    e.preventDefault();
+                    return false;
+                }
+                pickupInput.value = val;
+                document.getElementById('isCustomQueryInput').value = '1';
+            }
+
+            if (destinationInput.value === 'Other' || (destinationOtherInput && destinationOtherInput.value.trim().length > 0)) {
+                const val = destinationOtherInput ? destinationOtherInput.value.trim() : '';
+                if (!val) {
+                    alert('Please enter your custom destination location.');
+                    if (destinationOtherInput) destinationOtherInput.focus();
+                    e.preventDefault();
+                    return false;
+                }
+                destinationInput.value = val;
+                document.getElementById('isCustomQueryInput').value = '1';
+            }
+
             // Validation check: pickup and destination cannot be identical for one-way and roundtrip
             if (currentTab !== 'local' && pickupInput.value === destinationInput.value) {
                 e.preventDefault();
