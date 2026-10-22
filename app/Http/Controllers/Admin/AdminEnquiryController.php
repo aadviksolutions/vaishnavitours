@@ -52,9 +52,20 @@ class AdminEnquiryController extends Controller
 
     public function storeManual(Request $request)
     {
+        if ($request->filled('phone')) {
+            $raw = (string) $request->input('phone');
+            $clean = preg_replace('/[^0-9]/', '', $raw);
+            if (strlen($clean) === 12 && str_starts_with($clean, '91')) {
+                $clean = substr($clean, 2);
+            } elseif (strlen($clean) === 11 && str_starts_with($clean, '0')) {
+                $clean = substr($clean, 1);
+            }
+            $request->merge(['phone' => $clean]);
+        }
+
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
+            'phone' => ['required', 'string', 'regex:/^[0-9]{10}$/'],
             'email' => 'nullable|email|max:255',
             'source' => 'required|in:manual,corporate,third_party',
             'booking_type' => 'required|string|max:50',

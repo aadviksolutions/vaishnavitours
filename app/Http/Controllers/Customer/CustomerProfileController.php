@@ -21,16 +21,40 @@ class CustomerProfileController extends Controller
     {
         $user = Auth::user();
 
+        if ($request->filled('phone')) {
+            $rawPhone = (string) $request->input('phone');
+            $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
+            if (strlen($cleanPhone) === 12 && str_starts_with($cleanPhone, '91')) {
+                $cleanPhone = substr($cleanPhone, 2);
+            } elseif (strlen($cleanPhone) === 11 && str_starts_with($cleanPhone, '0')) {
+                $cleanPhone = substr($cleanPhone, 1);
+            }
+            $request->merge(['phone' => $cleanPhone]);
+        }
+        if ($request->filled('alternate_phone')) {
+            $rawAlt = (string) $request->input('alternate_phone');
+            $cleanAlt = preg_replace('/[^0-9]/', '', $rawAlt);
+            if (strlen($cleanAlt) === 12 && str_starts_with($cleanAlt, '91')) {
+                $cleanAlt = substr($cleanAlt, 2);
+            } elseif (strlen($cleanAlt) === 11 && str_starts_with($cleanAlt, '0')) {
+                $cleanAlt = substr($cleanAlt, 1);
+            }
+            $request->merge(['alternate_phone' => $cleanAlt]);
+        }
+
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20|unique:users,phone,'.$user->id,
-            'alternate_phone' => 'nullable|string|max:20',
+            'phone' => ['required', 'string', 'regex:/^[0-9]{10}$/', 'unique:users,phone,'.$user->id],
+            'alternate_phone' => ['nullable', 'string', 'regex:/^[0-9]{10}$/'],
             'address' => 'nullable|string|max:500',
             'city' => 'nullable|string|max:100',
             'state' => 'nullable|string|max:100',
             'pincode' => 'nullable|string|max:10',
             'current_password' => 'nullable|required_with:new_password',
             'new_password' => 'nullable|min:6|confirmed',
+        ], [
+            'phone.regex' => 'Please enter a valid 10-digit mobile number containing only numbers.',
+            'alternate_phone.regex' => 'Alternate phone must be a valid 10-digit number containing only numbers.',
         ]);
 
         $user->update([

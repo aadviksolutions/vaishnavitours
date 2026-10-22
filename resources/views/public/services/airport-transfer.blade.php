@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Airport Taxi Bilaspur to Raipur Airport | Cab Booking | Vaishnavi Tours')
-@section('meta_description', 'Reliable airport taxi transfers between Bilaspur and Swami Vivekananda Airport Raipur (RPR) & Bilasa Devi Airport (PAB). On-time pickup, sanitized AC cabs, experienced chauffeurs.')
+@section('meta_description', 'Reliable airport taxi transfers between Bilaspur and Swami Vivekananda Airport Raipur (RPR). On-time pickup, sanitized AC cabs, experienced chauffeurs.')
 @section('canonical', route('services.airport-transfer'))
 
 @push('schema')
@@ -84,7 +84,7 @@
             Airport Taxi & <span style="color: var(--primary);">Cab Pickup / Drop</span>
         </h1>
         <p style="font-size: 1.1rem; color: var(--slate-300); max-width: 680px; margin: 0 auto;">
-            Guaranteed on-time transit to Swami Vivekananda Airport Raipur (RPR) and Bilasa Devi Airport Bilaspur (PAB).
+            Guaranteed on-time transit to Swami Vivekananda Airport Raipur (RPR), the primary commercial airport of Chhattisgarh.
         </p>
     </div>
 </div>

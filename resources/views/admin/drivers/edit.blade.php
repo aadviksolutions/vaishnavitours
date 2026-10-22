@@ -40,14 +40,14 @@
 
                     <div class="form-group">
                         <label for="mobile" class="form-label">Primary Mobile Number *</label>
-                        <input type="text" name="mobile" id="mobile" class="form-control" value="{{ old('mobile', $driver->mobile) }}" required>
+                        <input type="tel" name="mobile" id="mobile" class="form-control phone-input" value="{{ old('mobile', $driver->mobile) }}" required maxlength="10" pattern="[0-9]{10}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);">
                     </div>
                 </div>
 
                 <div class="grid grid-2 gap-3 mb-3">
                     <div class="form-group">
                         <label for="alternate_mobile" class="form-label">Alternate / Emergency Contact</label>
-                        <input type="text" name="alternate_mobile" id="alternate_mobile" class="form-control" value="{{ old('alternate_mobile', $driver->alternate_mobile) }}">
+                        <input type="tel" name="alternate_mobile" id="alternate_mobile" class="form-control phone-input" value="{{ old('alternate_mobile', $driver->alternate_mobile) }}" maxlength="10" pattern="[0-9]{10}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);">
                     </div>
 
                     <div class="form-group">

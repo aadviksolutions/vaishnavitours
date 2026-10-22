@@ -263,13 +263,21 @@
                     <input type="hidden" name="route_duration_minutes" id="homeRouteDurationMinutes" value="{{ old('route_duration_minutes') }}">
 
                     <!-- Airport Transfer Sub-Toggle (Airport Drop vs Airport Pickup) -->
-                    <div id="airportDirectionWrap" style="display: none; margin-bottom: 0.85rem;">
-                        <div style="display: flex; gap: 8px; align-items: center; background: var(--slate-100); padding: 4px; border-radius: var(--radius-sm); border: 1px solid var(--slate-200); width: fit-content;">
-                            <button type="button" class="btn btn-sm btn-primary" id="btnAirportDrop" style="height: 28px; font-size: 11.5px; padding: 0 10px;">
-                                <x-icon name="plane-takeoff" size="13" /> Airport Drop (City &rarr; Airport)
+                    <div id="airportDirectionWrap" style="display: none; margin-bottom: 0.85rem; background: #EFF6FF; border: 1.5px solid #BFDBFE; border-radius: 8px; padding: 0.65rem 0.85rem;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.45rem;">
+                            <span style="font-size: 12px; font-weight: 700; color: #1E40AF; display: flex; align-items: center; gap: 5px;">
+                                <x-icon name="plane" size="14" /> Airport Transfer Direction
+                            </span>
+                            <span style="font-size: 11px; background: #DBEAFE; color: #1E40AF; font-weight: 700; padding: 2px 7px; border-radius: 4px;">
+                                Swami Vivekananda Airport, Raipur (RPR) Only
+                            </span>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-sm btn-primary" id="btnAirportDrop" style="height: 30px; font-size: 11.5px; font-weight: 700; padding: 0 12px;">
+                                <x-icon name="plane-takeoff" size="13" /> Airport Drop (City &rarr; Raipur Airport)
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline" id="btnAirportPickup" style="height: 28px; font-size: 11.5px; padding: 0 10px;">
-                                <x-icon name="plane-landing" size="13" /> Airport Pickup (Airport &rarr; City)
+                            <button type="button" class="btn btn-sm btn-outline" id="btnAirportPickup" style="height: 30px; font-size: 11.5px; font-weight: 700; padding: 0 12px; background: #fff;">
+                                <x-icon name="plane-landing" size="13" /> Airport Pickup (Raipur Airport &rarr; City)
                             </button>
                         </div>
                     </div>
@@ -302,10 +310,14 @@
                                     </button>
                                     <div class="searchable-select-dropdown" id="pickupSelectMenu" style="display: none;">
                                         <div class="searchable-select-search-box">
-                                            <x-icon name="search" size="13" style="color: var(--slate-400); flex-shrink: 0;" />
-                                            <input type="text" class="searchable-select-search-input" id="pickupSearchField" placeholder="Search city or location..." autocomplete="off">
+                                             <x-icon name="search" size="13" style="color: var(--slate-400); flex-shrink: 0;" />
+                                             <input type="text" class="searchable-select-search-input" id="pickupSearchField" placeholder="Search city or location..." autocomplete="off">
                                         </div>
                                         <ul class="searchable-select-list" id="pickupSelectList" role="listbox">
+                                            <li class="searchable-select-item is-map-item" data-value="__select_on_map__" role="option" tabindex="0" style="background: #EFF6FF; border-bottom: 1.5px solid #BFDBFE; color: #1D4ED8; font-weight: 700; padding: 0.55rem 0.75rem;">
+                                                <span style="display: flex; align-items: center; gap: 4px;">🗺️ Select on Map (Pick location pin & address)</span>
+                                                <span style="font-size: 10px; color: #1D4ED8; font-weight: 700; background: #DBEAFE; padding: 1px 5px; border-radius: 3px;">Map Pin</span>
+                                            </li>
                                             @foreach($locations as $loc)
                                                 <li class="searchable-select-item {{ old('pickup_location', 'Bilaspur') === $loc ? 'is-selected' : '' }}" data-value="{{ $loc }}" role="option" tabindex="0">
                                                     <span>{{ $loc }}</span>
@@ -360,6 +372,10 @@
                                             <input type="text" class="searchable-select-search-input" id="destinationSearchField" placeholder="Search destination..." autocomplete="off">
                                         </div>
                                         <ul class="searchable-select-list" id="destinationSelectList" role="listbox">
+                                            <li class="searchable-select-item is-map-item" data-value="__select_on_map__" role="option" tabindex="0" style="background: #EFF6FF; border-bottom: 1.5px solid #BFDBFE; color: #1D4ED8; font-weight: 700; padding: 0.55rem 0.75rem;">
+                                                <span style="display: flex; align-items: center; gap: 4px;">🗺️ Select on Map (Pick location pin & address)</span>
+                                                <span style="font-size: 10px; color: #1D4ED8; font-weight: 700; background: #DBEAFE; padding: 1px 5px; border-radius: 3px;">Map Pin</span>
+                                            </li>
                                             @foreach($locations as $loc)
                                                 <li class="searchable-select-item {{ old('destination', 'Raipur Airport') === $loc ? 'is-selected' : '' }}" data-value="{{ $loc }}" role="option" tabindex="0">
                                                     <span>{{ $loc }}</span>
@@ -396,6 +412,39 @@
                         <!-- Same Location Warning Notification -->
                         <div id="sameLocationWarning" style="display: none; margin-top: 0.35rem; color: var(--danger); font-size: 11.5px; font-weight: 500;">
                             <x-icon name="alert-triangle" size="13" style="margin-right: 3px;" /> Pickup and destination must differ for this trip.
+                        </div>
+                    </div>
+
+                    <!-- Home Interactive Route Map & Road Distance Preview Container -->
+                    <div id="homeRouteMapContainer" style="display: none; margin-bottom: 0.85rem; border: 1px solid #E2E8F0; border-radius: 8px; overflow: hidden; background: #ffffff;">
+                        <div style="padding: 0.5rem 0.85rem; background: #F8FAFC; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span style="font-size: 15px;">🛣️</span>
+                                <div>
+                                    <strong style="font-size: 12px; color: #0F172A;">Road Route & Distance</strong>
+                                    <span style="font-size: 10.5px; color: #64748B; margin-left: 4px;">Genuine highway driving path</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <div style="background: #EFF6FF; border: 1px solid #BFDBFE; padding: 2px 8px; border-radius: 4px; font-size: 12px; color: #1D4ED8; font-weight: 700;">
+                                    <span id="homeRouteDistanceDisplay">-- KM</span>
+                                </div>
+                                <div style="background: #F1F5F9; border: 1px solid #E2E8F0; padding: 2px 8px; border-radius: 4px; font-size: 11px; color: #334155; font-weight: 600;">
+                                    <span id="homeRouteDurationDisplay">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="position: relative; height: 210px; width: 100%; background: #E2E8F0;">
+                            <div id="homeRouteMapCanvas" style="width: 100%; height: 100%;"></div>
+                            <div id="homeRouteCalcSpinner" style="display: none; position: absolute; inset: 0; background: rgba(255,255,255,0.75); z-index: 500; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #2563EB;">
+                                <span>🔄 Calculating road route & distance...</span>
+                            </div>
+                        </div>
+
+                        <div id="homeRouteCalcErrorBanner" style="display: none; padding: 5px 10px; background: #FEF2F2; border-top: 1px solid #FECACA; color: #991B1B; font-size: 11px; align-items: center; justify-content: space-between;">
+                            <span id="homeRouteCalcErrorMsg">Could not calculate route between selected locations.</span>
+                            <button type="button" id="btnHomeRetryRouteCalc" class="btn btn-xs btn-outline" style="border-color: #F87171; color: #991B1B; padding: 1px 6px; font-size: 10px;">Retry</button>
                         </div>
                     </div>
 
@@ -526,52 +575,38 @@
                         </div>
                     </div>
 
-                    <!-- 4. VEHICLE CATEGORY & FLEET SELECTION -->
+                    <!-- 4. VEHICLE CATEGORY & FLEET SELECTION (DROPDOWN) -->
                     <div class="form-group" style="margin-bottom: 0.85rem;">
-                        <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
-                            <span>Vehicle Category</span>
-                            <span style="font-size: 11px; font-weight: normal; color: var(--slate-500);">Fleet verified AC commercial vehicles</span>
+                        <label class="form-label" for="homeVehicleCategorySelect" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                            <span>Vehicle Category Preference *</span>
+                            <span style="font-size: 11px; font-weight: normal; color: var(--slate-500);">Fleet verified AC commercial cabs</span>
                         </label>
-                        <div class="grid grid-3 gap-2" id="vehicleCategoryChips">
-                            @if(isset($activeVehicleCategories) && $activeVehicleCategories->isNotEmpty())
-                                @foreach($activeVehicleCategories as $cat)
-                                    <label style="border: 1px solid var(--slate-300); padding: 0.5rem 0.65rem; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: var(--transition); background: #FFFFFF;" 
-                                           class="v-cat-chip {{ $loop->first ? 'active' : '' }}"
-                                           data-category-id="{{ $cat->id }}"
-                                           data-category-name="{{ $cat->name }}"
-                                           data-models="{{ json_encode($cat->activeModels) }}">
-                                        <div style="display: flex; align-items: center; gap: 8px;">
-                                            <input type="radio" name="vehicle_category" value="{{ $cat->name }}" {{ $loop->first ? 'checked' : '' }} style="accent-color: var(--primary);">
-                                            <div>
-                                                <div style="font-weight: 700; font-size: 12.5px; color: var(--dark-900);">{{ $cat->name }}</div>
-                                                <div style="font-size: 10.5px; color: var(--slate-500);">
-                                                    @if($cat->activeModels->isNotEmpty())
-                                                        {{ $cat->activeModels->pluck('name')->implode(', ') }} ({{ $cat->is_capacity_configurable ? $cat->min_seating_capacity.'-'.$cat->max_seating_capacity : $cat->default_seating_capacity }} Seats)
-                                                    @else
-                                                        {{ $cat->is_capacity_configurable ? 'Configurable '.$cat->min_seating_capacity.'-'.$cat->max_seating_capacity.' Seats' : $cat->default_seating_capacity.' Seats' }}
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <x-icon name="car" size="14" style="color: var(--slate-400);" />
-                                    </label>
-                                @endforeach
-                            @else
-                                @foreach($vehicleCategories as $vCat)
-                                    <label style="border: 1px solid var(--slate-300); padding: 0.5rem 0.65rem; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: var(--transition); background: #FFFFFF;" class="v-cat-chip {{ $loop->first ? 'active' : '' }}">
-                                        <div style="display: flex; align-items: center; gap: 8px;">
-                                            <input type="radio" name="vehicle_category" value="{{ $vCat }}" {{ $loop->first ? 'checked' : '' }} style="accent-color: var(--primary);">
-                                            <div>
-                                                <div style="font-weight: 700; font-size: 12.5px; color: var(--dark-900);">{{ $vCat }}</div>
-                                                <div style="font-size: 10.5px; color: var(--slate-500);">
-                                                    AC Commercial Cab
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <x-icon name="car" size="14" style="color: var(--slate-400);" />
-                                    </label>
-                                @endforeach
-                            @endif
+                        <div style="position: relative;">
+                            <select name="vehicle_category" id="homeVehicleCategorySelect" class="form-select" required style="width: 100%; height: 42px; font-weight: 600; font-size: 13.5px; border-radius: 6px; border: 1.5px solid var(--slate-300); background-color: #ffffff; cursor: pointer; padding: 0 0.75rem;">
+                                <option value="">-- Select Vehicle Category --</option>
+                                @if(isset($activeVehicleCategories) && $activeVehicleCategories->isNotEmpty())
+                                    @foreach($activeVehicleCategories as $cat)
+                                        @php
+                                            $modelsText = $cat->activeModels->isNotEmpty() ? $cat->activeModels->pluck('name')->implode(', ') : '';
+                                            $capacityText = $cat->is_capacity_configurable ? $cat->min_seating_capacity.'-'.$cat->max_seating_capacity.' Seats' : $cat->default_seating_capacity.' Seats';
+                                            $fullLabel = $cat->name . ' (' . ($modelsText ? $modelsText . ' • ' : '') . $capacityText . ')';
+                                        @endphp
+                                        <option value="{{ $cat->name }}" 
+                                                data-category-id="{{ $cat->id }}" 
+                                                data-category-name="{{ $cat->name }}"
+                                                data-models="{{ json_encode($cat->activeModels) }}"
+                                                {{ old('vehicle_category', $loop->first ? $cat->name : '') === $cat->name ? 'selected' : '' }}>
+                                            {{ $fullLabel }}
+                                        </option>
+                                    @endforeach
+                                @else
+                                    @foreach($vehicleCategories as $vCat)
+                                        <option value="{{ $vCat }}" {{ old('vehicle_category', $loop->first ? $vCat : '') === $vCat ? 'selected' : '' }}>
+                                            {{ $vCat }} (AC Commercial Cab)
+                                        </option>
+                                    @endforeach
+                                @endif
+                            </select>
                         </div>
 
                         <!-- Optional Vehicle Model preference pills -->
@@ -645,7 +680,7 @@
 
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label">Mobile Number</label>
-                            <input type="tel" name="mobile" class="form-control" placeholder="10-digit mobile number" value="{{ Auth::check() ? Auth::user()->phone : old('mobile') }}" required pattern="[0-9]{10}" title="Please enter a valid 10-digit mobile number">
+                            <input type="tel" name="mobile" id="homeCustomerMobile" class="form-control phone-input" placeholder="10-digit mobile number" value="{{ Auth::check() ? Auth::user()->phone : old('mobile') }}" required maxlength="10" pattern="[0-9]{10}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" title="Please enter a valid 10-digit mobile number">
                             @error('mobile') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
                     </div>
@@ -1110,6 +1145,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             if (pDisplay) pDisplay.textContent = loc.name;
                         }
                         if (typeof updateFareQuote === 'function') updateFareQuote();
+                        if (typeof triggerHomeRouteCalculation === 'function') triggerHomeRouteCalculation();
                     }
                 });
             } else if (target === 'destination') {
@@ -1129,6 +1165,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             if (dDisplay) dDisplay.textContent = loc.name;
                         }
                         if (typeof updateFareQuote === 'function') updateFareQuote();
+                        if (typeof triggerHomeRouteCalculation === 'function') triggerHomeRouteCalculation();
                     }
                 });
             }
@@ -1468,6 +1505,23 @@ document.addEventListener('DOMContentLoaded', function() {
         const otherInput = document.getElementById(type + 'OtherInput');
         const isCustomQueryInput = document.getElementById('isCustomQueryInput');
 
+        if (value === '__select_on_map__') {
+            const isPickup = (type === 'pickup');
+            window.VaishnaviLocationPicker.open({
+                label: isPickup ? 'Pickup Location' : 'Destination Location',
+                currentValue: hiddenInput.value || '',
+                latEl: document.getElementById(isPickup ? 'homePickupLat' : 'homeDestinationLat'),
+                lngEl: document.getElementById(isPickup ? 'homePickupLng' : 'homeDestinationLng'),
+                placeIdEl: document.getElementById(isPickup ? 'homePickupPlaceId' : 'homeDestinationPlaceId'),
+                onConfirm: (loc) => {
+                    setSelectLocation(type, loc.name);
+                    updateFareQuote();
+                    triggerHomeRouteCalculation();
+                }
+            });
+            return;
+        }
+
         if (hiddenInput) hiddenInput.value = value;
         if (displaySpan) displaySpan.textContent = value === 'Other' ? 'Other Location (Custom)' : value;
 
@@ -1502,6 +1556,10 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 sameLocationWarning.style.display = 'none';
             }
+        }
+
+        if (typeof triggerHomeRouteCalculation === 'function') {
+            triggerHomeRouteCalculation();
         }
     }
 
@@ -1543,6 +1601,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('isCustomQueryInput').value = '1';
             }
             updateFareQuote();
+            triggerHomeRouteCalculation();
         });
     }
     if (destinationOtherInput) {
@@ -1551,6 +1610,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('isCustomQueryInput').value = '1';
             }
             updateFareQuote();
+            triggerHomeRouteCalculation();
         });
     }
 
@@ -1573,11 +1633,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             updateFareQuote();
+            triggerHomeRouteCalculation();
         });
     }
 
     // 7. Vehicle Category Selection & Dynamic Model Pills
-    function renderHomeModelPills(parent) {
+    function renderHomeModelPills(optionEl) {
         const box = document.getElementById('homeModelSelectionBox');
         const wrap = document.getElementById('homeModelChipsWrap');
         const catIdInput = document.getElementById('homeVehicleCategoryId');
@@ -1586,12 +1647,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!box || !wrap) return;
 
-        const catId = parent ? parent.dataset.categoryId : null;
+        const catId = optionEl ? optionEl.dataset.categoryId : null;
         if (catIdInput) catIdInput.value = catId || '';
 
         let models = [];
         try {
-            models = parent && parent.dataset.models ? JSON.parse(parent.dataset.models) : [];
+            models = optionEl && optionEl.dataset.models ? JSON.parse(optionEl.dataset.models) : [];
         } catch (e) {
             models = [];
         }
@@ -1642,22 +1703,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    document.querySelectorAll('input[name="vehicle_category"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            document.querySelectorAll('#vehicleCategoryChips .v-cat-chip').forEach(c => c.classList.remove('active'));
-            const parent = this.closest('.v-cat-chip');
-            if (parent) {
-                parent.classList.add('active');
-                renderHomeModelPills(parent);
-            }
+    const homeVehicleCatSelect = document.getElementById('homeVehicleCategorySelect');
+    if (homeVehicleCatSelect) {
+        homeVehicleCatSelect.addEventListener('change', function() {
+            const selectedOpt = this.options[this.selectedIndex];
+            renderHomeModelPills(selectedOpt);
             updateFareQuote();
         });
-    });
 
-    // Initial model rendering for pre-checked category
-    const initialCheckedCat = document.querySelector('input[name="vehicle_category"]:checked');
-    if (initialCheckedCat) {
-        renderHomeModelPills(initialCheckedCat.closest('.v-cat-chip'));
+        if (homeVehicleCatSelect.selectedIndex >= 0) {
+            renderHomeModelPills(homeVehicleCatSelect.options[homeVehicleCatSelect.selectedIndex]);
+        }
     }
 
     if (estimatedKmInput) {
@@ -1666,8 +1722,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 8. Real-Time Fare Quote Calculator
     function updateFareQuote() {
-        const selectedVCat = document.querySelector('input[name="vehicle_category"]:checked');
-        const vCat = selectedVCat ? selectedVCat.value : 'Sedan';
+        const vCat = homeVehicleCatSelect ? homeVehicleCatSelect.value : (document.querySelector('input[name="vehicle_category"]:checked')?.value || 'Sedan');
         const pickup = pickupInput.value || '';
         const destination = destinationInput.value || '';
         const category = formRateCategory.value;
@@ -1795,7 +1850,227 @@ document.addEventListener('DOMContentLoaded', function() {
         submitText.textContent = 'Submit Travel Query';
     }
 
-    // 9. Prevent Duplicate Submission
+    // 9. Interactive Road Route Calculation & Map Polyline Renderer
+    const homeRouteContainer = document.getElementById('homeRouteMapContainer');
+    const homeRouteCanvas = document.getElementById('homeRouteMapCanvas');
+    const homeRouteDistanceDisplay = document.getElementById('homeRouteDistanceDisplay');
+    const homeRouteDurationDisplay = document.getElementById('homeRouteDurationDisplay');
+    const homeRouteCalcSpinner = document.getElementById('homeRouteCalcSpinner');
+    const homeRouteCalcErrorBanner = document.getElementById('homeRouteCalcErrorBanner');
+    const homeRouteCalcErrorMsg = document.getElementById('homeRouteCalcErrorMsg');
+    const btnHomeRetryRouteCalc = document.getElementById('btnHomeRetryRouteCalc');
+
+    let homeRouteMap = null;
+    let homeRoutePolyline = null;
+    let homeRouteMarkers = [];
+
+    btnHomeRetryRouteCalc?.addEventListener('click', triggerHomeRouteCalculation);
+
+    function decodeHomePolyline(encoded) {
+        if (!encoded) return [];
+        let poly = [];
+        let index = 0, len = encoded.length;
+        let lat = 0, lng = 0;
+        while (index < len) {
+            let b, shift = 0, result = 0;
+            do {
+                b = encoded.charCodeAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            let dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+            lat += dlat;
+            shift = 0;
+            result = 0;
+            do {
+                b = encoded.charCodeAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            let dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+            lng += dlng;
+            poly.push([lat / 1e5, lng / 1e5]);
+        }
+        return poly;
+    }
+
+    async function triggerHomeRouteCalculation() {
+        if (!homeRouteContainer || !pickupInput || !destinationInput) return;
+
+        if (currentTab === 'tour' || currentTab === 'ambulance') {
+            homeRouteContainer.style.display = 'none';
+            return;
+        }
+
+        const pVal = (pickupInput.value === 'Other' && pickupOtherInput) ? pickupOtherInput.value.trim() : pickupInput.value;
+        const dVal = (destinationInput.value === 'Other' && destinationOtherInput) ? destinationOtherInput.value.trim() : destinationInput.value;
+
+        if (!pVal || !dVal || pVal === '__select_on_map__' || dVal === '__select_on_map__' || pVal === dVal) {
+            homeRouteContainer.style.display = 'none';
+            return;
+        }
+
+        const isRoundTrip = (currentTab === 'roundtrip');
+        const pLat = document.getElementById('homePickupLat');
+        const pLng = document.getElementById('homePickupLng');
+        const dLat = document.getElementById('homeDestinationLat');
+        const dLng = document.getElementById('homeDestinationLng');
+
+        const originParam = (pLat && pLat.value && pLng && pLng.value)
+            ? { lat: parseFloat(pLat.value), lng: parseFloat(pLng.value), address: pVal }
+            : pVal;
+
+        const destParam = (dLat && dLat.value && dLng && dLng.value)
+            ? { lat: parseFloat(dLat.value), lng: parseFloat(dLng.value), address: dVal }
+            : dVal;
+
+        homeRouteContainer.style.display = 'block';
+        if (homeRouteCalcSpinner) homeRouteCalcSpinner.style.display = 'flex';
+        if (homeRouteCalcErrorBanner) homeRouteCalcErrorBanner.style.display = 'none';
+
+        try {
+            const resp = await fetch('{{ route("api.maps.calculate-route") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    origin: originParam,
+                    destination: destParam,
+                    is_round_trip: isRoundTrip
+                })
+            });
+
+            const data = await resp.json();
+            if (homeRouteCalcSpinner) homeRouteCalcSpinner.style.display = 'none';
+
+            if (data && data.success) {
+                const distKm = data.total_distance_km;
+                const durText = data.total_duration_text;
+
+                const distKmInput = document.getElementById('homeRouteDistanceKm');
+                const durTextInput = document.getElementById('homeRouteDurationText');
+                const durMinsInput = document.getElementById('homeRouteDurationMinutes');
+
+                if (distKmInput) distKmInput.value = distKm;
+                if (durTextInput) durTextInput.value = durText;
+                if (durMinsInput) durMinsInput.value = data.total_duration_minutes;
+
+                if (estimatedKmInput && isRoundTrip) {
+                    estimatedKmInput.value = distKm;
+                }
+
+                if (homeRouteDistanceDisplay) homeRouteDistanceDisplay.textContent = `${distKm} KM`;
+                if (homeRouteDurationDisplay) homeRouteDurationDisplay.textContent = `⏱️ ${durText}`;
+
+                await renderHomeRouteMap(data);
+            } else {
+                throw new Error(data.message || 'Route calculation could not be completed.');
+            }
+        } catch (err) {
+            console.error('Home route calculation error:', err);
+            if (homeRouteCalcSpinner) homeRouteCalcSpinner.style.display = 'none';
+            if (homeRouteCalcErrorBanner) {
+                homeRouteCalcErrorBanner.style.display = 'flex';
+                if (homeRouteCalcErrorMsg) homeRouteCalcErrorMsg.textContent = 'Notice: Could not load driving route. ' + (err.message || '');
+            }
+        }
+    }
+
+    async function renderHomeRouteMap(data) {
+        if (!homeRouteCanvas || typeof L === 'undefined') return;
+
+        if (!homeRouteMap) {
+            homeRouteMap = L.map(homeRouteCanvas).setView([22.0797, 82.1409], 8);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: '© OpenStreetMap | Vaishnavi Tours'
+            }).addTo(homeRouteMap);
+        }
+
+        homeRouteMarkers.forEach(m => homeRouteMap.removeLayer(m));
+        homeRouteMarkers = [];
+        if (homeRoutePolyline) {
+            homeRouteMap.removeLayer(homeRoutePolyline);
+            homeRoutePolyline = null;
+        }
+
+        const waypointPoints = [];
+        let startCoords = null;
+        let endCoords = null;
+
+        if (data.legs && data.legs.length > 0) {
+            data.legs.forEach((leg, idx) => {
+                const startLoc = leg.start_location || data.origin_coordinates;
+                const endLoc = leg.end_location || data.destination_coordinates;
+
+                if (startLoc && startLoc.lat && idx === 0) {
+                    startCoords = startLoc;
+                    const startPos = [startLoc.lat, startLoc.lng];
+                    const m = L.marker(startPos, { title: leg.start_address || leg.from_name }).addTo(homeRouteMap)
+                        .bindPopup(`<strong>🟢 Pickup:</strong> ${leg.start_address || leg.from_name}`);
+                    homeRouteMarkers.push(m);
+                    waypointPoints.push(startPos);
+                }
+                if (endLoc && endLoc.lat) {
+                    const endPos = [endLoc.lat, endLoc.lng];
+                    const isLast = (idx === data.legs.length - 1);
+                    if (isLast) endCoords = endLoc;
+                    const label = isLast ? (data.is_round_trip ? '🏁 Return' : '🔴 Destination') : `🟡 Via`;
+                    const m = L.marker(endPos, { title: leg.end_address || leg.to_name }).addTo(homeRouteMap)
+                        .bindPopup(`<strong>${label}:</strong> ${leg.end_address || leg.to_name}`);
+                    homeRouteMarkers.push(m);
+                    waypointPoints.push(endPos);
+                }
+            });
+        }
+
+        let roadCoordinates = [];
+
+        if (data.route_geometry && data.route_geometry.trim().length > 0) {
+            const polyStrings = data.route_geometry.split('|');
+            polyStrings.forEach(ps => {
+                const decoded = decodeHomePolyline(ps.trim());
+                if (decoded && decoded.length > 0) {
+                    roadCoordinates = roadCoordinates.concat(decoded);
+                }
+            });
+        }
+
+        if (roadCoordinates.length === 0 && startCoords && endCoords) {
+            try {
+                const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startCoords.lng},${startCoords.lat};${endCoords.lng},${endCoords.lat}?overview=full&geometries=geojson`;
+                const osrmResp = await fetch(osrmUrl);
+                const osrmData = await osrmResp.json();
+                if (osrmData && osrmData.routes && osrmData.routes[0] && osrmData.routes[0].geometry) {
+                    roadCoordinates = osrmData.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                }
+            } catch (osrmErr) {
+                console.warn('OSRM road geometry fetch notice on home widget:', osrmErr);
+            }
+        }
+
+        const finalPath = roadCoordinates.length > 0 ? roadCoordinates : waypointPoints;
+
+        if (finalPath.length >= 2) {
+            homeRoutePolyline = L.polyline(finalPath, {
+                color: '#2563EB',
+                weight: 5,
+                opacity: 0.9,
+                dashArray: data.is_round_trip ? '8, 6' : null
+            }).addTo(homeRouteMap);
+
+            homeRouteMap.fitBounds(homeRoutePolyline.getBounds(), { padding: [25, 25] });
+        } else if (waypointPoints.length > 0) {
+            homeRouteMap.setView(waypointPoints[0], 11);
+        }
+
+        setTimeout(() => homeRouteMap.invalidateSize(), 250);
+    }
+
+    // 10. Prevent Duplicate Submission
     if (form) {
         form.addEventListener('submit', function(e) {
             // Handle custom pickup/drop if Other was selected
@@ -1870,6 +2145,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initial calculation
     updateFareQuote();
+    triggerHomeRouteCalculation();
 });
 
 // Hero Car Image Sequence Animation Engine

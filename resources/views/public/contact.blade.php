@@ -119,8 +119,8 @@
 
                         <div class="grid grid-2 gap-2" style="margin-bottom: 0.85rem;">
                             <div class="form-group" style="margin-bottom: 0;">
-                                <label class="form-label" style="font-size: 0.775rem;">Phone Number</label>
-                                <input type="tel" name="phone" class="form-control form-control-sm" placeholder="10-digit mobile" required>
+                                <label class="form-label" style="font-size: 0.775rem;">Phone Number *</label>
+                                <input type="tel" name="phone" class="form-control form-control-sm phone-input" placeholder="10-digit mobile" required maxlength="10" pattern="[0-9]{10}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" title="Please enter a valid 10-digit mobile number">
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label class="form-label" style="font-size: 0.775rem;">Email Address</label>

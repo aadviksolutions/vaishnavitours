@@ -120,7 +120,7 @@
                     </div>
                     <h2 style="font-size: 1.05rem; font-weight: 600; color: var(--dark-900); margin-bottom: 0.35rem;">Airport Transfers</h2>
                     <p style="color: var(--slate-600); font-size: 0.825rem; line-height: 1.5; margin-bottom: 0.85rem;">
-                        Guaranteed on-time airport pickup and drop between Bilaspur and Raipur Swami Vivekananda Airport (RPR) as well as Bilaspur Bilasa Devi Airport (PAB).
+                        Guaranteed on-time airport pickup and drop between Bilaspur and Raipur Swami Vivekananda Airport (RPR) with flight schedule coordination.
                     </p>
                     <ul style="list-style: none; padding: 0; margin: 0 0 1rem; font-size: 0.8rem; color: var(--slate-700); display: flex; flex-direction: column; gap: 0.35rem;">
                         <li style="display: flex; align-items: center; gap: 6px;"><x-icon name="circle-check" size="13" class="text-primary" /> Bilaspur to Raipur Airport (135 km)</li>

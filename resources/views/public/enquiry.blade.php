@@ -22,8 +22,8 @@
                         <input type="text" name="name" class="form-control" placeholder="Your Name" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Mobile Number</label>
-                        <input type="tel" name="phone" class="form-control" placeholder="10-digit mobile" required>
+                        <label class="form-label">Mobile Number *</label>
+                        <input type="tel" name="phone" class="form-control phone-input" placeholder="10-digit mobile" required maxlength="10" pattern="[0-9]{10}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" title="Please enter a valid 10-digit mobile number">
                     </div>
                 </div>
 

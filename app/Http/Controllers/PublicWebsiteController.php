@@ -124,6 +124,16 @@ class PublicWebsiteController extends Controller
         if ($request->filled('phone') && ! $request->filled('mobile')) {
             $request->merge(['mobile' => $request->input('phone')]);
         }
+        if ($request->filled('mobile')) {
+            $rawMobile = (string) $request->input('mobile');
+            $cleanMobile = preg_replace('/[^0-9]/', '', $rawMobile);
+            if (strlen($cleanMobile) === 12 && str_starts_with($cleanMobile, '91')) {
+                $cleanMobile = substr($cleanMobile, 2);
+            } elseif (strlen($cleanMobile) === 11 && str_starts_with($cleanMobile, '0')) {
+                $cleanMobile = substr($cleanMobile, 1);
+            }
+            $request->merge(['mobile' => $cleanMobile]);
+        }
         if ($request->filled('pickup_date') && ! $request->filled('travel_date')) {
             $request->merge(['travel_date' => $request->input('pickup_date')]);
         }
@@ -217,7 +227,7 @@ class PublicWebsiteController extends Controller
 
         $data = $request->validate([
             'customer_name' => 'required|string|max:255',
-            'mobile' => 'required|string|max:20',
+            'mobile' => ['required', 'string', 'regex:/^[0-9]{10}$/'],
             'email' => 'nullable|email|max:255',
             'trip_type' => 'required|string',
             'pickup_location' => 'required|string|max:255',
@@ -261,6 +271,7 @@ class PublicWebsiteController extends Controller
         ], [
             'customer_name.required' => 'Customer name is required.',
             'mobile.required' => 'Mobile number is required.',
+            'mobile.regex' => 'Please enter a valid 10-digit mobile number containing only numbers.',
             'pickup_location.required' => 'Pickup location is required.',
             'destination.required' => 'Destination is required.',
             'travel_date.required' => 'Travel date is required.',
@@ -608,14 +619,27 @@ class PublicWebsiteController extends Controller
 
     public function storeEnquiry(Request $request)
     {
+        if ($request->filled('phone')) {
+            $rawPhone = (string) $request->input('phone');
+            $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
+            if (strlen($cleanPhone) === 12 && str_starts_with($cleanPhone, '91')) {
+                $cleanPhone = substr($cleanPhone, 2);
+            } elseif (strlen($cleanPhone) === 11 && str_starts_with($cleanPhone, '0')) {
+                $cleanPhone = substr($cleanPhone, 1);
+            }
+            $request->merge(['phone' => $cleanPhone]);
+        }
+
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
+            'phone' => ['required', 'string', 'regex:/^[0-9]{10}$/'],
             'email' => 'nullable|email|max:255',
             'service_type' => 'nullable|string|max:100',
             'vehicle_preference' => 'nullable|string|max:100',
             'subject' => 'nullable|string|max:255',
             'message' => 'required|string|max:2000',
+        ], [
+            'phone.regex' => 'Please enter a valid 10-digit mobile number containing only numbers.',
         ]);
 
         try {

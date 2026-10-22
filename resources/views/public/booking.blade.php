@@ -151,11 +151,35 @@
                             </button>
                         </div>
 
+                        <!-- Airport Transfer Direction Sub-Toggle (Exclusively for Swami Vivekananda Airport, Raipur) -->
+                        <div id="bookingAirportDirectionWrap" style="display: none; margin-bottom: 0.9rem; background: #EFF6FF; border: 1.5px solid #BFDBFE; border-radius: 8px; padding: 0.75rem 0.95rem;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                <div style="font-weight: 700; font-size: 12.5px; color: #1E40AF; display: flex; align-items: center; gap: 5px;">
+                                    <x-icon name="plane" size="14" /> Airport Transfer Direction
+                                </div>
+                                <span style="font-size: 11px; background: #DBEAFE; color: #1E40AF; font-weight: 700; padding: 2px 7px; border-radius: 4px;">
+                                    Swami Vivekananda Airport, Raipur (RPR) Only
+                                </span>
+                            </div>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button type="button" class="btn btn-sm btn-primary" id="bookingBtnAirportDrop" style="height: 30px; font-size: 11.5px; font-weight: 700;">
+                                    🛫 Airport Drop (City &rarr; Raipur Airport)
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline" id="bookingBtnAirportPickup" style="height: 30px; font-size: 11.5px; font-weight: 700; background: #fff;">
+                                    🛬 Airport Pickup (Raipur Airport &rarr; City)
+                                </button>
+                            </div>
+                            <div id="bookingFlightNumberWrap" style="display: none; margin-top: 0.65rem;">
+                                <label style="font-size: 11px; font-weight: 600; color: #1E40AF; display: block; margin-bottom: 2px;">Flight Number (Optional for airport arrival pickup)</label>
+                                <input type="text" name="flight_number" id="bookingFlightNumber" class="form-control form-control-sm" placeholder="e.g. 6E-204 / AI-477 (for chauffeur coordination)" style="max-width: 320px; background: #fff;">
+                            </div>
+                        </div>
+
                         <div class="grid grid-3 gap-2" id="routeFieldsGrid">
                             <!-- 1. Pickup Location -->
                             <div>
                                 <div class="d-flex justify-between align-center mb-1">
-                                    <label for="pickupLocation" style="font-size: 0.75rem; color: var(--slate-600); font-weight: 600; margin: 0;">
+                                    <label for="pickupLocation" id="pickupLocationLabel" style="font-size: 0.75rem; color: var(--slate-600); font-weight: 600; margin: 0;">
                                         1. Pickup Location *
                                     </label>
                                     <button type="button" class="btn btn-xs btn-outline btn-select-map" data-target="pickup" style="font-size: 10.5px; padding: 1px 6px; color: #2563EB; border-color: #BFDBFE; display: inline-flex; align-items: center; gap: 3px; border-radius: 4px; background: #EFF6FF;">
@@ -164,6 +188,7 @@
                                 </div>
                                 <select id="pickupLocation" name="pickup_location" class="form-select form-select-sm" required style="width: 100%;">
                                     <option value="">Select pickup city</option>
+                                    <option value="__select_on_map__" style="color: #1D4ED8; font-weight: 700; background: #EFF6FF;">🗺️ Select on Map (Pick location pin & address)</option>
                                     @foreach($locations as $location)
                                         <option value="{{ $location }}" {{ old('pickup_location', request('pickup_location')) === $location ? 'selected' : '' }}>{{ $location }}</option>
                                     @endforeach
@@ -194,7 +219,7 @@
                             <!-- 3. Final Drop Location -->
                             <div>
                                 <div class="d-flex justify-between align-center mb-1">
-                                    <label for="destinationLocation" style="font-size: 0.75rem; color: var(--slate-600); font-weight: 600; margin: 0;">
+                                    <label for="destinationLocation" id="destinationLocationLabel" style="font-size: 0.75rem; color: var(--slate-600); font-weight: 600; margin: 0;">
                                         3. Final Drop Location *
                                     </label>
                                     <button type="button" class="btn btn-xs btn-outline btn-select-map" data-target="destination" style="font-size: 10.5px; padding: 1px 6px; color: #2563EB; border-color: #BFDBFE; display: inline-flex; align-items: center; gap: 3px; border-radius: 4px; background: #EFF6FF;">
@@ -203,6 +228,7 @@
                                 </div>
                                 <select id="destinationLocation" name="destination" class="form-select form-select-sm" required style="width: 100%;">
                                     <option value="">Select final drop</option>
+                                    <option value="__select_on_map__" style="color: #1D4ED8; font-weight: 700; background: #EFF6FF;">🗺️ Select on Map (Pick location pin & address)</option>
                                     @foreach($locations as $location)
                                         <option value="{{ $location }}" {{ old('destination', request('destination')) === $location ? 'selected' : '' }}>{{ $location }}</option>
                                     @endforeach
@@ -275,46 +301,40 @@
                         </div>
                     </div>
 
-                    <!-- 4. Vehicle Category Selection -->
+                    <!-- 4. Vehicle Category Selection Dropdown -->
                     <div class="form-group" style="margin-bottom: 1.25rem;">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">4. Vehicle Category Preference *</label>
-                        <div class="grid grid-3 gap-2">
-                            @if(isset($activeVehicleCategories) && $activeVehicleCategories->isNotEmpty())
-                                @foreach($activeVehicleCategories as $cat)
-                                    <label style="border: 1px solid var(--slate-200); padding: 0.75rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.15s ease;" 
-                                           class="vehicle-category-opt {{ old('vehicle_category', request('vehicle_category', $loop->first ? $cat->name : '')) === $cat->name ? 'active ring-2 ring-blue-500 bg-blue-50 border-blue-400' : '' }}"
-                                           data-category-id="{{ $cat->id }}"
-                                           data-category-name="{{ $cat->name }}"
-                                           data-models="{{ json_encode($cat->activeModels) }}">
-                                        <input type="radio" name="vehicle_category" value="{{ $cat->name }}" {{ old('vehicle_category', request('vehicle_category', $loop->first ? $cat->name : '')) === $cat->name ? 'checked' : '' }} required>
-                                        <div>
-                                            <span style="font-weight: 700; font-size: 0.85rem; color: var(--dark-900); display: block;">{{ $cat->name }}</span>
-                                            <span style="font-size: 11px; color: var(--slate-500);">
-                                                @if($cat->activeModels->isNotEmpty())
-                                                    {{ $cat->activeModels->pluck('name')->implode(', ') }} ({{ $cat->is_capacity_configurable ? $cat->min_seating_capacity.'-'.$cat->max_seating_capacity : $cat->default_seating_capacity }} Seats)
-                                                @else
-                                                    {{ $cat->is_capacity_configurable ? 'Configurable '.$cat->min_seating_capacity.'-'.$cat->max_seating_capacity.' Seats' : $cat->default_seating_capacity.' Seats' }}
-                                                @endif
-                                            </span>
-                                        </div>
-                                    </label>
-                                @endforeach
-                            @else
-                                @forelse($vehicleCategories as $category)
-                                    <label style="border: 1px solid var(--slate-200); padding: 0.75rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.15s ease;" class="vehicle-category-opt">
-                                        <input type="radio" name="vehicle_category" value="{{ $category }}" {{ old('vehicle_category', request('vehicle_category')) === $category ? 'checked' : '' }} required>
-                                        <div>
-                                            <span style="font-weight: 600; font-size: 0.85rem; color: var(--dark-900); display: block;">{{ $category }}</span>
-                                            <span style="font-size: 11px; color: var(--slate-500);">AC Commercial Cab</span>
-                                        </div>
-                                    </label>
-                                @empty
-                                    <div style="grid-column: 1 / -1; padding: 1.25rem; background: var(--slate-100); border: 1px dashed var(--slate-300); border-radius: 6px; text-align: center; color: var(--slate-600);">
-                                        <p style="margin-bottom: 0.35rem; font-weight: 600; color: var(--dark-900); font-size: 0.95rem;">Fleet rates configuring...</p>
-                                        <a href="tel:+919131613010" class="btn btn-primary btn-sm">Call Dispatch directly</a>
-                                    </div>
-                                @endforelse
-                            @endif
+                        <label class="form-label" for="bookingVehicleCategorySelect" style="font-weight: 600; font-size: 13px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                            <span>4. Vehicle Category Preference *</span>
+                            <span style="font-size: 11px; font-weight: normal; color: var(--slate-500);">Fleet verified AC commercial cabs</span>
+                        </label>
+                        <div style="position: relative;">
+                            <select name="vehicle_category" id="bookingVehicleCategorySelect" class="form-select form-select-sm" required style="width: 100%; height: 42px; font-weight: 600; font-size: 13.5px; border-radius: 6px; border: 1.5px solid var(--slate-300); background-color: #ffffff; cursor: pointer; padding: 0 0.75rem;">
+                                <option value="">-- Select Vehicle Category --</option>
+                                @if(isset($activeVehicleCategories) && $activeVehicleCategories->isNotEmpty())
+                                    @foreach($activeVehicleCategories as $cat)
+                                        @php
+                                            $modelsText = $cat->activeModels->isNotEmpty() ? $cat->activeModels->pluck('name')->implode(', ') : '';
+                                            $capacityText = $cat->is_capacity_configurable ? $cat->min_seating_capacity.'-'.$cat->max_seating_capacity.' Seats' : $cat->default_seating_capacity.' Seats';
+                                            $fullLabel = $cat->name . ' (' . ($modelsText ? $modelsText . ' • ' : '') . $capacityText . ')';
+                                        @endphp
+                                        <option value="{{ $cat->name }}" 
+                                                data-category-id="{{ $cat->id }}" 
+                                                data-category-name="{{ $cat->name }}"
+                                                data-models="{{ json_encode($cat->activeModels) }}"
+                                                {{ old('vehicle_category', request('vehicle_category', $loop->first ? $cat->name : '')) === $cat->name ? 'selected' : '' }}>
+                                            {{ $fullLabel }}
+                                        </option>
+                                    @endforeach
+                                @else
+                                    @forelse($vehicleCategories as $category)
+                                        <option value="{{ $category }}" {{ old('vehicle_category', request('vehicle_category', $loop->first ? $category : '')) === $category ? 'selected' : '' }}>
+                                            {{ $category }} (AC Commercial Cab)
+                                        </option>
+                                    @empty
+                                        <option value="Sedan">Sedan (AC Commercial Cab)</option>
+                                    @endforelse
+                                @endif
+                            </select>
                         </div>
 
                         <!-- Optional Vehicle Model selection box -->
@@ -367,7 +387,7 @@
                             </div>
                             <div>
                                 <label style="font-size: 0.75rem; color: var(--slate-600); font-weight: 600; display: block; margin-bottom: 0.25rem;">Mobile Number *</label>
-                                <input type="tel" name="mobile" class="form-control form-control-sm" placeholder="10-digit mobile" value="{{ Auth::check() ? Auth::user()->phone : old('mobile') }}" required>
+                                <input type="tel" name="mobile" id="bookingCustomerMobile" class="form-control form-control-sm phone-input" placeholder="10-digit mobile number" value="{{ Auth::check() ? Auth::user()->phone : old('mobile') }}" required maxlength="10" pattern="[0-9]{10}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" title="Please enter a valid 10-digit mobile number">
                             </div>
                             <div>
                                 <label style="font-size: 0.75rem; color: var(--slate-600); font-weight: 600; display: block; margin-bottom: 0.25rem;">Email Address (Optional)</label>
@@ -509,7 +529,8 @@
 
     function updateRatePreview() {
         const selectedTrip = document.querySelector('input[name="trip_type"]:checked');
-        const selectedVehicle = document.querySelector('input[name="vehicle_category"]:checked');
+        const vehicleCategorySelect = document.getElementById('bookingVehicleCategorySelect');
+        const selectedVehicle = vehicleCategorySelect ? vehicleCategorySelect.value : (document.querySelector('input[name="vehicle_category"]:checked')?.value || '');
         if (selectedTrip) {
             categoryInput.value = selectedTrip.dataset.rateCategory;
         }
@@ -576,7 +597,7 @@
             return;
         }
 
-        const quoteKey = [category, category.startsWith('local_') ? '' : pickupInput.value, category.startsWith('local_') ? '' : destinationInput.value, selectedVehicle.value].join('|');
+        const quoteKey = [category, category.startsWith('local_') ? '' : pickupInput.value, category.startsWith('local_') ? '' : destinationInput.value, selectedVehicle].join('|');
         const quote = rateOptions[quoteKey];
         if (!quote) {
             previewAmount.textContent = 'Custom Route — Fixed Rate on Review';
@@ -637,7 +658,103 @@
         });
     }
 
-    // Trip type selection styling
+    // Trip type selection styling & Airport Direction handling
+    const airportDirectionWrap = document.getElementById('bookingAirportDirectionWrap');
+    const btnAirportDrop = document.getElementById('bookingBtnAirportDrop');
+    const btnAirportPickup = document.getElementById('bookingBtnAirportPickup');
+    const flightNumberWrap = document.getElementById('bookingFlightNumberWrap');
+    let airportMode = 'drop'; // 'drop' (City -> Raipur Airport) or 'pickup' (Raipur Airport -> City)
+
+    function handleTripTypeChange() {
+        const selectedTrip = document.querySelector('input[name="trip_type"]:checked');
+        const isAirport = selectedTrip && (selectedTrip.value === 'Airport Transfer' || selectedTrip.dataset.rateCategory === 'airport');
+        if (airportDirectionWrap) {
+            airportDirectionWrap.style.display = isAirport ? 'block' : 'none';
+        }
+        if (isAirport) {
+            applyAirportMode();
+        } else {
+            if (destinationInput.dataset.originalPlaceholder) {
+                destinationInput.placeholder = destinationInput.dataset.originalPlaceholder;
+            }
+        }
+    }
+
+    function applyAirportMode() {
+        const raipurAirportText = 'Raipur Airport';
+        if (airportMode === 'drop') {
+            if (btnAirportDrop) {
+                btnAirportDrop.className = 'btn btn-sm btn-primary';
+                btnAirportDrop.style.background = '#2563EB';
+                btnAirportDrop.style.color = '#FFFFFF';
+            }
+            if (btnAirportPickup) {
+                btnAirportPickup.className = 'btn btn-sm btn-outline';
+                btnAirportPickup.style.background = '#FFFFFF';
+                btnAirportPickup.style.color = '#1E40AF';
+            }
+            if (flightNumberWrap) flightNumberWrap.style.display = 'none';
+
+            // Fixed destination: Raipur Airport
+            let opt = Array.from(destinationInput.options).find(o => o.value.toLowerCase().includes('airport'));
+            if (!opt) {
+                opt = new Option('Raipur Airport (Swami Vivekananda Airport RPR)', raipurAirportText, true, true);
+                destinationInput.add(opt);
+            }
+            destinationInput.value = opt.value;
+
+            // Reset pickup if it was set to Airport
+            if (pickupInput.value.toLowerCase().includes('airport')) {
+                pickupInput.value = 'Bilaspur';
+            }
+        } else {
+            if (btnAirportDrop) {
+                btnAirportDrop.className = 'btn btn-sm btn-outline';
+                btnAirportDrop.style.background = '#FFFFFF';
+                btnAirportDrop.style.color = '#1E40AF';
+            }
+            if (btnAirportPickup) {
+                btnAirportPickup.className = 'btn btn-sm btn-primary';
+                btnAirportPickup.style.background = '#2563EB';
+                btnAirportPickup.style.color = '#FFFFFF';
+            }
+            if (flightNumberWrap) flightNumberWrap.style.display = 'block';
+
+            // Fixed pickup: Raipur Airport
+            let opt = Array.from(pickupInput.options).find(o => o.value.toLowerCase().includes('airport'));
+            if (!opt) {
+                opt = new Option('Raipur Airport (Swami Vivekananda Airport RPR)', raipurAirportText, true, true);
+                pickupInput.add(opt);
+            }
+            pickupInput.value = opt.value;
+
+            // Reset destination if it was set to Airport
+            if (destinationInput.value.toLowerCase().includes('airport')) {
+                destinationInput.value = 'Bilaspur';
+            }
+        }
+    }
+
+    if (btnAirportDrop) {
+        btnAirportDrop.addEventListener('click', function(e) {
+            e.preventDefault();
+            airportMode = 'drop';
+            applyAirportMode();
+            updateRatePreview();
+            triggerRouteCalculation();
+        });
+    }
+
+    if (btnAirportPickup) {
+        btnAirportPickup.addEventListener('click', function(e) {
+            e.preventDefault();
+            airportMode = 'pickup';
+            applyAirportMode();
+            updateRatePreview();
+            triggerRouteCalculation();
+        });
+    }
+
     document.querySelectorAll('.trip-opt').forEach((label) => {
         label.addEventListener('click', function () {
             document.querySelectorAll('.trip-opt').forEach((l) => l.classList.remove('active', 'ring-2', 'ring-blue-500', 'bg-blue-50', 'border-blue-400'));
@@ -645,12 +762,17 @@
             const radio = this.querySelector('input[type="radio"]');
             if (radio) {
                 radio.checked = true;
+                handleTripTypeChange();
                 updateRatePreview();
+                triggerRouteCalculation();
             }
         });
     });
 
-    function renderBookingModelPills(parent) {
+    // Check initial trip type for Airport Transfer
+    handleTripTypeChange();
+
+    function renderBookingModelPills(optionEl) {
         const box = document.getElementById('bookingModelSelectionBox');
         const wrap = document.getElementById('bookingModelChipsWrap');
         const catIdInput = document.getElementById('bookingVehicleCategoryId');
@@ -659,12 +781,12 @@
 
         if (!box || !wrap) return;
 
-        const catId = parent ? parent.dataset.categoryId : null;
+        const catId = optionEl ? optionEl.dataset.categoryId : null;
         if (catIdInput) catIdInput.value = catId || '';
 
         let models = [];
         try {
-            models = parent && parent.dataset.models ? JSON.parse(parent.dataset.models) : [];
+            models = optionEl && optionEl.dataset.models ? JSON.parse(optionEl.dataset.models) : [];
         } catch (e) {
             models = [];
         }
@@ -715,22 +837,18 @@
         }
     }
 
-    document.querySelectorAll('.vehicle-category-opt').forEach((label) => {
-        label.addEventListener('click', function () {
-            document.querySelectorAll('.vehicle-category-opt').forEach((l) => l.classList.remove('active', 'ring-2', 'ring-blue-500', 'bg-blue-50', 'border-blue-400'));
-            this.classList.add('active', 'ring-2', 'ring-blue-500', 'bg-blue-50', 'border-blue-400');
-            const radio = this.querySelector('input[type="radio"]');
-            if (radio) {
-                radio.checked = true;
-            }
-            renderBookingModelPills(this);
+    // Vehicle Category Dropdown Listener
+    const bookingVehicleCatSelect = document.getElementById('bookingVehicleCategorySelect');
+    if (bookingVehicleCatSelect) {
+        bookingVehicleCatSelect.addEventListener('change', function () {
+            const selectedOpt = this.options[this.selectedIndex];
+            renderBookingModelPills(selectedOpt);
             updateRatePreview();
         });
-    });
 
-    const initialCheckedBookingCat = document.querySelector('.vehicle-category-opt input[type="radio"]:checked');
-    if (initialCheckedBookingCat) {
-        renderBookingModelPills(initialCheckedBookingCat.closest('.vehicle-category-opt'));
+        if (bookingVehicleCatSelect.selectedIndex >= 0) {
+            renderBookingModelPills(bookingVehicleCatSelect.options[bookingVehicleCatSelect.selectedIndex]);
+        }
     }
 
     [pickupInput, destinationInput].forEach((input) => input.addEventListener('change', updateRatePreview));
@@ -768,7 +886,69 @@
     let bookingRoutePolyline = null;
     let bookingRouteMarkers = [];
 
-    // Attach click listeners to all "🗺️ Map" buttons
+    // Handle "🗺️ Select on Map" selection inside Dropdown Options
+    let previousPickupValue = pickupInput.value;
+    let previousDestValue = destinationInput.value;
+
+    pickupInput.addEventListener('focus', function() {
+        if (this.value !== '__select_on_map__') previousPickupValue = this.value;
+    });
+
+    destinationInput.addEventListener('focus', function() {
+        if (this.value !== '__select_on_map__') previousDestValue = this.value;
+    });
+
+    pickupInput.addEventListener('change', function() {
+        if (this.value === '__select_on_map__') {
+            window.VaishnaviLocationPicker.open({
+                label: 'Pickup Location',
+                inputEl: pickupInput,
+                latEl: pickupLatInput,
+                lngEl: pickupLngInput,
+                placeIdEl: pickupPlaceIdInput,
+                onConfirm: (loc) => {
+                    let opt = Array.from(pickupInput.options).find(o => o.value === loc.name);
+                    if (!opt) {
+                        opt = new Option(loc.name, loc.name, true, true);
+                        pickupInput.add(opt);
+                    }
+                    pickupInput.value = loc.name;
+                    previousPickupValue = loc.name;
+                    updateRatePreview();
+                    triggerRouteCalculation();
+                }
+            });
+        } else {
+            previousPickupValue = this.value;
+        }
+    });
+
+    destinationInput.addEventListener('change', function() {
+        if (this.value === '__select_on_map__') {
+            window.VaishnaviLocationPicker.open({
+                label: 'Final Destination Drop',
+                inputEl: destinationInput,
+                latEl: destLatInput,
+                lngEl: destLngInput,
+                placeIdEl: destPlaceIdInput,
+                onConfirm: (loc) => {
+                    let opt = Array.from(destinationInput.options).find(o => o.value === loc.name);
+                    if (!opt) {
+                        opt = new Option(loc.name, loc.name, true, true);
+                        destinationInput.add(opt);
+                    }
+                    destinationInput.value = loc.name;
+                    previousDestValue = loc.name;
+                    updateRatePreview();
+                    triggerRouteCalculation();
+                }
+            });
+        } else {
+            previousDestValue = this.value;
+        }
+    });
+
+    // Attach click listeners to all "🗺️ Map" quick buttons
     document.querySelectorAll('.btn-select-map').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
@@ -850,7 +1030,7 @@
         const destVal = (destinationInput.value === 'Other' && destinationOtherInput) ? destinationOtherInput.value.trim() : destinationInput.value;
         const viaVal = viaLocationInput ? viaLocationInput.value.trim() : '';
 
-        if (!originVal || !destVal) {
+        if (!originVal || !destVal || originVal === '__select_on_map__' || destVal === '__select_on_map__') {
             if (routeMapContainer) routeMapContainer.style.display = 'none';
             return;
         }
@@ -917,14 +1097,14 @@
                     routeLegsContainer.innerHTML = data.legs.map((leg, idx) => `
                         <div style="background: #fff; border: 1px solid #CBD5E1; padding: 3px 8px; border-radius: 4px; display: flex; align-items: center; gap: 4px;">
                             <strong style="color: #2563EB;">Leg ${idx + 1}:</strong>
-                            <span>${leg.from_name} &rarr; ${leg.to_name}</span>
+                            <span>${leg.from_name || leg.start_address} &rarr; ${leg.to_name || leg.end_address}</span>
                             <span style="font-weight: 700; color: #0F172A; background: #F1F5F9; padding: 1px 4px; border-radius: 2px;">${leg.distance_km} KM</span>
                             <span style="color: #64748B;">(${leg.duration_text})</span>
                         </div>
                     `).join('');
                 }
 
-                renderRouteMap(data);
+                await renderRouteMap(data);
             } else {
                 throw new Error(data.message || 'Route calculation could not be completed.');
             }
@@ -938,14 +1118,48 @@
         }
     }
 
-    function renderRouteMap(data) {
+    /**
+     * Decode Google overview polyline string into array of [lat, lng]
+     */
+    function decodeGooglePolyline(encoded) {
+        if (!encoded) return [];
+        let poly = [];
+        let index = 0, len = encoded.length;
+        let lat = 0, lng = 0;
+        while (index < len) {
+            let b, shift = 0, result = 0;
+            do {
+                b = encoded.charCodeAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            let dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+            lat += dlat;
+            shift = 0;
+            result = 0;
+            do {
+                b = encoded.charCodeAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            let dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+            lng += dlng;
+            poly.push([lat / 1e5, lng / 1e5]);
+        }
+        return poly;
+    }
+
+    /**
+     * Render the actual road driving route on the Leaflet map with genuine highway bends.
+     */
+    async function renderRouteMap(data) {
         if (!routeMapCanvas || typeof L === 'undefined') return;
 
         if (!bookingRouteMap) {
             bookingRouteMap = L.map(routeMapCanvas).setView([22.0797, 82.1409], 8);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 18,
-                attribution: '© OpenStreetMap | Vaishnavi Tours'
+                attribution: '© OpenStreetMap | Vaishnavi Tours Route Navigation'
             }).addTo(bookingRouteMap);
         }
 
@@ -954,41 +1168,82 @@
         bookingRouteMarkers = [];
         if (bookingRoutePolyline) {
             bookingRouteMap.removeLayer(bookingRoutePolyline);
+            bookingRoutePolyline = null;
         }
 
-        const points = [];
+        const waypointPoints = [];
+        let startCoords = null;
+        let endCoords = null;
+
         if (data.legs && data.legs.length > 0) {
             data.legs.forEach((leg, idx) => {
-                if (leg.start_location && leg.start_location.lat) {
-                    const startPos = [leg.start_location.lat, leg.start_location.lng];
+                const startLoc = leg.start_location || data.origin_coordinates;
+                const endLoc = leg.end_location || data.destination_coordinates;
+
+                if (startLoc && startLoc.lat) {
+                    const startPos = [startLoc.lat, startLoc.lng];
                     if (idx === 0) {
-                        const m = L.marker(startPos, { title: leg.from_name }).addTo(bookingRouteMap)
-                            .bindPopup(`<strong>🟢 Pickup:</strong> ${leg.from_name}`);
+                        startCoords = startLoc;
+                        const m = L.marker(startPos, { title: leg.start_address || leg.from_name }).addTo(bookingRouteMap)
+                            .bindPopup(`<strong>🟢 Pickup:</strong> ${leg.start_address || leg.from_name}`);
                         bookingRouteMarkers.push(m);
-                        points.push(startPos);
+                        waypointPoints.push(startPos);
                     }
                 }
-                if (leg.end_location && leg.end_location.lat) {
-                    const endPos = [leg.end_location.lat, leg.end_location.lng];
+                if (endLoc && endLoc.lat) {
+                    const endPos = [endLoc.lat, endLoc.lng];
                     const isLast = (idx === data.legs.length - 1);
-                    const label = isLast ? (data.is_round_trip ? '🏁 Return Drop' : '🔴 Destination') : `🟡 Via: ${leg.to_name}`;
-                    const m = L.marker(endPos, { title: leg.to_name }).addTo(bookingRouteMap)
-                        .bindPopup(`<strong>${label}:</strong> ${leg.to_name}`);
+                    if (isLast) endCoords = endLoc;
+                    const label = isLast ? (data.is_round_trip ? '🏁 Return Drop' : '🔴 Destination') : `🟡 Via: ${leg.end_address || leg.to_name}`;
+                    const m = L.marker(endPos, { title: leg.end_address || leg.to_name }).addTo(bookingRouteMap)
+                        .bindPopup(`<strong>${label}:</strong> ${leg.end_address || leg.to_name}`);
                     bookingRouteMarkers.push(m);
-                    points.push(endPos);
+                    waypointPoints.push(endPos);
                 }
             });
         }
 
-        if (points.length >= 2) {
-            bookingRoutePolyline = L.polyline(points, {
+        let roadCoordinates = [];
+
+        // 1. If Google overview polyline is available, decode it
+        if (data.route_geometry && data.route_geometry.trim().length > 0) {
+            const polyStrings = data.route_geometry.split('|');
+            polyStrings.forEach(ps => {
+                const decoded = decodeGooglePolyline(ps.trim());
+                if (decoded && decoded.length > 0) {
+                    roadCoordinates = roadCoordinates.concat(decoded);
+                }
+            });
+        }
+
+        // 2. If no polyline from backend, fetch actual road highway route from OSRM
+        if (roadCoordinates.length === 0 && startCoords && endCoords) {
+            try {
+                const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startCoords.lng},${startCoords.lat};${endCoords.lng},${endCoords.lat}?overview=full&geometries=geojson`;
+                const osrmResp = await fetch(osrmUrl);
+                const osrmData = await osrmResp.json();
+                if (osrmData && osrmData.routes && osrmData.routes[0] && osrmData.routes[0].geometry) {
+                    roadCoordinates = osrmData.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                }
+            } catch (osrmErr) {
+                console.warn('OSRM road geometry fetch notice:', osrmErr);
+            }
+        }
+
+        // Fallback to waypoint straight lines if road network geometry couldn't be loaded
+        const finalPath = roadCoordinates.length > 0 ? roadCoordinates : waypointPoints;
+
+        if (finalPath.length >= 2) {
+            bookingRoutePolyline = L.polyline(finalPath, {
                 color: '#2563EB',
                 weight: 5,
-                opacity: 0.85,
-                dashArray: data.is_round_trip ? '8, 6' : '0'
+                opacity: 0.9,
+                dashArray: data.is_round_trip ? '8, 6' : null
             }).addTo(bookingRouteMap);
 
-            bookingRouteMap.fitBounds(bookingRoutePolyline.getBounds(), { padding: [25, 25] });
+            bookingRouteMap.fitBounds(bookingRoutePolyline.getBounds(), { padding: [30, 30] });
+        } else if (waypointPoints.length > 0) {
+            bookingRouteMap.setView(waypointPoints[0], 12);
         }
 
         setTimeout(() => bookingRouteMap.invalidateSize(), 250);

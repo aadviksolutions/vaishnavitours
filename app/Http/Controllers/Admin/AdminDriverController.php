@@ -59,10 +59,31 @@ class AdminDriverController extends Controller
 
     public function store(Request $request)
     {
+        if ($request->filled('mobile')) {
+            $raw = (string) $request->input('mobile');
+            $clean = preg_replace('/[^0-9]/', '', $raw);
+            if (strlen($clean) === 12 && str_starts_with($clean, '91')) {
+                $clean = substr($clean, 2);
+            } elseif (strlen($clean) === 11 && str_starts_with($clean, '0')) {
+                $clean = substr($clean, 1);
+            }
+            $request->merge(['mobile' => $clean]);
+        }
+        if ($request->filled('alternate_mobile')) {
+            $rawAlt = (string) $request->input('alternate_mobile');
+            $cleanAlt = preg_replace('/[^0-9]/', '', $rawAlt);
+            if (strlen($cleanAlt) === 12 && str_starts_with($cleanAlt, '91')) {
+                $cleanAlt = substr($cleanAlt, 2);
+            } elseif (strlen($cleanAlt) === 11 && str_starts_with($cleanAlt, '0')) {
+                $cleanAlt = substr($cleanAlt, 1);
+            }
+            $request->merge(['alternate_mobile' => $cleanAlt]);
+        }
+
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'mobile' => 'required|string|max:20|unique:drivers',
-            'alternate_mobile' => 'nullable|string|max:20',
+            'mobile' => ['required', 'string', 'regex:/^[0-9]{10}$/', 'unique:drivers'],
+            'alternate_mobile' => ['nullable', 'string', 'regex:/^[0-9]{10}$/'],
             'license_number' => 'required|string|max:50|unique:drivers',
             'license_expiry' => 'nullable|date',
             'address' => 'nullable|string',
@@ -71,6 +92,9 @@ class AdminDriverController extends Controller
             'rating' => 'nullable|numeric|min:1|max:5',
             'experience_years' => 'nullable|integer|min:0',
             'notes' => 'nullable|string',
+        ], [
+            'mobile.regex' => 'Please enter a valid 10-digit mobile number containing only numbers.',
+            'alternate_mobile.regex' => 'Alternate mobile must be a valid 10-digit number containing only numbers.',
         ]);
 
         Driver::create($data);
@@ -95,10 +119,31 @@ class AdminDriverController extends Controller
 
     public function update(Request $request, Driver $driver)
     {
+        if ($request->filled('mobile')) {
+            $raw = (string) $request->input('mobile');
+            $clean = preg_replace('/[^0-9]/', '', $raw);
+            if (strlen($clean) === 12 && str_starts_with($clean, '91')) {
+                $clean = substr($clean, 2);
+            } elseif (strlen($clean) === 11 && str_starts_with($clean, '0')) {
+                $clean = substr($clean, 1);
+            }
+            $request->merge(['mobile' => $clean]);
+        }
+        if ($request->filled('alternate_mobile')) {
+            $rawAlt = (string) $request->input('alternate_mobile');
+            $cleanAlt = preg_replace('/[^0-9]/', '', $rawAlt);
+            if (strlen($cleanAlt) === 12 && str_starts_with($cleanAlt, '91')) {
+                $cleanAlt = substr($cleanAlt, 2);
+            } elseif (strlen($cleanAlt) === 11 && str_starts_with($cleanAlt, '0')) {
+                $cleanAlt = substr($cleanAlt, 1);
+            }
+            $request->merge(['alternate_mobile' => $cleanAlt]);
+        }
+
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'mobile' => 'required|string|max:20|unique:drivers,mobile,'.$driver->id,
-            'alternate_mobile' => 'nullable|string|max:20',
+            'mobile' => ['required', 'string', 'regex:/^[0-9]{10}$/', 'unique:drivers,mobile,'.$driver->id],
+            'alternate_mobile' => ['nullable', 'string', 'regex:/^[0-9]{10}$/'],
             'license_number' => 'required|string|max:50|unique:drivers,license_number,'.$driver->id,
             'license_expiry' => 'nullable|date',
             'address' => 'nullable|string',
@@ -107,6 +152,9 @@ class AdminDriverController extends Controller
             'rating' => 'nullable|numeric|min:1|max:5',
             'experience_years' => 'nullable|integer|min:0',
             'notes' => 'nullable|string',
+        ], [
+            'mobile.regex' => 'Please enter a valid 10-digit mobile number containing only numbers.',
+            'alternate_mobile.regex' => 'Alternate mobile must be a valid 10-digit number containing only numbers.',
         ]);
 
         $driver->update($data);

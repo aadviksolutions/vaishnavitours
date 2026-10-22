@@ -81,12 +81,12 @@
                 <div class="grid grid-2 gap-3">
                     <div class="form-group">
                         <label for="phone" class="form-label">Primary Mobile Number *</label>
-                        <input type="text" name="phone" id="phone" class="form-control" value="{{ old('phone', $user->phone) }}" required placeholder="e.g. 9244784443">
+                        <input type="tel" name="phone" id="phone" class="form-control phone-input" value="{{ old('phone', $user->phone) }}" required placeholder="10-digit mobile" maxlength="10" pattern="[0-9]{10}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);">
                     </div>
 
                     <div class="form-group">
                         <label for="alternate_phone" class="form-label">Alternate / Emergency Contact</label>
-                        <input type="text" name="alternate_phone" id="alternate_phone" class="form-control" value="{{ old('alternate_phone', $user->customer->alternate_phone ?? '') }}" placeholder="e.g. 9425200000">
+                        <input type="tel" name="alternate_phone" id="alternate_phone" class="form-control phone-input" value="{{ old('alternate_phone', $user->customer->alternate_phone ?? '') }}" placeholder="10-digit mobile" maxlength="10" pattern="[0-9]{10}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);">
                     </div>
                 </div>
             </div>

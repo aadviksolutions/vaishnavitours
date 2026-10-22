@@ -64,13 +64,26 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
+        if ($request->filled('phone')) {
+            $rawPhone = (string) $request->input('phone');
+            $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
+            if (strlen($cleanPhone) === 12 && str_starts_with($cleanPhone, '91')) {
+                $cleanPhone = substr($cleanPhone, 2);
+            } elseif (strlen($cleanPhone) === 11 && str_starts_with($cleanPhone, '0')) {
+                $cleanPhone = substr($cleanPhone, 1);
+            }
+            $request->merge(['phone' => $cleanPhone]);
+        }
+
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'phone' => 'required|string|max:20|unique:users',
+            'phone' => ['required', 'string', 'regex:/^[0-9]{10}$/', 'unique:users'],
             'password' => 'required|string|min:6|confirmed',
             'city' => 'nullable|string|max:100',
             'address' => 'nullable|string|max:500',
+        ], [
+            'phone.regex' => 'Please enter a valid 10-digit mobile number containing only numbers.',
         ]);
 
         $user = User::create([

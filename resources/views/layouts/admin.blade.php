@@ -189,6 +189,55 @@
 
     if (openBtn) openBtn.addEventListener('click', () => sidebar.classList.add('show'));
     if (closeBtn) closeBtn.addEventListener('click', () => sidebar.classList.remove('show'));
+
+    // Global Digits-Only Mobile Number Enforcer
+    (function() {
+        function isPhoneInput(el) {
+            if (!el || !el.tagName || el.tagName.toLowerCase() !== 'input') return false;
+            const type = (el.type || '').toLowerCase();
+            const name = (el.name || '').toLowerCase();
+            const id = (el.id || '').toLowerCase();
+            return type === 'tel' ||
+                   name === 'mobile' ||
+                   name === 'phone' ||
+                   name.includes('mobile') ||
+                   name.includes('phone') ||
+                   id === 'mobile' ||
+                   id === 'phone' ||
+                   el.classList.contains('phone-input');
+        }
+
+        document.addEventListener('input', function(e) {
+            if (isPhoneInput(e.target)) {
+                const clean = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+                if (e.target.value !== clean) {
+                    e.target.value = clean;
+                }
+            }
+        }, true);
+
+        document.addEventListener('keypress', function(e) {
+            if (isPhoneInput(e.target)) {
+                if (e.ctrlKey || e.metaKey || e.altKey) return;
+                if (e.key && e.key.length === 1 && !/[0-9]/.test(e.key)) {
+                    e.preventDefault();
+                    return false;
+                }
+                if (e.target.value.length >= 10 && e.target.selectionStart === e.target.selectionEnd) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        }, true);
+
+        document.addEventListener('paste', function(e) {
+            if (isPhoneInput(e.target)) {
+                setTimeout(function() {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+                }, 10);
+            }
+        }, true);
+    })();
 </script>
 @stack('scripts')
 </body>

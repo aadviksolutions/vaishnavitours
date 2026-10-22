@@ -400,6 +400,56 @@
         </div>
     </footer>
 
+    <!-- Global Digits-Only Mobile Number Enforcer -->
+    <script>
+    (function() {
+        function isPhoneInput(el) {
+            if (!el || !el.tagName || el.tagName.toLowerCase() !== 'input') return false;
+            const type = (el.type || '').toLowerCase();
+            const name = (el.name || '').toLowerCase();
+            const id = (el.id || '').toLowerCase();
+            return type === 'tel' ||
+                   name === 'mobile' ||
+                   name === 'phone' ||
+                   name.includes('mobile') ||
+                   name.includes('phone') ||
+                   id === 'mobile' ||
+                   id === 'phone' ||
+                   el.classList.contains('phone-input');
+        }
+
+        document.addEventListener('input', function(e) {
+            if (isPhoneInput(e.target)) {
+                const clean = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+                if (e.target.value !== clean) {
+                    e.target.value = clean;
+                }
+            }
+        }, true);
+
+        document.addEventListener('keypress', function(e) {
+            if (isPhoneInput(e.target)) {
+                if (e.ctrlKey || e.metaKey || e.altKey) return;
+                if (e.key && e.key.length === 1 && !/[0-9]/.test(e.key)) {
+                    e.preventDefault();
+                    return false;
+                }
+                if (e.target.value.length >= 10 && e.target.selectionStart === e.target.selectionEnd) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        }, true);
+
+        document.addEventListener('paste', function(e) {
+            if (isPhoneInput(e.target)) {
+                setTimeout(function() {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+                }, 10);
+            }
+        }, true);
+    })();
+    </script>
     @stack('scripts')
     <!-- Floating WhatsApp Action (Compact) -->
     <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" class="floating-whatsapp-btn" style="position: fixed; bottom: 20px; right: 20px; z-index: 999; background: #25D366; color: #ffffff; padding: 7px 13px; border-radius: 20px; font-weight: 600; font-size: 12px; display: flex; align-items: center; gap: 6px; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15); text-decoration: none; transition: transform 0.15s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
