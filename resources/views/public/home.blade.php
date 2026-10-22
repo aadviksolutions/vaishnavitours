@@ -456,23 +456,62 @@
                     <div class="form-group" style="margin-bottom: 0.85rem;">
                         <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
                             <span>Vehicle Category</span>
-                            <span style="font-size: 11px; font-weight: normal; color: var(--slate-500);">Fleet verified AC vehicles</span>
+                            <span style="font-size: 11px; font-weight: normal; color: var(--slate-500);">Fleet verified AC commercial vehicles</span>
                         </label>
                         <div class="grid grid-3 gap-2" id="vehicleCategoryChips">
-                            @foreach($vehicleCategories as $vCat)
-                                <label style="border: 1px solid var(--slate-300); padding: 0.5rem 0.65rem; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: var(--transition); background: #FFFFFF;" class="v-cat-chip {{ $loop->first ? 'active' : '' }}">
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <input type="radio" name="vehicle_category" value="{{ $vCat }}" {{ $loop->first ? 'checked' : '' }} style="accent-color: var(--primary);">
-                                        <div>
-                                            <div style="font-weight: 600; font-size: 12.5px; color: var(--dark-900);">{{ $vCat }}</div>
-                                            <div style="font-size: 10.5px; color: var(--slate-500);">
-                                                {{ $vCat === 'Sedan' ? 'Dzire/Etios · 4 Seats' : ($vCat === 'Ertiga' ? 'MUV · 6 Seats' : 'Premium SUV · 7 Seats') }}
+                            @if(isset($activeVehicleCategories) && $activeVehicleCategories->isNotEmpty())
+                                @foreach($activeVehicleCategories as $cat)
+                                    <label style="border: 1px solid var(--slate-300); padding: 0.5rem 0.65rem; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: var(--transition); background: #FFFFFF;" 
+                                           class="v-cat-chip {{ $loop->first ? 'active' : '' }}"
+                                           data-category-id="{{ $cat->id }}"
+                                           data-category-name="{{ $cat->name }}"
+                                           data-models="{{ json_encode($cat->activeModels) }}">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <input type="radio" name="vehicle_category" value="{{ $cat->name }}" {{ $loop->first ? 'checked' : '' }} style="accent-color: var(--primary);">
+                                            <div>
+                                                <div style="font-weight: 700; font-size: 12.5px; color: var(--dark-900);">{{ $cat->name }}</div>
+                                                <div style="font-size: 10.5px; color: var(--slate-500);">
+                                                    @if($cat->activeModels->isNotEmpty())
+                                                        {{ $cat->activeModels->pluck('name')->implode(', ') }} ({{ $cat->is_capacity_configurable ? $cat->min_seating_capacity.'-'.$cat->max_seating_capacity : $cat->default_seating_capacity }} Seats)
+                                                    @else
+                                                        {{ $cat->is_capacity_configurable ? 'Configurable '.$cat->min_seating_capacity.'-'.$cat->max_seating_capacity.' Seats' : $cat->default_seating_capacity.' Seats' }}
+                                                    @endif
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <x-icon name="car" size="14" style="color: var(--slate-400);" />
+                                        <x-icon name="car" size="14" style="color: var(--slate-400);" />
+                                    </label>
+                                @endforeach
+                            @else
+                                @foreach($vehicleCategories as $vCat)
+                                    <label style="border: 1px solid var(--slate-300); padding: 0.5rem 0.65rem; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: var(--transition); background: #FFFFFF;" class="v-cat-chip {{ $loop->first ? 'active' : '' }}">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <input type="radio" name="vehicle_category" value="{{ $vCat }}" {{ $loop->first ? 'checked' : '' }} style="accent-color: var(--primary);">
+                                            <div>
+                                                <div style="font-weight: 700; font-size: 12.5px; color: var(--dark-900);">{{ $vCat }}</div>
+                                                <div style="font-size: 10.5px; color: var(--slate-500);">
+                                                    AC Commercial Cab
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <x-icon name="car" size="14" style="color: var(--slate-400);" />
+                                    </label>
+                                @endforeach
+                            @endif
+                        </div>
+
+                        <!-- Optional Vehicle Model preference pills -->
+                        <div id="homeModelSelectionBox" style="display: none; margin-top: 0.65rem; background: #F8FAFC; border: 1px solid var(--slate-200); border-radius: var(--radius-sm); padding: 0.65rem 0.85rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                                <label style="font-size: 11.5px; font-weight: 700; color: var(--dark-900); margin: 0;">
+                                    🚗 Preferred Vehicle Model (Optional)
                                 </label>
-                            @endforeach
+                                <span style="font-size: 10.5px; color: var(--slate-500);">Choose specific car or leave as any</span>
+                            </div>
+                            <div id="homeModelChipsWrap" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                            <input type="hidden" name="vehicle_category_id" id="homeVehicleCategoryId" value="{{ old('vehicle_category_id') }}">
+                            <input type="hidden" name="vehicle_model_id" id="homeVehicleModelId" value="{{ old('vehicle_model_id') }}">
+                            <input type="hidden" name="vehicle_model" id="homeVehicleModel" value="{{ old('vehicle_model') }}">
                         </div>
                     </div>
 
@@ -1458,15 +1497,89 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 7. Vehicle Category Selection
+    // 7. Vehicle Category Selection & Dynamic Model Pills
+    function renderHomeModelPills(parent) {
+        const box = document.getElementById('homeModelSelectionBox');
+        const wrap = document.getElementById('homeModelChipsWrap');
+        const catIdInput = document.getElementById('homeVehicleCategoryId');
+        const modelIdInput = document.getElementById('homeVehicleModelId');
+        const modelNameInput = document.getElementById('homeVehicleModel');
+
+        if (!box || !wrap) return;
+
+        const catId = parent ? parent.dataset.categoryId : null;
+        if (catIdInput) catIdInput.value = catId || '';
+
+        let models = [];
+        try {
+            models = parent && parent.dataset.models ? JSON.parse(parent.dataset.models) : [];
+        } catch (e) {
+            models = [];
+        }
+
+        wrap.innerHTML = '';
+        if (models && models.length > 0) {
+            box.style.display = 'block';
+
+            // "Any Model" option
+            const anyBtn = document.createElement('button');
+            anyBtn.type = 'button';
+            anyBtn.className = 'btn btn-xs ' + (!modelIdInput.value ? 'btn-primary' : 'btn-outline');
+            anyBtn.style.cssText = 'font-size: 11px; padding: 3px 8px; border-radius: 4px;';
+            anyBtn.textContent = '✓ Any / All Models in Category';
+            anyBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                modelIdInput.value = '';
+                modelNameInput.value = '';
+                wrap.querySelectorAll('button').forEach(b => {
+                    b.className = 'btn btn-xs btn-outline';
+                });
+                this.className = 'btn btn-xs btn-primary';
+            });
+            wrap.appendChild(anyBtn);
+
+            models.forEach(m => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                const isSelected = modelIdInput.value == m.id || modelNameInput.value == m.name;
+                btn.className = 'btn btn-xs ' + (isSelected ? 'btn-primary' : 'btn-outline');
+                btn.style.cssText = 'font-size: 11px; padding: 3px 8px; border-radius: 4px;';
+                btn.textContent = m.name + (m.default_seating_capacity ? ` (${m.default_seating_capacity} Seater)` : '');
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    modelIdInput.value = m.id;
+                    modelNameInput.value = m.name;
+                    wrap.querySelectorAll('button').forEach(b => {
+                        b.className = 'btn btn-xs btn-outline';
+                    });
+                    this.className = 'btn btn-xs btn-primary';
+                });
+                wrap.appendChild(btn);
+            });
+        } else {
+            box.style.display = 'none';
+            if (modelIdInput) modelIdInput.value = '';
+            if (modelNameInput) modelNameInput.value = '';
+        }
+    }
+
     document.querySelectorAll('input[name="vehicle_category"]').forEach(radio => {
         radio.addEventListener('change', function() {
             document.querySelectorAll('#vehicleCategoryChips .v-cat-chip').forEach(c => c.classList.remove('active'));
             const parent = this.closest('.v-cat-chip');
-            if (parent) parent.classList.add('active');
+            if (parent) {
+                parent.classList.add('active');
+                renderHomeModelPills(parent);
+            }
             updateFareQuote();
         });
     });
+
+    // Initial model rendering for pre-checked category
+    const initialCheckedCat = document.querySelector('input[name="vehicle_category"]:checked');
+    if (initialCheckedCat) {
+        renderHomeModelPills(initialCheckedCat.closest('.v-cat-chip'));
+    }
 
     if (estimatedKmInput) {
         estimatedKmInput.addEventListener('input', updateFareQuote);
@@ -1518,26 +1631,14 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Round Trip
+        // Round Trip: STRICT REQUIREMENT: Allow vehicle category selection but do not display an automatic fare estimate
         if (category === 'round_trip') {
-            const key = `round_trip|||${vCat}`;
-            const quote = rateOptions[key];
-
-            if (quote && quote.details) {
-                const rent = Number(quote.details.vehicle_rent || 0);
-                const perKm = Number(quote.details.per_km_rate || 0);
-                const estKm = Number(estimatedKmInput.value || 0);
-                const total = rent + (estKm * perKm);
-
-                fareLabel.textContent = 'Estimated Round-Trip Fare';
-                farePrice.textContent = `₹${total.toLocaleString('en-IN')}`;
-                fareInclusions.textContent = `Estimated base: ₹${rent.toLocaleString('en-IN')} vehicle rent + ₹${perKm.toFixed(2)}/KM (${estKm} KM). Toll, parking, border tax, driver food & night charges extra.`;
-                fareBadge.textContent = 'Per KM Tariff';
-                fareBadge.className = 'badge badge-assigned';
-                submitText.textContent = 'Book Round Trip';
-            } else {
-                showUnconfiguredFare();
-            }
+            fareLabel.textContent = 'Round-Trip Custom Quotation Request';
+            farePrice.innerHTML = '<span style="color: #2563EB; font-size: 1.15rem; font-weight: 800;">Quotation on Request</span>';
+            fareInclusions.textContent = 'Category: ' + vCat + '. Round-trip fares depend on road itinerary, halts, and return schedule. Our central dispatch team will review your query and provide a confirmed custom quote.';
+            fareBadge.textContent = 'Quotation Request';
+            fareBadge.className = 'badge badge-primary';
+            submitText.textContent = 'Submit Round-Trip Enquiry';
             return;
         }
 

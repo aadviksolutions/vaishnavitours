@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -15,6 +16,8 @@ class Vehicle extends Model
         'name',
         'registration_number',
         'vehicle_type',
+        'vehicle_category_id',
+        'vehicle_model_id',
         'seating_capacity',
         'ac_non_ac',
         'insurance_number',
@@ -50,6 +53,30 @@ class Vehicle extends Model
         'vendor_paid_amount' => 'decimal:2',
         'vendor_balance_amount' => 'decimal:2',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (Vehicle $vehicle) {
+            if (empty($vehicle->vehicle_type)) {
+                if ($vehicle->vehicle_category_id) {
+                    $cat = VehicleCategory::find($vehicle->vehicle_category_id);
+                    $vehicle->vehicle_type = $cat?->name ?? 'Sedan';
+                } else {
+                    $vehicle->vehicle_type = 'Sedan';
+                }
+            }
+        });
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(VehicleCategory::class, 'vehicle_category_id');
+    }
+
+    public function vehicleModel(): BelongsTo
+    {
+        return $this->belongsTo(VehicleModel::class, 'vehicle_model_id');
+    }
 
     public function bookings(): HasMany
     {

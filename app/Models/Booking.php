@@ -66,6 +66,10 @@ class Booking extends Model
         'tour_package_id',
         'rate_vehicle_price_id',
         'rate_category',
+        'vehicle_category',
+        'vehicle_model',
+        'vehicle_category_id',
+        'vehicle_model_id',
         'pricing_details',
         'corporate_company_name',
         'corporate_contact_person',
@@ -257,6 +261,39 @@ class Booking extends Model
         };
     }
 
+    public function getEffectiveVehicleCategoryAttribute(): string
+    {
+        if (! empty($this->vehicle_category)) {
+            return $this->vehicle_category;
+        }
+        if (! empty($this->pricing_details['vehicle_category'])) {
+            return $this->pricing_details['vehicle_category'];
+        }
+        if ($this->rateVehiclePrice?->vehicle_category) {
+            return $this->rateVehiclePrice->vehicle_category;
+        }
+        if ($this->vehicle?->vehicle_type) {
+            return $this->vehicle->vehicle_type;
+        }
+
+        return 'AC Cab';
+    }
+
+    public function getEffectiveVehicleModelAttribute(): ?string
+    {
+        if (! empty($this->vehicle_model)) {
+            return $this->vehicle_model;
+        }
+        if (! empty($this->pricing_details['vehicle_model'])) {
+            return $this->pricing_details['vehicle_model'];
+        }
+        if ($this->vehicleModel?->name) {
+            return $this->vehicleModel->name;
+        }
+
+        return null;
+    }
+
     // Relationships
     public function customer(): BelongsTo
     {
@@ -266,6 +303,16 @@ class Booking extends Model
     public function vehicle(): BelongsTo
     {
         return $this->belongsTo(Vehicle::class);
+    }
+
+    public function vehicleCategory(): BelongsTo
+    {
+        return $this->belongsTo(VehicleCategory::class, 'vehicle_category_id');
+    }
+
+    public function vehicleModel(): BelongsTo
+    {
+        return $this->belongsTo(VehicleModel::class, 'vehicle_model_id');
     }
 
     public function rateVehiclePrice(): BelongsTo

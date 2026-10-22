@@ -18,8 +18,10 @@
         <div style="min-width: 200px;">
             <select name="type" class="form-select form-select-sm" onchange="this.form.submit()">
                 <option value="">-- All Categories --</option>
-                @foreach(['Hatchback', 'Sedan', 'SUV', 'Innova Crysta', 'Tempo Traveller', 'Luxury'] as $type)
-                    <option value="{{ $type }}" {{ request('type') === $type ? 'selected' : '' }}>{{ $type }}</option>
+                @foreach($categories as $cat)
+                    <option value="{{ $cat->name }}" {{ request('type') === $cat->name || request('type') === $cat->code ? 'selected' : '' }}>
+                        {{ $cat->name }}
+                    </option>
                 @endforeach
             </select>
         </div>

@@ -283,9 +283,26 @@
                     @endif
                 </div>
 
+                <div style="background: var(--slate-50); border-radius: 6px; padding: 0.75rem; margin-bottom: 0.75rem; border: 1px solid var(--slate-200);">
+                    <div class="grid grid-2 gap-2">
+                        <div>
+                            <span style="color: var(--slate-500); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; display: block;">Booked Category</span>
+                            <strong style="color: var(--dark-950); font-size: 0.95rem;">
+                                {{ $booking->effective_vehicle_category ?: 'Standard' }}
+                            </strong>
+                        </div>
+                        <div>
+                            <span style="color: var(--slate-500); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; display: block;">Model Preference</span>
+                            <span style="color: {{ $booking->effective_vehicle_model ? '#4F46E5' : 'var(--slate-600)' }}; font-weight: 600; font-size: 0.9rem;">
+                                {{ $booking->effective_vehicle_model ?: 'Any in category' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
                 @if($booking->vehicle)
                     <div style="font-size: 0.925rem; line-height: 1.6;">
-                        <div><span style="color: var(--slate-500); font-size: 0.8rem; text-transform: uppercase; font-weight: 700;">Vehicle:</span></div>
+                        <div><span style="color: var(--slate-500); font-size: 0.8rem; text-transform: uppercase; font-weight: 700;">Allocated Fleet Vehicle:</span></div>
                         <div style="font-weight: 800; font-size: 1.05rem; color: var(--dark-950); margin-bottom: 0.5rem;">
                             {{ $booking->vehicle->name }} ({{ $booking->vehicle->vehicle_type }})
                         </div>

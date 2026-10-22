@@ -52,6 +52,9 @@
             <a href="{{ route('admin.vehicles.index') }}" class="admin-nav-item {{ request()->routeIs('admin.vehicles.*') ? 'active' : '' }}">
                 <x-icon name="car-front" size="15" /> Vehicles Fleet
             </a>
+            <a href="{{ route('admin.vehicle-categories.index') }}" class="admin-nav-item {{ request()->routeIs('admin.vehicle-categories.*') ? 'active' : '' }}">
+                <x-icon name="layers" size="15" /> Vehicle Categories & Models
+            </a>
             <a href="{{ route('admin.drivers.index') }}" class="admin-nav-item {{ request()->routeIs('admin.drivers.*') ? 'active' : '' }}">
                 <x-icon name="user-check" size="15" /> Drivers & Chauffeurs
             </a>

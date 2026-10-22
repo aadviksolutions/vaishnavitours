@@ -11,6 +11,8 @@ use App\Models\RateVehiclePrice;
 use App\Models\Setting;
 use App\Models\TourPackage;
 use App\Models\Vehicle;
+use App\Models\VehicleCategory;
+use App\Models\VehicleModel;
 use App\Services\BookingService;
 use App\Services\RateQuoteService;
 use Carbon\Carbon;
@@ -83,26 +85,35 @@ class PublicWebsiteController extends Controller
             ->sort()
             ->values();
         $tourPackages = TourPackage::where('is_active', true)->get();
-        $vehicleCategories = RateVehiclePrice::query()->distinct()->orderBy('vehicle_category')->pluck('vehicle_category');
+        $activeVehicleCategories = VehicleCategory::where('is_active', true)->with('activeModels')->orderBy('display_order')->get();
+        $dbCategoryNames = $activeVehicleCategories->pluck('name')->toArray();
+        $rateCategoryNames = RateVehiclePrice::query()->distinct()->pluck('vehicle_category')->toArray();
+        $vehicleCategories = collect(array_merge($dbCategoryNames, $rateCategoryNames))->unique()->values();
+
         $rateOptions = [];
+        $rateQuoteService = app(RateQuoteService::class);
         foreach ($routes as $route) {
-            foreach ($route->vehiclePrices as $price) {
-                $directions = [[$route->origin, $route->destination]];
-                if ($route->return_same_rate && $route->origin && $route->destination) {
-                    $directions[] = [$route->destination, $route->origin];
-                }
-                foreach ($directions as [$origin, $destination]) {
-                    $rateOptions[implode('|', [$route->category, $origin ?? '', $destination ?? '', $price->vehicle_category])] = app(RateQuoteService::class)->quote(
+            $catNamesToQuote = collect(array_merge($dbCategoryNames, $route->vehiclePrices->pluck('vehicle_category')->toArray()))->unique();
+            $directions = [[$route->origin, $route->destination]];
+            if ($route->return_same_rate && $route->origin && $route->destination) {
+                $directions[] = [$route->destination, $route->origin];
+            }
+            foreach ($directions as [$origin, $destination]) {
+                foreach ($catNamesToQuote as $catName) {
+                    $q = $rateQuoteService->quote(
                         $route->category,
                         $origin ?? '',
                         $destination ?? '',
-                        $price->vehicle_category
+                        $catName
                     );
+                    if ($q) {
+                        $rateOptions[implode('|', [$route->category, $origin ?? '', $destination ?? '', $catName])] = $q;
+                    }
                 }
             }
         }
 
-        return compact('vehicles', 'fleetVehicles', 'routes', 'locations', 'vehicleCategories', 'rateOptions', 'tourPackages');
+        return compact('vehicles', 'fleetVehicles', 'routes', 'locations', 'vehicleCategories', 'activeVehicleCategories', 'rateOptions', 'tourPackages');
     }
 
     public function storeBooking(Request $request, BookingService $bookingService)
@@ -217,6 +228,9 @@ class PublicWebsiteController extends Controller
             'is_custom_query' => 'nullable',
             'rate_category' => 'required|in:airport,outstation,round_trip,local_8h_80km,local_4h_40km,tour_package,emergency',
             'vehicle_category' => 'required|string|max:80',
+            'vehicle_model' => 'nullable|string|max:80',
+            'vehicle_category_id' => 'nullable|exists:vehicle_categories,id',
+            'vehicle_model_id' => 'nullable|exists:vehicle_models,id',
             'estimated_km' => 'nullable|numeric|min:0.01',
             'travel_date' => 'required|date|after_or_equal:today',
             'travel_time' => 'required',
@@ -261,6 +275,25 @@ class PublicWebsiteController extends Controller
 
         $data['terms_version'] = '1.0';
         $data['booking_category'] = Booking::CATEGORY_WEB;
+
+        if (! empty($data['vehicle_category_id'])) {
+            $cat = VehicleCategory::find($data['vehicle_category_id']);
+            if ($cat) {
+                $data['vehicle_category'] = $cat->name;
+            }
+        } elseif (! empty($data['vehicle_category'])) {
+            $cat = VehicleCategory::where('name', $data['vehicle_category'])->first();
+            if ($cat) {
+                $data['vehicle_category_id'] = $cat->id;
+            }
+        }
+
+        if (! empty($data['vehicle_model_id'])) {
+            $mod = VehicleModel::find($data['vehicle_model_id']);
+            if ($mod) {
+                $data['vehicle_model'] = $mod->name;
+            }
+        }
 
         // Mark custom location queries and round-trip queries as zero-amount enquiries
         $isCustomLocationQuery = ! empty($request->input('is_custom_query')) || $request->filled('pickup_other') || $request->filled('destination_other');
@@ -479,7 +512,9 @@ class PublicWebsiteController extends Controller
             ->unique()
             ->sort()
             ->values();
-        $vehicleCategories = RateVehiclePrice::query()->distinct()->orderBy('vehicle_category')->pluck('vehicle_category');
+        $activeCategories = VehicleCategory::where('is_active', true)->orderBy('display_order')->pluck('name')->toArray();
+        $ratePriceCategories = RateVehiclePrice::query()->distinct()->pluck('vehicle_category')->toArray();
+        $vehicleCategories = collect(array_merge($activeCategories, $ratePriceCategories))->unique()->values();
         $selectedQuotes = collect();
 
         if ($request->filled('from') && $request->filled('to') && $request->filled('rate_category')) {
@@ -578,6 +613,7 @@ class PublicWebsiteController extends Controller
             'phone' => 'required|string|max:20',
             'email' => 'nullable|email|max:255',
             'service_type' => 'nullable|string|max:100',
+            'vehicle_preference' => 'nullable|string|max:100',
             'subject' => 'nullable|string|max:255',
             'message' => 'required|string|max:2000',
         ]);

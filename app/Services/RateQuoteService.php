@@ -23,7 +23,7 @@ class RateQuoteService
         }
 
         $price = $route->vehiclePrices
-            ->first(fn (RateVehiclePrice $vehiclePrice): bool => strcasecmp($vehiclePrice->vehicle_category, trim($vehicleCategory)) === 0);
+            ->first(fn (RateVehiclePrice $vehiclePrice): bool => $this->matchVehicleCategory($vehiclePrice->vehicle_category, $vehicleCategory));
 
         if (! $price) {
             return null;
@@ -142,5 +142,49 @@ class RateQuoteService
         }
 
         return str_contains($s, $f) || str_contains($f, $s);
+    }
+
+    public function matchVehicleCategory(string $priceCategory, string $requestedCategory): bool
+    {
+        $priceCat = trim($priceCategory);
+        $reqCat = trim($requestedCategory);
+
+        if (strcasecmp($priceCat, $reqCat) === 0) {
+            return true;
+        }
+
+        $pLower = strtolower($priceCat);
+        $rLower = strtolower($reqCat);
+
+        // SUV / MUV — 6+1 Seating <-> Ertiga <-> MUV
+        $isSUVReq = str_contains($rLower, 'ertiga') || str_contains($rLower, 'suv') || str_contains($rLower, 'muv');
+        $isSUVPriced = str_contains($pLower, 'ertiga') || str_contains($pLower, 'suv') || str_contains($pLower, 'muv');
+        if ($isSUVReq && $isSUVPriced) {
+            return true;
+        }
+
+        // Traveller <-> Tempo Traveller
+        $isTravellerReq = str_contains($rLower, 'traveller') || str_contains($rLower, 'tempo');
+        $isTravellerPriced = str_contains($pLower, 'traveller') || str_contains($pLower, 'tempo');
+        if ($isTravellerReq && $isTravellerPriced) {
+            return true;
+        }
+
+        // Hatchback fallback to Sedan if route doesn't have dedicated Hatchback tier
+        if (str_contains($rLower, 'hatchback') && (str_contains($pLower, 'hatchback') || str_contains($pLower, 'sedan'))) {
+            return true;
+        }
+
+        // Urbania fallback to Traveller if Urbania not explicitly listed
+        if (str_contains($rLower, 'urbania') && (str_contains($pLower, 'urbania') || str_contains($pLower, 'traveller'))) {
+            return true;
+        }
+
+        // Bus matching
+        if (str_contains($rLower, 'bus') && str_contains($pLower, 'bus')) {
+            return true;
+        }
+
+        return false;
     }
 }

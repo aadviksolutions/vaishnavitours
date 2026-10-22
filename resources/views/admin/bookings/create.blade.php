@@ -308,14 +308,35 @@
                     <div id="adminRouteLegsList" style="padding: 0.4rem 0.85rem; font-size: 11px; color: #1E40AF; display: flex; gap: 6px; flex-wrap: wrap;"></div>
                 </div>
 
-                <div class="grid grid-2 gap-3 mb-3">
+                <div class="grid grid-3 gap-3 mb-3">
                     <div class="form-group">
-                        <label for="vehicle_category" class="form-label">Rate vehicle category *</label>
-                        <select name="vehicle_category" id="vehicle_category" class="form-select" required>
+                        <label for="vehicle_category" class="form-label">Vehicle Category *</label>
+                        <select name="vehicle_category" id="vehicle_category" class="form-select" onchange="onAdminBookingCategoryChange()" required>
                             <option value="">Select vehicle category</option>
-                            @foreach($vehicleCategories as $category)<option value="{{ $category }}" {{ old('vehicle_category') === $category ? 'selected' : '' }}>{{ $category }}</option>@endforeach
+                            @if(isset($activeVehicleCategories))
+                                @foreach($activeVehicleCategories as $cat)
+                                    <option value="{{ $cat->name }}" data-id="{{ $cat->id }}" {{ old('vehicle_category') === $cat->name ? 'selected' : '' }}>
+                                        {{ $cat->name }} ({{ $cat->is_capacity_configurable ? 'Configurable '.$cat->min_seating_capacity.'-'.$cat->max_seating_capacity.' Seats' : $cat->default_seating_capacity.' Seats' }})
+                                    </option>
+                                @endforeach
+                            @endif
+                            @foreach($vehicleCategories as $category)
+                                @if(!isset($activeVehicleCategories) || !$activeVehicleCategories->contains('name', $category))
+                                    <option value="{{ $category }}" {{ old('vehicle_category') === $category ? 'selected' : '' }}>{{ $category }}</option>
+                                @endif
+                            @endforeach
                         </select>
+                        <input type="hidden" name="vehicle_category_id" id="admin_vehicle_category_id" value="{{ old('vehicle_category_id') }}">
                     </div>
+
+                    <div class="form-group">
+                        <label for="vehicle_model_id" class="form-label">Vehicle Model Preference (Optional)</label>
+                        <select name="vehicle_model_id" id="vehicle_model_id" class="form-select" onchange="onAdminBookingModelChange()">
+                            <option value="">-- Any / All Models in Category --</option>
+                        </select>
+                        <input type="hidden" name="vehicle_model" id="admin_vehicle_model" value="{{ old('vehicle_model') }}">
+                    </div>
+
                     <div class="form-group" id="estimatedKmGroup" style="display: none;">
                         <label for="estimated_km" class="form-label">Estimated round-trip distance (KM) *</label>
                         <input type="number" min="0.01" step="0.1" name="estimated_km" id="estimated_km" class="form-control" value="{{ old('estimated_km') }}">
@@ -428,6 +449,7 @@
 
 <script>
     const rateOptions = @json($rateOptions);
+    const activeVehicleCategoriesData = @json($activeVehicleCategories ?? []);
     const rateCategory = document.querySelector('#rate_category');
     const pickup = document.querySelector('#pickup_location');
     const destination = document.querySelector('#destination');
@@ -436,6 +458,47 @@
     const estimatedKmGroup = document.querySelector('#estimatedKmGroup');
     const totalAmount = document.querySelector('#total_amount');
     const fareDetails = document.querySelector('#fareDetails');
+
+    function onAdminBookingCategoryChange() {
+        const catSelect = document.getElementById('vehicle_category');
+        const catIdInput = document.getElementById('admin_vehicle_category_id');
+        const modelSelect = document.getElementById('vehicle_model_id');
+        const modelNameInput = document.getElementById('admin_vehicle_model');
+
+        const selectedOpt = catSelect.options[catSelect.selectedIndex];
+        const catId = selectedOpt ? selectedOpt.dataset.id : null;
+        if (catIdInput) catIdInput.value = catId || '';
+
+        const previousVal = modelSelect.value;
+        modelSelect.innerHTML = '<option value="">-- Any / All Models in Category --</option>';
+        if (catId) {
+            const catObj = activeVehicleCategoriesData.find(c => c.id == catId);
+            if (catObj && catObj.active_models && catObj.active_models.length > 0) {
+                catObj.active_models.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.id;
+                    opt.textContent = m.name + (m.brand ? ` (${m.brand})` : '');
+                    opt.dataset.name = m.name;
+                    if (previousVal == m.id) opt.selected = true;
+                    modelSelect.appendChild(opt);
+                });
+            }
+        }
+        if (modelNameInput) {
+            const curOpt = modelSelect.options[modelSelect.selectedIndex];
+            modelNameInput.value = curOpt && curOpt.value ? curOpt.dataset.name : '';
+        }
+        updateFare();
+    }
+
+    function onAdminBookingModelChange() {
+        const modelSelect = document.getElementById('vehicle_model_id');
+        const modelNameInput = document.getElementById('admin_vehicle_model');
+        const selectedOpt = modelSelect.options[modelSelect.selectedIndex];
+        if (modelNameInput) {
+            modelNameInput.value = selectedOpt && selectedOpt.value ? (selectedOpt.dataset.name || selectedOpt.textContent) : '';
+        }
+    }
 
     function updateFare() {
         if (document.getElementById('customFareToggle')?.checked) {

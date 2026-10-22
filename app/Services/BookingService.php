@@ -12,6 +12,8 @@ use App\Models\Setting;
 use App\Models\Trip;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Models\VehicleCategory;
+use App\Models\VehicleModel;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -99,6 +101,22 @@ class BookingService
             $vehicle = null;
             if (! empty($data['vehicle_id'])) {
                 $vehicle = Vehicle::find($data['vehicle_id']);
+            }
+
+            $selectedCategory = $data['vehicle_category'] ?? ($vehicle?->category?->name ?? $vehicle?->vehicle_type ?? null);
+            $selectedModel = $data['vehicle_model'] ?? ($vehicle?->vehicleModel?->name ?? null);
+            $vehicleCategoryId = $data['vehicle_category_id'] ?? $vehicle?->vehicle_category_id;
+            $vehicleModelId = $data['vehicle_model_id'] ?? $vehicle?->vehicle_model_id;
+
+            if (! $vehicleCategoryId && $selectedCategory) {
+                $vehicleCategoryId = VehicleCategory::where('name', $selectedCategory)
+                    ->orWhere('code', strtolower(trim(str_replace([' ', '/', '—', '-'], '_', $selectedCategory))))
+                    ->value('id');
+            }
+            if (! $vehicleModelId && $selectedModel && $vehicleCategoryId) {
+                $vehicleModelId = VehicleModel::where('vehicle_category_id', $vehicleCategoryId)
+                    ->where('name', $selectedModel)
+                    ->value('id');
             }
 
             $tripType = $data['trip_type'] ?? 'One-Way';
@@ -237,10 +255,20 @@ class BookingService
             if (! empty($data['service_category'])) {
                 $noteDetails[] = 'Service Category: '.$data['service_category'];
             }
+            if (! empty($selectedModel)) {
+                $noteDetails[] = 'Preferred Model: '.$selectedModel;
+            }
             if (! empty($data['notes'])) {
                 $noteDetails[] = $data['notes'];
             }
             $finalNotes = ! empty($noteDetails) ? implode(' | ', $noteDetails) : null;
+
+            if (is_array($pricingDetails)) {
+                $pricingDetails['vehicle_category'] = $selectedCategory;
+                if ($selectedModel) {
+                    $pricingDetails['vehicle_model'] = $selectedModel;
+                }
+            }
 
             $paidAmount = (float) ($data['paid_amount'] ?? 0.00);
             $balanceAmount = max(0, round($totalAmount - $paidAmount, 2));
@@ -348,6 +376,10 @@ class BookingService
                 'duration_hours' => $durationInfo['total_hours'],
                 'duration_notes' => $durationInfo['breakdown'],
                 'vehicle_id' => $vehicle?->id,
+                'vehicle_category' => $selectedCategory,
+                'vehicle_model' => $selectedModel,
+                'vehicle_category_id' => $vehicleCategoryId,
+                'vehicle_model_id' => $vehicleModelId,
                 'driver_id' => null,
                 'tour_package_id' => $data['tour_package_id'] ?? null,
                 'rate_vehicle_price_id' => $ratePrice?->id,

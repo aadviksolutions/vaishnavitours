@@ -43,19 +43,44 @@
                     </div>
                 </div>
 
-                <div class="grid grid-3 gap-3 mb-3">
+                <div class="grid grid-2 gap-3 mb-3">
                     <div class="form-group">
-                        <label for="vehicle_type" class="form-label">Category *</label>
-                        <select name="vehicle_type" id="vehicle_type" class="form-select" required>
-                            @foreach(['Hatchback', 'Sedan', 'SUV', 'Innova Crysta', 'Tempo Traveller', 'Luxury'] as $t)
-                                <option value="{{ $t }}" {{ old('vehicle_type') == $t ? 'selected' : '' }}>{{ $t }}</option>
+                        <label for="vehicle_category_id" class="form-label">Vehicle Category *</label>
+                        <select name="vehicle_category_id" id="vehicle_category_id" class="form-select" onchange="onAdminCategoryChange()" required>
+                            <option value="">-- Select Category --</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}" 
+                                        data-name="{{ $cat->name }}" 
+                                        data-capacity="{{ $cat->default_seating_capacity }}" 
+                                        data-min="{{ $cat->min_seating_capacity }}" 
+                                        data-max="{{ $cat->max_seating_capacity }}"
+                                        data-configurable="{{ $cat->is_capacity_configurable ? '1' : '0' }}"
+                                        {{ old('vehicle_category_id', $loop->first ? $cat->id : null) == $cat->id ? 'selected' : '' }}>
+                                    {{ $cat->name }} ({{ $cat->is_capacity_configurable ? 'Configurable '.$cat->min_seating_capacity.'-'.$cat->max_seating_capacity.' Seats' : $cat->default_seating_capacity.' Seats' }})
+                                </option>
                             @endforeach
                         </select>
+                        <input type="hidden" name="vehicle_type" id="vehicle_type" value="{{ old('vehicle_type', $categories->first()?->name ?? 'Sedan') }}">
                     </div>
 
                     <div class="form-group">
-                        <label for="seating_capacity" class="form-label">Passenger Capacity (Seats) *</label>
-                        <input type="number" name="seating_capacity" id="seating_capacity" class="form-control" value="{{ old('seating_capacity', 4) }}" min="1" max="50" required>
+                        <label for="vehicle_model_id" class="form-label">Vehicle Model Option</label>
+                        <select name="vehicle_model_id" id="vehicle_model_id" class="form-select" onchange="onAdminModelChange()">
+                            <option value="">-- Optional / Other Model --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-2 gap-3 mb-3">
+                    <div class="form-group">
+                        <label for="seating_capacity" class="form-label">
+                            Passenger Seating Capacity (Seats) *
+                            <span id="capacityBadge" class="badge" style="background: #E0E7FF; color: #3730A3; font-size: 10px; margin-left: 5px;">Configurable</span>
+                        </label>
+                        <input type="number" name="seating_capacity" id="seating_capacity" class="form-control" value="{{ old('seating_capacity', 4) }}" min="1" max="70" required>
+                        <small id="capacityHelp" style="color: var(--slate-500); font-size: 11px; display: block; margin-top: 2px;">
+                            Configurable seating capacity: enter certified passenger seats for this vehicle.
+                        </small>
                     </div>
 
                     <div class="form-group">
@@ -175,4 +200,82 @@
         </div>
     </div>
 </form>
+
+<script>
+    const vehicleCategoriesData = @json($categories);
+
+    function onAdminCategoryChange() {
+        const catSelect = document.getElementById('vehicle_category_id');
+        const modelSelect = document.getElementById('vehicle_model_id');
+        const typeHidden = document.getElementById('vehicle_type');
+        const capInput = document.getElementById('seating_capacity');
+        const capBadge = document.getElementById('capacityBadge');
+        const capHelp = document.getElementById('capacityHelp');
+        const nameInput = document.getElementById('name');
+
+        const selectedOpt = catSelect.options[catSelect.selectedIndex];
+        if (!selectedOpt || !selectedOpt.value) return;
+
+        const catId = parseInt(selectedOpt.value);
+        const catName = selectedOpt.dataset.name;
+        const defaultCap = parseInt(selectedOpt.dataset.capacity) || 4;
+        const isConfigurable = selectedOpt.dataset.configurable === '1';
+        const minCap = parseInt(selectedOpt.dataset.min) || 1;
+        const maxCap = parseInt(selectedOpt.dataset.max) || 60;
+
+        typeHidden.value = catName;
+
+        if (isConfigurable) {
+            capBadge.textContent = `Configurable (${minCap}-${maxCap} Seats)`;
+            capBadge.style.background = '#FEF3C7';
+            capBadge.style.color = '#92400E';
+            capHelp.textContent = `Enter custom seating capacity for this ${catName} (certified passenger seats between ${minCap} and ${maxCap}).`;
+        } else {
+            capBadge.textContent = `${defaultCap} Seats Standard`;
+            capBadge.style.background = '#E0E7FF';
+            capBadge.style.color = '#3730A3';
+            capHelp.textContent = `Standard ${defaultCap}-seater capacity. Adjust if RTO commercial registration specifies otherwise.`;
+        }
+
+        capInput.value = defaultCap;
+        capInput.min = minCap;
+        capInput.max = maxCap;
+
+        // Populate models
+        const catObj = vehicleCategoriesData.find(c => c.id === catId);
+        const currentModelVal = modelSelect.value;
+        modelSelect.innerHTML = '<option value="">-- Optional / Other Model --</option>';
+        if (catObj && catObj.active_models && catObj.active_models.length > 0) {
+            catObj.active_models.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.id;
+                opt.textContent = m.name + (m.brand ? ` (${m.brand})` : '');
+                opt.dataset.name = m.name;
+                opt.dataset.capacity = m.default_seating_capacity || defaultCap;
+                if (currentModelVal == m.id) opt.selected = true;
+                modelSelect.appendChild(opt);
+            });
+        }
+    }
+
+    function onAdminModelChange() {
+        const modelSelect = document.getElementById('vehicle_model_id');
+        const nameInput = document.getElementById('name');
+        const capInput = document.getElementById('seating_capacity');
+
+        const selectedOpt = modelSelect.options[modelSelect.selectedIndex];
+        if (selectedOpt && selectedOpt.value) {
+            if (!nameInput.value || nameInput.value.trim() === '') {
+                nameInput.value = selectedOpt.dataset.name;
+            }
+            if (selectedOpt.dataset.capacity) {
+                capInput.value = selectedOpt.dataset.capacity;
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        onAdminCategoryChange();
+    });
+</script>
 @endsection

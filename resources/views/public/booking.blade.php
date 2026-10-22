@@ -20,6 +20,9 @@
 @section('content')
 @php
     $defaultRateCategory = old('rate_category', request('rate_category', 'outstation'));
+    $supportPhone = \App\Models\Setting::get('phone_primary', config('vaishnavi.phone_primary', '9244784443'));
+    $cleanPhone = preg_replace('/[^0-9]/', '', $supportPhone);
+    $supportTel = (strlen($cleanPhone) === 10) ? '+91' . $cleanPhone : (str_starts_with($cleanPhone, '91') ? '+' . $cleanPhone : '+91' . $cleanPhone);
     $tripOptions = [
         ['trip_type' => 'One-Way', 'category' => 'outstation', 'title' => 'One-Way Taxi', 'description' => 'Direct city-to-city drop', 'icon' => 'arrow-right'],
         ['trip_type' => 'Round-Trip', 'category' => 'round_trip', 'title' => 'Round Trip', 'description' => 'Pickup · Via · Final Drop', 'icon' => 'repeat'],
@@ -43,14 +46,48 @@
                 </div>
                 <div style="font-size: 13px;">
                     For urgent or late-night bookings, please call us: 
-                    <a href="tel:+919131613010" style="color: #1E40AF; font-weight: 700; text-decoration: underline;">+91 91316 13010</a>
+                    <a href="tel:{{ $supportTel }}" style="color: #1E40AF; font-weight: 700; text-decoration: underline;">{{ $supportPhone }}</a>
                 </div>
             </div>
 
-            <div style="text-align: center; margin-bottom: 1.75rem;">
+            <div style="text-align: center; margin-bottom: 1.5rem;">
                 <span style="color: var(--accent-gold); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.8px;">Direct Reservation & Quotations</span>
                 <h1 style="font-size: 1.65rem; font-weight: 700; margin-top: 0.25rem; color: var(--dark-900);">Book Your Cab with Vaishnavi Tours</h1>
                 <p style="color: var(--slate-500); font-size: 0.875rem; margin-top: 0.35rem;">Clean air-conditioned fleet, polite experienced chauffeurs, and transparent GST invoices.</p>
+            </div>
+
+            <!-- =========================================================================
+                 VAISHNAVI TOURS — PROMINENT BOOKING SUPPORT BANNER
+                 ========================================================================= -->
+            <div class="booking-support-banner" style="background: linear-gradient(135deg, #0F2744 0%, #16365C 100%); border: 1.5px solid #C59B27; border-radius: 10px; padding: 1.15rem 1.35rem; margin-bottom: 1.75rem; box-shadow: 0 4px 16px rgba(15, 39, 68, 0.15); color: #ffffff;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.85rem; flex: 1; min-width: 260px;">
+                        <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(245, 158, 11, 0.15); border: 1.5px solid #F59E0B; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; color: #F59E0B;">
+                            📞
+                        </div>
+                        <div>
+                            <h2 style="font-size: 1.1rem; font-weight: 700; margin: 0 0 0.25rem 0; color: #FFFFFF; line-height: 1.25;">
+                                Need Help with Your Booking?
+                            </h2>
+                            <p style="color: #CBD5E1; font-size: 0.825rem; line-height: 1.45; margin: 0; max-width: 520px;">
+                                If you face any problem while booking, have questions about your trip, or need assistance, please call our support team.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;" class="support-banner-actions">
+                        <a href="tel:{{ $supportTel }}" style="text-decoration: none; display: flex; flex-direction: column; align-items: flex-end;" class="support-phone-link" title="Call {{ $supportPhone }}">
+                            <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: #94A3B8; font-weight: 600;">24/7 Helpline</span>
+                            <span style="font-size: 1.35rem; font-weight: 800; color: #F59E0B; font-family: 'Plus Jakarta Sans', var(--font-sans); letter-spacing: 0.5px; line-height: 1.1;">
+                                {{ $supportPhone }}
+                            </span>
+                        </a>
+                        <a href="tel:{{ $supportTel }}" class="btn-call-support" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: #F59E0B; color: #0F172A; font-weight: 700; font-size: 0.95rem; padding: 0.6rem 1.4rem; border-radius: 6px; text-decoration: none; border: none; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3); transition: all 0.2s ease; min-height: 42px; white-space: nowrap;" title="Call Support Now">
+                            <span>📞</span>
+                            <span>Call Now</span>
+                        </a>
+                    </div>
+                </div>
             </div>
 
             <div class="card" style="padding: 1.5rem; border: 1px solid var(--slate-200); box-shadow: var(--shadow-sm); border-radius: 8px; background: #fff;">
@@ -242,20 +279,56 @@
                     <div class="form-group" style="margin-bottom: 1.25rem;">
                         <label class="form-label" style="font-weight: 600; font-size: 13px;">4. Vehicle Category Preference *</label>
                         <div class="grid grid-3 gap-2">
-                            @forelse($vehicleCategories as $category)
-                                <label style="border: 1px solid var(--slate-200); padding: 0.75rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.15s ease;" class="vehicle-category-opt">
-                                    <input type="radio" name="vehicle_category" value="{{ $category }}" {{ old('vehicle_category', request('vehicle_category')) === $category ? 'checked' : '' }} required>
-                                    <div>
-                                        <span style="font-weight: 600; font-size: 0.85rem; color: var(--dark-900); display: block;">{{ $category }}</span>
-                                        <span style="font-size: 11px; color: var(--slate-500);">Sedan / SUV / Hatchback</span>
+                            @if(isset($activeVehicleCategories) && $activeVehicleCategories->isNotEmpty())
+                                @foreach($activeVehicleCategories as $cat)
+                                    <label style="border: 1px solid var(--slate-200); padding: 0.75rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.15s ease;" 
+                                           class="vehicle-category-opt {{ old('vehicle_category', request('vehicle_category', $loop->first ? $cat->name : '')) === $cat->name ? 'active ring-2 ring-blue-500 bg-blue-50 border-blue-400' : '' }}"
+                                           data-category-id="{{ $cat->id }}"
+                                           data-category-name="{{ $cat->name }}"
+                                           data-models="{{ json_encode($cat->activeModels) }}">
+                                        <input type="radio" name="vehicle_category" value="{{ $cat->name }}" {{ old('vehicle_category', request('vehicle_category', $loop->first ? $cat->name : '')) === $cat->name ? 'checked' : '' }} required>
+                                        <div>
+                                            <span style="font-weight: 700; font-size: 0.85rem; color: var(--dark-900); display: block;">{{ $cat->name }}</span>
+                                            <span style="font-size: 11px; color: var(--slate-500);">
+                                                @if($cat->activeModels->isNotEmpty())
+                                                    {{ $cat->activeModels->pluck('name')->implode(', ') }} ({{ $cat->is_capacity_configurable ? $cat->min_seating_capacity.'-'.$cat->max_seating_capacity : $cat->default_seating_capacity }} Seats)
+                                                @else
+                                                    {{ $cat->is_capacity_configurable ? 'Configurable '.$cat->min_seating_capacity.'-'.$cat->max_seating_capacity.' Seats' : $cat->default_seating_capacity.' Seats' }}
+                                                @endif
+                                            </span>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            @else
+                                @forelse($vehicleCategories as $category)
+                                    <label style="border: 1px solid var(--slate-200); padding: 0.75rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.15s ease;" class="vehicle-category-opt">
+                                        <input type="radio" name="vehicle_category" value="{{ $category }}" {{ old('vehicle_category', request('vehicle_category')) === $category ? 'checked' : '' }} required>
+                                        <div>
+                                            <span style="font-weight: 600; font-size: 0.85rem; color: var(--dark-900); display: block;">{{ $category }}</span>
+                                            <span style="font-size: 11px; color: var(--slate-500);">AC Commercial Cab</span>
+                                        </div>
+                                    </label>
+                                @empty
+                                    <div style="grid-column: 1 / -1; padding: 1.25rem; background: var(--slate-100); border: 1px dashed var(--slate-300); border-radius: 6px; text-align: center; color: var(--slate-600);">
+                                        <p style="margin-bottom: 0.35rem; font-weight: 600; color: var(--dark-900); font-size: 0.95rem;">Fleet rates configuring...</p>
+                                        <a href="tel:+919131613010" class="btn btn-primary btn-sm">Call Dispatch directly</a>
                                     </div>
+                                @endforelse
+                            @endif
+                        </div>
+
+                        <!-- Optional Vehicle Model selection box -->
+                        <div id="bookingModelSelectionBox" style="display: none; margin-top: 0.75rem; background: #F8FAFC; border: 1px solid var(--slate-200); border-radius: 6px; padding: 0.65rem 0.85rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                                <label style="font-size: 11.5px; font-weight: 700; color: var(--dark-900); margin: 0;">
+                                    🚗 Preferred Vehicle Model (Optional)
                                 </label>
-                            @empty
-                                <div style="grid-column: 1 / -1; padding: 1.25rem; background: var(--slate-100); border: 1px dashed var(--slate-300); border-radius: 6px; text-align: center; color: var(--slate-600);">
-                                    <p style="margin-bottom: 0.35rem; font-weight: 600; color: var(--dark-900); font-size: 0.95rem;">Fleet rates configuring...</p>
-                                    <a href="tel:+919131613010" class="btn btn-primary btn-sm">Call Dispatch directly</a>
-                                </div>
-                            @endforelse
+                                <span style="font-size: 10.5px; color: var(--slate-500);">Choose specific car or leave as any</span>
+                            </div>
+                            <div id="bookingModelChipsWrap" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                            <input type="hidden" name="vehicle_category_id" id="bookingVehicleCategoryId" value="{{ old('vehicle_category_id') }}">
+                            <input type="hidden" name="vehicle_model_id" id="bookingVehicleModelId" value="{{ old('vehicle_model_id') }}">
+                            <input type="hidden" name="vehicle_model" id="bookingVehicleModel" value="{{ old('vehicle_model') }}">
                         </div>
                     </div>
 
@@ -330,6 +403,11 @@
                             Confirm Booking
                         </button>
                     </div>
+
+                    <!-- Compact Booking Form Assistance Help Message -->
+                    <div class="booking-submit-help" style="margin-top: 0.85rem; padding: 0.65rem 1rem; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 6px; text-align: center; font-size: 0.85rem; color: #92400E; display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap;">
+                        <span>Facing an issue with your booking? Call us at <a href="tel:{{ $supportTel }}" style="color: #B45309; font-weight: 700; text-decoration: underline;">{{ $supportPhone }}</a>.</span>
+                    </div>
                 </form>
             </div>
         </div>
@@ -395,7 +473,7 @@
         const diffHours = (pickupDateTime - now) / (1000 * 60 * 60);
 
         if (diffHours < 3.9) {
-            alert('Notice: Website bookings must be scheduled at least 4 hours in advance.\n\nFor urgent or late-night bookings, please call our 24/7 hotline directly: +91 91316 13010.');
+            alert('Notice: Website bookings must be scheduled at least 4 hours in advance.\n\nFor urgent or late-night bookings, please call our 24/7 hotline directly: {{ $supportPhone }}.');
         }
     }
 
@@ -572,7 +650,89 @@
         });
     });
 
-    document.querySelectorAll('input[name="vehicle_category"]').forEach((input) => input.addEventListener('change', updateRatePreview));
+    function renderBookingModelPills(parent) {
+        const box = document.getElementById('bookingModelSelectionBox');
+        const wrap = document.getElementById('bookingModelChipsWrap');
+        const catIdInput = document.getElementById('bookingVehicleCategoryId');
+        const modelIdInput = document.getElementById('bookingVehicleModelId');
+        const modelNameInput = document.getElementById('bookingVehicleModel');
+
+        if (!box || !wrap) return;
+
+        const catId = parent ? parent.dataset.categoryId : null;
+        if (catIdInput) catIdInput.value = catId || '';
+
+        let models = [];
+        try {
+            models = parent && parent.dataset.models ? JSON.parse(parent.dataset.models) : [];
+        } catch (e) {
+            models = [];
+        }
+
+        wrap.innerHTML = '';
+        if (models && models.length > 0) {
+            box.style.display = 'block';
+
+            // "Any Model" option
+            const anyBtn = document.createElement('button');
+            anyBtn.type = 'button';
+            anyBtn.className = 'btn btn-xs ' + (!modelIdInput.value ? 'btn-primary' : 'btn-outline');
+            anyBtn.style.cssText = 'font-size: 11px; padding: 3px 8px; border-radius: 4px;';
+            anyBtn.textContent = '✓ Any / All Models in Category';
+            anyBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                modelIdInput.value = '';
+                modelNameInput.value = '';
+                wrap.querySelectorAll('button').forEach(b => {
+                    b.className = 'btn btn-xs btn-outline';
+                });
+                this.className = 'btn btn-xs btn-primary';
+            });
+            wrap.appendChild(anyBtn);
+
+            models.forEach(m => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                const isSelected = modelIdInput.value == m.id || modelNameInput.value == m.name;
+                btn.className = 'btn btn-xs ' + (isSelected ? 'btn-primary' : 'btn-outline');
+                btn.style.cssText = 'font-size: 11px; padding: 3px 8px; border-radius: 4px;';
+                btn.textContent = m.name + (m.default_seating_capacity ? ` (${m.default_seating_capacity} Seater)` : '');
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    modelIdInput.value = m.id;
+                    modelNameInput.value = m.name;
+                    wrap.querySelectorAll('button').forEach(b => {
+                        b.className = 'btn btn-xs btn-outline';
+                    });
+                    this.className = 'btn btn-xs btn-primary';
+                });
+                wrap.appendChild(btn);
+            });
+        } else {
+            box.style.display = 'none';
+            if (modelIdInput) modelIdInput.value = '';
+            if (modelNameInput) modelNameInput.value = '';
+        }
+    }
+
+    document.querySelectorAll('.vehicle-category-opt').forEach((label) => {
+        label.addEventListener('click', function () {
+            document.querySelectorAll('.vehicle-category-opt').forEach((l) => l.classList.remove('active', 'ring-2', 'ring-blue-500', 'bg-blue-50', 'border-blue-400'));
+            this.classList.add('active', 'ring-2', 'ring-blue-500', 'bg-blue-50', 'border-blue-400');
+            const radio = this.querySelector('input[type="radio"]');
+            if (radio) {
+                radio.checked = true;
+            }
+            renderBookingModelPills(this);
+            updateRatePreview();
+        });
+    });
+
+    const initialCheckedBookingCat = document.querySelector('.vehicle-category-opt input[type="radio"]:checked');
+    if (initialCheckedBookingCat) {
+        renderBookingModelPills(initialCheckedBookingCat.closest('.vehicle-category-opt'));
+    }
+
     [pickupInput, destinationInput].forEach((input) => input.addEventListener('change', updateRatePreview));
     updateRatePreview();
 
@@ -835,3 +995,42 @@
     }
 </script>
 @endpush
+
+@push('styles')
+<style>
+.booking-support-banner {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.btn-call-support:hover {
+    background: #D97706 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.45) !important;
+}
+.booking-support-banner a.support-phone-link:hover span:last-child {
+    text-decoration: underline;
+    color: #FBBF24 !important;
+}
+@media (max-width: 640px) {
+    .booking-support-banner {
+        padding: 1rem !important;
+    }
+    .booking-support-banner .support-banner-actions {
+        width: 100% !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0.65rem !important;
+        margin-top: 0.35rem;
+    }
+    .booking-support-banner .support-phone-link {
+        align-items: center !important;
+        text-align: center !important;
+    }
+    .booking-support-banner .btn-call-support {
+        width: 100% !important;
+        min-height: 44px !important;
+        font-size: 1rem !important;
+    }
+}
+</style>
+@endpush
+

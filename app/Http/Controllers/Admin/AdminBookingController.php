@@ -17,6 +17,8 @@ use App\Models\TourPackage;
 use App\Models\Trip;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Models\VehicleCategory;
+use App\Models\VehicleModel;
 use App\Services\BookingService;
 use App\Services\GoogleMapsRoutingService;
 use App\Services\PaymentService;
@@ -98,18 +100,26 @@ class AdminBookingController extends Controller
         $routes = RateRoute::query()->where('active', true)->with('vehiclePrices')->get();
         $locations = $routes->flatMap(fn (RateRoute $route): array => array_filter([$route->origin, $route->destination]))
             ->unique()->sort()->values();
-        $vehicleCategories = RateVehiclePrice::query()->distinct()->orderBy('vehicle_category')->pluck('vehicle_category');
+        $activeVehicleCategories = VehicleCategory::where('is_active', true)->with('activeModels')->orderBy('display_order')->get();
+        $dbCategories = $activeVehicleCategories->pluck('name')->toArray();
+        $ratePriceCategories = RateVehiclePrice::query()->distinct()->pluck('vehicle_category')->toArray();
+        $vehicleCategories = collect(array_merge($dbCategories, $ratePriceCategories))->unique()->values();
+
         $rateOptions = [];
         $rateQuoteService = app(RateQuoteService::class);
         foreach ($routes as $route) {
-            foreach ($route->vehiclePrices as $price) {
-                $directions = [[$route->origin, $route->destination]];
-                if ($route->return_same_rate && $route->origin && $route->destination) {
-                    $directions[] = [$route->destination, $route->origin];
-                }
-                foreach ($directions as [$origin, $destination]) {
-                    $key = implode('|', [$route->category, $origin ?? '', $destination ?? '', $price->vehicle_category]);
-                    $rateOptions[$key] = $rateQuoteService->quote($route->category, $origin ?? '', $destination ?? '', $price->vehicle_category);
+            $catNamesToQuote = collect(array_merge($dbCategories, $route->vehiclePrices->pluck('vehicle_category')->toArray()))->unique();
+            $directions = [[$route->origin, $route->destination]];
+            if ($route->return_same_rate && $route->origin && $route->destination) {
+                $directions[] = [$route->destination, $route->origin];
+            }
+            foreach ($directions as [$origin, $destination]) {
+                foreach ($catNamesToQuote as $catName) {
+                    $key = implode('|', [$route->category, $origin ?? '', $destination ?? '', $catName]);
+                    $q = $rateQuoteService->quote($route->category, $origin ?? '', $destination ?? '', $catName);
+                    if ($q) {
+                        $rateOptions[$key] = $q;
+                    }
                 }
             }
         }
@@ -123,7 +133,7 @@ class AdminBookingController extends Controller
         $tourPackages = TourPackage::where('is_active', true)->get();
         $bookingCategories = BookingCategory::where('is_active', true)->get();
 
-        return view('admin.bookings.create', compact('customers', 'vehicles', 'drivers', 'locations', 'vehicleCategories', 'rateOptions', 'prefill', 'pickupLocations', 'tourPackages', 'bookingCategories'));
+        return view('admin.bookings.create', compact('customers', 'vehicles', 'drivers', 'locations', 'vehicleCategories', 'activeVehicleCategories', 'rateOptions', 'prefill', 'pickupLocations', 'tourPackages', 'bookingCategories'));
     }
 
     public function store(Request $request, BookingService $bookingService)
@@ -154,6 +164,9 @@ class AdminBookingController extends Controller
             'destination' => 'required|string|max:255',
             'rate_category' => 'required|in:airport,outstation,round_trip,local_8h_80km,local_4h_40km',
             'vehicle_category' => 'required|string|max:80',
+            'vehicle_model' => 'nullable|string|max:80',
+            'vehicle_category_id' => 'nullable|exists:vehicle_categories,id',
+            'vehicle_model_id' => 'nullable|exists:vehicle_models,id',
             'estimated_km' => 'nullable|required_if:rate_category,round_trip|numeric|min:0.01',
             'travel_date' => 'required|date',
             'travel_time' => 'required',
@@ -204,6 +217,25 @@ class AdminBookingController extends Controller
         }
 
         $data = $request->validate($rules);
+
+        if (! empty($data['vehicle_category_id'])) {
+            $cat = VehicleCategory::find($data['vehicle_category_id']);
+            if ($cat) {
+                $data['vehicle_category'] = $cat->name;
+            }
+        } elseif (! empty($data['vehicle_category'])) {
+            $cat = VehicleCategory::where('name', $data['vehicle_category'])->first();
+            if ($cat) {
+                $data['vehicle_category_id'] = $cat->id;
+            }
+        }
+
+        if (! empty($data['vehicle_model_id'])) {
+            $mod = VehicleModel::find($data['vehicle_model_id']);
+            if ($mod) {
+                $data['vehicle_model'] = $mod->name;
+            }
+        }
 
         $data['is_admin_booking'] = true;
         $data['is_custom_fare'] = $request->boolean('is_custom_fare');
@@ -331,8 +363,9 @@ class AdminBookingController extends Controller
         $customers = User::where('role', 'customer')->orderBy('name')->get();
         $vehicles = Vehicle::where('status', '!=', 'Inactive')->get();
         $drivers = Driver::where('status', '!=', 'Inactive')->get();
+        $activeVehicleCategories = VehicleCategory::where('is_active', true)->with('activeModels')->orderBy('display_order')->get();
 
-        return view('admin.bookings.edit', compact('booking', 'customers', 'vehicles', 'drivers'));
+        return view('admin.bookings.edit', compact('booking', 'customers', 'vehicles', 'drivers', 'activeVehicleCategories'));
     }
 
     public function update(Request $request, Booking $booking, PaymentService $paymentService)
@@ -343,10 +376,14 @@ class AdminBookingController extends Controller
             'pickup_location' => 'required|string|max:255',
             'via_location' => 'nullable|string|max:255',
             'destination' => 'required|string|max:255',
+            'vehicle_category' => 'nullable|string|max:80',
+            'vehicle_model' => 'nullable|string|max:80',
+            'vehicle_category_id' => 'nullable|exists:vehicle_categories,id',
+            'vehicle_model_id' => 'nullable|exists:vehicle_models,id',
             'travel_date' => 'required|date',
             'travel_time' => 'required',
             'return_date' => 'nullable|date',
-            'vehicle_id' => 'required|exists:vehicles,id',
+            'vehicle_id' => 'nullable|exists:vehicles,id',
             'driver_id' => 'nullable|exists:drivers,id',
             'total_amount' => 'required|numeric|min:0',
             'paid_amount' => 'required|numeric|min:0',
@@ -387,16 +424,52 @@ class AdminBookingController extends Controller
         $oldStatus = $booking->booking_status;
         $newStatus = $data['booking_status'];
 
+        $categoryId = $data['vehicle_category_id'] ?? null;
+        $categoryName = $data['vehicle_category'] ?? null;
+        if ($categoryId && empty($categoryName)) {
+            $catObj = VehicleCategory::find($categoryId);
+            if ($catObj) {
+                $categoryName = $catObj->name;
+            }
+        } elseif (! empty($categoryName) && empty($categoryId)) {
+            $catObj = VehicleCategory::where('name', $categoryName)->first();
+            if ($catObj) {
+                $categoryId = $catObj->id;
+            }
+        }
+
+        $modelId = $data['vehicle_model_id'] ?? null;
+        $modelName = $data['vehicle_model'] ?? null;
+        if ($modelId && empty($modelName)) {
+            $modObj = VehicleModel::find($modelId);
+            if ($modObj) {
+                $modelName = $modObj->name;
+            }
+        }
+
+        $pricingDetails = $booking->pricing_details ?? [];
+        if ($categoryName) {
+            $pricingDetails['vehicle_category'] = $categoryName;
+        }
+        if ($modelName) {
+            $pricingDetails['vehicle_model'] = $modelName;
+        }
+
         $updateFields = [
             'customer_id' => $data['customer_id'],
             'trip_type' => $data['trip_type'],
             'pickup_location' => $data['pickup_location'],
             'via_location' => $data['via_location'] ?? null,
             'destination' => $data['destination'],
+            'vehicle_category' => $categoryName ?: $booking->vehicle_category,
+            'vehicle_model' => $modelName ?: $booking->vehicle_model,
+            'vehicle_category_id' => $categoryId ?: $booking->vehicle_category_id,
+            'vehicle_model_id' => $modelId ?: $booking->vehicle_model_id,
+            'pricing_details' => $pricingDetails,
             'travel_date' => $data['travel_date'],
             'travel_time' => $data['travel_time'],
             'return_date' => $data['return_date'] ?? null,
-            'vehicle_id' => $data['vehicle_id'],
+            'vehicle_id' => $data['vehicle_id'] ?? null,
             'driver_id' => $data['driver_id'] ?? null,
             'total_amount' => $totalAmount,
             'paid_amount' => $paidAmount,
@@ -511,6 +584,38 @@ class AdminBookingController extends Controller
             $bookingService->assignDriver($booking, (int) $request->driver_id, Auth::user());
 
             return back()->with('success', "Chauffeur successfully assigned and Trip activated for Booking #{$booking->booking_id}!");
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        }
+    }
+
+    /**
+     * Action: Quick Assign Fleet Vehicle and/or Chauffeur directly
+     */
+    public function assignVehicleDriver(Request $request, Booking $booking, BookingService $bookingService)
+    {
+        $request->validate([
+            'vehicle_id' => 'nullable|exists:vehicles,id',
+            'driver_id' => 'nullable|exists:drivers,id',
+        ]);
+
+        if (! $request->filled('vehicle_id') && ! $request->filled('driver_id')) {
+            return back()->with('error', 'Please select at least a vehicle or a chauffeur to allocate.');
+        }
+
+        try {
+            $parts = [];
+            if ($request->filled('vehicle_id')) {
+                $bookingService->assignVehicle($booking, (int) $request->vehicle_id, Auth::user());
+                $parts[] = 'Vehicle allocated';
+            }
+
+            if ($request->filled('driver_id')) {
+                $bookingService->assignDriver($booking, (int) $request->driver_id, Auth::user());
+                $parts[] = 'Chauffeur assigned & Trip activated';
+            }
+
+            return back()->with('success', implode(' and ', $parts)." for Booking #{$booking->booking_id}!");
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
         }

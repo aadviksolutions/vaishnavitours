@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AdminSettingController;
 use App\Http\Controllers\Admin\AdminTourPackageController;
 use App\Http\Controllers\Admin\AdminTripController;
+use App\Http\Controllers\Admin\AdminVehicleCategoryController;
 use App\Http\Controllers\Admin\AdminVehicleController;
 use App\Http\Controllers\Api\GoogleMapsApiController;
 use App\Http\Controllers\Auth\AuthController;
@@ -175,6 +176,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Booking Categories (Configurable)
     Route::resource('booking-categories', AdminBookingCategoryController::class);
+
+    // Vehicle Categories & Models (Configurable)
+    Route::resource('vehicle-categories', AdminVehicleCategoryController::class);
+    Route::post('/vehicle-categories/{vehicle_category}/toggle', [AdminVehicleCategoryController::class, 'toggleStatus'])->name('vehicle-categories.toggle');
+    Route::post('/vehicle-categories/{vehicle_category}/models', [AdminVehicleCategoryController::class, 'storeModel'])->name('vehicle-categories.models.store');
+    Route::put('/vehicle-categories/{vehicle_category}/models/{vehicle_model}', [AdminVehicleCategoryController::class, 'updateModel'])->name('vehicle-categories.models.update');
+    Route::post('/vehicle-categories/{vehicle_category}/models/{vehicle_model}/toggle', [AdminVehicleCategoryController::class, 'toggleModelStatus'])->name('vehicle-categories.models.toggle');
+    Route::delete('/vehicle-categories/{vehicle_category}/models/{vehicle_model}', [AdminVehicleCategoryController::class, 'destroyModel'])->name('vehicle-categories.models.destroy');
 
     // Rate configuration
     Route::resource('rates', AdminRateController::class)->except(['show']);

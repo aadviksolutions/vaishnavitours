@@ -52,13 +52,18 @@
                 </div>
 
                 <div style="background: var(--slate-50); padding: 0.75rem; border-radius: 6px;">
-                    <div style="font-size: 11px; color: var(--slate-500); text-transform: uppercase;">Category & Seating</div>
-                    <div style="font-weight: 700; font-size: 13.5px; margin-top: 2px;">{{ $vehicle->vehicle_type }} ({{ $vehicle->seating_capacity }} Seater)</div>
+                    <div style="font-size: 11px; color: var(--slate-500); text-transform: uppercase;">Category & Model</div>
+                    <div style="font-weight: 700; font-size: 13.5px; margin-top: 2px;">
+                        {{ $vehicle->category?->name ?? $vehicle->vehicle_type }}
+                        @if($vehicle->vehicleModel)
+                            <span style="font-size: 12px; font-weight: 600; color: #4F46E5;"> • {{ $vehicle->vehicleModel->name }}</span>
+                        @endif
+                    </div>
                 </div>
 
                 <div style="background: var(--slate-50); padding: 0.75rem; border-radius: 6px;">
-                    <div style="font-size: 11px; color: var(--slate-500); text-transform: uppercase;">Air Conditioning</div>
-                    <div style="font-weight: 700; font-size: 13.5px; margin-top: 2px;">{{ $vehicle->ac_non_ac }}</div>
+                    <div style="font-size: 11px; color: var(--slate-500); text-transform: uppercase;">Seating & AC</div>
+                    <div style="font-weight: 700; font-size: 13.5px; margin-top: 2px;">{{ $vehicle->seating_capacity }} Seater • {{ $vehicle->ac_non_ac }}</div>
                 </div>
             </div>
 

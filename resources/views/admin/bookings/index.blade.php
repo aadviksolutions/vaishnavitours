@@ -135,18 +135,53 @@
                         <td style="white-space: nowrap;">
                             {{ date('h:i A', strtotime($booking->travel_time)) }}
                         </td>
+                        @php
+                            $canAssign = !in_array($booking->booking_status, ['Completed', 'Cancelled']);
+                        @endphp
                         <td style="white-space: nowrap;">
-                            @if($booking->vehicle)
-                                <span title="{{ $booking->vehicle->registration_number }}">{{ $booking->vehicle->name }}</span>
+                            @if($canAssign)
+                                <button type="button" 
+                                        onclick="openAssignModal('{{ $booking->id }}', 'vehicle')" 
+                                        class="btn-cell-assign {{ $booking->vehicle ? 'is-assigned' : 'is-unassigned' }}" 
+                                        title="{{ $booking->vehicle ? 'Allocated: ' . $booking->vehicle->name . ' (' . $booking->vehicle->registration_number . ') — Click to change' : 'Click here to allocate vehicle' }}">
+                                    @if($booking->vehicle)
+                                        <x-icon name="car-front" size="13" style="color: var(--primary);" />
+                                        <span class="cell-assigned-name">{{ $booking->vehicle->name }}</span>
+                                        <span class="cell-edit-badge" title="Change">✎</span>
+                                    @else
+                                        <span class="unassigned-text">Unassigned</span>
+                                        <span class="unassigned-plus">+</span>
+                                    @endif
+                                </button>
                             @else
-                                <span style="color: #dc2626; font-size: 0.775rem; font-weight: 500;">Unassigned</span>
+                                @if($booking->vehicle)
+                                    <span title="{{ $booking->vehicle->registration_number }}">{{ $booking->vehicle->name }}</span>
+                                @else
+                                    <span style="color: var(--slate-400); font-size: 0.775rem;">Unassigned</span>
+                                @endif
                             @endif
                         </td>
                         <td style="white-space: nowrap;">
-                            @if($booking->driver)
-                                <span>{{ $booking->driver->name }}</span>
+                            @if($canAssign)
+                                <button type="button" 
+                                        onclick="openAssignModal('{{ $booking->id }}', 'driver')" 
+                                        class="btn-cell-assign {{ $booking->driver ? 'is-assigned' : 'is-unassigned' }}" 
+                                        title="{{ $booking->driver ? 'Assigned: ' . $booking->driver->name . ' (📞 ' . $booking->driver->mobile . ') — Click to change' : 'Click here to assign chauffeur' }}">
+                                    @if($booking->driver)
+                                        <x-icon name="user" size="13" style="color: #059669;" />
+                                        <span class="cell-assigned-name">{{ $booking->driver->name }}</span>
+                                        <span class="cell-edit-badge" title="Change">✎</span>
+                                    @else
+                                        <span class="unassigned-text">Unassigned</span>
+                                        <span class="unassigned-plus">+</span>
+                                    @endif
+                                </button>
                             @else
-                                <span style="color: #dc2626; font-size: 0.775rem; font-weight: 500;">Unassigned</span>
+                                @if($booking->driver)
+                                    <span>{{ $booking->driver->name }}</span>
+                                @else
+                                    <span style="color: var(--slate-400); font-size: 0.775rem;">Unassigned</span>
+                                @endif
                             @endif
                         </td>
                         <td style="font-weight: 600; white-space: nowrap;">
@@ -198,17 +233,10 @@
                                     </form>
                                 @endif
 
-                                <!-- Assign Vehicle Trigger -->
-                                @if(in_array($booking->booking_status, ['Confirmed', 'Vehicle Assigned']) && $availableVehicles->isNotEmpty())
-                                    <button type="button" class="btn btn-outline btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="openModal('vehicleModal{{ $booking->id }}')" title="Assign Vehicle">
-                                        <x-icon name="car-front" size="14" style="margin-right: 4px;" /> Cab
-                                    </button>
-                                @endif
-
-                                <!-- Assign Driver Trigger -->
-                                @if(in_array($booking->booking_status, ['Vehicle Assigned', 'Driver Assigned']) && $availableDrivers->isNotEmpty())
-                                    <button type="button" class="btn btn-outline btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="openModal('driverModal{{ $booking->id }}')" title="Assign Driver">
-                                        <x-icon name="user" size="14" style="margin-right: 4px;" /> Driver
+                                <!-- Quick Allocate Fleet & Chauffeur Trigger -->
+                                @if($canAssign)
+                                    <button type="button" class="btn btn-outline btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="openAssignModal('{{ $booking->id }}', 'vehicle')" title="Allocate Vehicle & Chauffeur">
+                                        <x-icon name="car-front" size="14" style="margin-right: 4px;" /> Dispatch
                                     </button>
                                 @endif
 
@@ -245,193 +273,6 @@
                             </div>
                         </td>
                     </tr>
-
-                    <!-- Modal: Assign Vehicle -->
-                    <div id="vehicleModal{{ $booking->id }}" class="custom-modal" style="display: none;">
-                        <div class="custom-modal-content">
-                            <div class="d-flex justify-between align-center mb-3">
-                                <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0;">Assign Vehicle - {{ $booking->booking_id }}</h3>
-                                <button type="button" onclick="closeModal('vehicleModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;">✕</button>
-                            </div>
-                            <form action="{{ route('admin.bookings.assign-vehicle', $booking->id) }}" method="POST">
-                                @csrf
-                                <p style="font-size: 0.85rem; color: var(--slate-600); margin-bottom: 1rem;">
-                                    Select an Available vehicle for travel date <strong>{{ $booking->travel_date->format('d M, Y') }}</strong>:
-                                </p>
-                                <div class="form-group mb-3">
-                                    <label class="form-label">Available Vehicles (No Maintenance / Inactive)</label>
-                                    <select name="vehicle_id" class="form-select" required>
-                                        <option value="">-- Choose Available Vehicle --</option>
-                                        @foreach($availableVehicles as $v)
-                                            <option value="{{ $v->id }}" {{ $booking->vehicle_id == $v->id ? 'selected' : '' }}>
-                                                {{ $v->name }} ({{ $v->registration_number }}) - {{ $v->vehicle_type }} [{{ $v->status }}]
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="d-flex justify-end gap-2">
-                                    <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('vehicleModal{{ $booking->id }}')">Cancel</button>
-                                    <button type="submit" class="btn btn-primary btn-sm">Confirm Vehicle Allocation</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Modal: Assign Driver -->
-                    <div id="driverModal{{ $booking->id }}" class="custom-modal" style="display: none;">
-                        <div class="custom-modal-content">
-                            <div class="d-flex justify-between align-center mb-3">
-                                <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0;">Assign Chauffeur - {{ $booking->booking_id }}</h3>
-                                <button type="button" onclick="closeModal('driverModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;">✕</button>
-                            </div>
-                            <form action="{{ route('admin.bookings.assign-driver', $booking->id) }}" method="POST">
-                                @csrf
-                                <p style="font-size: 0.85rem; color: var(--slate-600); margin-bottom: 1rem;">
-                                    Select an Available driver for travel date <strong>{{ $booking->travel_date->format('d M, Y') }}</strong> (automatically creates/activates Trip):
-                                </p>
-                                <div class="form-group mb-3">
-                                    <label class="form-label">Available Chauffeurs</label>
-                                    <select name="driver_id" class="form-select" required>
-                                        <option value="">-- Choose Available Driver --</option>
-                                        @foreach($availableDrivers as $d)
-                                            <option value="{{ $d->id }}" {{ $booking->driver_id == $d->id ? 'selected' : '' }}>
-                                                {{ $d->name }} (📞 {{ $d->mobile }}) - Rating: {{ $d->rating }}⭐ [{{ $d->status }}]
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="d-flex justify-end gap-2">
-                                    <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('driverModal{{ $booking->id }}')">Cancel</button>
-                                    <button type="submit" class="btn btn-primary btn-sm">Assign Driver & Activate Trip</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Modal: Update Amount -->
-                    <div id="amountModal{{ $booking->id }}" class="custom-modal" style="display: none;">
-                        <div class="custom-modal-content">
-                            <div class="d-flex justify-between align-center mb-3">
-                                <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0;">Update Fare Amount - {{ $booking->booking_id }}</h3>
-                                <button type="button" onclick="closeModal('amountModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;">✕</button>
-                            </div>
-                            <form action="{{ route('admin.bookings.amount', $booking->id) }}" method="POST">
-                                @csrf
-                                <div class="form-group mb-3">
-                                    <label class="form-label">Total Fare Amount (₹)</label>
-                                    <input type="number" step="0.01" min="0" name="total_amount" class="form-control" value="{{ $booking->total_amount }}" required>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label class="form-label">Paid Amount (₹)</label>
-                                    <input type="number" step="0.01" min="0" name="paid_amount" class="form-control" value="{{ $booking->paid_amount }}" required>
-                                    <small style="color: var(--slate-500); font-size: 0.775rem;">Cannot exceed total amount. Balance will automatically be calculated.</small>
-                                </div>
-                                <div class="d-flex justify-end gap-2">
-                                    <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('amountModal{{ $booking->id }}')">Cancel</button>
-                                    <button type="submit" class="btn btn-dark btn-sm">Save Amounts</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Modal: Update Payment -->
-                    <div id="paymentModal{{ $booking->id }}" class="custom-modal" style="display: none;">
-                        <div class="custom-modal-content">
-                            <div class="d-flex justify-between align-center mb-3">
-                                <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0;">Record Payment - {{ $booking->booking_id }}</h3>
-                                <button type="button" onclick="closeModal('paymentModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;">✕</button>
-                            </div>
-                            <form action="{{ route('admin.bookings.payment', $booking->id) }}" method="POST">
-                                @csrf
-                                <div class="mb-2" style="background: var(--slate-100); padding: 0.75rem; border-radius: 6px; font-size: 0.85rem;">
-                                    Total Fare: <strong>₹{{ number_format($booking->total_amount, 2) }}</strong> |
-                                    Already Paid: <strong>₹{{ number_format($booking->paid_amount, 2) }}</strong> |
-                                    Remaining Balance: <strong style="color: #dc2626;">₹{{ number_format($booking->balance_amount, 2) }}</strong>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label class="form-label">Payment Amount (₹)</label>
-                                    <input type="number" step="0.01" min="1" max="{{ $booking->balance_amount }}" name="amount" class="form-control" value="{{ $booking->balance_amount }}" required>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label class="form-label">Payment Mode</label>
-                                    <select name="payment_method" class="form-select" required>
-                                        <option value="Cash">Cash to Driver</option>
-                                        <option value="UPI / QR">UPI (Google Pay / PhonePe / Paytm)</option>
-                                        <option value="Card">Credit / Debit Card</option>
-                                        <option value="Net Banking">Net Banking / NEFT</option>
-                                    </select>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label class="form-label">Transaction Reference / Receipt #</label>
-                                    <input type="text" name="transaction_id" class="form-control" placeholder="e.g. UPI Ref # or Cash Receipt">
-                                </div>
-                                <div class="d-flex justify-end gap-2">
-                                    <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('paymentModal{{ $booking->id }}')">Cancel</button>
-                                    <button type="submit" class="btn btn-success btn-sm">Log Payment Receipt</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Modal: Update Status -->
-                    <div id="statusModal{{ $booking->id }}" class="custom-modal" style="display: none;">
-                        <div class="custom-modal-content">
-                            <div class="d-flex justify-between align-center mb-3">
-                                <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0;">Transition Status - {{ $booking->booking_id }}</h3>
-                                <button type="button" onclick="closeModal('statusModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;">✕</button>
-                            </div>
-                            <form action="{{ route('admin.bookings.status', $booking->id) }}" method="POST">
-                                @csrf
-                                <div class="form-group mb-3">
-                                    <label class="form-label">Target Workflow Status</label>
-                                    <select name="booking_status" class="form-select" required>
-                                        @foreach(\App\Models\Booking::WORKFLOW_TRANSITIONS[$booking->booking_status] ?? [] as $st)
-                                            <option value="{{ $st }}">{{ $st }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label class="form-label">Remarks / Audit Note</label>
-                                    <input type="text" name="remarks" class="form-control" placeholder="Reason or milestone notes...">
-                                </div>
-                                <div class="d-flex justify-end gap-2">
-                                    <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('statusModal{{ $booking->id }}')">Cancel</button>
-                                    <button type="submit" class="btn btn-primary btn-sm">Update Status</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Modal: Cancel Booking -->
-                    <div id="cancelModal{{ $booking->id }}" class="custom-modal" style="display: none;">
-                        <div class="custom-modal-content">
-                            <div class="d-flex justify-between align-center mb-3">
-                                <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0; color: #dc2626;">Cancel Booking - {{ $booking->booking_id }}</h3>
-                                <button type="button" onclick="closeModal('cancelModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;">✕</button>
-                            </div>
-                            <form action="{{ route('admin.bookings.cancel', $booking->id) }}" method="POST">
-                                @csrf
-                                @if($booking->cancellation_reason)
-                                    <div class="mb-3" style="background: #FEE2E2; padding: 0.75rem; border-radius: 6px; font-size: 0.85rem; color: #991B1B;">
-                                        <strong>Customer's Cancellation Reason:</strong><br>
-                                        {{ $booking->cancellation_reason }}
-                                    </div>
-                                @endif
-                                <div class="form-group mb-3">
-                                    <label class="form-label">Cancellation Reason</label>
-                                    <textarea name="cancellation_reason" class="form-control" rows="3" required placeholder="State reason for cancelling booking...">{{ $booking->cancellation_reason }}</textarea>
-                                </div>
-                                <p style="font-size: 0.8rem; color: var(--slate-500); margin-bottom: 1rem;">
-                                    Cancelling this booking will release the allocated vehicle and chauffeur back to Available status. History will be permanently retained.
-                                </p>
-                                <div class="d-flex justify-end gap-2">
-                                    <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('cancelModal{{ $booking->id }}')">Back</button>
-                                    <button type="submit" class="btn btn-danger btn-sm">Approve / Cancel Booking</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
                 @empty
                     <tr>
                         <td colspan="16" style="text-align: center; padding: 3rem 1rem; color: var(--slate-500);">
@@ -451,7 +292,418 @@
     @endif
 </div>
 
+<!-- =========================================================================
+     MODALS CONTAINER (Clean W3C Valid placement outside the table)
+     ========================================================================= -->
+@foreach($bookings as $booking)
+    <!-- Modal: Allocate Vehicle & Chauffeur Directly -->
+    <div id="assignModal{{ $booking->id }}" class="custom-modal" style="display: none;">
+        <div class="custom-modal-content" style="max-width: 560px;">
+            <div class="d-flex justify-between align-center mb-3 pb-2" style="border-bottom: 1px solid var(--slate-200);">
+                <div class="d-flex align-center gap-2">
+                    <div style="background: #EFF6FF; color: #1D4ED8; width: 34px; height: 34px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-size: 18px;">
+                        🚖
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1.05rem; font-weight: 800; margin: 0; color: var(--dark-900);">
+                            Allocate Fleet Vehicle &amp; Chauffeur
+                        </h3>
+                        <div style="font-size: 0.75rem; color: var(--slate-500); margin-top: 1px;">
+                            Booking <strong style="font-family: monospace; color: var(--primary);">#{{ $booking->booking_id }}</strong> &bull; Status: <span class="badge badge-sm badge-primary">{{ $booking->booking_status }}</span>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" onclick="closeModal('assignModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--slate-400);">✕</button>
+            </div>
+
+            <!-- Trip Summary Info Box -->
+            <div style="background: #F8FAFC; border: 1px solid var(--slate-200); border-radius: 6px; padding: 0.75rem; margin-bottom: 1rem; font-size: 0.8rem; line-height: 1.45;">
+                <div class="grid grid-2 gap-2 mb-1">
+                    <div>
+                        <span style="color: var(--slate-500);">Passenger:</span> 
+                        <strong>{{ $booking->customer->name ?? 'Guest User' }}</strong>
+                        @if(!empty($booking->customer?->phone))
+                            <span style="color: var(--slate-600); font-size: 0.75rem;">(📞 {{ $booking->customer->phone }})</span>
+                        @endif
+                    </div>
+                    <div>
+                        <span style="color: var(--slate-500);">Vehicle Category:</span> 
+                        <strong>{{ $booking->effective_vehicle_category ?: 'Standard' }}</strong>
+                    </div>
+                </div>
+                <div class="grid grid-2 gap-2">
+                    <div>
+                        <span style="color: var(--slate-500);">Route:</span> 
+                        <strong>{{ $booking->pickup_location }} ➔ {{ $booking->destination }}</strong>
+                    </div>
+                    <div>
+                        <span style="color: var(--slate-500);">Travel Schedule:</span> 
+                        <strong>{{ $booking->travel_date ? $booking->travel_date->format('d M, Y') : '' }} ({{ date('h:i A', strtotime($booking->travel_time)) }})</strong>
+                    </div>
+                </div>
+            </div>
+
+            <form action="{{ route('admin.bookings.assign', $booking->id) }}" method="POST">
+                @csrf
+
+                <!-- 1. Vehicle Selection -->
+                <div class="form-group mb-3">
+                    <label class="form-label" style="font-weight: 700; font-size: 0.825rem; display: flex; align-items: center; justify-content: space-between;">
+                        <span style="display: flex; align-items: center; gap: 5px;">
+                            <x-icon name="car-front" size="14" class="text-primary" />
+                            <span>1. Fleet Vehicle Allocation</span>
+                        </span>
+                        @if($booking->vehicle)
+                            <span style="color: #059669; font-weight: 600; font-size: 0.75rem;">
+                                ✓ Assigned: {{ $booking->vehicle->name }}
+                            </span>
+                        @else
+                            <span style="color: #dc2626; font-weight: 600; font-size: 0.75rem;">
+                                ⚠️ Currently Unassigned
+                            </span>
+                        @endif
+                    </label>
+                    <select name="vehicle_id" id="assignVehicleSelect{{ $booking->id }}" class="form-select" style="font-size: 0.85rem;">
+                        <option value="">-- {{ $booking->vehicle ? 'Keep Assigned: ' . $booking->vehicle->name . ' (' . $booking->vehicle->registration_number . ')' : 'Choose Available Vehicle' }} --</option>
+                        @if($booking->vehicle)
+                            <option value="{{ $booking->vehicle->id }}" selected>
+                                ★ Current: {{ $booking->vehicle->name }} ({{ $booking->vehicle->registration_number }}) - [{{ $booking->vehicle->status }}]
+                            </option>
+                        @endif
+                        <optgroup label="Available Fleet Cars">
+                            @foreach($availableVehicles as $v)
+                                @if(!$booking->vehicle || $v->id !== $booking->vehicle_id)
+                                    <option value="{{ $v->id }}">
+                                        {{ $v->name }} ({{ $v->registration_number }}) - {{ $v->vehicle_type }} ({{ $v->seating_capacity }} Seater) [{{ $v->status }}]
+                                    </option>
+                                @endif
+                            @endforeach
+                        </optgroup>
+                        @if($allVehicles->where('status', '!=', 'Available')->where('id', '!=', $booking->vehicle_id)->isNotEmpty())
+                            <optgroup label="Other Fleet (Busy / Inactive / In Maintenance)">
+                                @foreach($allVehicles->where('status', '!=', 'Available')->where('id', '!=', $booking->vehicle_id) as $v)
+                                    <option value="{{ $v->id }}" disabled>
+                                        {{ $v->name }} ({{ $v->registration_number }}) - [{{ $v->status }}]
+                                    </option>
+                                @endforeach
+                            </optgroup>
+                        @endif
+                    </select>
+                    <div style="font-size: 0.725rem; color: var(--slate-500); margin-top: 3px;">
+                        Only vehicles with valid compliance documents &amp; available status can be dispatched.
+                    </div>
+                </div>
+
+                <!-- 2. Driver Selection -->
+                <div class="form-group mb-3">
+                    <label class="form-label" style="font-weight: 700; font-size: 0.825rem; display: flex; align-items: center; justify-content: space-between;">
+                        <span style="display: flex; align-items: center; gap: 5px;">
+                            <x-icon name="user" size="14" class="text-primary" />
+                            <span>2. Chauffeur / Driver Assignment</span>
+                        </span>
+                        @if($booking->driver)
+                            <span style="color: #059669; font-weight: 600; font-size: 0.75rem;">
+                                ✓ Assigned: {{ $booking->driver->name }}
+                            </span>
+                        @else
+                            <span style="color: #dc2626; font-weight: 600; font-size: 0.75rem;">
+                                ⚠️ Currently Unassigned
+                            </span>
+                        @endif
+                    </label>
+                    <select name="driver_id" id="assignDriverSelect{{ $booking->id }}" class="form-select" style="font-size: 0.85rem;">
+                        <option value="">-- {{ $booking->driver ? 'Keep Assigned: ' . $booking->driver->name : 'Choose Available Chauffeur' }} --</option>
+                        @if($booking->driver)
+                            <option value="{{ $booking->driver->id }}" selected>
+                                ★ Current: {{ $booking->driver->name }} (📞 {{ $booking->driver->mobile }}) - [{{ $booking->driver->status }}]
+                            </option>
+                        @endif
+                        <optgroup label="Available Chauffeurs">
+                            @foreach($availableDrivers as $d)
+                                @if(!$booking->driver || $d->id !== $booking->driver_id)
+                                    <option value="{{ $d->id }}">
+                                        {{ $d->name }} (📞 {{ $d->mobile }}) - Rating: {{ $d->rating }}⭐ [{{ $d->status }}]
+                                    </option>
+                                @endif
+                            @endforeach
+                        </optgroup>
+                        @if($allDrivers->where('status', '!=', 'Available')->where('id', '!=', $booking->driver_id)->isNotEmpty())
+                            <optgroup label="Other Drivers (On Trip / Off Duty)">
+                                @foreach($allDrivers->where('status', '!=', 'Available')->where('id', '!=', $booking->driver_id) as $d)
+                                    <option value="{{ $d->id }}" disabled>
+                                        {{ $d->name }} (📞 {{ $d->mobile }}) - [{{ $d->status }}]
+                                    </option>
+                                @endforeach
+                            </optgroup>
+                        @endif
+                    </select>
+                    <div style="font-size: 0.725rem; color: var(--slate-500); margin-top: 3px;">
+                        Assigning chauffeur automatically activates the live Trip tracking and journey dispatch updates.
+                    </div>
+                </div>
+
+                <div class="d-flex justify-between align-center mt-3 pt-3" style="border-top: 1px solid var(--slate-200);">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('assignModal{{ $booking->id }}')">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm" style="font-weight: 700; padding: 0.45rem 1.4rem;">
+                        Confirm Allocation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Assign Vehicle (Separate action fallback) -->
+    <div id="vehicleModal{{ $booking->id }}" class="custom-modal" style="display: none;">
+        <div class="custom-modal-content">
+            <div class="d-flex justify-between align-center mb-3">
+                <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0;">Assign Vehicle - {{ $booking->booking_id }}</h3>
+                <button type="button" onclick="closeModal('vehicleModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;">✕</button>
+            </div>
+            <form action="{{ route('admin.bookings.assign-vehicle', $booking->id) }}" method="POST">
+                @csrf
+                <p style="font-size: 0.85rem; color: var(--slate-600); margin-bottom: 1rem;">
+                    Select an Available vehicle for travel date <strong>{{ $booking->travel_date ? $booking->travel_date->format('d M, Y') : '' }}</strong>:
+                </p>
+                <div class="form-group mb-3">
+                    <label class="form-label">Available Vehicles (No Maintenance / Inactive)</label>
+                    <select name="vehicle_id" class="form-select" required>
+                        <option value="">-- Choose Available Vehicle --</option>
+                        @foreach($availableVehicles as $v)
+                            <option value="{{ $v->id }}" {{ $booking->vehicle_id == $v->id ? 'selected' : '' }}>
+                                {{ $v->name }} ({{ $v->registration_number }}) - {{ $v->vehicle_type }} [{{ $v->status }}]
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="d-flex justify-end gap-2">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('vehicleModal{{ $booking->id }}')">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Confirm Vehicle Allocation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Assign Driver (Separate action fallback) -->
+    <div id="driverModal{{ $booking->id }}" class="custom-modal" style="display: none;">
+        <div class="custom-modal-content">
+            <div class="d-flex justify-between align-center mb-3">
+                <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0;">Assign Chauffeur - {{ $booking->booking_id }}</h3>
+                <button type="button" onclick="closeModal('driverModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;">✕</button>
+            </div>
+            <form action="{{ route('admin.bookings.assign-driver', $booking->id) }}" method="POST">
+                @csrf
+                <p style="font-size: 0.85rem; color: var(--slate-600); margin-bottom: 1rem;">
+                    Select an Available driver for travel date <strong>{{ $booking->travel_date ? $booking->travel_date->format('d M, Y') : '' }}</strong> (automatically creates/activates Trip):
+                </p>
+                <div class="form-group mb-3">
+                    <label class="form-label">Available Chauffeurs</label>
+                    <select name="driver_id" class="form-select" required>
+                        <option value="">-- Choose Available Driver --</option>
+                        @foreach($availableDrivers as $d)
+                            <option value="{{ $d->id }}" {{ $booking->driver_id == $d->id ? 'selected' : '' }}>
+                                {{ $d->name }} (📞 {{ $d->mobile }}) - Rating: {{ $d->rating }}⭐ [{{ $d->status }}]
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="d-flex justify-end gap-2">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('driverModal{{ $booking->id }}')">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Assign Driver &amp; Activate Trip</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Update Amount -->
+    <div id="amountModal{{ $booking->id }}" class="custom-modal" style="display: none;">
+        <div class="custom-modal-content">
+            <div class="d-flex justify-between align-center mb-3">
+                <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0;">Update Fare Amount - {{ $booking->booking_id }}</h3>
+                <button type="button" onclick="closeModal('amountModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;">✕</button>
+            </div>
+            <form action="{{ route('admin.bookings.amount', $booking->id) }}" method="POST">
+                @csrf
+                <div class="form-group mb-3">
+                    <label class="form-label">Total Fare Amount (₹)</label>
+                    <input type="number" step="0.01" min="0" name="total_amount" class="form-control" value="{{ $booking->total_amount }}" required>
+                </div>
+                <div class="form-group mb-3">
+                    <label class="form-label">Paid Amount (₹)</label>
+                    <input type="number" step="0.01" min="0" name="paid_amount" class="form-control" value="{{ $booking->paid_amount }}" required>
+                    <small style="color: var(--slate-500); font-size: 0.775rem;">Cannot exceed total amount. Balance will automatically be calculated.</small>
+                </div>
+                <div class="d-flex justify-end gap-2">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('amountModal{{ $booking->id }}')">Cancel</button>
+                    <button type="submit" class="btn btn-dark btn-sm">Save Amounts</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Update Payment -->
+    <div id="paymentModal{{ $booking->id }}" class="custom-modal" style="display: none;">
+        <div class="custom-modal-content">
+            <div class="d-flex justify-between align-center mb-3">
+                <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0;">Record Payment - {{ $booking->booking_id }}</h3>
+                <button type="button" onclick="closeModal('paymentModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;">✕</button>
+            </div>
+            <form action="{{ route('admin.bookings.payment', $booking->id) }}" method="POST">
+                @csrf
+                <div class="mb-2" style="background: var(--slate-100); padding: 0.75rem; border-radius: 6px; font-size: 0.85rem;">
+                    Total Fare: <strong>₹{{ number_format($booking->total_amount, 2) }}</strong> |
+                    Already Paid: <strong>₹{{ number_format($booking->paid_amount, 2) }}</strong> |
+                    Remaining Balance: <strong style="color: #dc2626;">₹{{ number_format($booking->balance_amount, 2) }}</strong>
+                </div>
+                <div class="form-group mb-3">
+                    <label class="form-label">Payment Amount (₹)</label>
+                    <input type="number" step="0.01" min="1" max="{{ $booking->balance_amount }}" name="amount" class="form-control" value="{{ $booking->balance_amount }}" required>
+                </div>
+                <div class="form-group mb-3">
+                    <label class="form-label">Payment Mode</label>
+                    <select name="payment_method" class="form-select" required>
+                        <option value="Cash">Cash to Driver</option>
+                        <option value="UPI / QR">UPI (Google Pay / PhonePe / Paytm)</option>
+                        <option value="Card">Credit / Debit Card</option>
+                        <option value="Net Banking">Net Banking / NEFT</option>
+                    </select>
+                </div>
+                <div class="form-group mb-3">
+                    <label class="form-label">Transaction Reference / Receipt #</label>
+                    <input type="text" name="transaction_id" class="form-control" placeholder="e.g. UPI Ref # or Cash Receipt">
+                </div>
+                <div class="d-flex justify-end gap-2">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('paymentModal{{ $booking->id }}')">Cancel</button>
+                    <button type="submit" class="btn btn-success btn-sm">Log Payment Receipt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Update Status -->
+    <div id="statusModal{{ $booking->id }}" class="custom-modal" style="display: none;">
+        <div class="custom-modal-content">
+            <div class="d-flex justify-between align-center mb-3">
+                <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0;">Transition Status - {{ $booking->booking_id }}</h3>
+                <button type="button" onclick="closeModal('statusModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;">✕</button>
+            </div>
+            <form action="{{ route('admin.bookings.status', $booking->id) }}" method="POST">
+                @csrf
+                <div class="form-group mb-3">
+                    <label class="form-label">Target Workflow Status</label>
+                    <select name="booking_status" class="form-select" required>
+                        @foreach(\App\Models\Booking::WORKFLOW_TRANSITIONS[$booking->booking_status] ?? [] as $st)
+                            <option value="{{ $st }}">{{ $st }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group mb-3">
+                    <label class="form-label">Remarks / Audit Note</label>
+                    <input type="text" name="remarks" class="form-control" placeholder="Reason or milestone notes...">
+                </div>
+                <div class="d-flex justify-end gap-2">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('statusModal{{ $booking->id }}')">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Update Status</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Cancel Booking -->
+    <div id="cancelModal{{ $booking->id }}" class="custom-modal" style="display: none;">
+        <div class="custom-modal-content">
+            <div class="d-flex justify-between align-center mb-3">
+                <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0; color: #dc2626;">Cancel Booking - {{ $booking->booking_id }}</h3>
+                <button type="button" onclick="closeModal('cancelModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;">✕</button>
+            </div>
+            <form action="{{ route('admin.bookings.cancel', $booking->id) }}" method="POST">
+                @csrf
+                @if($booking->cancellation_reason)
+                    <div class="mb-3" style="background: #FEE2E2; padding: 0.75rem; border-radius: 6px; font-size: 0.85rem; color: #991B1B;">
+                        <strong>Customer's Cancellation Reason:</strong><br>
+                        {{ $booking->cancellation_reason }}
+                    </div>
+                @endif
+                <div class="form-group mb-3">
+                    <label class="form-label">Cancellation Reason</label>
+                    <textarea name="cancellation_reason" class="form-control" rows="3" required placeholder="State reason for cancelling booking...">{{ $booking->cancellation_reason }}</textarea>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--slate-500); margin-bottom: 1rem;">
+                    Cancelling this booking will release the allocated vehicle and chauffeur back to Available status. History will be permanently retained.
+                </p>
+                <div class="d-flex justify-end gap-2">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('cancelModal{{ $booking->id }}')">Back</button>
+                    <button type="submit" class="btn btn-danger btn-sm">Approve / Cancel Booking</button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endforeach
+
 <style>
+/* Quick Assign Table Cell Buttons (Matches Screenshot Design & Adds Clickable Affordance) */
+.btn-cell-assign {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 0.775rem;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s ease-in-out;
+    line-height: 1.25;
+}
+.btn-cell-assign.is-unassigned {
+    color: #dc2626;
+    font-weight: 500;
+}
+.btn-cell-assign.is-unassigned:hover {
+    color: #b91c1c;
+    background: #FEF2F2;
+    border: 1px dashed #FCA5A5;
+    box-shadow: 0 1px 3px rgba(220, 38, 38, 0.12);
+    transform: translateY(-1px);
+}
+.btn-cell-assign.is-unassigned .unassigned-plus {
+    font-size: 11px;
+    font-weight: 700;
+    color: #ef4444;
+    opacity: 0.7;
+    margin-left: 2px;
+}
+.btn-cell-assign.is-unassigned:hover .unassigned-plus {
+    opacity: 1;
+}
+.btn-cell-assign.is-assigned {
+    color: var(--dark-900);
+    font-weight: 500;
+    background: rgba(15, 39, 68, 0.03);
+    border: 1px solid rgba(15, 39, 68, 0.08);
+}
+.btn-cell-assign.is-assigned:hover {
+    background: #F0F4F8;
+    border-color: var(--primary);
+    color: var(--primary);
+    box-shadow: 0 1px 3px rgba(15, 39, 68, 0.1);
+    transform: translateY(-1px);
+}
+.cell-assigned-name {
+    max-width: 125px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.cell-edit-badge {
+    font-size: 10px;
+    opacity: 0.5;
+    margin-left: 2px;
+}
+.btn-cell-assign:hover .cell-edit-badge {
+    opacity: 1;
+}
+
 .custom-modal {
     position: fixed;
     top: 0;
@@ -477,7 +729,35 @@
 </style>
 
 <script>
+function openAssignModal(id, target) {
+    var modal = document.getElementById('assignModal' + id);
+    if (!modal) {
+        modal = document.getElementById(target + 'Modal' + id);
+    }
+    if (modal) {
+        modal.style.display = 'flex';
+        setTimeout(function() {
+            if (target === 'driver') {
+                var d = document.getElementById('assignDriverSelect' + id);
+                if (d) d.focus();
+            } else {
+                var v = document.getElementById('assignVehicleSelect' + id);
+                if (v) v.focus();
+            }
+        }, 100);
+    }
+}
 function openModal(id) {
+    if (id.startsWith('vehicleModal')) {
+        var bId = id.replace('vehicleModal', '');
+        openAssignModal(bId, 'vehicle');
+        return;
+    }
+    if (id.startsWith('driverModal')) {
+        var bId = id.replace('driverModal', '');
+        openAssignModal(bId, 'driver');
+        return;
+    }
     var m = document.getElementById(id);
     if (m) m.style.display = 'flex';
 }

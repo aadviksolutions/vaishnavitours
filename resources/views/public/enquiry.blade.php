@@ -27,13 +27,13 @@
                     </div>
                 </div>
 
-                <div class="grid grid-2 gap-2">
+                <div class="grid grid-3 gap-2">
                     <div class="form-group">
                         <label class="form-label">Email Address</label>
                         <input type="email" name="email" class="form-control" placeholder="email@example.com">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Service Category</label>
+                        <label class="form-label">Service Type</label>
                         <select name="service_type" class="form-select">
                             <option value="Outstation Cabs">Outstation Cabs & Trips</option>
                             <option value="Airport Transfer">Raipur Airport Pick / Drop</option>
@@ -41,6 +41,18 @@
                             <option value="Wedding / Event Convoy">Wedding / Event Multi-Car Fleet</option>
                             <option value="Corporate Monthly Rental">Corporate Monthly Contract</option>
                             <option value="Medical Emergency Transfer">Emergency Medical Transfer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Preferred Vehicle Category</label>
+                        <select name="vehicle_preference" class="form-select">
+                            <option value="">Any / Flexible</option>
+                            <option value="Hatchback">Hatchback (WagonR, Celerio)</option>
+                            <option value="Sedan">Sedan (Swift Dzire, Amaze, Zest)</option>
+                            <option value="SUV / MUV — 6+1 Seating">SUV / MUV — 6+1 Seating (Ertiga)</option>
+                            <option value="Traveller">Traveller (Force Traveller)</option>
+                            <option value="Urbania">Urbania (Force Urbania)</option>
+                            <option value="Bus">Bus / Coach (Configurable Capacity)</option>
                         </select>
                     </div>
                 </div>

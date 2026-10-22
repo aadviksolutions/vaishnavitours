@@ -158,6 +158,32 @@
                     <div id="adminRouteLegsList" style="padding: 0.4rem 0.85rem; font-size: 11px; color: #1E40AF; display: flex; gap: 6px; flex-wrap: wrap;"></div>
                 </div>
 
+                <div class="grid grid-2 gap-3 mb-3">
+                    <div class="form-group">
+                        <label for="vehicle_category" class="form-label">Booked Vehicle Category *</label>
+                        <select name="vehicle_category" id="vehicle_category" class="form-select" onchange="onAdminEditCategoryChange()">
+                            <option value="">-- Select Category --</option>
+                            @if(isset($activeVehicleCategories))
+                                @foreach($activeVehicleCategories as $cat)
+                                    <option value="{{ $cat->name }}" data-id="{{ $cat->id }}" 
+                                        {{ old('vehicle_category', $booking->effective_vehicle_category) === $cat->name ? 'selected' : '' }}>
+                                        {{ $cat->name }} ({{ $cat->is_capacity_configurable ? 'Configurable '.$cat->min_seating_capacity.'-'.$cat->max_seating_capacity.' Seats' : $cat->default_seating_capacity.' Seats' }})
+                                    </option>
+                                @endforeach
+                            @endif
+                        </select>
+                        <input type="hidden" name="vehicle_category_id" id="edit_vehicle_category_id" value="{{ old('vehicle_category_id', $booking->vehicle_category_id) }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="vehicle_model_id" class="form-label">Vehicle Model Preference (Optional)</label>
+                        <select name="vehicle_model_id" id="vehicle_model_id" class="form-select" onchange="onAdminEditModelChange()">
+                            <option value="">-- Any / All Models in Category --</option>
+                        </select>
+                        <input type="hidden" name="vehicle_model" id="edit_vehicle_model" value="{{ old('vehicle_model', $booking->effective_vehicle_model) }}">
+                    </div>
+                </div>
+
                 <div class="grid grid-3 gap-3 mb-3">
                     <div class="form-group">
                         <label for="travel_date" class="form-label">Travel Date *</label>
@@ -258,11 +284,64 @@
 <x-location-picker-modal />
 
 <script>
+    const activeVehicleCategoriesData = @json($activeVehicleCategories ?? []);
+    const initialModelId = @json(old('vehicle_model_id', $booking->vehicle_model_id));
+    const initialModelName = @json(old('vehicle_model', $booking->effective_vehicle_model));
+    let initialCategoryLoaded = false;
+
+    function onAdminEditCategoryChange() {
+        const catSelect = document.getElementById('vehicle_category');
+        const catIdInput = document.getElementById('edit_vehicle_category_id');
+        const modelSelect = document.getElementById('vehicle_model_id');
+        const modelNameInput = document.getElementById('edit_vehicle_model');
+
+        const selectedOpt = catSelect.options[catSelect.selectedIndex];
+        const catId = selectedOpt ? selectedOpt.dataset.id : null;
+        if (catIdInput) catIdInput.value = catId || '';
+
+        const previousVal = modelSelect.value;
+        modelSelect.innerHTML = '<option value="">-- Any / All Models in Category --</option>';
+        if (catId) {
+            const catObj = activeVehicleCategoriesData.find(c => c.id == catId);
+            if (catObj && catObj.active_models && catObj.active_models.length > 0) {
+                catObj.active_models.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.id;
+                    opt.textContent = m.name + (m.brand ? ` (${m.brand})` : '');
+                    opt.dataset.name = m.name;
+                    if (!initialCategoryLoaded) {
+                        if (initialModelId == m.id || initialModelName == m.name) {
+                            opt.selected = true;
+                        }
+                    } else if (previousVal == m.id) {
+                        opt.selected = true;
+                    }
+                    modelSelect.appendChild(opt);
+                });
+            }
+        }
+        if (modelNameInput) {
+            const curOpt = modelSelect.options[modelSelect.selectedIndex];
+            modelNameInput.value = curOpt && curOpt.value ? curOpt.dataset.name : '';
+        }
+        initialCategoryLoaded = true;
+    }
+
+    function onAdminEditModelChange() {
+        const modelSelect = document.getElementById('vehicle_model_id');
+        const modelNameInput = document.getElementById('edit_vehicle_model');
+        const selectedOpt = modelSelect.options[modelSelect.selectedIndex];
+        if (modelNameInput) {
+            modelNameInput.value = selectedOpt && selectedOpt.value ? (selectedOpt.dataset.name || selectedOpt.textContent) : '';
+        }
+    }
+
     let adminRouteMap = null;
     let adminRoutePolyline = null;
     let adminRouteMarkers = [];
 
     document.addEventListener('DOMContentLoaded', () => {
+        onAdminEditCategoryChange();
         // Location picker button triggers
         document.querySelectorAll('.btn-admin-select-map').forEach(btn => {
             btn.addEventListener('click', () => {

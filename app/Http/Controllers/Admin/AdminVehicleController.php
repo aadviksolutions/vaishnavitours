@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ThirdPartyPayment;
 use App\Models\Vehicle;
+use App\Models\VehicleCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -19,7 +20,12 @@ class AdminVehicleController extends Controller
         }
 
         if ($request->filled('type')) {
-            $query->where('vehicle_type', $request->type);
+            $query->where(function ($q) use ($request) {
+                $q->where('vehicle_type', $request->type)
+                    ->orWhereHas('category', function ($catQ) use ($request) {
+                        $catQ->where('name', $request->type)->orWhere('code', $request->type);
+                    });
+            });
         }
 
         if ($request->filled('ownership_type')) {
@@ -46,6 +52,7 @@ class AdminVehicleController extends Controller
         }
 
         $vehicles = $query->latest()->paginate(10)->withQueryString();
+        $categories = VehicleCategory::orderBy('sort_order')->get();
 
         $stats = [
             'total' => Vehicle::count(),
@@ -57,12 +64,14 @@ class AdminVehicleController extends Controller
                 ->count(),
         ];
 
-        return view('admin.vehicles.index', compact('vehicles', 'stats'));
+        return view('admin.vehicles.index', compact('vehicles', 'stats', 'categories'));
     }
 
     public function create()
     {
-        return view('admin.vehicles.create');
+        $categories = VehicleCategory::with('activeModels')->active()->get();
+
+        return view('admin.vehicles.create', compact('categories'));
     }
 
     public function store(Request $request)
@@ -70,8 +79,10 @@ class AdminVehicleController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'registration_number' => 'required|string|max:50|unique:vehicles',
-            'vehicle_type' => 'required|string',
-            'seating_capacity' => 'required|integer|min:1|max:50',
+            'vehicle_category_id' => 'nullable|exists:vehicle_categories,id',
+            'vehicle_model_id' => 'nullable|exists:vehicle_models,id',
+            'vehicle_type' => 'nullable|string',
+            'seating_capacity' => 'required|integer|min:1|max:70',
             'ac_non_ac' => 'required|string',
             'insurance_number' => 'nullable|string|max:100',
             'insurance_expiry' => 'required|date',
@@ -88,6 +99,15 @@ class AdminVehicleController extends Controller
             'vendor_email' => 'nullable|email|max:255',
             'agreed_vendor_amount' => 'nullable|numeric|min:0',
         ]);
+
+        if (! empty($data['vehicle_category_id'])) {
+            $cat = VehicleCategory::find($data['vehicle_category_id']);
+            if ($cat) {
+                $data['vehicle_type'] = $cat->name;
+            }
+        } elseif (empty($data['vehicle_type'])) {
+            $data['vehicle_type'] = 'Sedan';
+        }
 
         if (($data['ownership_type'] ?? 'owned') === 'third_party') {
             $agreed = (float) ($data['agreed_vendor_amount'] ?? 0);
@@ -105,6 +125,8 @@ class AdminVehicleController extends Controller
     public function show(Vehicle $vehicle)
     {
         $vehicle->load([
+            'category',
+            'vehicleModel',
             'assignedDriver',
             'bookings.customer',
             'trips.driver',
@@ -117,7 +139,9 @@ class AdminVehicleController extends Controller
 
     public function edit(Vehicle $vehicle)
     {
-        return view('admin.vehicles.edit', compact('vehicle'));
+        $categories = VehicleCategory::with('activeModels')->active()->get();
+
+        return view('admin.vehicles.edit', compact('vehicle', 'categories'));
     }
 
     public function update(Request $request, Vehicle $vehicle)
@@ -125,8 +149,10 @@ class AdminVehicleController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'registration_number' => 'required|string|max:50|unique:vehicles,registration_number,'.$vehicle->id,
-            'vehicle_type' => 'required|string',
-            'seating_capacity' => 'required|integer|min:1|max:50',
+            'vehicle_category_id' => 'nullable|exists:vehicle_categories,id',
+            'vehicle_model_id' => 'nullable|exists:vehicle_models,id',
+            'vehicle_type' => 'nullable|string',
+            'seating_capacity' => 'required|integer|min:1|max:70',
             'ac_non_ac' => 'required|string',
             'insurance_number' => 'nullable|string|max:100',
             'insurance_expiry' => 'required|date',
@@ -143,6 +169,13 @@ class AdminVehicleController extends Controller
             'vendor_email' => 'nullable|email|max:255',
             'agreed_vendor_amount' => 'nullable|numeric|min:0',
         ]);
+
+        if (! empty($data['vehicle_category_id'])) {
+            $cat = VehicleCategory::find($data['vehicle_category_id']);
+            if ($cat) {
+                $data['vehicle_type'] = $cat->name;
+            }
+        }
 
         if (($data['ownership_type'] ?? 'owned') === 'third_party') {
             $agreed = (float) ($data['agreed_vendor_amount'] ?? 0);
