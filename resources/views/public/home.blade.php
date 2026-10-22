@@ -6,6 +6,41 @@
 
 @push('styles')
 <link rel="preload" as="image" href="{{ asset('assets/hero-loop/ezgif-frame-001.jpg') }}" fetchpriority="high">
+<style>
+.booking-support-banner {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.btn-call-support:hover {
+    background: #D97706 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.45) !important;
+}
+.booking-support-banner a.support-phone-link:hover span:last-child {
+    text-decoration: underline;
+    color: #FBBF24 !important;
+}
+@media (max-width: 640px) {
+    .booking-support-banner {
+        padding: 1rem !important;
+    }
+    .booking-support-banner .support-banner-actions {
+        width: 100% !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0.65rem !important;
+        margin-top: 0.35rem;
+    }
+    .booking-support-banner .support-phone-link {
+        align-items: center !important;
+        text-align: center !important;
+    }
+    .booking-support-banner .btn-call-support {
+        width: 100% !important;
+        min-height: 44px !important;
+        font-size: 1rem !important;
+    }
+}
+</style>
 @endpush
 
 @push('schema')
@@ -52,6 +87,11 @@
 @endpush
 
 @section('content')
+@php
+    $supportPhone = \App\Models\Setting::get('phone_primary', config('vaishnavi.phone_primary', '9244784443'));
+    $cleanPhone = preg_replace('/[^0-9]/', '', $supportPhone);
+    $supportTel = (strlen($cleanPhone) === 10) ? '+91' . $cleanPhone : (str_starts_with($cleanPhone, '91') ? '+' . $cleanPhone : '+91' . $cleanPhone);
+@endphp
 
     <!-- 1. Hero Section -->
     <section class="hero-section">
@@ -128,6 +168,40 @@
                         <span class="badge badge-available" style="padding: 0.2rem 0.5rem; font-size: 11px;">
                             <x-icon name="zap" size="12" style="margin-right: 3px;" /> 24/7 Dispatch Desk
                         </span>
+                    </div>
+                </div>
+
+                <!-- =========================================================================
+                     VAISHNAVI TOURS — PROMINENT BOOKING SUPPORT BANNER
+                     ========================================================================= -->
+                <div class="booking-support-banner" style="background: linear-gradient(135deg, #0F2744 0%, #16365C 100%); border: 1.5px solid #C59B27; border-radius: 10px; padding: 1.15rem 1.35rem; margin-bottom: 1.25rem; box-shadow: 0 4px 16px rgba(15, 39, 68, 0.15); color: #ffffff;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.85rem; flex: 1; min-width: 260px;">
+                            <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(245, 158, 11, 0.15); border: 1.5px solid #F59E0B; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; color: #F59E0B;">
+                                📞
+                            </div>
+                            <div>
+                                <h2 style="font-size: 1.1rem; font-weight: 700; margin: 0 0 0.25rem 0; color: #FFFFFF; line-height: 1.25;">
+                                    Need Help with Your Booking?
+                                </h2>
+                                <p style="color: #CBD5E1; font-size: 0.825rem; line-height: 1.45; margin: 0; max-width: 520px;">
+                                    If you face any problem while booking, have questions about your trip, or need assistance, please call our support team.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;" class="support-banner-actions">
+                            <a href="tel:{{ $supportTel }}" style="text-decoration: none; display: flex; flex-direction: column; align-items: flex-end;" class="support-phone-link" title="Call {{ $supportPhone }}">
+                                <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: #94A3B8; font-weight: 600;">24/7 Helpline</span>
+                                <span style="font-size: 1.35rem; font-weight: 800; color: #F59E0B; font-family: 'Plus Jakarta Sans', var(--font-sans); letter-spacing: 0.5px; line-height: 1.1;">
+                                    {{ $supportPhone }}
+                                </span>
+                            </a>
+                            <a href="tel:{{ $supportTel }}" class="btn-call-support" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: #F59E0B; color: #0F172A; font-weight: 700; font-size: 0.95rem; padding: 0.6rem 1.4rem; border-radius: 6px; text-decoration: none; border: none; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3); transition: all 0.2s ease; min-height: 42px; white-space: nowrap;" title="Call Support Now">
+                                <span>📞</span>
+                                <span>Call Now</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
 
@@ -599,6 +673,11 @@
                             Processing Reservation...
                         </span>
                     </button>
+
+                    <!-- Compact Booking Form Assistance Help Message -->
+                    <div class="booking-submit-help" style="margin-top: 0.85rem; padding: 0.65rem 1rem; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 6px; text-align: center; font-size: 0.85rem; color: #92400E; display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap;">
+                        <span>Facing an issue with your booking? Call us at <a href="tel:{{ $supportTel }}" style="color: #B45309; font-weight: 700; text-decoration: underline;">{{ $supportPhone }}</a>.</span>
+                    </div>
                 </form>
             </div>
         </div>

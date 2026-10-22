@@ -1820,3 +1820,39 @@ textarea.form-control {
   .card { padding: 0.875rem; }
   .booking-hero-card { padding: 1rem; }
 }
+
+/* Vaishnavi Tours Prominent Booking Support Banner */
+.booking-support-banner {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.btn-call-support:hover {
+  background: #D97706 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.45) !important;
+}
+.booking-support-banner a.support-phone-link:hover span:last-child {
+  text-decoration: underline;
+  color: #FBBF24 !important;
+}
+@media (max-width: 640px) {
+  .booking-support-banner {
+    padding: 1rem !important;
+  }
+  .booking-support-banner .support-banner-actions {
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.65rem !important;
+    margin-top: 0.35rem;
+  }
+  .booking-support-banner .support-phone-link {
+    align-items: center !important;
+    text-align: center !important;
+  }
+  .booking-support-banner .btn-call-support {
+    width: 100% !important;
+    min-height: 44px !important;
+    font-size: 1rem !important;
+  }
+}
+
