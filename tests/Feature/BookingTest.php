@@ -401,4 +401,65 @@ class BookingTest extends TestCase
         $this->assertNotNull($booking);
         $this->assertEquals($validReturnDate, $booking->return_date->format('Y-m-d'));
     }
+
+    public function test_booking_with_current_date_and_time_succeeds(): void
+    {
+        $this->seed(RateSeeder::class);
+        $vehicle = Vehicle::create([
+            'name' => 'Swift Dzire',
+            'registration_number' => 'CG-10-TR-1234',
+            'vehicle_type' => 'Sedan',
+            'seating_capacity' => 4,
+            'ac_non_ac' => 'AC',
+            'per_km_rate' => 14.00,
+            'per_hour_rate' => 200.00,
+            'status' => 'Available',
+        ]);
+
+        $currentDate = now('Asia/Kolkata')->format('Y-m-d');
+        $currentTime = now('Asia/Kolkata')->format('H:i');
+
+        $postData = [
+            'customer_name' => 'Instant Booker',
+            'mobile' => '9876543299',
+            'email' => 'instant@example.com',
+            'trip_type' => 'Airport Transfer',
+            'rate_category' => 'airport',
+            'vehicle_category' => 'Sedan',
+            'pickup_location' => 'Bilaspur',
+            'destination' => 'Raipur Airport',
+            'travel_date' => $currentDate,
+            'travel_time' => $currentTime,
+            'vehicle_id' => $vehicle->id,
+            'terms_accepted' => '1',
+        ];
+
+        $response = $this->post('/booking', $postData);
+        $response->assertSessionHasNoErrors();
+        $user = User::where('name', 'Instant Booker')->first();
+        $this->assertNotNull($user);
+        $booking = Booking::where('customer_id', $user->id)->first();
+        $this->assertNotNull($booking);
+        $this->assertEquals($currentDate, $booking->travel_date->format('Y-m-d'));
+        $this->assertEquals($currentTime, substr($booking->travel_time, 0, 5));
+    }
+
+    public function test_booking_page_and_home_page_have_current_date_and_time(): void
+    {
+        $today = now('Asia/Kolkata')->format('Y-m-d');
+
+        $homeRes = $this->get('/');
+        $homeRes->assertStatus(200);
+        $homeRes->assertSee('name="travel_date"', false);
+        $homeRes->assertSee('name="travel_time"', false);
+        $homeRes->assertSee('value="'.$today.'"', false);
+        $this->assertMatchesRegularExpression('/id="travelTimeInput"[^>]*value="[0-2][0-9]:[0-5][0-9]"/', $homeRes->getContent());
+
+        $bookingRes = $this->get('/booking');
+        $bookingRes->assertStatus(200);
+        $bookingRes->assertSee('name="travel_date"', false);
+        $bookingRes->assertSee('name="travel_time"', false);
+        $bookingRes->assertSee('value="'.$today.'"', false);
+        $this->assertMatchesRegularExpression('/id="travelTimeInput"[^>]*value="[0-2][0-9]:[0-5][0-9]"/', $bookingRes->getContent());
+    }
 }

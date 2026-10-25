@@ -288,15 +288,15 @@
                         <div class="grid grid-3 gap-2">
                             <div>
                                 <label style="font-size: 0.75rem; color: var(--slate-600); font-weight: 600; display: block; margin-bottom: 0.25rem;">Pickup Date *</label>
-                                <input type="date" name="travel_date" id="travelDateInput" class="form-control form-control-sm" value="{{ old('travel_date', date('Y-m-d')) }}" min="{{ date('Y-m-d') }}" required>
+                                <input type="date" name="travel_date" id="travelDateInput" class="form-control form-control-sm" value="{{ old('travel_date', request('travel_date', now('Asia/Kolkata')->format('Y-m-d'))) }}" min="{{ now('Asia/Kolkata')->format('Y-m-d') }}" required>
                             </div>
                             <div>
                                 <label style="font-size: 0.75rem; color: var(--slate-600); font-weight: 600; display: block; margin-bottom: 0.25rem;">Pickup Time *</label>
-                                <input type="time" name="travel_time" id="travelTimeInput" class="form-control form-control-sm" value="{{ old('travel_time', '08:00') }}" required>
+                                <input type="time" name="travel_time" id="travelTimeInput" class="form-control form-control-sm" value="{{ old('travel_time', request('travel_time', now('Asia/Kolkata')->format('H:i'))) }}" required>
                             </div>
                             <div id="returnDateGroup">
                                 <label style="font-size: 0.75rem; color: var(--slate-600); font-weight: 600; display: block; margin-bottom: 0.25rem;">Return Date / Trip End</label>
-                                <input type="date" name="return_date" id="returnDateInput" class="form-control form-control-sm" value="{{ old('return_date') }}" min="{{ date('Y-m-d') }}">
+                                <input type="date" name="return_date" id="returnDateInput" class="form-control form-control-sm" value="{{ old('return_date', request('return_date')) }}" min="{{ now('Asia/Kolkata')->format('Y-m-d') }}">
                             </div>
                         </div>
                     </div>
@@ -523,23 +523,104 @@
     const submitHeaderTitle = document.querySelector('#submitHeaderTitle');
     const submitHeaderSub = document.querySelector('#submitHeaderSub');
 
-    // 4-hour advance booking validation
+    // Live Current Date & Time Synchronization for Booking
     const travelDateInput = document.querySelector('#travelDateInput');
     const travelTimeInput = document.querySelector('#travelTimeInput');
+    const returnDateInput = document.querySelector('#returnDateInput');
+    let userModifiedTravelTime = {{ (old('travel_time') || request('travel_time')) ? 'true' : 'false' }};
+    let userModifiedTravelDate = {{ (old('travel_date') || request('travel_date')) ? 'true' : 'false' }};
 
-    function checkFourHourNotice() {
-        if (!travelDateInput.value || !travelTimeInput.value) return;
-        const pickupDateTime = new Date(`${travelDateInput.value}T${travelTimeInput.value}:00`);
+    function getLocalTimeFormatted() {
         const now = new Date();
-        const diffHours = (pickupDateTime - now) / (1000 * 60 * 60);
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        return `${hours}:${minutes}`;
+    }
 
-        if (diffHours < 3.9) {
-            alert('Notice: Website bookings must be scheduled at least 4 hours in advance.\n\nFor urgent or late-night bookings, please call our 24/7 hotline directly: {{ $supportPhone }}.');
+    function getLocalDateFormatted() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
+    function syncCurrentBookingDateTime(force = false) {
+        const todayStr = getLocalDateFormatted();
+        const nowTimeStr = getLocalTimeFormatted();
+
+        if (travelDateInput) {
+            travelDateInput.min = todayStr;
+            if (force || !userModifiedTravelDate || !travelDateInput.value) {
+                travelDateInput.value = todayStr;
+            }
+        }
+
+        if (returnDateInput) {
+            returnDateInput.min = (travelDateInput && travelDateInput.value) ? travelDateInput.value : todayStr;
+        }
+
+        if (travelTimeInput) {
+            if (force || !userModifiedTravelTime || !travelTimeInput.value) {
+                travelTimeInput.value = nowTimeStr;
+            }
         }
     }
 
-    travelTimeInput.addEventListener('change', checkFourHourNotice);
-    travelDateInput.addEventListener('change', checkFourHourNotice);
+    function checkPastPickupTime() {
+        if (!travelDateInput || !travelTimeInput || !travelDateInput.value || !travelTimeInput.value) return;
+        const pickupDateTime = new Date(`${travelDateInput.value}T${travelTimeInput.value}:00`);
+        const now = new Date();
+        // Allow up to 10 minutes buffer
+        if (pickupDateTime < new Date(now.getTime() - 10 * 60000)) {
+            alert('Notice: Selected pickup time is in the past. Please select the current time or a future time.');
+        }
+    }
+
+    if (travelTimeInput) {
+        travelTimeInput.addEventListener('input', function() {
+            userModifiedTravelTime = true;
+        });
+        travelTimeInput.addEventListener('change', function() {
+            userModifiedTravelTime = true;
+            checkPastPickupTime();
+        });
+    }
+
+    if (travelDateInput) {
+        travelDateInput.addEventListener('input', function() {
+            userModifiedTravelDate = true;
+        });
+        travelDateInput.addEventListener('change', function() {
+            userModifiedTravelDate = true;
+            if (returnDateInput) {
+                returnDateInput.min = this.value;
+                if (returnDateInput.value && returnDateInput.value < this.value) {
+                    returnDateInput.value = this.value;
+                }
+            }
+            checkPastPickupTime();
+        });
+    }
+
+    // Set initial device time on page load
+    syncCurrentBookingDateTime();
+
+    // Keep live updated every 30 seconds if user hasn't explicitly changed it
+    setInterval(function() {
+        syncCurrentBookingDateTime(false);
+    }, 30000);
+
+    // Refresh immediately when returning to tab / switching back to page
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            syncCurrentBookingDateTime(false);
+        }
+    });
+
+    window.addEventListener('pageshow', function() {
+        syncCurrentBookingDateTime(false);
+    });
 
     const pickupOtherGroup = document.querySelector('#pickupOtherGroup');
     const pickupOtherInput = document.querySelector('#pickupOtherInput');

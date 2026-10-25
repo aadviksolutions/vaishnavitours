@@ -517,20 +517,20 @@
                     <div class="grid grid-4 gap-2" id="travelTimeGrid" style="margin-bottom: 0.85rem;">
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label" id="travelDateLabel">Travel Date</label>
-                            <input type="date" name="travel_date" id="travelDateInput" class="form-control" value="{{ old('travel_date', date('Y-m-d')) }}" min="{{ date('Y-m-d') }}" required>
+                            <input type="date" name="travel_date" id="travelDateInput" class="form-control" value="{{ old('travel_date', now('Asia/Kolkata')->format('Y-m-d')) }}" min="{{ now('Asia/Kolkata')->format('Y-m-d') }}" required>
                             @error('travel_date') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
 
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label">Pickup Time</label>
-                            <input type="time" name="travel_time" id="travelTimeInput" class="form-control" value="{{ old('travel_time', '09:00') }}" required>
+                            <input type="time" name="travel_time" id="travelTimeInput" class="form-control" value="{{ old('travel_time', now('Asia/Kolkata')->format('H:i')) }}" required>
                             @error('travel_time') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
 
                         <!-- Return Date (for Round Trip) -->
                         <div class="form-group" id="returnDateGroup" style="display: none; margin-bottom: 0;">
                             <label class="form-label">Return Date</label>
-                            <input type="date" name="return_date" id="returnDateInput" class="form-control" value="{{ old('return_date') }}" min="{{ date('Y-m-d') }}" disabled>
+                            <input type="date" name="return_date" id="returnDateInput" class="form-control" value="{{ old('return_date') }}" min="{{ now('Asia/Kolkata')->format('Y-m-d') }}" disabled>
                             @error('return_date') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
 
@@ -2156,6 +2156,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Dynamic return date constraints on travel date change
     if (travelDateInput) {
         travelDateInput.addEventListener('change', function() {
+            userModifiedTravelDate = true;
             if (returnDateInput) {
                 returnDateInput.min = this.value;
                 if (returnDateInput.value && returnDateInput.value < this.value) {
@@ -2163,7 +2164,76 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+        travelDateInput.addEventListener('input', function() {
+            userModifiedTravelDate = true;
+        });
     }
+
+    // Live Current Date & Time Synchronization for Quick Booking
+    const travelTimeInput = document.getElementById('travelTimeInput');
+    let userModifiedTravelTime = {{ old('travel_time') ? 'true' : 'false' }};
+    let userModifiedTravelDate = {{ old('travel_date') ? 'true' : 'false' }};
+
+    function getLocalTimeFormatted() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        return `${hours}:${minutes}`;
+    }
+
+    function getLocalDateFormatted() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
+    function syncCurrentBookingDateTime(force = false) {
+        const todayStr = getLocalDateFormatted();
+        const nowTimeStr = getLocalTimeFormatted();
+
+        if (travelDateInput) {
+            travelDateInput.min = todayStr;
+            if (force || !userModifiedTravelDate || !travelDateInput.value) {
+                travelDateInput.value = todayStr;
+            }
+        }
+
+        if (travelTimeInput) {
+            if (force || !userModifiedTravelTime || !travelTimeInput.value) {
+                travelTimeInput.value = nowTimeStr;
+            }
+        }
+    }
+
+    if (travelTimeInput) {
+        travelTimeInput.addEventListener('input', function() {
+            userModifiedTravelTime = true;
+        });
+        travelTimeInput.addEventListener('change', function() {
+            userModifiedTravelTime = true;
+        });
+    }
+
+    // Set initial device time on page load
+    syncCurrentBookingDateTime();
+
+    // Keep live updated every 30 seconds if user hasn't explicitly changed it
+    setInterval(function() {
+        syncCurrentBookingDateTime(false);
+    }, 30000);
+
+    // Refresh immediately when returning to tab / switching back to page
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            syncCurrentBookingDateTime(false);
+        }
+    });
+
+    window.addEventListener('pageshow', function() {
+        syncCurrentBookingDateTime(false);
+    });
 
     // Sync initial booking tab based on formTripType (handles reloads & validation errors)
     const initialTripType = formTripType ? formTripType.value : 'One-Way';

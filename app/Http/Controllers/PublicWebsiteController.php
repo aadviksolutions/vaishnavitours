@@ -8,7 +8,6 @@ use App\Models\Feedback;
 use App\Models\PickupLocation;
 use App\Models\RateRoute;
 use App\Models\RateVehiclePrice;
-use App\Models\Setting;
 use App\Models\TourPackage;
 use App\Models\Vehicle;
 use App\Models\VehicleCategory;
@@ -194,26 +193,24 @@ class PublicWebsiteController extends Controller
             ]);
         }
 
-        // Section 12: Minimum advance notice validation (at least 4 hours before scheduled pickup time)
+        // Section 12: Validate that travel time is not in the past if travel date is today (allowing 15-minute buffer for form filling)
         if ($request->filled('travel_date') && $request->filled('travel_time')) {
             $pickupTimeStr = $request->input('travel_time');
             if (strlen($pickupTimeStr) === 5) {
                 $pickupTimeStr .= ':00';
             }
             try {
-                $tz = config('app.timezone', 'Asia/Kolkata');
+                $tz = 'Asia/Kolkata';
                 $pickupDateTime = Carbon::createFromFormat('Y-m-d H:i:s', $request->input('travel_date').' '.$pickupTimeStr, $tz);
                 $todayStart = now($tz)->startOfDay();
 
-                // Only enforce 4-hour advance notice if travel_date is today or in future; past dates fail travel_date validation
+                // Only enforce time cutoff if travel_date is today or future; past dates fail travel_date validation
                 if ($pickupDateTime->gte($todayStart)) {
-                    $minAllowedTime = now($tz)->addHours(4);
+                    $pastCutoff = now($tz)->subMinutes(15);
 
-                    if ($pickupDateTime->lt($minAllowedTime)) {
-                        $phone = Setting::where('key', 'phone_primary')->value('value') ?: '+91 92447 84443';
-
+                    if ($pickupDateTime->lt($pastCutoff)) {
                         return back()->withInput()->withErrors([
-                            'travel_time' => "Online bookings must be scheduled at least 4 hours in advance. For urgent or late-night bookings, please call us directly at {$phone}.",
+                            'travel_time' => 'Pickup time cannot be in the past. Please select the current time or a future time.',
                         ]);
                     }
                 }
