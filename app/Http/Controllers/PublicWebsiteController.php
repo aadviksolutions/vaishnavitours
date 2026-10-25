@@ -358,6 +358,11 @@ class PublicWebsiteController extends Controller
             ? "Your round-trip quotation query has been received! Booking reference is #{$booking->booking_id}. Our dispatch team will review and share a custom quotation shortly."
             : "Booking request received! Your Booking ID is #{$booking->booking_id}.";
 
+        $pref = $request->input('payment_preference');
+        if (in_array($pref, ['full', 'advance'], true) && (float) $booking->total_amount > 0 && (float) $booking->balance_amount > 0) {
+            return redirect()->route('payment.pay', ['booking' => $booking->id, 'mode' => $pref])->with('success', $successMsg);
+        }
+
         return redirect()->route('booking.success', $booking->id)->with('success', $successMsg);
     }
 

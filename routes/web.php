@@ -46,6 +46,7 @@ Route::get('/booking-success/{booking}', [PublicWebsiteController::class, 'booki
 
 // Razorpay Online Payments & Webhook
 Route::get('/pay/{booking}', [PublicPaymentController::class, 'showPayPage'])->name('payment.pay');
+Route::post('/pay/{booking}/pay-later', [PublicPaymentController::class, 'selectPayLater'])->name('payment.pay-later');
 Route::post('/api/payments/razorpay/create-order', [PublicPaymentController::class, 'createOrder'])->name('api.payments.razorpay.create-order');
 Route::post('/api/payments/razorpay/verify', [PublicPaymentController::class, 'verifyPayment'])->name('api.payments.razorpay.verify');
 Route::post('/api/payments/razorpay/webhook', [PublicPaymentController::class, 'webhook'])->name('api.payments.razorpay.webhook');

@@ -324,9 +324,22 @@
 
             <div style="margin-top: 1.25rem;">
                 @if($booking->balance_amount > 0 && $booking->booking_status !== 'Cancelled')
-                    <a href="{{ route('payment.pay', $booking->id) }}" class="btn btn-primary btn-block mb-2" style="text-align: center; font-weight: 800;">
-                        💳 Pay Balance Online (₹{{ number_format($booking->balance_amount, 2) }})
-                    </a>
+                    @php
+                        $advanceAmount = min((float) $booking->balance_amount, max(500, round((float) $booking->total_amount * 0.25)));
+                    @endphp
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem;">
+                        <a href="{{ route('payment.pay', ['booking' => $booking->id, 'mode' => 'full']) }}" class="btn btn-primary btn-block" style="text-align: center; font-weight: 800; padding: 0.75rem 1rem;">
+                            💳 Pay Full Balance (₹{{ number_format($booking->balance_amount, 2) }})
+                        </a>
+                        @if((float) $booking->advance_paid < $advanceAmount && $advanceAmount < (float) $booking->balance_amount)
+                            <a href="{{ route('payment.pay', ['booking' => $booking->id, 'mode' => 'advance']) }}" class="btn btn-outline btn-block" style="text-align: center; font-weight: 700; border-color: var(--primary); color: var(--primary); padding: 0.6rem 1rem;">
+                                ⚡ Pay 25% Advance (₹{{ number_format($advanceAmount, 0) }})
+                            </a>
+                        @endif
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--slate-500); text-align: center; margin-bottom: 0.75rem;">
+                        💵 Or choose <strong>Pay Later</strong> to pay directly to the chauffeur (Cash / UPI) during the trip.
+                    </div>
                 @endif
                 <a href="{{ route('invoice.show', $booking->id) }}" class="btn btn-outline btn-block" style="text-align: center;" target="_blank">
                     🧾 View / Print Tax Invoice

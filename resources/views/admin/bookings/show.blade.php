@@ -630,6 +630,52 @@ Regarding your booking *{{ $booking->booking_id }}* from {{ $booking->pickup_loc
                 </form>
             </div>
 
+            <!-- Customer Online Payment Links (Section 16 - Full / Advance / Pay Later) -->
+            @if($booking->total_amount > 0 && $booking->balance_amount > 0)
+                @php
+                    $fullPayUrl = route('payment.pay', ['booking' => $booking->id, 'mode' => 'full']);
+                    $advanceAmount = min((float) $booking->balance_amount, max(500, round((float) $booking->total_amount * 0.25)));
+                    $advancePayUrl = route('payment.pay', ['booking' => $booking->id, 'mode' => 'advance']);
+                    $custPhone = preg_replace('/[^0-9]/', '', $booking->customer->phone ?? '');
+                    if (strlen($custPhone) === 10) { $custPhone = '91' . $custPhone; }
+                    $paymentShareMsg = "Namaste " . ($booking->customer->name ?? 'Customer') . ",\nYour booking #" . $booking->booking_id . " with Vaishnavi Tours is ready!\n\nTrip: " . $booking->pickup_location . " to " . $booking->destination . "\nTotal Fare: ₹" . number_format($booking->total_amount, 2) . "\nPending Balance: ₹" . number_format($booking->balance_amount, 2) . "\n\nChoose payment option:\n1. 💳 Full Payment (₹" . number_format($booking->balance_amount, 2) . "): " . $fullPayUrl . "\n2. ⚡ 25% Advance (₹" . number_format($advanceAmount, 0) . "): " . $advancePayUrl . "\n3. 💵 Pay Later (Cash / UPI to driver during trip)\n\nThank you, Vaishnavi Tours Bilaspur!";
+                @endphp
+                <div style="margin-bottom: 1.5rem; padding: 1rem; border-radius: 8px; background: #f8fafc; border: 1px solid var(--slate-200);">
+                    <h4 style="font-size: 0.9rem; font-weight: 800; color: var(--dark-900); margin-bottom: 0.6rem; display: flex; align-items: center; justify-content: space-between;">
+                        <span><x-icon name="credit-card" size="16" style="margin-right: 6px;" /> Customer Payment Links</span>
+                        <span class="badge badge-sm badge-success" style="background: #10B981; color: #fff;">Online Active</span>
+                    </h4>
+                    <p style="font-size: 0.775rem; color: var(--slate-600); margin-bottom: 0.75rem;">
+                        Share online payment link with customer for Full (₹{{ number_format($booking->balance_amount, 2) }}) or 25% Advance (₹{{ number_format($advanceAmount, 0) }}):
+                    </p>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem;">
+                        <div>
+                            <label style="font-size: 0.725rem; font-weight: 700; color: var(--slate-600); display: block; margin-bottom: 2px;">💳 Full Payment Link (₹{{ number_format($booking->balance_amount, 2) }})</label>
+                            <div style="display: flex; gap: 6px;">
+                                <input type="text" class="form-control form-control-sm" value="{{ $fullPayUrl }}" id="adminFullPayUrl" readonly style="font-size: 0.75rem; background: #fff;">
+                                <button type="button" class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText('{{ $fullPayUrl }}'); alert('Full Payment link copied to clipboard!');" title="Copy Full Link">
+                                    📋
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.725rem; font-weight: 700; color: var(--slate-600); display: block; margin-bottom: 2px;">⚡ 25% Advance Link (₹{{ number_format($advanceAmount, 0) }})</label>
+                            <div style="display: flex; gap: 6px;">
+                                <input type="text" class="form-control form-control-sm" value="{{ $advancePayUrl }}" id="adminAdvancePayUrl" readonly style="font-size: 0.75rem; background: #fff;">
+                                <button type="button" class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText('{{ $advancePayUrl }}'); alert('Advance Payment link copied to clipboard!');" title="Copy Advance Link">
+                                    📋
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    @if($custPhone)
+                        <a href="https://wa.me/{{ $custPhone }}?text={{ urlencode($paymentShareMsg) }}" target="_blank" class="btn btn-sm w-100" style="background: #25D366; color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none;">
+                            <x-icon name="send" size="14" /> Send Payment Options via WhatsApp
+                        </a>
+                    @endif
+                </div>
+            @endif
+
             <!-- Record Direct Payment Form -->
             @if($booking->balance_amount > 0)
                 <div>

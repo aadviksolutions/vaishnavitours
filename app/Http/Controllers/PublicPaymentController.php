@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\BookingStatusHistory;
 use App\Services\PaymentService;
 use App\Services\RazorpayService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class PublicPaymentController extends Controller
@@ -39,9 +41,11 @@ class PublicPaymentController extends Controller
 
         if ($amountType === 'custom' && ! empty($validated['custom_amount'])) {
             $amount = min((float) $validated['custom_amount'], (float) $booking->balance_amount);
-        } elseif ($amountType === 'advance' && (float) $booking->paid_amount == 0) {
-            $amount = max(500, round((float) $booking->total_amount * 0.25));
-            $amount = min($amount, (float) $booking->balance_amount);
+        } elseif ($amountType === 'advance') {
+            $advance = max(500, round((float) $booking->total_amount * 0.25));
+            $amount = min($advance, (float) $booking->balance_amount);
+        } else {
+            $amount = (float) $booking->balance_amount;
         }
 
         if ($amount <= 0) {
@@ -190,5 +194,25 @@ class PublicPaymentController extends Controller
         }
 
         return response()->json(['status' => 'ok']);
+    }
+
+    public function selectPayLater(Request $request, string $bookingId)
+    {
+        $booking = Booking::where('id', $bookingId)
+            ->orWhere('booking_id', $bookingId)
+            ->firstOrFail();
+
+        BookingStatusHistory::create([
+            'booking_id' => $booking->id,
+            'changed_by' => Auth::id(),
+            'old_status' => $booking->booking_status,
+            'new_status' => $booking->booking_status,
+            'remarks' => 'Customer confirmed Pay Later (Cash / UPI to Chauffeur on journey).',
+            'comment' => 'Customer confirmed Pay Later (Cash / UPI to Chauffeur on journey).',
+            'created_at' => now(),
+        ]);
+
+        return redirect()->route('booking.success', $booking->id)
+            ->with('success', 'Your booking is confirmed with Pay Later! You can pay ₹'.number_format($booking->balance_amount, 2).' directly to the chauffeur via Cash or UPI during your journey.');
     }
 }

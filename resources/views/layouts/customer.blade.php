@@ -32,7 +32,7 @@
                 </a>
                 <div class="d-flex align-center gap-1" style="background: rgba(255,255,255,0.06); padding: 0.25rem 0.65rem; border-radius: var(--radius-sm);">
                     <x-icon name="user" size="13" class="text-slate-400" />
-                    <span style="font-weight: 600; font-size: 12px; color: #fff;">{{ Auth::user()->name }}</span>
+                    <span style="font-weight: 600; font-size: 12px; color: #fff;">{{ Auth::user()?->name ?? 'Passenger' }}</span>
                 </div>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf

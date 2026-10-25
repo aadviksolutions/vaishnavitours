@@ -121,13 +121,67 @@
                 </div>
             </div>
 
-            <!-- Razorpay Checkout Action Section -->
+            <!-- Payment Mode Selection: Full vs Partial vs Pay Later -->
             @if((float) $booking->balance_amount > 0 && $booking->booking_status !== 'Cancelled')
-                <div id="paymentActionBox" style="text-align: center; margin-bottom: 2rem;">
+                @php
+                    $total = (float) $booking->total_amount;
+                    $balance = (float) $booking->balance_amount;
+                    $advance = max(500, min($balance, round($total * 0.25)));
+                    $defaultMode = request('mode', 'full');
+                    if (!in_array($defaultMode, ['full', 'advance', 'later'])) {
+                        $defaultMode = 'full';
+                    }
+                @endphp
+
+                <div class="mb-4">
+                    <label style="font-size: 0.85rem; font-weight: 800; text-transform: uppercase; color: var(--slate-700); display: block; margin-bottom: 0.75rem;">
+                        Select Payment Preference
+                    </label>
+                    <div class="grid grid-3 gap-2" id="paymentOptionsGrid">
+                        <!-- Option: Full Payment -->
+                        <div class="pay-option-card {{ $defaultMode === 'full' ? 'active ring-2 ring-amber-500 bg-amber-50' : 'bg-slate-50' }}" data-mode="full" data-amount="{{ $balance }}" style="border: 1.5px solid {{ $defaultMode === 'full' ? '#F59E0B' : 'var(--slate-200)' }}; border-radius: 8px; padding: 1rem; cursor: pointer; transition: all 0.2s ease;">
+                            <div class="d-flex justify-between align-center mb-1">
+                                <strong style="font-size: 0.925rem; color: var(--dark-950);">Full Payment</strong>
+                                <span class="badge" style="background: #FEF3C7; color: #92400E; font-size: 0.68rem; font-weight: 800;">100%</span>
+                            </div>
+                            <div style="font-size: 1.3rem; font-weight: 900; color: #0F172A; margin-bottom: 0.25rem;">
+                                ₹{{ number_format($balance, 2) }}
+                            </div>
+                            <small style="color: var(--slate-500); font-size: 0.75rem; display: block;">Zero remaining dues</small>
+                        </div>
+
+                        <!-- Option: Partial Payment (Advance) -->
+                        <div class="pay-option-card {{ $defaultMode === 'advance' ? 'active ring-2 ring-blue-500 bg-blue-50' : 'bg-slate-50' }}" data-mode="advance" data-amount="{{ $advance }}" style="border: 1.5px solid {{ $defaultMode === 'advance' ? '#3B82F6' : 'var(--slate-200)' }}; border-radius: 8px; padding: 1rem; cursor: pointer; transition: all 0.2s ease;">
+                            <div class="d-flex justify-between align-center mb-1">
+                                <strong style="font-size: 0.925rem; color: #1E40AF;">Partial Advance</strong>
+                                <span class="badge" style="background: #DBEAFE; color: #1E40AF; font-size: 0.68rem; font-weight: 800;">25%</span>
+                            </div>
+                            <div style="font-size: 1.3rem; font-weight: 900; color: #1E40AF; margin-bottom: 0.25rem;">
+                                ₹{{ number_format($advance, 2) }}
+                            </div>
+                            <small style="color: var(--slate-500); font-size: 0.75rem; display: block;">Bal: ₹{{ number_format(max(0, $balance - $advance), 2) }} to driver</small>
+                        </div>
+
+                        <!-- Option: Pay Later -->
+                        <div class="pay-option-card {{ $defaultMode === 'later' ? 'active ring-2 ring-emerald-500 bg-emerald-50' : 'bg-slate-50' }}" data-mode="later" data-amount="0" style="border: 1.5px solid {{ $defaultMode === 'later' ? '#10B981' : 'var(--slate-200)' }}; border-radius: 8px; padding: 1rem; cursor: pointer; transition: all 0.2s ease;">
+                            <div class="d-flex justify-between align-center mb-1">
+                                <strong style="font-size: 0.925rem; color: #065F46;">Pay Later</strong>
+                                <span class="badge" style="background: #D1FAE5; color: #065F46; font-size: 0.68rem; font-weight: 800;">Cash/UPI</span>
+                            </div>
+                            <div style="font-size: 1.3rem; font-weight: 900; color: #059669; margin-bottom: 0.25rem;">
+                                ₹0.00 <span style="font-size: 0.75rem; font-weight: 600; color: var(--slate-500);">Now</span>
+                            </div>
+                            <small style="color: var(--slate-500); font-size: 0.75rem; display: block;">Pay driver on journey</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Online Payment Container (for Full / Partial) -->
+                <div id="onlinePaymentContainer" style="text-align: center; margin-bottom: 2rem; {{ $defaultMode === 'later' ? 'display: none;' : '' }}">
                     <div style="margin-bottom: 1.25rem;">
                         <button id="payNowBtn" type="button" class="btn btn-primary btn-lg" style="padding: 1rem 2.5rem; font-size: 1.15rem; font-weight: 800; border-radius: var(--radius-md); box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4); display: inline-flex; align-items: center; gap: 10px;">
                             <x-icon name="shield-check" size="20" />
-                            <span>Pay ₹{{ number_format($booking->balance_amount, 2) }} via Razorpay</span>
+                            <span id="payNowText">Pay ₹{{ number_format($defaultMode === 'advance' ? $advance : $balance, 2) }} via Razorpay</span>
                         </button>
                     </div>
 
@@ -146,6 +200,22 @@
 
                     <!-- Status / Error message container -->
                     <div id="paymentMessage" style="display: none; margin-top: 1.25rem; padding: 1rem; border-radius: var(--radius-md); font-size: 0.925rem; font-weight: 600;"></div>
+                </div>
+
+                <!-- Pay Later Action Container (when Pay Later is selected) -->
+                <div id="payLaterContainer" style="text-align: center; margin-bottom: 2rem; background: #F8FAFC; border: 1.5px solid var(--slate-300); border-radius: var(--radius-md); padding: 1.5rem; {{ $defaultMode === 'later' ? '' : 'display: none;' }}">
+                    <h4 style="font-size: 1.1rem; font-weight: 800; color: #0F172A; margin-bottom: 0.35rem;">
+                        Pay Directly to Chauffeur on Journey Day
+                    </h4>
+                    <p style="color: var(--slate-600); font-size: 0.875rem; margin-bottom: 1.25rem; max-width: 520px; margin-left: auto; margin-right: auto;">
+                        No online payment required today. You can pay full fare of <strong>₹{{ number_format($balance, 2) }}</strong> directly to your assigned driver using Cash or any UPI app upon trip arrival.
+                    </p>
+                    <form action="{{ route('payment.pay-later', $booking->id) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-primary btn-lg" style="padding: 0.85rem 2.25rem; font-size: 1.05rem; font-weight: 800;">
+                            ✓ Confirm Booking with Pay Later
+                        </button>
+                    </form>
                 </div>
             @endif
 
@@ -195,7 +265,51 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const payBtn = document.getElementById('payNowBtn');
+    const payText = document.getElementById('payNowText');
     const msgBox = document.getElementById('paymentMessage');
+    const optionCards = document.querySelectorAll('.pay-option-card');
+    const onlineContainer = document.getElementById('onlinePaymentContainer');
+    const laterContainer = document.getElementById('payLaterContainer');
+
+    let currentMode = '{{ $defaultMode ?? "full" }}';
+    let currentAmount = currentMode === 'advance' ? {{ $advance ?? 0 }} : {{ $balance ?? 0 }};
+
+    optionCards.forEach(function (card) {
+        card.addEventListener('click', function () {
+            optionCards.forEach(function (c) {
+                c.classList.remove('active', 'ring-2', 'ring-amber-500', 'ring-blue-500', 'ring-emerald-500', 'bg-amber-50', 'bg-blue-50', 'bg-emerald-50');
+                c.classList.add('bg-slate-50');
+                c.style.borderColor = 'var(--slate-200)';
+            });
+
+            const mode = card.dataset.mode;
+            const amt = parseFloat(card.dataset.amount || 0);
+            currentMode = mode;
+            currentAmount = amt;
+
+            card.classList.remove('bg-slate-50');
+            card.classList.add('active', 'ring-2');
+
+            if (mode === 'full') {
+                card.classList.add('ring-amber-500', 'bg-amber-50');
+                card.style.borderColor = '#F59E0B';
+                if (onlineContainer) onlineContainer.style.display = 'block';
+                if (laterContainer) laterContainer.style.display = 'none';
+                if (payText) payText.innerText = 'Pay ₹' + amt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' via Razorpay';
+            } else if (mode === 'advance') {
+                card.classList.add('ring-blue-500', 'bg-blue-50');
+                card.style.borderColor = '#3B82F6';
+                if (onlineContainer) onlineContainer.style.display = 'block';
+                if (laterContainer) laterContainer.style.display = 'none';
+                if (payText) payText.innerText = 'Pay ₹' + amt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' via Razorpay';
+            } else if (mode === 'later') {
+                card.classList.add('ring-emerald-500', 'bg-emerald-50');
+                card.style.borderColor = '#10B981';
+                if (onlineContainer) onlineContainer.style.display = 'none';
+                if (laterContainer) laterContainer.style.display = 'block';
+            }
+        });
+    });
 
     if (!payBtn) return;
 
@@ -220,7 +334,7 @@ document.addEventListener('DOMContentLoaded', function () {
     payBtn.addEventListener('click', async function () {
         try {
             payBtn.disabled = true;
-            payBtn.innerText = 'Initializing Secure Checkout...';
+            if (payText) payText.innerText = 'Initializing Secure Checkout...';
             showMessage('info', 'Connecting to Razorpay gateway...');
 
             const orderRes = await fetch('/api/payments/razorpay/create-order', {
@@ -230,7 +344,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
                 },
                 body: JSON.stringify({
-                    booking_id: '{{ $booking->id }}'
+                    booking_id: '{{ $booking->id }}',
+                    amount_type: currentMode
                 })
             });
 
@@ -257,13 +372,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 modal: {
                     ondismiss: function () {
                         payBtn.disabled = false;
-                        payBtn.innerText = 'Pay ₹{{ number_format($booking->balance_amount, 2) }} via Razorpay';
+                        if (payText) payText.innerText = 'Pay ₹' + currentAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' via Razorpay';
                         showMessage('info', 'Payment was dismissed. You can retry whenever you are ready.');
                     }
                 },
                 handler: async function (response) {
                     try {
-                        payBtn.innerText = 'Verifying Payment...';
+                        if (payText) payText.innerText = 'Verifying Payment...';
                         showMessage('info', 'Authenticating payment signature and updating booking...');
 
                         const verifyRes = await fetch('/api/payments/razorpay/verify', {
@@ -292,7 +407,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     } catch (verifyErr) {
                         console.error('Verification error:', verifyErr);
                         payBtn.disabled = false;
-                        payBtn.innerText = 'Retry Payment';
+                        if (payText) payText.innerText = 'Retry Payment';
                         showMessage('error', 'Payment verification error: ' + verifyErr.message);
                     }
                 }
@@ -302,7 +417,7 @@ document.addEventListener('DOMContentLoaded', function () {
             rzp.on('payment.failed', function (failResp) {
                 console.error('Razorpay payment failed:', failResp);
                 payBtn.disabled = false;
-                payBtn.innerText = 'Retry Payment';
+                if (payText) payText.innerText = 'Retry Payment';
                 const errDesc = failResp.error ? failResp.error.description : 'Payment transaction failed or was declined';
                 showMessage('error', 'Payment Failed: ' + errDesc);
             });
@@ -311,7 +426,7 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (err) {
             console.error('Checkout error:', err);
             payBtn.disabled = false;
-            payBtn.innerText = 'Pay ₹{{ number_format($booking->balance_amount, 2) }} via Razorpay';
+            if (payText) payText.innerText = 'Pay ₹' + currentAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' via Razorpay';
             showMessage('error', err.message || 'Could not launch payment checkout');
         }
     });

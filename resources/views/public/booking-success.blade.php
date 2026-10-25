@@ -102,16 +102,80 @@
             </div>
 
             @if((float)($booking->balance_amount ?? 0) > 0 && (float)($booking->total_amount ?? 0) > 0)
-                <div style="background: #FFFBEB; border: 1.5px solid #FCD34D; border-radius: var(--radius-md); padding: 1.5rem; text-align: center; margin-bottom: 2rem;">
-                    <h3 style="font-size: 1.15rem; font-weight: 800; color: #92400E; margin-bottom: 0.5rem;">
-                        Pay Online to Confirm Booking Instantly
-                    </h3>
-                    <p style="color: #78350F; font-size: 0.875rem; margin-bottom: 1.25rem;">
-                        Pay securely using UPI, Credit/Debit Card, or Netbanking via Razorpay.
-                    </p>
-                    <a href="{{ route('payment.pay', $booking->id) }}" class="btn btn-primary btn-lg" style="font-weight: 800; padding: 0.75rem 2rem;">
-                        <x-icon name="shield-check" size="18" style="margin-right: 6px;" /> Pay ₹{{ number_format($booking->balance_amount, 2) }} Online
-                    </a>
+                @php
+                    $total = (float) $booking->total_amount;
+                    $balance = (float) $booking->balance_amount;
+                    $advance = max(500, min($balance, round($total * 0.25)));
+                @endphp
+                <div style="background: #ffffff; border: 2px solid #FCD34D; border-radius: var(--radius-md); padding: 1.5rem; text-align: left; margin-bottom: 2rem; box-shadow: 0 4px 16px rgba(245, 158, 11, 0.1);">
+                    <div style="text-align: center; margin-bottom: 1.25rem;">
+                        <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #B45309; letter-spacing: 0.5px;">CHOOSE YOUR PAYMENT METHOD</span>
+                        <h3 style="font-size: 1.25rem; font-weight: 900; color: #78350F; margin: 0.25rem 0 0.35rem 0;">
+                            Flexible Payment Options for Your Trip
+                        </h3>
+                        <p style="color: var(--slate-600); font-size: 0.85rem; margin: 0;">
+                            Choose to pay fully online, lock your reservation with a small advance, or pay directly to the chauffeur on journey day.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-3 gap-3">
+                        <!-- Option 1: Full Payment -->
+                        <div style="background: #FFFBEB; border: 1.5px solid #F59E0B; border-radius: 8px; padding: 1.15rem; display: flex; flex-direction: column; justify-content: space-between; position: relative;">
+                            <span style="position: absolute; top: -10px; right: 12px; background: #D97706; color: #fff; font-size: 0.68rem; font-weight: 800; padding: 2px 8px; border-radius: 10px; text-transform: uppercase;">
+                                100% Zero Dues
+                            </span>
+                            <div>
+                                <div style="font-weight: 800; font-size: 0.95rem; color: #92400E; margin-bottom: 0.25rem;">Full Payment</div>
+                                <div style="font-size: 1.4rem; font-weight: 900; color: var(--dark-950); margin-bottom: 0.35rem;">
+                                    ₹{{ number_format($balance, 2) }}
+                                </div>
+                                <p style="font-size: 0.775rem; color: var(--slate-600); line-height: 1.4; margin-bottom: 1rem;">
+                                    Instant confirmed VIP booking. Zero payment hassle during your journey.
+                                </p>
+                            </div>
+                            <a href="{{ route('payment.pay', ['booking' => $booking->id, 'mode' => 'full']) }}" class="btn btn-primary btn-sm" style="width: 100%; text-align: center; font-weight: 800; justify-content: center;">
+                                <x-icon name="shield-check" size="14" style="margin-right: 4px;" /> Pay Full Online
+                            </a>
+                        </div>
+
+                        <!-- Option 2: Partial Payment (Advance) -->
+                        <div style="background: #EFF6FF; border: 1.5px solid #3B82F6; border-radius: 8px; padding: 1.15rem; display: flex; flex-direction: column; justify-content: space-between; position: relative;">
+                            <span style="position: absolute; top: -10px; right: 12px; background: #2563EB; color: #fff; font-size: 0.68rem; font-weight: 800; padding: 2px 8px; border-radius: 10px; text-transform: uppercase;">
+                                Recommended
+                            </span>
+                            <div>
+                                <div style="font-weight: 800; font-size: 0.95rem; color: #1E40AF; margin-bottom: 0.25rem;">Partial Advance</div>
+                                <div style="font-size: 1.4rem; font-weight: 900; color: var(--dark-950); margin-bottom: 0.35rem;">
+                                    ₹{{ number_format($advance, 2) }}
+                                </div>
+                                <p style="font-size: 0.775rem; color: var(--slate-600); line-height: 1.4; margin-bottom: 1rem;">
+                                    Pay 25% advance to lock vehicle. Remaining <strong>₹{{ number_format(max(0, $balance - $advance), 2) }}</strong> payable to chauffeur.
+                                </p>
+                            </div>
+                            <a href="{{ route('payment.pay', ['booking' => $booking->id, 'mode' => 'advance']) }}" class="btn btn-outline btn-sm" style="width: 100%; text-align: center; font-weight: 800; justify-content: center; border-color: #3B82F6; color: #1D4ED8; background: #ffffff;">
+                                <x-icon name="credit-card" size="14" style="margin-right: 4px;" /> Pay 25% Advance
+                            </a>
+                        </div>
+
+                        <!-- Option 3: Pay Later -->
+                        <div style="background: #F8FAFC; border: 1.5px solid var(--slate-300); border-radius: 8px; padding: 1.15rem; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="font-weight: 800; font-size: 0.95rem; color: var(--dark-900); margin-bottom: 0.25rem;">Pay Later</div>
+                                <div style="font-size: 1.4rem; font-weight: 900; color: #059669; margin-bottom: 0.35rem;">
+                                    ₹0.00 <span style="font-size: 0.75rem; font-weight: 600; color: var(--slate-500);">Now</span>
+                                </div>
+                                <p style="font-size: 0.775rem; color: var(--slate-600); line-height: 1.4; margin-bottom: 1rem;">
+                                    No online payment required. Pay full ₹{{ number_format($balance, 2) }} to chauffeur via Cash/UPI on trip day.
+                                </p>
+                            </div>
+                            <form action="{{ route('payment.pay-later', $booking->id) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="btn btn-outline btn-sm" style="width: 100%; text-align: center; font-weight: 700; justify-content: center;">
+                                    Confirm Pay Later
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             @elseif($booking->payment_status === 'Paid')
                 <div style="background: #F0FDF4; border: 1.5px solid #BBF7D0; border-radius: var(--radius-md); padding: 1.25rem; text-align: center; margin-bottom: 2rem;">

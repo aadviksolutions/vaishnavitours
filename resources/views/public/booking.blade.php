@@ -413,6 +413,47 @@
                         </label>
                     </div>
 
+                    <!-- 5. Payment Preference (Full / Partial Advance / Pay Later) -->
+                    <div id="bookingPaymentOptionGroup" style="background: #ffffff; padding: 1.15rem 1.25rem; border: 1.5px solid var(--slate-200); border-radius: 8px; margin-bottom: 1.25rem;">
+                        <div class="d-flex justify-between align-center mb-2">
+                            <label style="font-weight: 700; font-size: 13px; color: var(--dark-900); margin: 0;">
+                                5. Payment Preference
+                            </label>
+                            <span style="font-size: 11px; color: var(--slate-500);">Choose how you want to pay</span>
+                        </div>
+                        <div class="grid grid-3 gap-2" id="bookingPaymentPrefGrid">
+                            <label style="border: 1.5px solid #F59E0B; border-radius: 6px; padding: 0.75rem 0.85rem; cursor: pointer; background: #FFFBEB; display: block; transition: all 0.15s ease;" class="payment-pref-card active ring-2 ring-amber-500" id="cardPrefFull">
+                                <div class="d-flex align-center gap-2 mb-1">
+                                    <input type="radio" name="payment_preference" value="full" checked style="accent-color: #D97706; cursor: pointer;">
+                                    <strong style="font-size: 13px; color: #92400E;">Full Payment</strong>
+                                </div>
+                                <div style="font-size: 11px; color: var(--slate-600); margin-left: 1.35rem;">
+                                    Pay 100% online now via Razorpay
+                                </div>
+                            </label>
+
+                            <label style="border: 1.5px solid var(--slate-200); border-radius: 6px; padding: 0.75rem 0.85rem; cursor: pointer; background: #ffffff; display: block; transition: all 0.15s ease;" class="payment-pref-card" id="cardPrefAdvance">
+                                <div class="d-flex align-center gap-2 mb-1">
+                                    <input type="radio" name="payment_preference" value="advance" style="accent-color: #2563EB; cursor: pointer;">
+                                    <strong style="font-size: 13px; color: #1E40AF;">Partial Advance</strong>
+                                </div>
+                                <div style="font-size: 11px; color: var(--slate-600); margin-left: 1.35rem;">
+                                    Pay 25% now, balance to driver
+                                </div>
+                            </label>
+
+                            <label style="border: 1.5px solid var(--slate-200); border-radius: 6px; padding: 0.75rem 0.85rem; cursor: pointer; background: #ffffff; display: block; transition: all 0.15s ease;" class="payment-pref-card" id="cardPrefLater">
+                                <div class="d-flex align-center gap-2 mb-1">
+                                    <input type="radio" name="payment_preference" value="later" style="accent-color: #059669; cursor: pointer;">
+                                    <strong style="font-size: 13px; color: #065F46;">Pay Later</strong>
+                                </div>
+                                <div style="font-size: 11px; color: var(--slate-600); margin-left: 1.35rem;">
+                                    Pay cash / UPI directly to driver
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
                     <!-- Submit Button Row -->
                     <div style="background: #F8FAFC; border: 1px solid var(--slate-200); padding: 1rem 1.25rem; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
                         <div>
@@ -552,6 +593,9 @@
             previewAmount.innerHTML = '<span style="color: #D97706; font-size: 1.15rem; font-weight: 700;">Price on Request (Custom Quote)</span>';
             previewDetails.textContent = 'Custom location selected. Price is not calculated automatically. A quotation query will be sent to the admin dashboard for pricing.';
 
+            const paymentGroup = document.getElementById('bookingPaymentOptionGroup');
+            if (paymentGroup) paymentGroup.style.display = 'none';
+
             btnSubmitBooking.textContent = 'Submit Travel Query';
             btnSubmitBooking.classList.remove('btn-primary');
             btnSubmitBooking.classList.add('bg-amber-600', 'hover:bg-amber-700', 'text-white');
@@ -563,10 +607,12 @@
         if (isCustomQueryInput) isCustomQueryInput.value = '0';
 
         // Toggle UI modes for Round-Trip vs One-Way
+        const paymentGroup = document.getElementById('bookingPaymentOptionGroup');
         if (isRoundTrip) {
             estimatedKmGroup.style.display = 'block';
             standardRatePreview.style.display = 'none';
             roundTripQuotationNotice.style.display = 'block';
+            if (paymentGroup) paymentGroup.style.display = 'none';
 
             // Round-trip enquiry mode
             btnSubmitBooking.textContent = 'Send Quotation Query';
@@ -579,6 +625,7 @@
             estimatedKmGroup.style.display = 'none';
             standardRatePreview.style.display = 'block';
             roundTripQuotationNotice.style.display = 'none';
+            if (paymentGroup) paymentGroup.style.display = 'block';
 
             btnSubmitBooking.textContent = 'Confirm Booking';
             btnSubmitBooking.classList.remove('bg-amber-600', 'hover:bg-amber-700');
@@ -679,6 +726,34 @@
             }
         }
     }
+
+    // Payment preference card styling
+    document.querySelectorAll('input[name="payment_preference"]').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            document.querySelectorAll('.payment-pref-card').forEach(function(card) {
+                card.classList.remove('active', 'ring-2', 'ring-amber-500', 'ring-blue-500', 'ring-emerald-500');
+                card.style.borderColor = 'var(--slate-200)';
+                card.style.backgroundColor = '#ffffff';
+            });
+            const parentCard = radio.closest('.payment-pref-card');
+            if (parentCard) {
+                parentCard.classList.add('active', 'ring-2');
+                if (radio.value === 'full') {
+                    parentCard.classList.add('ring-amber-500');
+                    parentCard.style.borderColor = '#F59E0B';
+                    parentCard.style.backgroundColor = '#FFFBEB';
+                } else if (radio.value === 'advance') {
+                    parentCard.classList.add('ring-blue-500');
+                    parentCard.style.borderColor = '#3B82F6';
+                    parentCard.style.backgroundColor = '#EFF6FF';
+                } else if (radio.value === 'later') {
+                    parentCard.classList.add('ring-emerald-500');
+                    parentCard.style.borderColor = '#10B981';
+                    parentCard.style.backgroundColor = '#ECFDF5';
+                }
+            }
+        });
+    });
 
     function applyAirportMode() {
         const raipurAirportText = 'Raipur Airport';
