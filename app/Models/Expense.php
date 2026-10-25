@@ -40,4 +40,14 @@ class Expense extends Model
     {
         return $this->belongsTo(User::class, 'entered_by');
     }
+
+    public function creator()
+    {
+        return $this->enteredBy();
+    }
+
+    public function vehicle()
+    {
+        return $this->hasOneThrough(Vehicle::class, Booking::class, 'id', 'id', 'booking_id', 'vehicle_id');
+    }
 }

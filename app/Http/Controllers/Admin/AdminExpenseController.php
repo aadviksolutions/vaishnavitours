@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Expense;
 use App\Models\Trip;
+use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,7 +14,7 @@ class AdminExpenseController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Expense::with(['booking', 'trip', 'enteredBy']);
+        $query = Expense::with(['booking.vehicle', 'trip', 'enteredBy']);
 
         if ($request->filled('category')) {
             $query->where('category', $request->category);
@@ -32,9 +33,16 @@ class AdminExpenseController extends Controller
         $totalOther = (clone $query)->where('category', 'Other')->sum('amount');
         $grandTotal = (clone $query)->sum('amount');
 
+        $totals = [
+            'total' => (float) $grandTotal,
+            'fuel' => (float) $totalFuel,
+            'toll' => (float) $totalToll,
+            'other' => (float) $totalOther,
+        ];
+
         $expenses = $query->latest('expense_date')->paginate(15);
 
-        return view('admin.expenses.index', compact('expenses', 'totalFuel', 'totalToll', 'totalOther', 'grandTotal'));
+        return view('admin.expenses.index', compact('expenses', 'totals', 'totalFuel', 'totalToll', 'totalOther', 'grandTotal'));
     }
 
     public function create(Request $request)
@@ -42,8 +50,9 @@ class AdminExpenseController extends Controller
         $bookingId = $request->query('booking_id');
         $selectedBooking = $bookingId ? Booking::find($bookingId) : null;
         $bookings = Booking::latest()->take(50)->get();
+        $vehicles = Vehicle::orderBy('name')->get();
 
-        return view('admin.expenses.create', compact('selectedBooking', 'bookings'));
+        return view('admin.expenses.create', compact('selectedBooking', 'bookings', 'vehicles'));
     }
 
     public function store(Request $request)
@@ -54,6 +63,7 @@ class AdminExpenseController extends Controller
             'category' => 'required|in:Fuel,Toll,Other',
             'amount' => 'required|numeric|min:0.01',
             'expense_date' => 'required|date',
+            'payment_method' => 'nullable|string|max:50',
             'description' => 'nullable|string|max:500',
             'receipt_number' => 'nullable|string|max:100',
         ]);

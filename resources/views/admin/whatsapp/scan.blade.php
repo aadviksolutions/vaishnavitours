@@ -27,28 +27,34 @@
     <div class="alert alert-danger mb-4">❌ {{ session('error') }}</div>
 @endif
 
+@php
+    $session = is_array($session ?? null) ? $session : ['status' => 'disconnected', 'online' => false, 'phone' => null, 'pushName' => null, 'sessionId' => 'default', 'qr' => null];
+    $status = $session['status'] ?? 'disconnected';
+    $adminPhone = $adminPhone ?? '';
+@endphp
+
 <div class="row g-4">
     {{-- Left Column: QR Code & Live Status --}}
     <div class="col-lg-7">
         <div class="card p-4 text-center" style="box-shadow: 0 4px 12px rgba(0,0,0,0.06); border-radius: 12px;">
             <div id="status-badge" class="mb-3">
-                @if($session['status'] === 'ready')
+                @if($status === 'ready')
                     <span class="badge" style="background:#dcfce7;color:#15803d;padding:8px 16px;font-size:0.95rem;font-weight:700;border-radius:20px;">
                         ● Connected & Online
                     </span>
-                @elseif($session['status'] === 'qr_ready')
+                @elseif($status === 'qr_ready')
                     <span class="badge" style="background:#fef9c3;color:#854d0e;padding:8px 16px;font-size:0.95rem;font-weight:700;border-radius:20px;">
                         ● Ready to Scan QR Code
                     </span>
                 @else
                     <span class="badge" style="background:#fee2e2;color:#991b1b;padding:8px 16px;font-size:0.95rem;font-weight:700;border-radius:20px;">
-                        ● {{ ucfirst($session['status']) }}
+                        ● {{ ucfirst($status) }}
                     </span>
                 @endif
             </div>
 
             {{-- Connected State View --}}
-            <div id="connected-box" style="display: {{ $session['status'] === 'ready' ? 'block' : 'none' }};">
+            <div id="connected-box" style="display: {{ $status === 'ready' ? 'block' : 'none' }};">
                 <div style="width: 80px; height: 80px; background: #25D366; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 1.25rem;">
                     ✓
                 </div>
@@ -61,13 +67,13 @@
                     <div class="d-flex justify-content-between py-2 border-bottom">
                         <span style="color: var(--slate-500); font-size: 0.85rem;">Connected Phone:</span>
                         <strong id="connected-phone" style="font-family: monospace; font-size: 1rem; color: #0f172a;">
-                            {{ $session['phone'] ? '+' . $session['phone'] : 'Not detected' }}
+                            {{ !empty($session['phone']) ? '+' . $session['phone'] : 'Not detected' }}
                         </strong>
                     </div>
                     <div class="d-flex justify-content-between py-2 border-bottom">
                         <span style="color: var(--slate-500); font-size: 0.85rem;">Profile / Push Name:</span>
                         <strong id="connected-name" style="color: #0f172a;">
-                            {{ $session['pushName'] ?: 'Vaishnavi Tours' }}
+                            {{ !empty($session['pushName']) ? $session['pushName'] : 'Vaishnavi Tours' }}
                         </strong>
                     </div>
                     <div class="d-flex justify-content-between py-2">
@@ -77,7 +83,7 @@
                 </div>
 
                 <div class="d-flex justify-content-center gap-2 flex-wrap">
-                    @if($session['phone'])
+                    @if(!empty($session['phone']))
                         <form method="POST" action="{{ route('admin.whatsapp.save-phone') }}">
                             @csrf
                             <input type="hidden" name="phone" value="{{ $session['phone'] }}">

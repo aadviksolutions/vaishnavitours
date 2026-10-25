@@ -28,19 +28,19 @@
 <div class="grid grid-4 gap-2 mb-3">
     <div class="kpi-card" style="background: #fff; padding: 0.75rem 1rem; border: 1px solid var(--slate-200); border-radius: 6px;">
         <span style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--slate-500);">Total Logged Expenses</span>
-        <div style="font-size: 20px; font-weight: 700; color: var(--dark-900);">₹{{ number_format($totals['total'], 2) }}</div>
+        <div style="font-size: 20px; font-weight: 700; color: var(--dark-900);">₹{{ number_format($totals['total'] ?? $grandTotal ?? 0, 2) }}</div>
     </div>
     <div class="kpi-card" style="background: #fff; padding: 0.75rem 1rem; border: 1px solid var(--slate-200); border-radius: 6px;">
         <span style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: #D97706;">Fuel Total</span>
-        <div style="font-size: 20px; font-weight: 700; color: #D97706;">₹{{ number_format($totals['fuel'], 2) }}</div>
+        <div style="font-size: 20px; font-weight: 700; color: #D97706;">₹{{ number_format($totals['fuel'] ?? $totalFuel ?? 0, 2) }}</div>
     </div>
     <div class="kpi-card" style="background: #fff; padding: 0.75rem 1rem; border: 1px solid var(--slate-200); border-radius: 6px;">
         <span style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: #2563EB;">Toll & Parking</span>
-        <div style="font-size: 20px; font-weight: 700; color: #2563EB;">₹{{ number_format($totals['toll'], 2) }}</div>
+        <div style="font-size: 20px; font-weight: 700; color: #2563EB;">₹{{ number_format($totals['toll'] ?? $totalToll ?? 0, 2) }}</div>
     </div>
     <div class="kpi-card" style="background: #fff; padding: 0.75rem 1rem; border: 1px solid var(--slate-200); border-radius: 6px;">
         <span style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--slate-500);">Other Expenses</span>
-        <div style="font-size: 20px; font-weight: 700; color: var(--slate-700);">₹{{ number_format($totals['other'], 2) }}</div>
+        <div style="font-size: 20px; font-weight: 700; color: var(--slate-700);">₹{{ number_format($totals['other'] ?? $totalOther ?? 0, 2) }}</div>
     </div>
 </div>
 
@@ -111,12 +111,15 @@
                                     {{ $exp->booking->booking_id }}
                                 </a>
                             @endif
-                            @if($exp->vehicle)
+                            @php
+                                $veh = $exp->vehicle ?? $exp->booking?->vehicle ?? $exp->trip?->vehicle;
+                            @endphp
+                            @if($veh)
                                 <div style="font-size: 11px; color: var(--slate-500);">
-                                    {{ $exp->vehicle->name }} ({{ $exp->vehicle->registration_number }})
+                                    {{ $veh->name }} ({{ $veh->registration_number }})
                                 </div>
                             @endif
-                            @if(!$exp->booking && !$exp->vehicle)
+                            @if(!$exp->booking && !$veh)
                                 <span style="color: var(--slate-400);">General Fleet</span>
                             @endif
                         </td>
@@ -130,10 +133,10 @@
                             <span class="badge badge-secondary" style="font-size: 10.5px;">{{ $exp->payment_method ?: 'Cash' }}</span>
                         </td>
                         <td style="font-size: 11.5px; color: var(--slate-600);">
-                            {{ $exp->creator?->name ?? 'Admin' }}
+                            {{ $exp->creator?->name ?? $exp->enteredBy?->name ?? 'Admin' }}
                         </td>
                         <td style="text-align: right;">
-                            <form action="{{ route('admin.expenses.destroy', $exp->id) }}" method="POST" onsubmit="return confirm('Delete this expense record?');" style="display: inline-block;">
+                            <form action="{{ route('admin.expenses.destroy', $exp) }}" method="POST" onsubmit="return confirm('Delete this expense record?');" style="display: inline-block;">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-outline btn-sm text-red-600 border-red-300" style="padding: 2px 6px; font-size: 11px;">

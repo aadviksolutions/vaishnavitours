@@ -70,7 +70,7 @@
                 <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Link to Vehicle (Optional)</label>
                 <select name="vehicle_id" class="form-select form-select-sm">
                     <option value="">-- No specific vehicle --</option>
-                    @foreach($vehicles as $v)
+                    @foreach($vehicles ?? [] as $v)
                         <option value="{{ $v->id }}">{{ $v->name }} ({{ $v->registration_number }})</option>
                     @endforeach
                 </select>
