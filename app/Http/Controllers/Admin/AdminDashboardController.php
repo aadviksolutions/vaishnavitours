@@ -123,11 +123,12 @@ class AdminDashboardController extends Controller
             ],
         ];
 
-        // 10 Specific Quick-Action Buttons required:
+        // Quick-Action Buttons (Section 6 & 9)
         $quickActions = [
             ['title' => 'Create Booking', 'route' => route('admin.bookings.create'), 'icon' => 'plus-circle', 'bg' => 'bg-emerald-600 hover:bg-emerald-700 text-white'],
             ['title' => 'Assign Driver', 'route' => route('admin.bookings.index', ['filter' => 'unassigned_driver']), 'icon' => 'user-plus', 'bg' => 'bg-indigo-600 hover:bg-indigo-700 text-white'],
             ['title' => 'Assign Vehicle', 'route' => route('admin.bookings.index', ['filter' => 'unassigned_vehicle']), 'icon' => 'truck', 'bg' => 'bg-blue-600 hover:bg-blue-700 text-white'],
+            ['title' => 'Add Customer', 'route' => route('admin.customers.create'), 'icon' => 'user-plus', 'bg' => 'bg-blue-600 hover:bg-blue-700 text-white'],
             ['title' => 'Add Driver', 'route' => route('admin.drivers.create'), 'icon' => 'user-check', 'bg' => 'bg-slate-700 hover:bg-slate-800 text-white'],
             ['title' => 'Add Vehicle', 'route' => route('admin.vehicles.create'), 'icon' => 'plus', 'bg' => 'bg-slate-700 hover:bg-slate-800 text-white'],
             ['title' => 'Add Pickup Location', 'route' => route('admin.locations.create'), 'icon' => 'map-pin', 'bg' => 'bg-amber-600 hover:bg-amber-700 text-white'],
