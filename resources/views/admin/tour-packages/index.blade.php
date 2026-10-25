@@ -62,10 +62,15 @@
                             @endif
                         </td>
                         <td>
-                            @if(!empty($pkg->destinations))
-                                <span style="font-size: 11.5px;">{{ implode(', ', array_slice($pkg->destinations, 0, 3)) }}</span>
+                            @php
+                                $dests = $pkg->destinations_list;
+                            @endphp
+                            @if(!empty($dests))
+                                <span style="font-size: 11.5px; color: var(--slate-700);">{{ implode(', ', array_slice($dests, 0, 3)) }}</span>
+                            @elseif(!empty($pkg->destinations))
+                                <span style="font-size: 11.5px; color: var(--slate-700);">{{ Str::limit((string) $pkg->destinations, 40) }}</span>
                             @else
-                                -
+                                <span style="color: var(--slate-400);">-</span>
                             @endif
                         </td>
                         <td>
@@ -74,10 +79,10 @@
                             </span>
                         </td>
                         <td style="text-align: right; white-space: nowrap;">
-                            <a href="{{ route('admin.tour-packages.edit', $pkg->id) }}" class="btn btn-outline btn-sm" style="padding: 2px 7px; font-size: 11px;">
+                            <a href="{{ route('admin.tour-packages.edit', $pkg) }}" class="btn btn-outline btn-sm" style="padding: 2px 7px; font-size: 11px;">
                                 Edit
                             </a>
-                            <form action="{{ route('admin.tour-packages.destroy', $pkg->id) }}" method="POST" onsubmit="return confirm('Delete this package?');" style="display: inline-block;">
+                            <form action="{{ route('admin.tour-packages.destroy', $pkg) }}" method="POST" onsubmit="return confirm('Delete this package?');" style="display: inline-block;">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-outline btn-sm text-red-600 border-red-300" style="padding: 2px 6px; font-size: 11px;">

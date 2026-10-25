@@ -1,7 +1,5 @@
 <?php
 
-namespace App\Models;
-
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;

@@ -50,8 +50,8 @@
         <div class="mb-3">
             <div class="d-flex justify-between align-center mb-1">
                 <label style="font-size: 12px; font-weight: 600; margin: 0;">Destinations Covered (Comma separated)</label>
-                <button type="button" id="btnTourDestMap" class="btn btn-xs btn-outline" style="font-size: 11px; padding: 2px 7px; color: #2563EB; border-color: #BFDBFE; background: #EFF6FF;">
-                    🗺️ Pick on Map
+                <button type="button" id="btnTourDestMap" class="btn btn-xs btn-outline" style="font-size: 11px; padding: 2px 7px; color: #2563EB; border-color: #BFDBFE; background: #EFF6FF; display: inline-flex; align-items: center; gap: 4px;">
+                    <x-icon name="map-pin" :size="11" /> Pick on Map
                 </button>
             </div>
             <input type="text" name="destinations" id="tourDestInput" class="form-control form-control-sm" placeholder="e.g. Narmada Udgam, Kapildhara, Mai ki Bagiya, Sonmuda">
