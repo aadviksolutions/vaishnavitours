@@ -145,7 +145,9 @@
         <div class="grid grid-3 gap-3">
             @foreach($vehicles->take(3) as $vehicle)
                 <div class="card" style="border-radius: var(--radius-lg); overflow: hidden; padding: 0;">
-                    <img src="{{ $vehicle->icon_url }}" alt="{{ $vehicle->name }} - Local Cab Bilaspur" style="width: 100%; height: 200px; object-fit: cover;" loading="lazy">
+                    <div style="height: 185px; background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); display: flex; align-items: center; justify-content: center; padding: 0.75rem 1rem; border-bottom: 1px solid var(--slate-100); overflow: hidden;">
+                        <img src="{{ $vehicle->icon_url }}" alt="{{ $vehicle->name }} - Local Cab Bilaspur" style="max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain;" loading="lazy">
+                    </div>
                     <div style="padding: 1.5rem;">
                         <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--dark-900); margin-bottom: 0.5rem;">{{ $vehicle->name }}</h3>
                         <div style="display: flex; gap: 1rem; font-size: 0.85rem; color: var(--slate-600); margin-bottom: 1rem;">

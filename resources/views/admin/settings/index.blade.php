@@ -306,11 +306,66 @@
                 </div>
             </div>
 
+            {{-- WhatsApp / OpenWA Integration --}}
+            <div class="card mb-4" style="border: 2px solid #25D366;">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span style="font-size:1.5rem;">📱</span>
+                    <div>
+                        <h3 style="font-size: 1.15rem; font-weight: 800; margin:0;">WhatsApp Notifications (OpenWA)</h3>
+                        <p style="font-size:0.8rem;color:var(--slate-500);margin:0;">
+                            Connect your self-hosted OpenWA gateway to send automatic booking notifications.
+                            <a href="{{ route('admin.whatsapp.templates') }}" style="color:#25D366;">Manage message templates →</a>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-2 gap-3 mb-3">
+                    <div class="form-group">
+                        <label for="openwa_base_url" class="form-label">OpenWA API Base URL</label>
+                        <input type="url" name="openwa_base_url" id="openwa_base_url" class="form-control"
+                            value="{{ old('openwa_base_url', $settings['openwa_base_url']->value ?? '') }}"
+                            placeholder="http://localhost:3000">
+                        <small style="color:var(--slate-500);font-size:0.775rem;">URL where OpenWA is running (e.g. http://your-vps:3000)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="openwa_api_key" class="form-label">API Key (optional)</label>
+                        <input type="text" name="openwa_api_key" id="openwa_api_key" class="form-control"
+                            value="{{ old('openwa_api_key', $settings['openwa_api_key']->value ?? '') }}"
+                            placeholder="Bearer token if configured">
+                    </div>
+                </div>
+
+                <div class="grid grid-2 gap-3 mb-3">
+                    <div class="form-group">
+                        <label for="openwa_admin_number" class="form-label">Admin WhatsApp Number</label>
+                        <input type="text" name="openwa_admin_number" id="openwa_admin_number" class="form-control"
+                            value="{{ old('openwa_admin_number', $settings['openwa_admin_number']->value ?? $settings['whatsapp_number']->value ?? '') }}"
+                            placeholder="9244784443">
+                        <small style="color:var(--slate-500);font-size:0.775rem;">Every customer message is also sent here as an admin copy.</small>
+                    </div>
+                    <div class="form-group d-flex align-items-center" style="padding-top:1.5rem;">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="openwa_enabled" id="openwa_enabled" value="1"
+                                {{ ($settings['openwa_enabled']->value ?? '1') === '1' ? 'checked' : '' }}>
+                            <label class="form-check-label fw-semibold" for="openwa_enabled">Enable WhatsApp Notifications</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background:#f0fdf4;border-radius:6px;padding:10px 14px;font-size:0.8rem;color:#166534;">
+                    <strong>Quick Setup:</strong>
+                    Clone OpenWA → <code>npm install &amp;&amp; npm start</code> → Scan QR with your WhatsApp →
+                    Enter URL above → Save → Test on <a href="{{ route('admin.whatsapp.templates') }}" style="color:#15803d;font-weight:600;">Templates page</a>.
+                </div>
+            </div>
+
             <div class="d-flex justify-end gap-2 mb-5">
                 <button type="submit" class="btn btn-primary" style="min-width: 200px;">
                     💾 Save All Settings
                 </button>
             </div>
+
+
         </div>
 
         <!-- Right 1 Col: Quick Info -->

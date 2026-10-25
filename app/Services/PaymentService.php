@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 class PaymentService
 {
+    public function __construct(private readonly WhatsappService $whatsapp) {}
+
     /**
      * Record a payment against a booking, update balances and generate/update invoice.
      */
@@ -67,6 +69,14 @@ class PaymentService
                     'type' => 'payment',
                     'action_url' => '/admin/bookings/'.$booking->id,
                 ]);
+
+                // WhatsApp: payment update
+                $this->whatsapp->sendEvent(
+                    'payment_update',
+                    $this->whatsapp->bookingVariables($booking->fresh()),
+                    $booking->customer?->phone ?? null,
+                    $booking
+                );
             }
 
             return $payment;

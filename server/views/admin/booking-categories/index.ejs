@@ -1,0 +1,126 @@
+<% let pageTitle = 'Booking Categories Configuration - Vaishnavi Tours'; %>
+<%- include('../../layouts/admin_header') %>
+
+
+
+
+
+
+<div class="d-flex justify-between align-center flex-wrap gap-2 mb-3">
+    <div>
+        <h1 style="font-size: 18px; font-weight: 700; margin: 0; color: var(--dark-900);">Configurable Booking Categories & Workflows</h1>
+        <p style="color: var(--slate-500); margin: 2px 0 0 0; font-size: 12.5px;">
+            Dynamic booking types supported across admin dispatch (ONE WAY, ROUND TRIP, LOCAL 4H/8H, AMBULANCE, CORPORATE, and custom categories).
+        </p>
+    </div>
+    <div class="d-flex align-center gap-2">
+        <button type="button" onclick="document.getElementById('addCategoryModal').style.display='flex'" class="btn btn-primary btn-sm">
+            + Add New Category
+        </button>
+    </div>
+</div>
+
+<% if (session('success')) { %>
+    <div class="alert alert-success mb-3" style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 0.75rem 1rem; border-radius: 6px;">
+        <%- icon('check-circle', { size: 14, class: 'me-1 inline' }) %> <%= session('success') %>
+    </div>
+<% } %>
+
+<div class="card" style="background: #fff; border: 1px solid var(--slate-200); border-radius: 8px;">
+    <div class="table-responsive">
+        <table class="data-table" style="width: 100%; font-size: 12.5px;">
+            <thead>
+                <tr>
+                    <th>Category Name</th>
+                    <th>Code / Identifier</th>
+                    <th>Description</th>
+                    <th>Category Mode</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if ((categories) && (Array.isArray(categories) ? (categories).length > 0 : Object.keys(categories).length > 0)) { (Array.isArray(categories) ? (categories) : Object.values(categories)).forEach((cat, _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>
+                    <tr>
+                        <td>
+                            <strong style="color: var(--dark-900); font-size: 13px;"><%= cat?.name %></strong>
+                        </td>
+                        <td>
+                            <code style="background: var(--slate-100); padding: 2px 6px; border-radius: 4px; font-weight: 700; color: #2563EB;">
+                                <%= cat?.code %>
+                            </code>
+                        </td>
+                        <td><%= cat?.description  ||  '-' %></td>
+                        <td>
+                            <span class="badge badge-secondary" style="font-size: 10.5px;">
+                                <%= cat?.is_custom ? 'Custom Category' : 'Core System' %>
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge <%= cat?.is_active ? 'badge-success' : 'badge-danger' %>">
+                                <%= cat?.is_active ? 'Active' : 'Inactive' %>
+                            </span>
+                        </td>
+                        <td style="text-align: right;">
+                            <% if (cat?.is_custom) { %>
+                                <form action="<%= (globalThis.routeHelper || route)('admin.booking-categories.destroy', cat?.id) %>" method="POST" onsubmit="return confirm('Delete this category?');" style="display: inline-block;">
+                                    <%- csrfField() %>
+                                    <input type="hidden" name="_method" value="DELETE">
+                                    <button type="submit" class="btn btn-outline btn-sm text-red-600 border-red-300" style="padding: 2px 6px; font-size: 11px;">
+                                        Delete
+                                    </button>
+                                </form>
+                            <% } else { %>
+                                <span style="font-size: 11px; color: var(--slate-400);">System Core</span>
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }); } else { %>
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 2.5rem; color: var(--slate-500);">
+                            No categories registered.
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: Add New Category (Requirement: Section 5) -->
+<div id="addCategoryModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; padding: 1rem;">
+    <div style="background: #fff; border-radius: 8px; width: 100%; max-width: 480px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <div class="d-flex justify-between align-center mb-3">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--dark-900);">Add New Booking Category</h3>
+            <button type="button" onclick="document.getElementById('addCategoryModal').style.display='none'" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);"><%- icon('x', { size: 18 }) %></button>
+        </div>
+        <form action="<%= (globalThis.routeHelper || route)('admin.booking-categories.store') %>" method="POST">
+            <%- csrfField() %>
+            <div class="mb-3">
+                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Category Name *</label>
+                <input type="text" name="name" class="form-control form-control-sm" placeholder="e.g. Wedding Escort, Luxury Van, Corporate Monthly" required>
+            </div>
+            <div class="mb-3">
+                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Category Code / Slug *</label>
+                <input type="text" name="code" class="form-control form-control-sm" placeholder="e.g. wedding_escort, luxury_van" required>
+            </div>
+            <div class="mb-3">
+                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Description & Notes</label>
+                <textarea name="description" class="form-control form-control-sm" rows="2" placeholder="Operational rules, vehicle types allowed..."></textarea>
+            </div>
+            <div class="mb-3">
+                <label style="font-size: 12px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="checkbox" name="is_active" value="1" checked>
+                    <span style="font-weight: 600;">Active & ready for admin dispatch</span>
+                </label>
+            </div>
+            <div class="d-flex justify-end gap-2">
+                <button type="button" onclick="document.getElementById('addCategoryModal').style.display='none'" class="btn btn-secondary btn-sm">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm">Create Category</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<%- include('../../layouts/admin_footer') %>

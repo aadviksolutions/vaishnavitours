@@ -1,0 +1,32 @@
+    </main>
+
+    <!-- Global Digits-Only Mobile Number Enforcer -->
+    <script>
+    (function() {
+        function isPhoneInput(el) {
+            if (!el || !el.tagName || el.tagName.toLowerCase() !== 'input') return false;
+            const type = (el.type || '').toLowerCase();
+            const name = (el.name || '').toLowerCase();
+            const id = (el.id || '').toLowerCase();
+            return type === 'tel' ||
+                   name === 'mobile' ||
+                   name === 'phone' ||
+                   name.includes('mobile') ||
+                   name.includes('phone') ||
+                   id === 'mobile' ||
+                   id === 'phone' ||
+                   el.classList.contains('phone-input');
+        }
+
+        document.addEventListener('input', function(e) {
+            if (isPhoneInput(e.target)) {
+                const clean = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+                if (e.target.value !== clean) {
+                    e.target.value = clean;
+                }
+            }
+        }, true);
+    })();
+    </script>
+</body>
+</html>

@@ -15,6 +15,7 @@ use App\Models\VehicleCategory;
 use App\Models\VehicleModel;
 use App\Services\BookingService;
 use App\Services\RateQuoteService;
+use App\Services\WhatsappService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -643,7 +644,16 @@ class PublicWebsiteController extends Controller
         ]);
 
         try {
-            Enquiry::create($data);
+            $enquiry = Enquiry::create($data);
+
+            // WhatsApp notification for website enquiry
+            $whatsapp = app(WhatsappService::class);
+            $whatsapp->sendEvent(
+                'new_enquiry',
+                $whatsapp->enquiryVariables($enquiry),
+                $data['phone'] ?? null,
+                $enquiry
+            );
         } catch (\Throwable $e) {
             report($e);
         }

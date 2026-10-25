@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= csrf_token() %>">
+
+    <!-- Page Title & Primary SEO Metadata -->
+    <title>@yield('title', config('seo.default_title'))</title>
+    <meta name="description" content="@yield('meta_description', config('seo.default_description'))">
+    <meta name="keywords" content="@yield('meta_keywords', config('seo.default_keywords'))">
+    <meta name="author" content="Vaishnavi Tours">
+    <meta name="robots" content="@yield('meta_robots', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1')">
+    <link rel="canonical" href="@yield('canonical', url()->current())">
+
+    <!-- Local SEO Geo Meta Tags (Bilaspur, Chhattisgarh) -->
+    <meta name="geo.region" content="IN-CT">
+    <meta name="geo.placename" content="Bilaspur, Chhattisgarh">
+    <meta name="geo.position" content="22.0797;82.1409">
+    <meta name="ICBM" content="22.0797, 82.1409">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:site_name" content="Vaishnavi Tours">
+    <meta property="og:locale" content="en_IN">
+    <meta property="og:title" content="@yield('og_title', trim($__env->yieldContent('title', config('seo.default_title'))))">
+    <meta property="og:description" content="@yield('og_description', trim($__env->yieldContent('meta_description', config('seo.default_description'))))">
+    <meta property="og:url" content="@yield('canonical', url()->current())">
+    <meta property="og:image" content="@yield('og_image', asset(config('seo.default_image')))">
+    <meta property="og:image:alt" content="Vaishnavi Tours Taxi & Cab Service Bilaspur">
+
+    <!-- Twitter / X Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('twitter_title', trim($__env->yieldContent('title', config('seo.default_title'))))">
+    <meta name="twitter:description" content="@yield('twitter_description', trim($__env->yieldContent('meta_description', config('seo.default_description'))))">
+    <meta name="twitter:image" content="@yield('twitter_image', trim($__env->yieldContent('og_image', asset(config('seo.default_image')))))">
+
+    <!-- Favicon & App Icons -->
+    <link rel="stylesheet" href="<%= asset('css/style.css') %>">
+    <link rel="icon" type="image/png" href="<%= asset('favicon.png') %>">
+    <link rel="apple-touch-icon" href="<%= asset('favicon.png') %>">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
+
+    <!-- Rich Schema.org Structured Data: TaxiService LocalBusiness & WebSite -->
+    <script type="application/ld+json">
+    <%- json_encode({
+        '@context' : 'https://schema.org',
+        '@graph' : [
+            {
+                '@type' : 'TaxiService',
+                '@id' : config('app.url') + '/#taxiservice',
+                'name' : config('vaishnavi.business_name'),
+                'description' : 'Premier 24/7 taxi and cab service in Bilaspur, Chhattisgarh. Providing verified chauffeur-driven local cabs, outstation travel, and airport transfers + ',
+                'url' : config('app.url'),
+                'telephone' : config('vaishnavi.phone_primary_tel'),
+                'priceRange' : '₹₹',
+                'currenciesAccepted' : 'INR',
+                'paymentAccepted' : 'Cash, UPI, Credit Card, Debit Card, Net Banking',
+                'logo' : {
+                    '@type' : 'ImageObject',
+                    'url' : asset('assets/branding/vaishnavi-tours-logo.png'),
+                },
+                'image' : asset('assets/images/hero-taxi.jpg'),
+                'address' : {
+                    '@type' : 'PostalAddress',
+                    'streetAddress' : config('vaishnavi.address'),
+                    'addressLocality' : config('vaishnavi.city'),
+                    'addressRegion' : config('vaishnavi.state'),
+                    'postalCode' : config('vaishnavi.pincode'),
+                    'addressCountry' : 'IN',
+                },
+                'geo' : {
+                    '@type' : 'GeoCoordinates',
+                    'latitude' : 22.0797,
+                    'longitude' : 82.1409,
+                },
+                'openingHoursSpecification' : [
+                    {
+                        '@type' : 'OpeningHoursSpecification',
+                        'dayOfWeek' : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+                        'opens' : '00:00',
+                        'closes' : '23:59',
+                    },
+                ],
+                'areaServed' : array_map(function (area) {
+                    return {
+                        '@type' : 'City',
+                        'name' : area,
+                    };
+                }, config('seo.service_areas', ['Bilaspur', 'Raipur', 'Korba', 'Ambikapur'])),
+                'sameAs' : [
+                    config('vaishnavi.whatsapp_link'),
+                ],
+            },
+            {
+                '@type' : 'WebSite',
+                '@id' : config('app.url') + '/#website',
+                'url' : config('app.url'),
+                'name' : config('vaishnavi.business_name'),
+                'description' : config('seo.default_description'),
+                'publisher' : {
+                    '@id' : config('app.url') + '/#taxiservice',
+                },
+                'inLanguage' : 'en-IN',
+            },
+        ],
+    }) %>
+    </script>
+    @stack('schema')
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="container top-bar-inner">
+            <!-- Desktop Top Bar Content -->
+            <div class="top-bar-desktop d-flex align-center justify-between flex-wrap gap-1">
+                <div class="d-flex align-center gap-2 flex-wrap">
+                    <span style="color: #F1F5F9; font-weight: 500; display: inline-flex; align-items: center;"><%- icon('map-pin', { size: 14, class: '', style: 'color: #F59E0B; margin-right: 5px; flex-shrink: 0;' }) %> <%= config('vaishnavi.address') %></span>
+                    <a href="<%= Setting.get('google_maps_url', config('vaishnavi.google_maps_url')) %>" target="_blank" rel="noopener noreferrer" class="google-reviews-badge" style="color: #202124 !important; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; background: #FFFFFF !important; padding: 3px 8px; border-radius: 4px; border: 1px solid #CBD5E1;" title="Verified Google Business Profile">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+                        </svg>
+                        <span style="color: #202124 !important; font-weight: 700; display: inline-flex; align-items: center; gap: 3px;">4.9 <%- icon('star-filled', { size: 12, style: 'color: #F59E0B;' }) %> Google Reviews</span>
+                    </a>
+                    <span style="display: inline-flex; align-items: center;"><%- icon('phone', { size: 14, class: '', style: 'color: #F59E0B; margin-right: 5px; flex-shrink: 0;' }) %><a href="tel:<%= config('vaishnavi.phone_primary_tel') %>" style="color: #FFFFFF; font-weight: 700; text-decoration: none;"><%= config('vaishnavi.phone_primary') %></a></span>
+                </div>
+                <div class="d-flex align-center gap-2 flex-wrap">
+                    <a href="<%= (globalThis.routeHelper || route)('contact') %>#emergency" class="top-badge-emergency">
+                        <%- icon('life-buoy', { size: 14, class: '', style: 'margin-right: 4px;' }) %> 24/7 Road Assistance & Emergency
+                    </a>
+                    <% if (isAuthenticated) { %>
+                        <% if (Auth.user()?.isAdmin()) { %>
+                            <a href="<%= (globalThis.routeHelper || route)('admin.dashboard') %>" class="top-bar-auth-link" style="color: #F59E0B !important; font-weight: 700; text-decoration: none;">
+                                <%- icon('settings', { size: 14, class: '', style: 'color: #F59E0B; margin-right: 3px;' }) %> Admin Panel
+                            </a>
+                        <% } else { %>
+                            <a href="<%= (globalThis.routeHelper || route)('customer.dashboard') %>" class="top-bar-auth-link" style="color: #F59E0B !important; font-weight: 700; text-decoration: none;">
+                                <%- icon('user', { size: 14, class: '', style: 'color: #F59E0B; margin-right: 3px;' }) %> My Account
+                            </a>
+                        <% } %>
+                        <span style="color: #475569; margin: 0 2px;">|</span>
+                        <form action="<%= (globalThis.routeHelper || route)('logout') %>" method="POST" style="display: inline;">
+                            <%- csrfField() %>
+                            <button type="submit" class="top-bar-logout-btn" style="background: none; border: none; color: #CBD5E1; cursor: pointer; font-size: 11.5px; font-weight: 600; padding: 0;">Logout</button>
+                        </form>
+                    <% } else { %>
+                        <a href="<%= (globalThis.routeHelper || route)('login') %>" style="color: #E2E8F0; font-weight: 600;">Login</a>
+                        <span style="color: #475569; margin: 0 2px;">|</span>
+                        <a href="<%= (globalThis.routeHelper || route)('register') %>" style="color: #E2E8F0; font-weight: 600;">Register</a>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Mobile Top Bar Content (Compact, no horizontal scroll, verified numbers 9244784443) -->
+            <div class="top-bar-mobile">
+                <a href="tel:<%= config('vaishnavi.phone_primary_tel') %>" class="top-bar-mobile-call">
+                    <%- icon('phone', { size: 13, class: '', style: 'color: #F59E0B; margin-right: 4px;' }) %>
+                    <span>Call: <strong><%= config('vaishnavi.phone_primary') %></strong></span>
+                </a>
+                <a href="<%= (globalThis.routeHelper || route)('contact') %>#emergency" class="top-badge-emergency" style="font-size: 0.72rem; padding: 2px 7px;">
+                    <%- icon('life-buoy', { size: 12, class: '', style: 'margin-right: 3px;' }) %> 24/7 Support
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Navbar -->
+    <nav class="navbar">
+        <div class="container nav-wrapper">
+            <a href="<%= (globalThis.routeHelper || route)('home') %>" class="logo">
+                <div class="brand-logo-badge">
+                    <img src="<%= asset('assets/branding/vaishnavi-tours-logo.png') %>" alt="Vaishnavi Tours Logo">
+                </div>
+                <div>
+                    <div class="logo-brand">Vaishnavi <span>Tours</span></div>
+                    <div class="logo-sub">24/7 Cabs & Car Rentals</div>
+                </div>
+            </a>
+
+            <!-- Mobile Toggle Button -->
+            <button class="mobile-nav-toggle" id="mobile-nav-btn" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mobile-nav-drawer" type="button">
+                <svg width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+
+            <!-- Nav Links (Desktop) -->
+            <div class="nav-links" id="nav-links-menu">
+                <a href="<%= (globalThis.routeHelper || route)('home') %>" class="nav-link <%= request()?.routeIs('home') ? 'active' : '' %>">Home</a>
+                <a href="<%= (globalThis.routeHelper || route)('services') %>" class="nav-link <%= request()?.routeIs('services*') ? 'active' : '' %>">Services</a>
+                <a href="<%= (globalThis.routeHelper || route)('ambulance-services') %>" class="nav-link <%= request()?.routeIs('ambulance-services') ? 'active' : '' %>">Ambulance Services</a>
+                <a href="<%= (globalThis.routeHelper || route)('rates') %>" class="nav-link <%= request()?.routeIs('rates') ? 'active' : '' %>">Rates</a>
+                <a href="<%= (globalThis.routeHelper || route)('vehicles') %>" class="nav-link <%= request()?.routeIs('vehicles') ? 'active' : '' %>">Vehicles</a>
+                <a href="<%= (globalThis.routeHelper || route)('service-network') %>" class="nav-link <%= request()?.routeIs('service-network') || request()?.routeIs('network') ? 'active' : '' %>">Service Network</a>
+                <a href="<%= (globalThis.routeHelper || route)('about') %>" class="nav-link <%= request()?.routeIs('about') ? 'active' : '' %>">About</a>
+                <a href="<%= (globalThis.routeHelper || route)('contact') %>" class="nav-link <%= request()?.routeIs('contact') ? 'active' : '' %>">Contact</a>
+                <% if (isAuthenticated) { %>
+                    <% if (Auth.user()?.isAdmin()) { %>
+                        <a href="<%= (globalThis.routeHelper || route)('admin.dashboard') %>" class="nav-link" style="color: #D97706; font-weight: 700;">Admin Panel</a>
+                    <% } else { %>
+                        <a href="<%= (globalThis.routeHelper || route)('customer.dashboard') %>" class="nav-link" style="color: #D97706; font-weight: 700;">My Account</a>
+                    <% } %>
+                <% } else { %>
+                    <a href="<%= (globalThis.routeHelper || route)('login') %>" class="nav-link <%= request()?.routeIs('login') ? 'active' : '' %>">Login</a>
+                <% } %>
+
+                <div class="nav-actions d-flex align-center gap-2">
+                    <a href="tel:<%= config('vaishnavi.phone_primary_tel') %>" class="btn btn-outline btn-sm" style="color: var(--dark-950); font-weight: 700; border-color: var(--primary); text-decoration: none;">
+                        <%- icon('phone', { size: 15, class: '', style: 'margin-right: 6px;' }) %> <%= config('vaishnavi.phone_primary') %>
+                    </a>
+                    <a href="<%= (globalThis.routeHelper || route)('booking') %>" class="btn btn-primary btn-sm"><%- icon('car-front', { size: 15, class: '', style: 'margin-right: 6px;' }) %> Book Taxi</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation Backdrop Overlay -->
+    <div class="mobile-nav-backdrop" id="mobile-nav-backdrop" aria-hidden="true"></div>
+
+    <!-- Mobile Navigation Drawer (Opens from RIGHT) -->
+    <aside class="mobile-nav-drawer" id="mobile-nav-drawer" aria-label="Mobile Navigation" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="mobile-drawer-header">
+            <a href="<%= (globalThis.routeHelper || route)('home') %>" class="logo d-flex align-center gap-2">
+                <div class="brand-logo-badge" style="width: 38px; height: 38px;">
+                    <img src="<%= asset('assets/branding/vaishnavi-tours-logo.png') %>" alt="Vaishnavi Tours Logo">
+                </div>
+                <div>
+                    <div class="logo-brand" style="font-size: 1.15rem; color: #172033;">Vaishnavi <span>Tours</span></div>
+                    <div class="logo-sub" style="font-size: 0.68rem; color: #4B5563;">24/7 Cabs & Car Rentals</div>
+                </div>
+            </a>
+            <button class="mobile-drawer-close" id="mobile-drawer-close-btn" aria-label="Close navigation" type="button">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+
+        <div class="mobile-drawer-body">
+            <nav class="mobile-drawer-nav">
+                <a href="<%= (globalThis.routeHelper || route)('home') %>" class="mobile-nav-link <%= request()?.routeIs('home') ? 'active' : '' %>">Home</a>
+                <a href="<%= (globalThis.routeHelper || route)('services') %>" class="mobile-nav-link <%= request()?.routeIs('services*') ? 'active' : '' %>">Services</a>
+                <a href="<%= (globalThis.routeHelper || route)('ambulance-services') %>" class="mobile-nav-link <%= request()?.routeIs('ambulance-services') ? 'active' : '' %>">Ambulance Services</a>
+                <a href="<%= (globalThis.routeHelper || route)('rates') %>" class="mobile-nav-link <%= request()?.routeIs('rates') ? 'active' : '' %>">Rates</a>
+                <a href="<%= (globalThis.routeHelper || route)('vehicles') %>" class="mobile-nav-link <%= request()?.routeIs('vehicles') ? 'active' : '' %>">Vehicles</a>
+                <a href="<%= (globalThis.routeHelper || route)('service-network') %>" class="mobile-nav-link <%= request()?.routeIs('service-network') || request()?.routeIs('network') ? 'active' : '' %>">Service Network</a>
+                <a href="<%= (globalThis.routeHelper || route)('about') %>" class="mobile-nav-link <%= request()?.routeIs('about') ? 'active' : '' %>">About</a>
+                <a href="<%= (globalThis.routeHelper || route)('contact') %>" class="mobile-nav-link <%= request()?.routeIs('contact') ? 'active' : '' %>">Contact</a>
+                <% if (isAuthenticated) { %>
+                    <% if (Auth.user()?.isAdmin()) { %>
+                        <a href="<%= (globalThis.routeHelper || route)('admin.dashboard') %>" class="mobile-nav-link" style="color: #D97706; font-weight: 700;">Admin Panel</a>
+                    <% } else { %>
+                        <a href="<%= (globalThis.routeHelper || route)('customer.dashboard') %>" class="mobile-nav-link" style="color: #D97706; font-weight: 700;">My Account</a>
+                    <% } %>
+                <% } else { %>
+                    <a href="<%= (globalThis.routeHelper || route)('login') %>" class="mobile-nav-link <%= request()?.routeIs('login') ? 'active' : '' %>">Login</a>
+                <% } %>
+            </nav>
+
+            <div class="mobile-drawer-actions">
+                <a href="<%= (globalThis.routeHelper || route)('booking') %>" class="btn btn-primary" style="width: 100%; justify-content: center; min-height: 46px; font-weight: 800;">
+                    <%- icon('car-front', { size: 18, class: '', style: 'margin-right: 6px;' }) %> BOOK A TAXI
+                </a>
+                <a href="tel:<%= config('vaishnavi.phone_primary_tel') %>" class="btn btn-outline" style="width: 100%; justify-content: center; min-height: 44px; color: var(--dark-950); font-weight: 700; border-color: var(--primary); text-decoration: none;">
+                    <%- icon('phone', { size: 16, class: '', style: 'margin-right: 6px;' }) %> Call <%= config('vaishnavi.phone_primary') %>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Flash Alerts -->
+    <div class="container" style="margin-top: 1rem;">
+        <% if (session('success')) { %>
+            <div class="alert alert-success"><%- icon('circle-check', { size: 18, class: '', style: 'margin-right: 6px;' }) %> <%= session('success') %></div>
+        <% } %>
+        <% if (session('error')) { %>
+            <div class="alert alert-danger"><%- icon('alert-triangle', { size: 18, class: '', style: 'margin-right: 6px;' }) %> <%= session('error') %></div>
+        <% } %>
+        <% if (session('info')) { %>
+            <div class="alert alert-info"><%- icon('info', { size: 18, class: '', style: 'margin-right: 6px;' }) %> <%= session('info') %></div>
+        <% } %>
+    </div>
+
+    <!-- Main Content -->
+    <main>
+        @yield('content')
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="grid grid-4 gap-3">
+                <!-- Col 1 -->
+                <div>
+                    <div class="d-flex align-center gap-2" style="margin-bottom: 0.75rem;">
+                        <div class="brand-logo-badge" style="width: 34px; height: 34px; border-radius: 6px;">
+                            <img src="<%= asset('assets/branding/vaishnavi-tours-logo.png') %>" alt="Vaishnavi Tours Logo">
+                        </div>
+                        <div style="font-family: var(--font-heading); font-weight: 700; font-size: 15px; color: #fff;">Vaishnavi <span style="color: var(--accent);">Tours</span></div>
+                    </div>
+                    <p style="font-size: 12.5px; margin-bottom: 0.75rem; color: var(--slate-400); line-height: 1.5;">
+                        Chhattisgarh's premier chauffeur-driven taxi service. Reliable outstation cabs, hourly rentals, airport transfers, and 24/7 road emergency dispatch.
+                    </p>
+                    <div style="font-size: 12px; color: var(--slate-300); margin-bottom: 0.35rem;">
+                        <strong>Location:</strong> <%= config('vaishnavi.address') %>
+                    </div>
+                    <div style="margin-bottom: 0.875rem;">
+                        <a href="<%= Setting.get('google_maps_url', config('vaishnavi.google_maps_url')) %>" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; color: #93C5FD; text-decoration: none; font-weight: 600;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+                            </svg>
+                            <span style="display: inline-flex; align-items: center; gap: 3px;"><%= Setting.get('google_rating', config('vaishnavi.google_rating', '4.9')) %> <%- icon('star-filled', { size: 12, style: 'color: #F59E0B;' }) %> Google Rating (<%= Setting.get('google_review_count', config('vaishnavi.google_review_count', '160+')) %>)</span>
+                        </a>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <a href="<%= config('vaishnavi.whatsapp_link') %>" target="_blank" class="social-link-btn social-wa" aria-label="WhatsApp" title="WhatsApp">
+                            <%- icon('whatsapp', { size: 15, class: '' }) %>
+                        </a>
+                        <a href="https://instagram.com" target="_blank" class="social-link-btn" aria-label="Instagram" title="Instagram">
+                            <%- icon('instagram', { size: 15, class: '' }) %>
+                        </a>
+                        <a href="https://facebook.com" target="_blank" class="social-link-btn" aria-label="Facebook" title="Facebook">
+                            <%- icon('facebook', { size: 15, class: '' }) %>
+                        </a>
+                        <a href="https://youtube.com" target="_blank" class="social-link-btn" aria-label="YouTube" title="YouTube">
+                            <%- icon('youtube', { size: 15, class: '' }) %>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Col 2 -->
+                <div>
+                    <h4 class="footer-title">Our Services</h4>
+                    <ul class="footer-links">
+                        <li><a href="<%= (globalThis.routeHelper || route)('services.local-taxi') %>">Local Taxi Service Bilaspur</a></li>
+                        <li><a href="<%= (globalThis.routeHelper || route)('services.outstation-taxi') %>">Outstation Cabs from Bilaspur</a></li>
+                        <li><a href="<%= (globalThis.routeHelper || route)('services.airport-transfer') %>">Raipur & Bilaspur Airport Transfer</a></li>
+                        <li><a href="<%= (globalThis.routeHelper || route)('services') %>#oneway">One-Way Intercity Cabs</a></li>
+                        <li><a href="<%= (globalThis.routeHelper || route)('services') %>#corporate">Corporate & Event Car Rental</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3 -->
+                <div>
+                    <h4 class="footer-title">Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="<%= (globalThis.routeHelper || route)('vehicles') %>">Vehicle Fleet & Tariffs</a></li>
+                        <li><a href="<%= (globalThis.routeHelper || route)('rates') %>">Transparent Rate Card</a></li>
+                        <li><a href="<%= (globalThis.routeHelper || route)('network') %>">Chhattisgarh Route Network</a></li>
+                        <li><a href="<%= (globalThis.routeHelper || route)('about') %>">About Company</a></li>
+                        <li><a href="<%= (globalThis.routeHelper || route)('feedback') %>">Customer Testimonials</a></li>
+                        <li><a href="<%= Setting.get('google_all_reviews_url', config('vaishnavi.google_all_reviews_url')) %>" target="_blank" rel="noopener noreferrer">Google Reviews &amp; Rating</a></li>
+                        <li><a href="<%= (globalThis.routeHelper || route)('enquiry') %>">Corporate & Group Booking</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 4 -->
+                <div>
+                    <h4 class="footer-title">Head Office</h4>
+                    <p style="font-size: 12.5px; margin-bottom: 0.5rem; color: var(--slate-300); line-height: 1.4;">
+                        <%= config('vaishnavi.business_name') %><br>
+                        <%= config('vaishnavi.address') %>
+                    </p>
+                    <p style="font-size: 12px; margin-bottom: 0.35rem;">
+                        <span style="color: var(--slate-400);">Call Us:</span><br>
+                        <a href="tel:<%= config('vaishnavi.phone_primary_tel') %>" style="color: #38BDF8; font-weight: 600;"><%= config('vaishnavi.phone_primary') %></a><br>
+                        <a href="tel:<%= config('vaishnavi.phone_secondary_tel') %>" style="color: #38BDF8; font-weight: 600;"><%= config('vaishnavi.phone_secondary') %></a>
+                    </p>
+                    <p style="font-size: 12px; margin-bottom: 0.35rem;">
+                        <span style="color: var(--slate-400);">WhatsApp:</span><br>
+                        <a href="<%= config('vaishnavi.whatsapp_link') %>" target="_blank" style="color: #25D366; font-weight: 600; text-decoration: none;"><%- icon('whatsapp', { size: 14, class: '' }) %> <%= config('vaishnavi.whatsapp') %></a>
+                    </p>
+                    <p style="font-size: 12px;">
+                        <span style="color: var(--slate-400);">Email:</span><br>
+                        <a href="mailto:<%= config('vaishnavi.contact_email') %>"><%= config('vaishnavi.contact_email') %></a>
+                    </p>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div>
+                    © <%= date('Y') %> Vaishnavi Tours. All rights reserved. Registered Taxi Operator, Bilaspur (C.G.).
+                </div>
+                <div class="d-flex gap-2 flex-wrap align-center">
+                    <a href="<%= (globalThis.routeHelper || route)('terms-and-conditions') %>">Terms & Conditions</a>
+                    <span>•</span>
+                    <a href="<%= (globalThis.routeHelper || route)('terms-and-conditions') %>#privacy-policy">Privacy Policy</a>
+                    <span>•</span>
+                    <a href="<%= (globalThis.routeHelper || route)('cancellation-refund-policy') %>">Cancellation Policy</a>
+                    <span>•</span>
+                    <a href="<%= (globalThis.routeHelper || route)('contact') %>">Support</a>
+                    <span>•</span>
+                    <a href="<%= (globalThis.routeHelper || route)('login') %>">Driver & Staff Portal</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Global Digits-Only Mobile Number Enforcer -->
+    <script>
+    (function() {
+        function isPhoneInput(el) {
+            if (!el || !el.tagName || el.tagName.toLowerCase() !== 'input') return false;
+            const type = (el.type || '').toLowerCase();
+            const name = (el.name || '').toLowerCase();
+            const id = (el.id || '').toLowerCase();
+            return type === 'tel' ||
+                   name === 'mobile' ||
+                   name === 'phone' ||
+                   name.includes('mobile') ||
+                   name.includes('phone') ||
+                   id === 'mobile' ||
+                   id === 'phone' ||
+                   el.classList.contains('phone-input');
+        }
+
+        document.addEventListener('input', function(e) {
+            if (isPhoneInput(e.target)) {
+                const clean = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+                if (e.target.value !== clean) {
+                    e.target.value = clean;
+                }
+            }
+        }, true);
+
+        document.addEventListener('keypress', function(e) {
+            if (isPhoneInput(e.target)) {
+                if (e.ctrlKey || e.metaKey || e.altKey) return;
+                if (e.key && e.key.length === 1 && !/[0-9]/.test(e.key)) {
+                    e.preventDefault();
+                    return false;
+                }
+                if (e.target.value.length >= 10 && e.target.selectionStart === e.target.selectionEnd) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        }, true);
+
+        document.addEventListener('paste', function(e) {
+            if (isPhoneInput(e.target)) {
+                setTimeout(function() {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+                }, 10);
+            }
+        }, true);
+    })();
+    </script>
+    @stack('scripts')
+    <!-- Floating WhatsApp Action (Compact) -->
+    <a href="<%= config('vaishnavi.whatsapp_link') %>" target="_blank" class="floating-whatsapp-btn" style="position: fixed; bottom: 20px; right: 20px; z-index: 999; background: #25D366; color: #ffffff; padding: 7px 13px; border-radius: 20px; font-weight: 600; font-size: 12px; display: flex; align-items: center; gap: 6px; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15); text-decoration: none; transition: transform 0.15s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+        <%- icon('whatsapp', { size: 16, class: '' }) %>
+        <span>Chat on WhatsApp</span>
+    </a>
+</body>
+</html>

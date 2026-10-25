@@ -98,9 +98,13 @@
             <a href="{{ route('admin.feedback.index') }}" class="admin-nav-item {{ request()->routeIs('admin.feedback.*') ? 'active' : '' }}">
                 <x-icon name="star" size="15" /> Customer Reviews
             </a>
+            <a href="{{ route('admin.whatsapp.scan') }}" class="admin-nav-item {{ request()->routeIs('admin.whatsapp.*') ? 'active' : '' }}">
+                📱 WhatsApp & QR Scan
+            </a>
             <a href="{{ route('admin.settings.index') }}" class="admin-nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
                 <x-icon name="settings" size="15" /> Company Settings
             </a>
+
         </nav>
 
         <div style="padding: 0.75rem 1rem; border-top: 1px solid rgba(255,255,255,0.06); font-size: 12px;">

@@ -21,7 +21,10 @@ use Illuminate\Validation\ValidationException;
 
 class BookingService
 {
-    public function __construct(private readonly RateQuoteService $rateQuoteService) {}
+    public function __construct(
+        private readonly RateQuoteService $rateQuoteService,
+        private readonly WhatsappService $whatsapp
+    ) {}
 
     /**
      * Generate standard sequential booking ID with strict category prefix.
@@ -496,6 +499,14 @@ class BookingService
                     'type' => 'booking',
                     'action_url' => '/customer/bookings/'.$booking->id,
                 ]);
+
+                // WhatsApp notification: new booking
+                $this->whatsapp->sendEvent(
+                    'new_booking',
+                    $this->whatsapp->bookingVariables($booking),
+                    $user->phone ?? null,
+                    $booking
+                );
             }
 
             return $booking;
@@ -603,6 +614,22 @@ class BookingService
                 'action_url' => '/customer/bookings/'.$booking->id,
             ]);
 
+            // WhatsApp notifications based on new status
+            $waVars = $this->whatsapp->bookingVariables($booking);
+            $customerPhone = $this->whatsapp->getCustomerPhone($booking);
+
+            $waEvent = match ($newStatus) {
+                'Confirmed' => 'booking_confirmed',
+                'Trip Started', 'On The Way' => 'trip_started',
+                'Completed' => 'trip_completed',
+                'Cancelled' => 'booking_cancelled',
+                default => null,
+            };
+
+            if ($waEvent) {
+                $this->whatsapp->sendEvent($waEvent, $waVars, $customerPhone, $booking);
+            }
+
             return $booking;
         });
     }
@@ -699,6 +726,14 @@ class BookingService
                 'type' => 'trip',
                 'action_url' => '/customer/bookings/'.$booking->id,
             ]);
+
+            // WhatsApp: vehicle assigned
+            $this->whatsapp->sendEvent(
+                'vehicle_assigned',
+                $this->whatsapp->bookingVariables($booking->fresh()),
+                $this->whatsapp->getCustomerPhone($booking),
+                $booking
+            );
 
             return $booking;
         });
@@ -804,6 +839,14 @@ class BookingService
                 'action_url' => '/customer/bookings/'.$booking->id,
             ]);
 
+            // WhatsApp: driver assigned
+            $this->whatsapp->sendEvent(
+                'driver_assigned',
+                $this->whatsapp->bookingVariables($booking->fresh()),
+                $this->whatsapp->getCustomerPhone($booking),
+                $booking
+            );
+
             return $booking;
         });
     }
@@ -858,6 +901,14 @@ class BookingService
                 'type' => 'booking',
                 'action_url' => '/customer/bookings/'.$booking->id,
             ]);
+
+            // WhatsApp: booking cancelled
+            $this->whatsapp->sendEvent(
+                'booking_cancelled',
+                $this->whatsapp->bookingVariables($booking->fresh()),
+                $this->whatsapp->getCustomerPhone($booking),
+                $booking
+            );
 
             return $booking;
         });

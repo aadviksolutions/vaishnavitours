@@ -1,0 +1,110 @@
+<% let pageTitle = 'Tour Packages Management - Vaishnavi Tours'; %>
+<%- include('../../layouts/admin_header') %>
+
+
+
+
+
+
+<div class="d-flex justify-between align-center flex-wrap gap-2 mb-3">
+    <div>
+        <h1 style="font-size: 18px; font-weight: 700; margin: 0; color: var(--dark-900);">Tour Packages & Sightseeing Circuits</h1>
+        <p style="color: var(--slate-500); margin: 2px 0 0 0; font-size: 12.5px;">
+            Configure multi-day circuits, terms, and custom quotation routes. Automatic round-trip fares are not shown to customers.
+        </p>
+    </div>
+    <div class="d-flex align-center gap-2">
+        <a href="<%= (globalThis.routeHelper || route)('tour-packages') %>" target="_blank" class="btn btn-outline btn-sm">
+            View Public Page ↗
+        </a>
+        <a href="<%= (globalThis.routeHelper || route)('admin.tour-packages.create') %>" class="btn btn-primary btn-sm">
+            + Add Tour Package
+        </a>
+    </div>
+</div>
+
+<% if (session('success')) { %>
+    <div class="alert alert-success mb-3" style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 0.75rem 1rem; border-radius: 6px;">
+        <%- icon('check-circle', { size: 14, class: 'me-1 inline' }) %> <%= session('success') %>
+    </div>
+<% } %>
+
+<div class="card" style="background: #fff; border: 1px solid var(--slate-200); border-radius: 8px;">
+    <div class="table-responsive">
+        <table class="data-table" style="width: 100%; font-size: 12.5px;">
+            <thead>
+                <tr>
+                    <th>Package Name</th>
+                    <th>Route / Circuit</th>
+                    <th>Duration</th>
+                    <th>Base Price (₹)</th>
+                    <th>Destinations</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if ((packages) && (Array.isArray(packages) ? (packages).length > 0 : Object.keys(packages).length > 0)) { (Array.isArray(packages) ? (packages) : Object.values(packages)).forEach((pkg, _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>
+                    <tr>
+                        <td>
+                            <strong style="color: var(--dark-900); font-size: 13px;"><%= pkg?.name %></strong>
+                            <div style="font-size: 11px; color: var(--slate-500);"><%= Str.limit(pkg?.description, 60) %></div>
+                        </td>
+                        <td>
+                            <span style="color: #2563EB; font-weight: 600;"><%= pkg?.route_summary  ||  'Custom Route' %></span>
+                        </td>
+                        <td>
+                            <span class="badge badge-secondary"><%= pkg?.duration_days %> <%= Str.plural('Day', pkg?.duration_days) %></span>
+                        </td>
+                        <td>
+                            <% if (pkg?.base_price > 0) { %>
+                                <strong>₹<%= number_format(pkg?.base_price, 2) %></strong>
+                            <% } else { %>
+                                <span style="color: var(--slate-400);">Quote upon request</span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <% if (!empty(pkg?.destinations)) { %>
+                                <span style="font-size: 11.5px;"><%= implode(', ', array_slice(pkg?.destinations, 0, 3)) %></span>
+                            <% } else { %>
+                                -
+                            <% } %>
+                        </td>
+                        <td>
+                            <span class="badge <%= pkg?.is_active ? 'badge-success' : 'badge-danger' %>">
+                                <%= pkg?.is_active ? 'Active' : 'Inactive' %>
+                            </span>
+                        </td>
+                        <td style="text-align: right; white-space: nowrap;">
+                            <a href="<%= (globalThis.routeHelper || route)('admin.tour-packages.edit', pkg?.id) %>" class="btn btn-outline btn-sm" style="padding: 2px 7px; font-size: 11px;">
+                                Edit
+                            </a>
+                            <form action="<%= (globalThis.routeHelper || route)('admin.tour-packages.destroy', pkg?.id) %>" method="POST" onsubmit="return confirm('Delete this package?');" style="display: inline-block;">
+                                <%- csrfField() %>
+                                <input type="hidden" name="_method" value="DELETE">
+                                <button type="submit" class="btn btn-outline btn-sm text-red-600 border-red-300" style="padding: 2px 6px; font-size: 11px;">
+                                    Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                <% }); } else { %>
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--slate-500);">
+                            No tour packages configured yet.
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+
+    <% if (packages?.hasPages()) { %>
+        <div style="padding: 0.75rem 1rem; border-top: 1px solid var(--slate-200);">
+            <%= packages?.links() %>
+        </div>
+    <% } %>
+</div>
+
+
+<%- include('../../layouts/admin_footer') %>

@@ -52,8 +52,51 @@
             @method('DELETE')
             <button type="submit" class="btn btn-danger btn-sm"><x-icon name="trash-2" size="14" style="margin-right: 4px;" /> Delete</button>
         </form>
+
+        <!-- WhatsApp Direct Message -->
+        <button type="button" class="btn btn-sm"
+            style="background:#25D366;color:#fff;border:none;"
+            onclick="document.getElementById('wa-direct-modal').style.display='flex'">
+            📱 WhatsApp
+        </button>
     </div>
 </div>
+
+{{-- WhatsApp Direct Message Modal --}}
+<div id="wa-direct-modal"
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;padding:24px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5 style="font-weight:800;margin:0;">📱 Send WhatsApp to Customer</h5>
+            <button onclick="document.getElementById('wa-direct-modal').style.display='none'"
+                style="background:none;border:none;font-size:1.2rem;cursor:pointer;">✕</button>
+        </div>
+        <p style="font-size:0.83rem;color:var(--slate-500);margin-bottom:12px;">
+            Booking: <strong>{{ $booking->booking_id }}</strong> |
+            Customer: <strong>{{ $booking->customer?->name }}</strong>
+        </p>
+        <form method="POST" action="{{ route('admin.whatsapp.send-to-booking', $booking->id) }}">
+            @csrf
+            <div class="form-group mb-3">
+                <label class="form-label fw-semibold">Message</label>
+                <textarea name="message" class="form-control" rows="6" required
+                    placeholder="Type your WhatsApp message to the customer...">Hello *{{ $booking->customer?->name }}*,
+
+Regarding your booking *{{ $booking->booking_id }}* from {{ $booking->pickup_location }} to {{ $booking->destination }} on {{ \Carbon\Carbon::parse($booking->travel_date)->format('d M Y') }}.
+
+</textarea>
+            </div>
+            <div class="d-flex gap-2 justify-content-end">
+                <button type="button" class="btn btn-secondary btn-sm"
+                    onclick="document.getElementById('wa-direct-modal').style.display='none'">Cancel</button>
+                <button type="submit" class="btn btn-sm" style="background:#25D366;color:#fff;border:none;">
+                    📤 Send WhatsApp
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 
 @if(session('success'))
     <div class="alert alert-success mb-3">

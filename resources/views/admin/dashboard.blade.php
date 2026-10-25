@@ -475,11 +475,18 @@
 <!-- Revenue Trends & Financial Tracking -->
 <div class="grid grid-2 gap-2 mb-3">
     <!-- Chart: 6 Months Revenue -->
-    <div class="card" style="background: #fff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 1rem;">
-        <h4 style="font-size: 13.5px; font-weight: 700; margin: 0 0 0.75rem 0; color: var(--dark-900); display: flex; align-items: center; gap: 6px;">
-            <x-icon name="trending-up" size="15" class="text-blue-600" /> Revenue Collection Trend (Last 6 Months)
-        </h4>
-        <canvas id="revenueChart" height="150"></canvas>
+    <div class="card" style="background: #fff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 1rem; display: flex; flex-direction: column;">
+        <div class="d-flex justify-between align-center mb-2">
+            <h4 style="font-size: 13.5px; font-weight: 700; margin: 0; color: var(--dark-900); display: flex; align-items: center; gap: 6px;">
+                <x-icon name="trending-up" size="15" class="text-blue-600" /> Revenue Collection Trend (Last 6 Months)
+            </h4>
+            <span class="badge" style="background: #EFF6FF; color: #1D4ED8; font-weight: 700; font-size: 11.5px; padding: 3px 8px; border-radius: 4px;">
+                Total: ₹{{ number_format(array_sum($revenueData), 2) }}
+            </span>
+        </div>
+        <div style="position: relative; flex: 1; min-height: 230px; width: 100%;">
+            <canvas id="revenueChart"></canvas>
+        </div>
     </div>
 
     <!-- Recent Payments Collected -->

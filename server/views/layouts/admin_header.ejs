@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="csrf-token" content="<%= csrfToken() %>">
+    <title><%= typeof pageTitle !== 'undefined' ? pageTitle : (typeof title !== 'undefined' ? title : 'Admin Panel') %> - Vaishnavi Tours</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/build/assets/style-se50KSX5.css">
+    <link rel="stylesheet" href="/build/assets/app-CTs3YCme.css">
+    <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body>
+
+<div class="admin-wrapper">
+
+    <!-- Admin Sidebar -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="admin-sidebar-header d-flex align-center justify-between">
+            <a href="/admin/dashboard" class="brand-logo-wrap brand-logo-dark">
+                <div class="brand-logo-badge" style="width: 32px; height: 32px; border-radius: 6px;">
+                    <img src="/assets/branding/vaishnavi-tours-logo.png" alt="Vaishnavi Tours Logo">
+                </div>
+                <div>
+                    <div class="logo-brand" style="color: #fff; font-size: 13.5px; font-weight: 600;">Vaishnavi <span style="color: var(--accent);">Tours</span></div>
+                    <div class="logo-sub" style="color: var(--slate-400); font-size: 10px; font-weight: 500;">Admin Console</div>
+                </div>
+            </a>
+            <button id="sidebarCloseBtn" style="background: none; border: none; color: var(--slate-400); cursor: pointer; display: none; font-size: 16px;" class="mobile-only-btn"><%- icon('x', { size: 18 }) %></button>
+        </div>
+
+        <nav class="admin-sidebar-menu">
+            <div class="admin-menu-heading">Main</div>
+            <a href="/admin/dashboard" class="admin-nav-item <%= currentPath === '/admin/dashboard' || currentPath === '/admin' ? 'active' : '' %>">
+                <%- icon('trending-up', { size: 15 }) %> Dashboard
+            </a>
+
+            <div class="admin-menu-heading">Operations</div>
+            <a href="/admin/bookings" class="admin-nav-item <%= currentPath.startsWith('/admin/bookings') ? 'active' : '' %>">
+                <%- icon('calendar-check', { size: 15 }) %> Bookings
+            </a>
+            <a href="/admin/calendar" class="admin-nav-item <%= currentPath.startsWith('/admin/calendar') ? 'active' : '' %>">
+                <%- icon('calendar', { size: 15 }) %> Booking Calendar
+            </a>
+            <a href="/admin/trips" class="admin-nav-item <%= currentPath.startsWith('/admin/trips') ? 'active' : '' %>">
+                <%- icon('route', { size: 15 }) %> Trips & Tracking
+            </a>
+            <a href="/admin/enquiries" class="admin-nav-item <%= currentPath.startsWith('/admin/enquiries') ? 'active' : '' %>">
+                <%- icon('mail', { size: 15 }) %> Enquiries (Web/Manual)
+            </a>
+            <a href="/admin/vehicles" class="admin-nav-item <%= currentPath.startsWith('/admin/vehicles') && !currentPath.includes('categories') ? 'active' : '' %>">
+                <%- icon('car-front', { size: 15 }) %> Vehicles Fleet
+            </a>
+            <a href="/admin/vehicle-categories" class="admin-nav-item <%= currentPath.startsWith('/admin/vehicle-categories') ? 'active' : '' %>">
+                <%- icon('layers', { size: 15 }) %> Vehicle Categories & Models
+            </a>
+            <a href="/admin/drivers" class="admin-nav-item <%= currentPath.startsWith('/admin/drivers') ? 'active' : '' %>">
+                <%- icon('user-check', { size: 15 }) %> Drivers & Chauffeurs
+            </a>
+            <a href="/admin/tour-packages" class="admin-nav-item <%= currentPath.startsWith('/admin/tour-packages') ? 'active' : '' %>">
+                <%- icon('compass', { size: 15 }) %> Tour Packages
+            </a>
+            <a href="/admin/locations" class="admin-nav-item <%= currentPath.startsWith('/admin/locations') ? 'active' : '' %>">
+                <%- icon('map-pin', { size: 15 }) %> Pickup Locations
+            </a>
+            <a href="/admin/booking-categories" class="admin-nav-item <%= currentPath.startsWith('/admin/booking-categories') ? 'active' : '' %>">
+                <%- icon('layers', { size: 15 }) %> Booking Categories
+            </a>
+            <a href="/admin/customers" class="admin-nav-item <%= currentPath.startsWith('/admin/customers') ? 'active' : '' %>">
+                <%- icon('users', { size: 15 }) %> Customers
+            </a>
+
+            <div class="admin-menu-heading">Finance & Billing</div>
+            <a href="/admin/payments" class="admin-nav-item <%= currentPath.startsWith('/admin/payments') ? 'active' : '' %>">
+                <%- icon('credit-card', { size: 15 }) %> Payments
+            </a>
+            <a href="/admin/expenses" class="admin-nav-item <%= currentPath.startsWith('/admin/expenses') ? 'active' : '' %>">
+                <%- icon('dollar-sign', { size: 15 }) %> Expenses (Fuel/Toll)
+            </a>
+            <a href="/admin/invoices" class="admin-nav-item <%= currentPath.startsWith('/admin/invoices') ? 'active' : '' %>">
+                <%- icon('receipt', { size: 15 }) %> GST Invoices
+            </a>
+
+            <div class="admin-menu-heading">Insights & Quality</div>
+            <a href="/admin/complaints" class="admin-nav-item <%= currentPath.startsWith('/admin/complaints') ? 'active' : '' %>">
+                <%- icon('alert-triangle', { size: 15 }) %> Driver & Vehicle Complaints
+            </a>
+            <a href="/admin/rates" class="admin-nav-item <%= currentPath.startsWith('/admin/rates') ? 'active' : '' %>">
+                <%- icon('indian-rupee', { size: 15 }) %> Rates Matrix
+            </a>
+            <a href="/admin/notifications" class="admin-nav-item <%= currentPath.startsWith('/admin/notifications') ? 'active' : '' %>">
+                <%- icon('bell', { size: 15 }) %> Notifications
+            </a>
+            <a href="/admin/reports" class="admin-nav-item <%= currentPath.startsWith('/admin/reports') ? 'active' : '' %>">
+                <%- icon('file-text', { size: 15 }) %> Reports & Analytics
+            </a>
+            <a href="/admin/feedback" class="admin-nav-item <%= currentPath.startsWith('/admin/feedback') ? 'active' : '' %>">
+                <%- icon('star', { size: 15 }) %> Customer Reviews
+            </a>
+            <a href="/admin/whatsapp/scan" class="admin-nav-item <%= currentPath.startsWith('/admin/whatsapp') ? 'active' : '' %>">
+                <%- icon('whatsapp', { size: 15, style: 'margin-right: 6px;' }) %> WhatsApp & QR Scan
+            </a>
+            <a href="/admin/settings" class="admin-nav-item <%= currentPath.startsWith('/admin/settings') ? 'active' : '' %>">
+                <%- icon('settings', { size: 15 }) %> Company Settings
+            </a>
+        </nav>
+
+        <div style="padding: 0.75rem 1rem; border-top: 1px solid rgba(255,255,255,0.06); font-size: 12px;">
+            <a href="/" target="_blank" style="color: #38BDF8; display: flex; align-items: center; gap: 6px; font-weight: 500;">
+                <%- icon('external-link', { size: 13 }) %> View Public Site
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Section -->
+    <div class="admin-main">
+        <!-- Topbar -->
+        <header class="admin-topbar">
+            <div class="d-flex align-center gap-2">
+                <button id="sidebarOpenBtn" class="btn btn-outline btn-sm" style="display: none; padding: 0 8px;" aria-label="Toggle Menu">
+                    <%- icon('menu', { size: 16 }) %>
+                </button>
+                <h1 style="font-size: 15px; font-weight: 600; margin: 0; color: var(--dark-900);"><%= typeof page_title !== 'undefined' ? page_title : (typeof pageTitle !== 'undefined' ? pageTitle : 'Admin Console') %></h1>
+            </div>
+
+            <div class="d-flex align-center gap-2">
+                <a href="/admin/bookings/create" class="btn btn-primary btn-sm">
+                    + New Booking
+                </a>
+
+                <a href="/admin/notifications" class="btn btn-outline btn-sm" title="Notifications" style="padding: 0 8px; color: var(--slate-600); position: relative;">
+                    <%- icon('bell', { size: 15 }) %>
+                </a>
+
+                <div class="d-flex align-center gap-2" style="border-left: 1px solid var(--slate-200); padding-left: 0.75rem; margin-left: 0.25rem;">
+                    <div style="width: 28px; height: 28px; background: var(--dark-900); color: var(--white); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 11px;">
+                        VT
+                    </div>
+                    <div style="line-height: 1.2;">
+                        <div style="font-weight: 600; font-size: 12.5px; color: var(--dark-900);"><%= currentUser ? currentUser.name : 'Admin' %></div>
+                        <div style="font-size: 11px; color: var(--slate-500);">Administrator</div>
+                    </div>
+                    <form action="/logout" method="POST" style="margin-left: 0.25rem;">
+                        <%- csrfField() %>
+                        <button type="submit" class="btn btn-outline btn-sm" style="font-size: 11.5px; height: 28px; padding: 0 0.5rem;" title="Logout">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="admin-content">
+            <% if (flash && flash.success) { %>
+                <div class="alert alert-success"><%- icon('circle-check', { size: 16 }) %> <%= flash.success %></div>
+            <% } %>
+            <% if (flash && flash.error) { %>
+                <div class="alert alert-danger"><%- icon('alert-circle', { size: 16 }) %> <%= flash.error %></div>
+            <% } %>
+            <% if (flash && flash.info) { %>
+                <div class="alert alert-info"><%- icon('info', { size: 16 }) %> <%= flash.info %></div>
+            <% } %>

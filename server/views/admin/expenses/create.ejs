@@ -1,0 +1,100 @@
+<% let pageTitle = 'Log New Expense - Vaishnavi Tours'; %>
+<%- include('../../layouts/admin_header') %>
+
+
+
+
+
+
+<div class="mb-3">
+    <a href="<%= (globalThis.routeHelper || route)('admin.expenses.index') %>" style="font-size: 13px; color: var(--slate-600); font-weight: 600; text-decoration: none;">
+        ← Back to Expenses
+    </a>
+    <h1 style="font-size: 18px; font-weight: 700; margin: 4px 0 0 0; color: var(--dark-900);">Log New Fleet / Trip Expense</h1>
+</div>
+
+<div class="card" style="max-width: 600px; background: #fff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 1.5rem;">
+    <% if (errors.any()) { %>
+        <div class="alert alert-danger mb-3" style="background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; padding: 0.75rem 1rem; border-radius: 6px;">
+            <ul style="margin: 0; padding-left: 1.25rem; font-size: 13px;">
+                <% ((errors.all()) || []).forEach((err, _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>
+                    <li><%= err %></li>
+                <% }); %>
+            </ul>
+        </div>
+    <% } %>
+
+    <form action="<%= (globalThis.routeHelper || route)('admin.expenses.store') %>" method="POST">
+        <%- csrfField() %>
+
+        <div class="grid grid-2 gap-2 mb-3">
+            <div>
+                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Category *</label>
+                <select name="category" class="form-select form-select-sm" required>
+                    <option value="Fuel">Fuel</option>
+                    <option value="Toll">Toll</option>
+                    <option value="Other">Other (Parking / Repairs)</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Amount (₹) *</label>
+                <input type="number" step="0.01" name="amount" class="form-control form-control-sm" placeholder="0.00" required>
+            </div>
+        </div>
+
+        <div class="grid grid-2 gap-2 mb-3">
+            <div>
+                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Expense Date *</label>
+                <input type="date" name="expense_date" class="form-control form-control-sm" value="<%= date('Y-m-d') %>" required>
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Payment Method</label>
+                <select name="payment_method" class="form-select form-select-sm">
+                    <option value="Cash">Cash (Driver paid)</option>
+                    <option value="UPI">Company UPI</option>
+                    <option value="Fastag">Fastag Auto-debit</option>
+                    <option value="Card">Credit / Debit Card</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="grid grid-2 gap-2 mb-3">
+            <div>
+                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Link to Booking (Optional)</label>
+                <select name="booking_id" class="form-select form-select-sm">
+                    <option value="">-- General / No Booking --</option>
+                    <% ((bookings) || []).forEach((b, _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>
+                        <option value="<%= b?.id %>"><%= b?.booking_id %> (<%= b?.pickup_location %> → <%= b?.destination %>)</option>
+                    <% }); %>
+                </select>
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Link to Vehicle (Optional)</label>
+                <select name="vehicle_id" class="form-select form-select-sm">
+                    <option value="">-- No specific vehicle --</option>
+                    <% ((vehicles) || []).forEach((v, _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>
+                        <option value="<%= v?.id %>"><%= v?.name %> (<%= v?.registration_number %>)</option>
+                    <% }); %>
+                </select>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Receipt / Voucher / Transaction Ref</label>
+            <input type="text" name="receipt_number" class="form-control form-control-sm" placeholder="e.g. Fuel receipt #48102 or FASTag txn ID">
+        </div>
+
+        <div class="mb-3">
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Description / Purpose</label>
+            <textarea name="description" class="form-control form-control-sm" rows="2" placeholder="e.g. 25 Litres diesel filled at IndianOil Raipur Bypass"></textarea>
+        </div>
+
+        <div class="d-flex justify-end gap-2">
+            <a href="<%= (globalThis.routeHelper || route)('admin.expenses.index') %>" class="btn btn-secondary btn-sm">Cancel</a>
+            <button type="submit" class="btn btn-primary btn-sm">Save Expense</button>
+        </div>
+    </form>
+</div>
+
+
+<%- include('../../layouts/admin_footer') %>

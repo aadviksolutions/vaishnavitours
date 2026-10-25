@@ -1,0 +1,560 @@
+<% let pageTitle = 'Customers & Travel Partners'; %>
+<%- include('../../layouts/admin_header') %>
+
+<div class="d-flex justify-between align-center flex-wrap gap-2 mb-4">
+    <div>
+        <h1 style="font-size: 1.65rem; font-weight: 800; margin: 0; color: var(--dark-950);">
+            <span style="display: inline-flex; align-items: center; gap: 8px;"><%- icon('users', { size: 24, style: 'color: var(--primary);' }) %> Customer & Travel Partner Directory</span>
+        </h1>
+        <p style="color: var(--slate-500); margin: 2px 0 0 0; font-size: 0.875rem;">
+            Manage individual passengers, corporate accounts with GST billing, and travel agency partners.
+        </p>
+    </div>
+
+    <div class="d-flex align-center gap-2 flex-wrap">
+        <a href="/admin/customers/sample-csv" class="btn btn-outline btn-sm" style="font-weight: 600;" title="Download sample CSV template for Excel">
+            <span style="display: inline-flex; align-items: center; gap: 4px;"><%- icon('download', { size: 13 }) %> Sample CSV</span>
+        </a>
+        <button type="button" class="btn btn-outline btn-sm" onclick="openBulkUploadModal()" style="font-weight: 700; border-color: #2563EB; color: #2563EB;">
+            <span style="display: inline-flex; align-items: center; gap: 4px;"><%- icon('upload-cloud', { size: 14 }) %> Bulk Upload CSV</span>
+        </button>
+        <a href="/admin/customers/create" class="btn btn-outline btn-sm">
+            Full Registration Page →
+        </a>
+        <button type="button" class="btn btn-primary btn-sm" onclick="openAddCustomerModal('individual')" style="font-weight: 700;">
+            + Add Customer / Partner
+        </button>
+    </div>
+</div>
+
+<% if (session('success')) { %>
+    <div class="alert alert-success mb-4" style="background: #F0FDF4; border: 1px solid #BBF7D0; color: #166534; padding: 0.85rem 1.25rem; border-radius: 8px;">
+        <%- icon('check-circle', { size: 14, class: 'me-1 inline' }) %> <%= session('success') %>
+    </div>
+<% } %>
+
+<% if (session('error')) { %>
+    <div class="alert alert-danger mb-4" style="background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; padding: 0.85rem 1.25rem; border-radius: 8px;">
+        <%- icon('alert-triangle', { size: 14, class: 'me-1 inline' }) %> <%= session('error') %>
+    </div>
+<% } %>
+
+<!-- Type Filter Badges -->
+<div class="d-flex align-center gap-2 mb-3 flex-wrap">
+    <a href="/admin/customers?type=all<%= searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %>" 
+       class="btn btn-sm <%= currentType === 'all' ? 'btn-dark' : 'btn-outline' %>" style="border-radius: 20px; font-size: 0.8rem; padding: 4px 14px;">
+        All (<%= stats?.total || 0 %>)
+    </a>
+    <a href="/admin/customers?type=individual<%= searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %>" 
+       class="btn btn-sm <%= currentType === 'individual' ? 'btn-dark' : 'btn-outline' %>" style="border-radius: 20px; font-size: 0.8rem; padding: 4px 14px;">
+        <span style="display: inline-flex; align-items: center; gap: 4px;"><%- icon('user', { size: 13 }) %> Individual Passengers</span> (<%= stats?.individual || 0 %>)
+    </a>
+    <a href="/admin/customers?type=corporate<%= searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %>" 
+       class="btn btn-sm <%= currentType === 'corporate' ? 'btn-dark' : 'btn-outline' %>" style="border-radius: 20px; font-size: 0.8rem; padding: 4px 14px;">
+        <span style="display: inline-flex; align-items: center; gap: 4px;"><%- icon('building', { size: 13 }) %> Corporate Clients</span> (<%= stats?.corporate || 0 %>)
+    </a>
+    <a href="/admin/customers?type=travel_partner<%= searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %>" 
+       class="btn btn-sm <%= currentType === 'travel_partner' ? 'btn-dark' : 'btn-outline' %>" style="border-radius: 20px; font-size: 0.8rem; padding: 4px 14px;">
+        <span style="display: inline-flex; align-items: center; gap: 4px;"><%- icon('briefcase', { size: 13 }) %> Travel Partners</span> (<%= stats?.travel_partner || 0 %>)
+    </a>
+</div>
+
+<!-- Filters & Search -->
+<div class="card mb-4" style="padding: 1.15rem;">
+    <form method="GET" action="/admin/customers" class="d-flex align-center gap-2 flex-wrap">
+        <input type="hidden" name="type" value="<%= currentType %>">
+        <div style="flex: 1; min-width: 260px;">
+            <input type="text" name="search" class="form-control form-control-sm" placeholder="Search by name, company, GSTIN, mobile, or city..." value="<%= searchQuery %>">
+        </div>
+        <button type="submit" class="btn btn-dark btn-sm">Search</button>
+        <% if (searchQuery) { %>
+            <a href="/admin/customers?type=<%= currentType %>" class="btn btn-outline btn-sm">Reset</a>
+        <% } %>
+    </form>
+</div>
+
+<!-- Customers Table -->
+<div class="card">
+    <div class="table-responsive">
+        <table class="table" style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>Customer / Company</th>
+                    <th>Category</th>
+                    <th>Contact Person / Mobile</th>
+                    <th>GSTIN Details</th>
+                    <th>City / Address</th>
+                    <th>Bookings</th>
+                    <th style="text-align: right;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if ((customers) && (Array.isArray(customers) ? (customers).length > 0 : Object.keys(customers).length > 0)) { (Array.isArray(customers) ? (customers) : Object.values(customers)).forEach((c, _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>
+                    <% const custType = c?.customer?.customer_type || 'individual'; %>
+                    <tr>
+                        <td>
+                            <div class="d-flex align-center gap-2">
+                                <div style="width: 36px; height: 36px; border-radius: 50%; background: <%= custType === 'corporate' ? '#EFF6FF' : (custType === 'travel_partner' ? '#FFFBEB' : '#F1F5F9') %>; color: <%= custType === 'corporate' ? '#1D4ED8' : (custType === 'travel_partner' ? '#B45309' : '#334155') %>; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0;">
+                                    <% if (custType === 'corporate') { %> <%- icon('building', { size: 16 }) %>
+                                    <% } else if (custType === 'travel_partner') { %> <%- icon('briefcase', { size: 16 }) %>
+                                    <% } else { %> <%- icon('user', { size: 16 }) %>
+                                    <% } %>
+                                </div>
+                                <div>
+                                    <a href="/admin/customers/<%= c?.id %>" style="font-weight: 800; color: var(--dark-900); font-size: 0.925rem;">
+                                        <%= c?.name %>
+                                    </a>
+                                    <% if (custType === 'corporate' && c?.customer?.company_name && c?.customer?.company_name !== c?.name) { %>
+                                        <div style="font-size: 0.775rem; color: #2563EB; font-weight: 600;"><%= c?.customer?.company_name %></div>
+                                    <% } else if (custType === 'travel_partner' && c?.customer?.partner_name && c?.customer?.partner_name !== c?.name) { %>
+                                        <div style="font-size: 0.775rem; color: #D97706; font-weight: 600;"><%= c?.customer?.partner_name %></div>
+                                    <% } %>
+                                    <div style="font-size: 0.75rem; color: var(--slate-400);"><%= c?.email %></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <% if (custType === 'corporate') { %>
+                                <span class="badge" style="background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; font-size: 0.725rem; font-weight: 700;">
+                                    <%- icon('building-2', { size: 13, class: 'me-1 inline' }) %> Corporate
+                                </span>
+                            <% } else if (custType === 'travel_partner') { %>
+                                <span class="badge" style="background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; font-size: 0.725rem; font-weight: 700;">
+                                    <%- icon('handshake', { size: 13, class: 'me-1 inline' }) %> Travel Partner
+                                </span>
+                            <% } else { %>
+                                <span class="badge" style="background: #F8FAFC; color: #475569; border: 1px solid #E2E8F0; font-size: 0.725rem; font-weight: 600;">
+                                    <%- icon('user', { size: 13, class: 'me-1 inline' }) %> Individual
+                                </span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--dark-900);"><%- icon('phone', { size: 12, class: 'me-1 inline' }) %> <%= c?.phone %></div>
+                            <% if (c?.customer?.contact_person && c?.customer?.contact_person !== c?.name) { %>
+                                <div style="font-size: 0.775rem; color: var(--slate-500);">Contact: <%= c?.customer?.contact_person %></div>
+                            <% } %>
+                            <% if (c?.customer?.alternate_phone) { %>
+                                <div style="font-size: 0.75rem; color: var(--slate-400);">Alt: <%= c?.customer?.alternate_phone %></div>
+                            <% } %>
+                        </td>
+                        <td>
+                            <% if (c?.customer?.gstin) { %>
+                                <code style="background: #F1F5F9; padding: 2px 6px; border-radius: 4px; font-weight: 700; color: #0F172A; font-size: 0.8rem;"><%= c?.customer?.gstin %></code>
+                            <% } else { %>
+                                <span style="color: var(--slate-400); font-size: 0.8rem;">—</span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <div style="font-size: 0.85rem; font-weight: 600; color: var(--dark-900);"><%= c?.customer?.city ?? 'Bilaspur' %></div>
+                            <% if (c?.customer?.address) { %>
+                                <div style="font-size: 0.75rem; color: var(--slate-500); max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<%= c?.customer?.address %>">
+                                    <%= c?.customer?.address %>
+                                </div>
+                            <% } %>
+                        </td>
+                        <td>
+                            <span class="badge badge-primary" style="font-size: 0.75rem; font-weight: 700;">
+                                <%= c?.bookings?.count() %> <%= c?.bookings?.count() === 1 ? 'trip' : 'trips' %>
+                            </span>
+                        </td>
+                        <td style="text-align: right;">
+                            <a href="/admin/customers/<%= c?.id %>" class="btn btn-outline btn-sm" style="padding: 0.25rem 0.65rem; font-size: 0.775rem;">
+                                View Profile →
+                            </a>
+                        </td>
+                    </tr>
+                <% }); } else { %>
+                    <tr>
+                        <td colspan="7" class="text-center py-5" style="color: var(--slate-500);">
+                            No registered customers or partners found matching your search.
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Quick Add Customer Modal -->
+<div id="addCustomerModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); z-index: 9999; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(4px);">
+    <div class="card" style="width: 100%; max-width: 680px; max-height: 90vh; overflow-y: auto; background: #fff; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); padding: 1.5rem; position: relative;">
+        
+        <div class="d-flex justify-between align-center mb-3 pb-2" style="border-bottom: 1px solid var(--slate-200);">
+            <div>
+                <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--dark-950);">
+                    <span style="display: inline-flex; align-items: center; gap: 6px;"><%- icon('user-check', { size: 18, style: 'color: var(--primary);' }) %> Add Customer / Corporate / Partner</span>
+                </h3>
+                <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--slate-500);">
+                    Select the account type below to open specific fields.
+                </p>
+            </div>
+            <button type="button" onclick="closeAddCustomerModal()" style="background: none; border: none; font-size: 1.4rem; color: var(--slate-400); cursor: pointer; line-height: 1;"><%- icon('x', { size: 18 }) %></button>
+        </div>
+
+        <!-- Customer Type Selection Tabs -->
+        <div class="d-flex gap-2 mb-4" style="background: #F8FAFC; padding: 6px; border-radius: 10px; border: 1px solid var(--slate-200);">
+            <button type="button" id="tabIndividualBtn" onclick="switchCustomerType('individual')" class="btn btn-sm" style="flex: 1; border-radius: 6px; font-weight: 700; font-size: 0.825rem; background: #2563EB; color: #fff;">
+                <%- icon('user', { size: 13, class: 'me-1 inline' }) %> Individual
+            </button>
+            <button type="button" id="tabCorporateBtn" onclick="switchCustomerType('corporate')" class="btn btn-sm btn-outline" style="flex: 1; border-radius: 6px; font-weight: 700; font-size: 0.825rem;">
+                <%- icon('building-2', { size: 13, class: 'me-1 inline' }) %> Corporate
+            </button>
+            <button type="button" id="tabPartnerBtn" onclick="switchCustomerType('travel_partner')" class="btn btn-sm btn-outline" style="flex: 1; border-radius: 6px; font-weight: 700; font-size: 0.825rem;">
+                <%- icon('handshake', { size: 13, class: 'me-1 inline' }) %> Travel Partner
+            </button>
+        </div>
+
+        <form action="/admin/customers" method="POST" id="customerForm">
+            <%- csrfField() %>
+            <input type="hidden" name="customer_type" id="modalCustomerType" value="individual">
+
+            <!-- 1. Individual Customer Fields -->
+            <div id="individualFields">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">Passenger / Customer Name *</label>
+                        <input type="text" name="name" id="indivName" class="form-control form-control-sm" placeholder="e.g. Rahul Sharma" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">Mobile Number *</label>
+                        <input type="tel" name="phone" id="indivPhone" class="form-control form-control-sm" placeholder="10-digit mobile number" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">Email Address</label>
+                        <input type="email" name="email" class="form-control form-control-sm" placeholder="e.g. rahul@example.com (optional)">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">Alternate Phone / WhatsApp</label>
+                        <input type="tel" name="alternate_phone" class="form-control form-control-sm" placeholder="Optional backup number">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">Pickup / Residence Address *</label>
+                    <input type="text" name="address" class="form-control form-control-sm" placeholder="Flat / House No., Street, Landmark, Area">
+                </div>
+            </div>
+
+            <!-- 2. Corporate Customer Fields -->
+            <div id="corporateFields" style="display: none; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">Company / Organization Name *</label>
+                        <input type="text" name="company_name" id="corpCompanyName" class="form-control form-control-sm" placeholder="e.g. Jindal Steel, NTPC, Adani Enterprises">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">GST Details / GSTIN Number *</label>
+                        <input type="text" name="corporate_gstin" class="form-control form-control-sm" placeholder="15-digit GSTIN (e.g. 22AAAAA0000A1Z5)" maxlength="15" style="text-transform: uppercase;">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">Contact Person / Officer *</label>
+                        <input type="text" name="corporate_contact_person" class="form-control form-control-sm" placeholder="e.g. Mr. Anil Verma (Admin Manager)">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">Official Contact Number *</label>
+                        <input type="tel" name="corporate_phone" class="form-control form-control-sm" placeholder="Contact number for billing & dispatch">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">Billing Email Address</label>
+                        <input type="email" name="corporate_email" class="form-control form-control-sm" placeholder="finance@company.com">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">Payment Terms</label>
+                        <select name="corporate_payment_terms" class="form-select form-select-sm">
+                            <option value="Net 30 Days">Net 30 Days Invoice</option>
+                            <option value="Net 15 Days">Net 15 Days Invoice</option>
+                            <option value="Payment on Billing">Immediate Payment on Billing</option>
+                            <option value="50% Advance">50% Advance + 50% on Completion</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">Registered Corporate Billing Address *</label>
+                    <textarea name="corporate_billing_address" class="form-control form-control-sm" rows="2" placeholder="Registered office address for GST tax invoicing"></textarea>
+                </div>
+            </div>
+
+            <!-- 3. Travel Partner Fields -->
+            <div id="partnerFields" style="display: none; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">Agency / Travel Partner Name *</label>
+                        <input type="text" name="partner_name" id="partnerAgencyName" class="form-control form-control-sm" placeholder="e.g. MakeMyTrip, Sharma Tour & Travels, Goibibo">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">GSTIN (If Agency is Registered)</label>
+                        <input type="text" name="partner_gstin" class="form-control form-control-sm" placeholder="GST Number (optional)" maxlength="15" style="text-transform: uppercase;">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">Partner Contact Person *</label>
+                        <input type="text" name="partner_contact_person" class="form-control form-control-sm" placeholder="e.g. Agent Name / Manager">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">Partner Mobile / WhatsApp *</label>
+                        <input type="tel" name="partner_phone" class="form-control form-control-sm" placeholder="Mobile number for dispatch alerts">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">Agency Email Address</label>
+                        <input type="email" name="partner_email" class="form-control form-control-sm" placeholder="partner@travelagency.com">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">Commission Rate / Agreement</label>
+                        <input type="text" name="partner_commission" class="form-control form-control-sm" placeholder="e.g. 10% per booking or ₹300 per trip">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">Agency Office Address</label>
+                    <input type="text" name="partner_address" class="form-control form-control-sm" placeholder="Agency branch / office address">
+                </div>
+            </div>
+
+            <!-- Common Location Fields -->
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">City *</label>
+                    <input type="text" name="city" class="form-control form-control-sm" value="Bilaspur" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">State *</label>
+                    <input type="text" name="state" class="form-control form-control-sm" value="Chhattisgarh" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">Pincode</label>
+                    <input type="text" name="pincode" class="form-control form-control-sm" value="495001">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">Internal Admin Notes</label>
+                <textarea name="notes" class="form-control form-control-sm" rows="2" placeholder="Special preferences, vehicle preference, VIP status, billing notes..."></textarea>
+            </div>
+
+            <div class="d-flex justify-end gap-2 pt-3" style="border-top: 1px solid var(--slate-200);">
+                <button type="button" onclick="closeAddCustomerModal()" class="btn btn-outline btn-sm">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm" style="font-weight: 700; padding: 6px 18px;">
+                    Save Customer Account
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openAddCustomerModal(type = 'individual') {
+        const modal = document.getElementById('addCustomerModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            switchCustomerType(type);
+        }
+    }
+
+    function closeAddCustomerModal() {
+        const modal = document.getElementById('addCustomerModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    function switchCustomerType(type) {
+        document.getElementById('modalCustomerType').value = type;
+        
+        const indivDiv = document.getElementById('individualFields');
+        const corpDiv = document.getElementById('corporateFields');
+        const partnerDiv = document.getElementById('partnerFields');
+
+        const tabIndiv = document.getElementById('tabIndividualBtn');
+        const tabCorp = document.getElementById('tabCorporateBtn');
+        const tabPartner = document.getElementById('tabPartnerBtn');
+
+        // Reset tab styles
+        [tabIndiv, tabCorp, tabPartner].forEach(btn => {
+            btn.className = 'btn btn-sm btn-outline';
+            btn.style.background = '';
+            btn.style.color = '';
+        });
+
+        const indivName = document.getElementById('indivName');
+        const indivPhone = document.getElementById('indivPhone');
+        const corpComp = document.getElementById('corpCompanyName');
+        const partnerAgency = document.getElementById('partnerAgencyName');
+
+        if (type === 'corporate') {
+            indivDiv.style.display = 'none';
+            corpDiv.style.display = 'block';
+            partnerDiv.style.display = 'none';
+            tabCorp.className = 'btn btn-sm';
+            tabCorp.style.background = '#2563EB';
+            tabCorp.style.color = '#fff';
+
+            indivName.removeAttribute('required');
+            indivPhone.removeAttribute('required');
+            if (corpComp) corpComp.setAttribute('required', 'required');
+            if (partnerAgency) partnerAgency.removeAttribute('required');
+        } else if (type === 'travel_partner') {
+            indivDiv.style.display = 'none';
+            corpDiv.style.display = 'none';
+            partnerDiv.style.display = 'block';
+            tabPartner.className = 'btn btn-sm';
+            tabPartner.style.background = '#D97706';
+            tabPartner.style.color = '#fff';
+
+            indivName.removeAttribute('required');
+            indivPhone.removeAttribute('required');
+            if (corpComp) corpComp.removeAttribute('required');
+            if (partnerAgency) partnerAgency.setAttribute('required', 'required');
+        } else {
+            indivDiv.style.display = 'block';
+            corpDiv.style.display = 'none';
+            partnerDiv.style.display = 'none';
+            tabIndiv.className = 'btn btn-sm';
+            tabIndiv.style.background = '#2563EB';
+            tabIndiv.style.color = '#fff';
+
+            indivName.setAttribute('required', 'required');
+            indivPhone.setAttribute('required', 'required');
+            if (corpComp) corpComp.removeAttribute('required');
+            if (partnerAgency) partnerAgency.removeAttribute('required');
+        }
+    }
+
+    function openBulkUploadModal() {
+        const modal = document.getElementById('bulkUploadModal');
+        if (modal) {
+            modal.style.display = 'flex';
+        }
+    }
+
+    function closeBulkUploadModal() {
+        const modal = document.getElementById('bulkUploadModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    // Close modals on click outside
+    window.addEventListener('click', function(e) {
+        const addModal = document.getElementById('addCustomerModal');
+        if (e.target === addModal) {
+            closeAddCustomerModal();
+        }
+        const bulkModal = document.getElementById('bulkUploadModal');
+        if (e.target === bulkModal) {
+            closeBulkUploadModal();
+        }
+    });
+
+    // File input change indicator
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('csvFileInput');
+        const fileInfo = document.getElementById('fileSelectedInfo');
+        if (fileInput && fileInfo) {
+            fileInput.addEventListener('change', function() {
+                if (fileInput.files && fileInput.files[0]) {
+                    fileInfo.style.display = 'block';
+                    fileInfo.textContent = 'Selected: ' + fileInput.files[0].name + ' (' + (fileInput.files[0].size / 1024).toFixed(1) + ' KB)';
+                } else {
+                    fileInfo.style.display = 'none';
+                }
+            });
+        }
+    });
+</script>
+
+<!-- Bulk Upload Customers Modal -->
+<div id="bulkUploadModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); z-index: 9999; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(4px);">
+    <div class="card" style="width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto; background: #fff; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); padding: 1.5rem; position: relative;">
+        
+        <div class="d-flex justify-between align-center mb-3 pb-2" style="border-bottom: 1px solid var(--slate-200);">
+            <div>
+                <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--dark-950);">
+                    <span style="display: inline-flex; align-items: center; gap: 6px;"><%- icon('upload-cloud', { size: 18, style: 'color: #2563EB;' }) %> Bulk Upload Customers & Partners</span>
+                </h3>
+                <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--slate-500);">
+                    Import multiple passengers, corporate clients, or travel partners using a CSV file.
+                </p>
+            </div>
+            <button type="button" onclick="closeBulkUploadModal()" style="background: none; border: none; font-size: 1.4rem; color: var(--slate-400); cursor: pointer; line-height: 1;"><%- icon('x', { size: 18 }) %></button>
+        </div>
+
+        <form method="POST" action="/admin/customers/bulk-upload" enctype="multipart/form-data" id="bulkUploadForm">
+            <%- csrfField() %>
+
+            <!-- File Upload Zone -->
+            <div class="mb-3">
+                <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">
+                    Select CSV File <span style="color: red;">*</span>
+                </label>
+                <div style="border: 2px dashed #CBD5E1; border-radius: 8px; padding: 1.5rem; text-align: center; background: #F8FAFC; transition: border-color 0.2s;" id="dropZone">
+                    <div style="margin-bottom: 0.5rem; color: #2563EB;"><%- icon('file-spreadsheet', { size: 36 }) %></div>
+                    <p style="margin: 0 0 0.5rem 0; font-weight: 600; font-size: 0.875rem; color: var(--dark-900);">
+                        Choose a .CSV file or drag & drop it here
+                    </p>
+                    <input type="file" name="csv_file" id="csvFileInput" accept=".csv,text/csv" required style="display: block; margin: 0 auto; font-size: 0.825rem;">
+                    <div id="fileSelectedInfo" style="margin-top: 0.5rem; font-size: 0.8rem; color: #166534; font-weight: 700; display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Import Options -->
+            <div class="grid grid-2 gap-3 mb-3">
+                <div>
+                    <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">If Duplicate Phone Exists</label>
+                    <select name="duplicate_action" class="form-select form-select-sm">
+                        <option value="update" selected>Update existing details with CSV</option>
+                        <option value="skip">Skip (keep current customer data)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="form-label" style="font-weight: 700; font-size: 0.825rem;">Default Customer Type</label>
+                    <select name="default_type" class="form-select form-select-sm">
+                        <option value="auto" selected>Auto-detect from columns/data</option>
+                        <option value="individual">Individual Passenger</option>
+                        <option value="corporate">Corporate Client</option>
+                        <option value="travel_partner">Travel Partner / Agency</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Format Info & Download Sample -->
+            <div style="background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1.25rem;">
+                <div class="d-flex justify-between align-center mb-1 flex-wrap gap-1">
+                    <span style="font-weight: 700; font-size: 0.825rem; color: #1E40AF;"><span style="display: inline-flex; align-items: center; gap: 4px;"><%- icon('file-text', { size: 14 }) %> Supported CSV Columns:</span></span>
+                    <a href="/admin/customers/sample-csv" class="btn btn-sm" style="background: #2563EB; color: #fff; font-size: 0.75rem; padding: 3px 10px; font-weight: 700;">
+                        <span style="display: inline-flex; align-items: center; gap: 4px;"><%- icon('download', { size: 12 }) %> Download Sample Template (.CSV)</span>
+                    </a>
+                </div>
+                <p style="margin: 0; font-size: 0.775rem; color: #1E3A8A; line-height: 1.4;">
+                    <strong>Required:</strong> <code>Name</code>, <code>Mobile</code> (10 digits)<br>
+                    <strong>Optional:</strong> <code>Email</code>, <code>Customer_Type</code> (individual / corporate / travel_partner), <code>Company_Name</code>, <code>Contact_Person</code>, <code>GSTIN</code>, <code>City</code>, <code>Address</code>, <code>State</code>, <code>Pincode</code>, <code>Partner_Name</code>, <code>Partner_Commission</code>, <code>Notes</code>
+                </p>
+            </div>
+
+            <!-- Footer Buttons -->
+            <div class="d-flex justify-end gap-2 pt-2" style="border-top: 1px solid var(--slate-200);">
+                <button type="button" class="btn btn-outline btn-sm" onclick="closeBulkUploadModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm" id="btnSubmitBulkUpload" style="font-weight: 700; padding: 0.5rem 1.25rem;">
+                    <span style="display: inline-flex; align-items: center; gap: 5px;"><%- icon('upload-cloud', { size: 15 }) %> Upload & Import Customers</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<%- include('../../layouts/admin_footer') %>

@@ -40,8 +40,8 @@
         <div class="grid grid-3 gap-3" id="fleetGrid">
             @foreach($vehicles as $vehicle)
                 <div class="vehicle-card" data-category="{{ strtolower($vehicle->vehicle_type) }}" style="border: 1px solid var(--slate-200); border-radius: var(--radius-md); background: #fff; box-shadow: var(--shadow-sm); overflow: hidden; display: flex; flex-direction: column;">
-                    <div class="vehicle-card-img" style="height: 150px; padding: 0.75rem; background: #f8fafc; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--slate-100);">
-                        <img src="{{ $vehicle->icon_url }}" alt="{{ $vehicle->name }} - {{ $vehicle->vehicle_type }} Taxi Cab in Bilaspur" style="max-height: 120px; width: auto; object-fit: contain;">
+                    <div class="vehicle-card-img" style="height: 180px; padding: 0.75rem 1rem; background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--slate-100); overflow: hidden;">
+                        <img src="{{ $vehicle->icon_url }}" alt="{{ $vehicle->name }} - {{ $vehicle->vehicle_type }} Taxi Cab in Bilaspur" style="max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain;">
                     </div>
                     <div class="vehicle-card-body" style="padding: 1.15rem; display: flex; flex-direction: column; flex: 1;">
                         <div class="d-flex justify-between align-center" style="margin-bottom: 0.35rem;">

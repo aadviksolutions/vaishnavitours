@@ -1,0 +1,171 @@
+<% let pageTitle = 'WhatsApp Notification Templates'; %>
+<%- include('../../layouts/admin_header') %>
+
+
+
+
+
+
+<div class="mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div>
+        <h1 style="font-size:1.65rem;font-weight:800;margin:0;"><span style="display: inline-flex; align-items: center; gap: 6px;"><%- icon('whatsapp', { size: 20, style: 'color: #25D366;' }) %> WhatsApp Notification Templates</span></h1>
+        <p style="color:var(--slate-500);font-size:0.875rem;margin:2px 0 0 0;">Customise every automatic WhatsApp message sent to customers and admins.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="<%= (globalThis.routeHelper || route)('admin.whatsapp.scan') %>" class="btn btn-primary btn-sm"><%- icon('smartphone', { size: 13, class: 'me-1 inline' }) %> Link WhatsApp (Scan QR)</a>
+        <a href="<%= (globalThis.routeHelper || route)('admin.whatsapp.logs') %>" class="btn btn-secondary btn-sm"><%- icon('file-text', { size: 13, class: 'me-1 inline' }) %> Message Logs</a>
+        <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#testModal"><%- icon('send', { size: 13, class: 'me-1 inline' }) %> Send Test</button>
+    </div>
+</div>
+
+<% if (session('success')) { %>
+    <div class="alert alert-success mb-4"><%- icon('check-circle', { size: 14, class: 'me-1 inline' }) %> <%= session('success') %></div>
+<% } %>
+<% if (session('error')) { %>
+    <div class="alert alert-danger mb-4"><%- icon('x-circle', { size: 14, class: 'me-1 inline' }) %> <%= session('error') %></div>
+<% } %>
+
+
+<div class="card mb-4" style="background: linear-gradient(135deg,#f0fdf4,#dcfce7); border:1px solid #86efac;">
+    <div class="d-flex align-items-start gap-3">
+        <span style="display:inline-flex;align-items:center;"><%- icon('info', { size: 28, class: 'text-amber-500' }) %></span>
+        <div>
+            <strong>Using Template Variables</strong>
+            <p style="font-size:0.85rem;margin:4px 0 0 0;color:#166534;">
+                Wrap variable names in double curly braces: <code>&#123;&#123; customer_name &#125;&#125;</code>, <code>&#123;&#123; booking_id &#125;&#125;</code>, <code>&#123;&#123; pickup &#125;&#125;</code>, <code>&#123;&#123; destination &#125;&#125;</code>, <code>&#123;&#123; travel_date &#125;&#125;</code>, <code>&#123;&#123; travel_time &#125;&#125;</code>, <code>&#123;&#123; total_amount &#125;&#125;</code>, <code>&#123;&#123; driver_name &#125;&#125;</code>, <code>&#123;&#123; driver_phone &#125;&#125;</code>, <code>&#123;&#123; vehicle_name &#125;&#125;</code>, <code>&#123;&#123; vehicle_number &#125;&#125;</code>, <code>&#123;&#123; company_phone &#125;&#125;</code> etc.
+                Each template card shows which variables are available for that event.
+            </p>
+        </div>
+    </div>
+</div>
+
+
+<div class="grid grid-2 gap-4">
+<% ((templates) || []).forEach((template, _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>
+<div class="card" id="template-<%= template?.event_key %>">
+    <form method="POST" action="<%= (globalThis.routeHelper || route)('admin.whatsapp.templates.update', template) %>">
+        <%- csrfField() %>
+        <input type="hidden" name="_method" value="PUT">
+
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <span style="font-size:1.15rem;font-weight:800;"><%= template?.event_label %></span>
+                <div style="font-size:0.75rem;color:var(--slate-500);margin-top:2px;font-family:monospace;">
+                    event: <strong><%= template?.event_key %></strong>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                
+                <div class="form-check form-switch mb-0" title="Enable/Disable this notification">
+                    <input class="form-check-input" type="checkbox" name="is_active" id="active_<%= template?.id %>"
+                        value="1" <%= template?.is_active ? 'checked' : '' %>>
+                    <label class="form-check-label small" for="active_<%= template?.id %>">Active</label>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="d-flex gap-4 mb-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="send_to_customer"
+                    id="cust_<%= template?.id %>" value="1"
+                    <%= template?.send_to_customer ? 'checked' : '' %>>
+                <label class="form-check-label small fw-semibold" for="cust_<%= template?.id %>">
+                    <%- icon('user', { size: 14, style: 'margin-right: 4px;' }) %> Send to Customer
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="send_to_admin"
+                    id="adm_<%= template?.id %>" value="1"
+                    <%= template?.send_to_admin ? 'checked' : '' %>>
+                <label class="form-check-label small fw-semibold" for="adm_<%= template?.id %>">
+                    <%- icon('shield-check', { size: 14, style: 'margin-right: 4px;' }) %> Send to Admin (copy)
+                </label>
+            </div>
+        </div>
+
+        
+        <% if (template?.available_variables) { %>
+        <div class="mb-2" style="font-size:0.78rem;">
+            <span style="color:var(--slate-500);">Available vars: </span>
+            <% ((template?.available_variables) || []).forEach((v, _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>
+                <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;margin:1px;">&#123;&#123; <%= v %> &#125;&#125;</code>
+            <% }); %>
+        </div>
+        <% } %>
+
+        
+        <div class="form-group mb-3">
+            <textarea name="template_body" id="body_<%= template?.id %>"
+                class="form-control" rows="8"
+                style="font-family:monospace;font-size:0.82rem;resize:vertical;"
+                placeholder="Enter WhatsApp message template..."><%= old('template_body', template?.template_body) %></textarea>
+        </div>
+
+        <div class="d-flex gap-2 justify-content-end">
+            <button type="submit" class="btn btn-primary btn-sm"><%- icon('check', { size: 14, style: 'margin-right: 4px;' }) %> Save Template</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="resetTemplate(<%= template?.id %>, '<%= (globalThis.routeHelper || route)('admin.whatsapp.templates.reset', template) %>')">
+                <%- icon('rotate-ccw', { size: 13, class: 'me-1 inline' }) %> Reset to Default
+            </button>
+        </div>
+    </form>
+</div>
+<% }); %>
+</div>
+
+
+<div class="modal fade" id="testModal" tabindex="-1" aria-labelledby="testModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="<%= (globalThis.routeHelper || route)('admin.whatsapp.send-test') %>">
+                <%- csrfField() %>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="testModalLabel"><%- icon('send', { size: 16, class: 'me-1 inline text-emerald-600' }) %> Send Test WhatsApp Message</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-semibold">Phone Number (10 digits, India)</label>
+                        <input type="text" name="phone" class="form-control"
+                            placeholder="9876543210" maxlength="10" pattern="[0-9]{10}" required>
+                        <div class="form-text">Enter 10-digit mobile number without country code.</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label fw-semibold">Message</label>
+                        <textarea name="message" class="form-control" rows="5"
+                            placeholder="Type your test message here..." required>Hello from Vaishnavi Tours! This is a test message from the WhatsApp notification system.</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success"><%- icon('send', { size: 14, class: 'me-1 inline' }) %> Send Test</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<div id="reset-forms" style="display:none;">
+    <% ((templates) || []).forEach((template, _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>
+    <form id="reset-form-<%= template?.id %>" method="POST"
+        action="<%= (globalThis.routeHelper || route)('admin.whatsapp.templates.reset', template) %>">
+        <%- csrfField() %>
+    </form>
+    <% }); %>
+</div>
+
+
+
+
+<script>
+function resetTemplate(id, url) {
+    if (confirm('Reset this template to its factory default? Your custom edits will be lost.')) {
+        document.getElementById('reset-form-' + id).submit();
+    }
+}
+</script>
+
+
+<%- include('../../layouts/admin_footer') %>

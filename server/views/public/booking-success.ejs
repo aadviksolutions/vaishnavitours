@@ -1,0 +1,151 @@
+<% let pageTitle = 'Booking Request Received - Vaishnavi Tours'; %>
+<%- include('../layouts/app_header') %>
+
+
+
+
+
+<section style="padding: 4rem 0 6rem; background: var(--slate-50);">
+    <div class="container" style="max-width: 720px;">
+        <div class="card" style="text-align: center; padding: 3rem 2.5rem; border-top: 6px solid var(--primary); box-shadow: var(--shadow-lg);">
+            <div style="width: 76px; height: 76px; background: #FEF3C7; color: #D97706; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 1.25rem;">
+                ⏳
+            </div>
+
+            <% if ((booking?.total_amount ?? 0) <= 0 || (booking?.pricing_details['is_query'] ?? false)) { %>
+                <span class="badge" style="font-size: 0.95rem; padding: 0.4rem 1.25rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem; display: inline-block; background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D;">
+                    Route Query Received
+                </span>
+
+                <h1 style="font-size: 2.15rem; font-weight: 900; margin-bottom: 0.5rem; color: var(--dark-950);">
+                    Thank You, <%= booking?.customer?.name ?? 'Customer' %>!
+                </h1>
+                <p style="color: var(--slate-600); font-size: 1.05rem; margin-bottom: 2rem;">
+                    Your custom route query for <strong><%= booking?.pickup_location %> to <%= booking?.destination %></strong> has been received. Our dispatch team will review route parameters and share a customized quotation shortly.
+                </p>
+            <% } else { %>
+                <span class="badge badge-warning" style="font-size: 0.95rem; padding: 0.4rem 1.25rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem; display: inline-block;">
+                    Booking Request Received
+                </span>
+
+                <h1 style="font-size: 2.15rem; font-weight: 900; margin-bottom: 0.5rem; color: var(--dark-950);">
+                    Thank You, <%= booking?.customer?.name ?? 'Customer' %>!
+                </h1>
+                <p style="color: var(--slate-600); font-size: 1.05rem; margin-bottom: 2rem;">
+                    Your cab booking request has been received by our Bilaspur dispatch team. We are assigning your vehicle & chauffeur.
+                </p>
+            <% } %>
+
+            <!-- Booking Summary Card -->
+            <div style="background: #ffffff; border: 1.5px solid var(--slate-200); border-radius: var(--radius-md); padding: 1.75rem; text-align: left; margin-bottom: 2rem; box-shadow: var(--shadow-sm);">
+                <div class="d-flex justify-between align-center" style="border-bottom: 1.5px solid var(--slate-100); padding-bottom: 0.85rem; margin-bottom: 1rem;">
+                    <div>
+                        <span style="color: var(--slate-500); font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">BOOKING ID</span>
+                        <div style="color: var(--dark-950); font-size: 1.35rem; font-weight: 900;"><%= booking?.booking_id %></div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="color: var(--slate-500); font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">BOOKING STATUS</span>
+                        <div>
+                            <span class="badge badge-warning" style="font-size: 0.85rem; font-weight: 800;">
+                                <%= booking?.booking_status %>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-2 gap-3" style="font-size: 0.95rem;">
+                    <div>
+                        <span style="color: var(--slate-500); font-size: 0.8rem; font-weight: 600;">Customer:</span>
+                        <div style="font-weight: 700; color: var(--dark-900);"><%= booking?.customer?.name ?? 'Customer' %> (<%- icon('phone', { size: 14, class: '', style: 'margin-right: 4px;' }) %> <%= booking?.customer?.phone ?? 'Contact Number' %>)</div>
+                    </div>
+                    <div>
+                        <span style="color: var(--slate-500); font-size: 0.8rem; font-weight: 600;">Vehicle:</span>
+                        <div style="font-weight: 700; color: var(--dark-900);">
+                            <%= booking?.vehicle ? booking?.vehicle?.name + ' (' + booking?.vehicle?.vehicle_type + ')' : (booking?.rateVehiclePrice?.vehicle_category ?? 'AC Cab Category') %>
+                        </div>
+                    </div>
+                    <div>
+                        <span style="color: var(--slate-500); font-size: 0.8rem; font-weight: 600;">Pickup:</span>
+                        <div style="font-weight: 700; color: var(--dark-900);"><%= booking?.pickup_location %></div>
+                    </div>
+                    <div>
+                        <span style="color: var(--slate-500); font-size: 0.8rem; font-weight: 600;">Destination:</span>
+                        <div style="font-weight: 700; color: var(--dark-900);"><%= booking?.destination %></div>
+                    </div>
+                    <div>
+                        <span style="color: var(--slate-500); font-size: 0.8rem; font-weight: 600;">Travel Date:</span>
+                        <div style="font-weight: 700; color: var(--dark-900);"><%= booking?.travel_date ? (is_string(booking?.travel_date) ? date('d M, Y', strtotime(booking?.travel_date)) : booking?.travel_date?.format('d M, Y')) : date('d M, Y') %></div>
+                    </div>
+                    <div>
+                        <span style="color: var(--slate-500); font-size: 0.8rem; font-weight: 600;">Travel Time:</span>
+                        <div style="font-weight: 700; color: var(--dark-900);"><%= booking?.travel_time ? date('h:i A', strtotime(booking?.travel_time)) : 'Morning' %></div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-between align-center" style="border-top: 1.5px solid var(--slate-100); padding-top: 1rem; margin-top: 1.25rem;">
+                    <span style="color: var(--slate-600); font-weight: 700;">Quotation Fare:</span>
+                    <% if ((booking?.total_amount ?? 0) > 0) { %>
+                        <strong style="font-size: 1.35rem; color: var(--dark-950);">₹<%= number_format((booking?.total_amount ?? 0), 2) %></strong>
+                    <% } else { %>
+                        <span class="badge" style="background: #FEF3C7; color: #92400E; font-size: 0.95rem; font-weight: 800; padding: 0.35rem 0.85rem; border: 1px solid #FDE68A;">
+                            Custom Quotation on Review
+                        </span>
+                    <% } %>
+                </div>
+
+                <!-- Terms Agreement Notice -->
+                <div style="background: #F0FDF4; border: 1.5px solid #BBF7D0; border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-top: 1.25rem; text-align: left; display: flex; align-items: center; gap: 0.75rem;">
+                    <%- icon('circle-check', { size: 24, class: '', style: 'color: #16A34A; flex-shrink: 0;' }) %>
+                    <div style="font-size: 0.885rem; color: #166534; line-height: 1.5;">
+                        <strong>Agreed Terms:</strong> By confirming this booking, you agreed to Vaishnavi Tour's 
+                        <a href="<%= (globalThis.routeHelper || route)('terms-and-conditions') %>" target="_blank" style="color: #15803D; font-weight: 700; text-decoration: underline;">Cancellation Policy &amp; Terms &amp; Conditions</a>
+                        (Version <%= booking?.terms_version ?? '1.0' %>).
+                    </div>
+                </div>
+            </div>
+
+            <!-- If customer is not logged in: Ask whether they want to create an account -->
+            <% if (!isAuthenticated) { %>
+                <div style="background: #FFFBEB; border: 1.5px dashed #F59E0B; border-radius: var(--radius-md); padding: 1.5rem; text-align: left; margin-bottom: 2rem;">
+                    <div class="d-flex align-start gap-3">
+                        <div class="icon-box icon-box-md icon-box-primary"><%- icon('user', { size: 24, class: '', style: '' }) %></div>
+                        <div style="flex: 1;">
+                            <h4 style="font-size: 1.05rem; font-weight: 800; color: var(--dark-950); margin-bottom: 0.25rem;">
+                                Create an Account for Real-Time Trip Tracking
+                            </h4>
+                            <p style="color: var(--slate-600); font-size: 0.875rem; margin-bottom: 1rem;">
+                                An account lets you track chauffeur allocation live, monitor vehicle location, view payment receipts, and download GST tax invoices.
+                            </p>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <a href="<%= (globalThis.routeHelper || route)('register', {'phone' : booking?.customer?.phone, 'name' : booking?.customer?.name, 'email' : booking?.customer?.email}) %>" class="btn btn-primary btn-sm">
+                                    Create My Account
+                                </a>
+                                <a href="<%= (globalThis.routeHelper || route)('login') %>" class="btn btn-outline btn-sm">
+                                    Log In to Existing Account
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% } else { %>
+                <div style="margin-bottom: 2rem;">
+                    <a href="<%= (globalThis.routeHelper || route)('customer.bookings.show', booking?.id) %>" class="btn btn-primary">
+                        <span style="display: inline-flex; align-items: center; gap: 6px;"><%- icon('map-pin', { size: 16, class: '', style: '' }) %><span>Track Booking & View Journey Details <%- icon('arrow-right', { size: 16, class: '', style: 'margin-left: 4px;' }) %></span></span>
+                    </a>
+                </div>
+            <% } %>
+
+            <p style="font-size: 0.875rem; color: var(--slate-500); margin-bottom: 2rem;">
+                Our central dispatch desk will contact you at <strong><%= booking?.customer?.phone ?? 'your registered phone' %></strong>. For urgent queries, reach out to our support team.
+            </p>
+
+            <div class="d-flex justify-center gap-3 flex-wrap">
+                <a href="<%= (globalThis.routeHelper || route)('home') %>" class="btn btn-outline">← Back to Home</a>
+                <a href="<%= (globalThis.routeHelper || route)('contact') %>" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px;"><%- icon('message-square', { size: 16, class: '', style: '' }) %><span>Contact Support</span></a>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<%- include('../layouts/app_footer') %>

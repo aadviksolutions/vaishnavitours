@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="csrf-token" content="<%= csrfToken() %>">
+    <title><%= typeof pageTitle !== 'undefined' ? pageTitle : (typeof title !== 'undefined' ? title : 'Customer Portal') %> - Vaishnavi Tours</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/build/assets/style-se50KSX5.css">
+    <link rel="stylesheet" href="/build/assets/app-CTs3YCme.css">
+    <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body style="background-color: var(--slate-100);">
+
+    <!-- Customer Topbar -->
+    <header style="background: var(--dark-900); color: #fff; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+        <div class="container d-flex align-center justify-between flex-wrap gap-2">
+            <a href="/" class="brand-logo-wrap brand-logo-dark">
+                <div class="brand-logo-badge" style="width: 32px; height: 32px; border-radius: 6px;">
+                    <img src="/assets/branding/vaishnavi-tours-logo.png" alt="Vaishnavi Tours Logo">
+                </div>
+                <div>
+                    <div class="logo-brand" style="color: #fff; font-size: 13.5px; font-weight: 600;">Vaishnavi <span style="color: var(--accent);">Tours</span></div>
+                    <div class="logo-sub" style="color: var(--slate-400); font-size: 10px; font-weight: 500;">Customer Portal</div>
+                </div>
+            </a>
+
+            <div class="d-flex align-center gap-2">
+                <a href="/booking" class="btn btn-primary btn-sm">
+                    <%- icon('car', { size: 14 }) %> Quick Book Taxi
+                </a>
+                <div class="d-flex align-center gap-1" style="background: rgba(255,255,255,0.06); padding: 0.25rem 0.65rem; border-radius: var(--radius-sm);">
+                    <%- icon('user', { size: 13, class: 'text-slate-400' }) %>
+                    <span style="font-weight: 600; font-size: 12px; color: #fff;"><%= currentUser ? currentUser.name : 'Customer' %></span>
+                </div>
+                <form action="/logout" method="POST">
+                    <%- csrfField() %>
+                    <button type="submit" class="btn btn-outline btn-sm" style="color: #fff; border-color: rgba(255,255,255,0.2); font-size: 11.5px; height: 30px;">Logout</button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sub Navigation Tabs -->
+    <div style="background: #fff; border-bottom: 1px solid var(--slate-200); padding: 0.35rem 0;">
+        <div class="container d-flex align-center gap-1 flex-wrap">
+            <a href="/customer/dashboard" class="btn btn-sm <%= currentPath === '/customer/dashboard' ? 'btn-primary' : 'btn-outline' %>">
+                <%- icon('trending-up', { size: 13 }) %> Dashboard
+            </a>
+            <a href="/customer/bookings" class="btn btn-sm <%= currentPath === '/customer/bookings' ? 'btn-primary' : 'btn-outline' %>">
+                <%- icon('calendar-check', { size: 13 }) %> My Bookings
+            </a>
+            <a href="/customer/bookings?filter=upcoming" class="btn btn-sm btn-outline">
+                <%- icon('calendar', { size: 13 }) %> Upcoming Trips
+            </a>
+            <a href="/customer/bookings?filter=payments" class="btn btn-sm btn-outline">
+                <%- icon('credit-card', { size: 13 }) %> Invoices & Payments
+            </a>
+            <a href="/customer/notifications" class="btn btn-sm <%= currentPath === '/customer/notifications' ? 'btn-primary' : 'btn-outline' %>">
+                <%- icon('bell', { size: 13 }) %> Notifications
+            </a>
+            <a href="/customer/profile" class="btn btn-sm <%= currentPath === '/customer/profile' ? 'btn-primary' : 'btn-outline' %>">
+                <%- icon('settings', { size: 13 }) %> Profile
+            </a>
+            <a href="/" class="btn btn-sm btn-outline" style="margin-left: auto; color: var(--slate-600);">
+                <%- icon('external-link', { size: 12 }) %> Public Site
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Body -->
+    <main class="container" style="padding-top: 1.25rem; padding-bottom: 2rem;">
+        <% if (flash && flash.success) { %>
+            <div class="alert alert-success"><%- icon('circle-check', { size: 16 }) %> <%= flash.success %></div>
+        <% } %>
+        <% if (flash && flash.error) { %>
+            <div class="alert alert-danger"><%- icon('alert-circle', { size: 16 }) %> <%= flash.error %></div>
+        <% } %>
+        <% if (flash && flash.info) { %>
+            <div class="alert alert-info"><%- icon('info', { size: 16 }) %> <%= flash.info %></div>
+        <% } %>

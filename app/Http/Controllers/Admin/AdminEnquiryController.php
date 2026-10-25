@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Enquiry;
 use App\Models\User;
+use App\Services\WhatsappService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AdminEnquiryController extends Controller
 {
+    public function __construct(private readonly WhatsappService $whatsapp) {}
+
     public function index(Request $request)
     {
         $currentSource = $request->query('source', 'website');
@@ -86,6 +89,16 @@ class AdminEnquiryController extends Controller
         $data['assigned_to'] = $data['assigned_to'] ?? Auth::id();
 
         $enquiry = Enquiry::create($data);
+
+        // WhatsApp notification for new manual enquiry
+        if ($enquiry->phone) {
+            $this->whatsapp->sendEvent(
+                'new_enquiry',
+                $this->whatsapp->enquiryVariables($enquiry),
+                $enquiry->phone,
+                $enquiry
+            );
+        }
 
         return redirect()->route('admin.enquiries.index', ['source' => $enquiry->source])
             ->with('success', "Manual enquiry {$enquiry->enquiry_id} recorded successfully.");

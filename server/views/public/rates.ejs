@@ -1,0 +1,187 @@
+<% let pageTitle = 'Taxi Rates & Route Fares | Vaishnavi Tours'; %>
+<%- include('../layouts/app_header') %>
+
+
+
+@section('meta_description', 'Browse configured airport, outstation, round-trip, and local taxi rates across Chhattisgarh and nearby cities.')
+@section('canonical', route('rates'))
+
+
+<script type="application/ld+json">
+<%- json_encode({
+    '@context' : 'https://schema.org',
+    '@type' : 'BreadcrumbList',
+    'itemListElement' : [
+        {'@type' : 'ListItem', 'position' : 1, 'name' : 'Home', 'item' : (globalThis.routeHelper || route)('home')},
+        {'@type' : 'ListItem', 'position' : 2, 'name' : 'Rates & Tariffs', 'item' : (globalThis.routeHelper || route)('rates')},
+    ],
+}) %>
+</script>
+
+
+
+<section style="background: var(--navy-900); color: #fff; padding: 2.25rem 0; border-bottom: 1px solid var(--navy-800);">
+    <div class="container">
+        <span style="color: var(--accent-gold); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.8px;">Tariff Schedule</span>
+        <h1 style="color: #fff; font-size: 1.65rem; font-weight: 600; margin: 0.25rem 0;">Taxi Rates &amp; Route Fares</h1>
+        <p style="color: var(--slate-300); max-width: 680px; margin: 0; font-size: 0.875rem;">Airport transfers, outstation routes, round-trip, and local city rental packages across Chhattisgarh.</p>
+    </div>
+</section>
+
+<section style="padding: 2rem 0 3.5rem; background: var(--slate-50);">
+    <div class="container">
+        <form method="GET" action="<%= (globalThis.routeHelper || route)('rates') %>" class="card" style="padding: 1.15rem; margin-bottom: 1.5rem; border: 1px solid var(--slate-200); box-shadow: var(--shadow-sm);">
+            <div class="grid grid-4 gap-2">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="rateFrom" class="form-label" style="font-size: 0.75rem;">From</label>
+                    <select id="rateFrom" name="from" class="form-select form-select-sm">
+                        <option value="">Select origin</option>
+                        <% ((locations) || []).forEach((location, _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %><option value="<%= location %>" <%= request('from') === location ? 'selected' : '' %>><%= location %></option><% }); %>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="rateTo" class="form-label" style="font-size: 0.75rem;">To</label>
+                    <select id="rateTo" name="to" class="form-select form-select-sm">
+                        <option value="">Select destination</option>
+                        <% ((locations) || []).forEach((location, _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %><option value="<%= location %>" <%= request('to') === location ? 'selected' : '' %>><%= location %></option><% }); %>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="rateTripType" class="form-label" style="font-size: 0.75rem;">Trip Type</label>
+                    <select id="rateTripType" name="rate_category" class="form-select form-select-sm">
+                        <% (Object.entries(({'airport' : 'Quick Airport Booking', 'outstation' : 'Outstation Route', 'round_trip' : 'Round Trip', 'local_8h_80km' : 'Local 8 Hours / 80 KM', 'local_4h_40km' : 'Local 4 Hours / 40 KM'}) || {})).forEach(([key, label], _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>
+                            <option value="<%= key %>" <%= request('rate_category', 'outstation') === key ? 'selected' : '' %>><%= label %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="rateVehicle" class="form-label" style="font-size: 0.75rem;">Vehicle</label>
+                    <select id="rateVehicle" name="vehicle_category" class="form-select form-select-sm">
+                        <option value="">All vehicles</option>
+                        <% ((vehicleCategories) || []).forEach((category, _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %><option value="<%= category %>" <%= request('vehicle_category') === category ? 'selected' : '' %>><%= category %></option><% }); %>
+                    </select>
+                </div>
+            </div>
+            <div class="d-flex align-center gap-2" style="flex-wrap: wrap; margin-top: 0.85rem;">
+                <label for="rateEstimatedKm" id="rateEstimatedKmLabel" class="form-label" style="margin: 0; font-size: 0.75rem; display: none;">Round-trip distance (KM)</label>
+                <input id="rateEstimatedKm" name="estimated_km" type="number" min="0.01" step="0.1" class="form-control form-control-sm" style="max-width: 160px; display: none;" value="<%= request('estimated_km') %>">
+                <button type="submit" class="btn btn-primary btn-sm" style="height: 34px; padding: 0 1.25rem;">Show Rate</button>
+            </div>
+        </form>
+
+        
+        <script>
+            const rateTripType = document.querySelector('#rateTripType');
+            const estimatedKmLabel = document.querySelector('#rateEstimatedKmLabel');
+            const estimatedKm = document.querySelector('#rateEstimatedKm');
+            function toggleEstimatedKm() {
+                const isRoundTrip = rateTripType.value === 'round_trip';
+                estimatedKmLabel.style.display = isRoundTrip ? 'block' : 'none';
+                estimatedKm.style.display = isRoundTrip ? 'block' : 'none';
+                estimatedKm.required = isRoundTrip;
+            }
+            rateTripType.addEventListener('change', toggleEstimatedKm);
+            toggleEstimatedKm();
+        </script>
+        
+
+        <% if (request()?.filled('from') && request()?.filled('to') && request()?.filled('rate_category')) { %>
+            <section class="card" style="padding: 1rem; margin-bottom: 1.5rem; border: 1px solid var(--slate-200); box-shadow: var(--shadow-sm);">
+                <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--dark-900);"><%= request('from') %> → <%= request('to') %></h2>
+                <% if ((selectedQuotes) && (Array.isArray(selectedQuotes) ? (selectedQuotes).length > 0 : Object.keys(selectedQuotes).length > 0)) { (Array.isArray(selectedQuotes) ? (selectedQuotes) : Object.values(selectedQuotes)).forEach((quote, _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>
+                    <div style="border-top: 1px solid var(--slate-200); padding: 0.85rem 0; display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+                        <div>
+                            <strong style="font-size: 0.95rem; color: var(--dark-900);"><%= quote['price']?.vehicle_category %></strong>
+                            <div style="color: var(--slate-600); font-size: 0.825rem; margin-top: 0.2rem;">
+                                <% if (quote['details']['included_km'] !== null) { %><%= quote['details']['included_km'] %> KM included · <% } %>
+                                <% if (quote['details']['included_hours'] !== null) { %><%= rtrim(rtrim(number_format(quote['details']['included_hours'], 2), '0'), '.') %> hours included · <% } %>
+                                <% if (quote['details']['extra_km_rate'] !== null) { %>Extra KM ₹<%= number_format(quote['details']['extra_km_rate'], 2) %> · <% } %>
+                                <% if (quote['details']['extra_hour_rate'] !== null) { %>Extra hour ₹<%= number_format(quote['details']['extra_hour_rate'], 2) %> · <% } %>
+                                <% if (quote['details']['toll_type']) { %>Toll <%= quote['details']['toll_type'] %> · <% } %>
+                                <% if (quote['details']['parking_type']) { %>Parking <%= quote['details']['parking_type'] %> · <% } %>
+                                <% if (quote['details']['border_tax_type']) { %>Border tax <%= quote['details']['border_tax_type'] %> · <% } %>
+                                <% if (quote['details']['night_charge'] !== null) { %>Night charge ₹<%= number_format(quote['details']['night_charge'], 2) %> · <% } %>
+                                <% if (quote['details']['driver_food_type']) { %>Driver food <%= quote['details']['driver_food_type'] %> · <% } %>
+                                <% if (quote['details']['gst_applicable']) { %>GST applicable <% } %>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <% if (quote['details']['vehicle_rent'] !== null) { %>
+                                <strong style="font-size: 0.95rem; color: var(--dark-900);">₹<%= number_format(quote['details']['vehicle_rent'], 2) %> rent + ₹<%= number_format(quote['details']['per_km_rate'], 2) %>/KM</strong>
+                                <% if (quote['details']['distance_km'] !== null) { %><div style="font-size: 0.8rem; color: var(--slate-500);">Estimated fare ₹<%= number_format(quote['total_amount'], 2) %></div><% } %>
+                            <% } else { %>
+                                <strong style="font-size: 1.05rem; color: var(--dark-900);">₹<%= number_format(quote['total_amount'], 2) %><%= quote['details']['gst_applicable'] ? ' + GST' : '' %></strong>
+                            <% } %>
+                            <div style="margin-top: 0.35rem;">
+                                <a class="btn btn-primary btn-sm" href="<%= (globalThis.routeHelper || route)('booking', {'rate_category' : request('rate_category'), 'pickup_location' : request('from'), 'destination' : request('to'), 'vehicle_category' : quote['price']?.vehicle_category}) %>">Book this rate</a>
+                            </div>
+                        </div>
+                    </div>
+                <% }); } else { %>
+                    <p style="color: var(--slate-600); font-size: 0.85rem;">Rate not configured. Please contact Vaishnavi Tours.</p>
+                <% } %>
+            </section>
+        <% } %>
+
+        <% (Object.entries(({'airport' : 'Quick Airport Bookings', 'outstation' : 'Outstation Routes'}) || {})).forEach(([key, heading], _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>
+            <section style="margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--dark-900);"><%= heading %></h2>
+                <div class="table-responsive card" style="padding: 0.75rem; border: 1px solid var(--slate-200); box-shadow: var(--shadow-sm);">
+                    <table class="table">
+                        <thead><tr><th>Route</th><th>Vehicle</th><th>Fare</th><th>Included</th><th>Extra running</th><th>Other charges</th></tr></thead>
+                        <tbody>
+                            <% ((routes?.where('category', key)) || []).forEach((route, _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>
+                                <% ((route?.vehiclePrices) || []).forEach((price, _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>
+                                    <tr>
+                                        <td><%= route?.origin %> ↔ <%= route?.destination %></td>
+                                        <td><%= price?.vehicle_category %></td>
+                                        <td>₹<%= number_format(price?.base_fare, 2) %><%= price?.gst_applicable ? ' + GST' : '' %></td>
+                                        <td><%= route?.km_limit ? route?.km_limit + ' KM' : '' %><%= route?.km_limit && route?.included_hours ? ' · ' : '' %><%= route?.included_hours ? rtrim(rtrim(number_format(route?.included_hours, 2), '0'), '.') + ' hours' : '' %></td>
+                                        <td>
+                                            <% if (price?.extra_km_rate !== null) { %>₹<%= number_format(price?.extra_km_rate, 2) %>/KM <% } %>
+                                            <% if (price?.extra_hour_rate !== null) { %>₹<%= number_format(price?.extra_hour_rate, 2) %>/hour <% } %>
+                                        </td>
+                                        <td><% if (price?.toll_type) { %>Toll <%= price?.toll_type %><% } %> <% if (price?.parking_type) { %> Parking <%= price?.parking_type %><% } %></td>
+                                    </tr>
+                                <% }); %>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        <% }); %>
+
+        <% (Object.entries(({'round_trip' : 'Round Trip', 'local_8h_80km' : 'Local Rentals · 8 Hours / 80 KM', 'local_4h_40km' : 'Local Rentals · 4 Hours / 40 KM'}) || {})).forEach(([key, heading], _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>
+            <% var package = routes?.firstWhere('category', key); %>
+            <% if (package) { %>
+                <section style="margin-bottom: 1.5rem;">
+                    <h2 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--dark-900);"><%= heading %></h2>
+                    <div class="table-responsive card" style="padding: 0.75rem; border: 1px solid var(--slate-200); box-shadow: var(--shadow-sm);">
+                        <table class="table">
+                            <thead><tr><th>Vehicle</th><th>Fare</th><th>Included</th><th>Extra KM</th><th>Extra hour</th><th>Additional charges</th></tr></thead>
+                            <tbody>
+                                <% ((package?.vehiclePrices) || []).forEach((price, _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>
+                                    <tr>
+                                        <td><%= price?.vehicle_category %></td>
+                                        <td><% if (price?.vehicle_rent !== null) { %>₹<%= number_format(price?.vehicle_rent, 2) %> rent + ₹<%= number_format(price?.per_km_rate, 2) %>/KM <% } else { %> ₹<%= number_format(price?.base_fare, 2) %> <% } %></td>
+                                        <td><%= package?.included_hours ? rtrim(rtrim(number_format(package?.included_hours, 2), '0'), '.') + ' hours' : '' %><%= package?.km_limit ? ' · ' + package?.km_limit + ' KM' : '' %></td>
+                                        <td><%= price?.extra_km_rate !== null ? '₹' + number_format(price?.extra_km_rate, 2) + '/KM' : '' %></td>
+                                        <td><%= price?.extra_hour_rate !== null ? '₹' + number_format(price?.extra_hour_rate, 2) + '/hour' : '' %></td>
+                                        <td><% if (price?.toll_type) { %>Toll <%= price?.toll_type %><% } %> <% if (price?.parking_type) { %> Parking <%= price?.parking_type %><% } %> <% if (price?.border_tax_type) { %> Border tax <%= price?.border_tax_type %><% } %> <% if (price?.night_charge !== null) { %> Night ₹<%= number_format(price?.night_charge, 2) %><% } %> <% if (price?.driver_food_type) { %> Driver food <%= price?.driver_food_type %><% } %></td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            <% } %>
+        <% }); %>
+
+        <% if (routes?.isEmpty()) { %>
+            <div class="card" style="padding: 2rem; text-align: center;">Rate not configured. Please contact Vaishnavi Tours.</div>
+        <% } %>
+    </div>
+</section>
+
+
+<%- include('../layouts/app_footer') %>

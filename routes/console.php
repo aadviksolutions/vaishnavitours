@@ -142,3 +142,4 @@ Artisan::command('vaishnavi:backup-db', function () {
 // Schedule tasks
 Schedule::command('vaishnavi:send-reminders')->dailyAt('08:00');
 Schedule::command('vaishnavi:backup-db')->dailyAt('02:00');
+Schedule::command('whatsapp:travel-reminders')->dailyAt('09:00'); // WhatsApp travel reminders

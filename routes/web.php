@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\AdminTourPackageController;
 use App\Http\Controllers\Admin\AdminTripController;
 use App\Http\Controllers\Admin\AdminVehicleCategoryController;
 use App\Http\Controllers\Admin\AdminVehicleController;
+use App\Http\Controllers\Admin\AdminWhatsappController;
 use App\Http\Controllers\Api\GoogleMapsApiController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Customer\CustomerBookingController;
@@ -230,4 +231,18 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Settings
     Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings.index');
     Route::post('/settings', [AdminSettingController::class, 'update'])->name('settings.update');
+
+    // WhatsApp Notifications
+    Route::prefix('whatsapp')->name('whatsapp.')->group(function () {
+        Route::get('/scan', [AdminWhatsappController::class, 'scan'])->name('scan');
+        Route::get('/qr-status', [AdminWhatsappController::class, 'qrStatus'])->name('qr-status');
+        Route::post('/save-phone', [AdminWhatsappController::class, 'savePhone'])->name('save-phone');
+        Route::post('/logout', [AdminWhatsappController::class, 'logout'])->name('logout');
+        Route::get('/templates', [AdminWhatsappController::class, 'templates'])->name('templates');
+        Route::put('/templates/{template}', [AdminWhatsappController::class, 'updateTemplate'])->name('templates.update');
+        Route::post('/templates/{template}/reset', [AdminWhatsappController::class, 'resetTemplate'])->name('templates.reset');
+        Route::get('/logs', [AdminWhatsappController::class, 'logs'])->name('logs');
+        Route::post('/test', [AdminWhatsappController::class, 'sendTest'])->name('send-test');
+        Route::post('/bookings/{booking}/send', [AdminWhatsappController::class, 'sendToBooking'])->name('send-to-booking');
+    });
 });

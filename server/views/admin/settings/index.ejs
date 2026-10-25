@@ -1,0 +1,392 @@
+<% let pageTitle = 'Company Settings'; %>
+<%- include('../../layouts/admin_header') %>
+
+
+
+
+
+
+<div class="mb-4">
+    <h1 style="font-size: 1.65rem; font-weight: 800; margin: 0;">Vaishnavi Tours Company Settings</h1>
+    <p style="color: var(--slate-500); font-size: 0.875rem; margin: 2px 0 0 0;">Update Bilaspur head office contacts, emergency numbers, GST registration, and policy terms.</p>
+</div>
+
+<% if (session('success')) { %>
+    <div class="alert alert-success mb-4">
+        <%- icon('check-circle', { size: 14, class: 'me-1 inline' }) %> <%= session('success') %>
+    </div>
+<% } %>
+
+<form action="<%= (globalThis.routeHelper || route)('admin.settings.update') %>" method="POST">
+    <%- csrfField() %>
+
+    <div class="grid grid-3 gap-4">
+        <div style="grid-column: span 2;">
+            <!-- Brand & Contact -->
+            <div class="card mb-4">
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;"><%- icon('building-2', { size: 16, class: 'me-1 inline' }) %> Brand & Company Profile</h3>
+
+                <div class="grid grid-2 gap-3 mb-3">
+                    <div class="form-group">
+                        <label for="company_name" class="form-label">Brand Name *</label>
+                        <input type="text" name="company_name" id="company_name" class="form-control" value="<%= old('company_name', settings['company_name']?.value ?? 'Vaishnavi Tours') %>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="company_tagline" class="form-label">Tagline / Slogan</label>
+                        <input type="text" name="company_tagline" id="company_tagline" class="form-control" value="<%= old('company_tagline', settings['company_tagline']?.value ?? '24/7 Car Rentals, Cabs & Travel Service') %>">
+                    </div>
+                </div>
+
+                <div class="grid grid-2 gap-3 mb-3">
+                    <div class="form-group">
+                        <label for="contact_email" class="form-label">General Contact Email *</label>
+                        <input type="email" name="contact_email" id="contact_email" class="form-control" value="<%= old('contact_email', settings['contact_email']?.value ?? 'info@vaishnavitours.com') %>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="support_email" class="form-label">Customer Support Email</label>
+                        <input type="email" name="support_email" id="support_email" class="form-control" value="<%= old('support_email', settings['support_email']?.value ?? 'support@vaishnavitours.com') %>">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Helplines -->
+            <div class="card mb-4">
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;"><%- icon('phone', { size: 16, class: 'me-1 inline' }) %> Official Contact & Support Numbers</h3>
+
+                <div class="grid grid-2 gap-3 mb-3">
+                    <div class="form-group">
+                        <label for="phone_primary" class="form-label">Primary Booking Number</label>
+                        <input type="text" name="phone_primary" id="phone_primary" class="form-control" value="<%= old('phone_primary', settings['phone_primary']?.value ?? '9244784443') %>" placeholder="9244784443">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone_secondary" class="form-label">Secondary Calling Number</label>
+                        <input type="text" name="phone_secondary" id="phone_secondary" class="form-control" value="<%= old('phone_secondary', settings['phone_secondary']?.value ?? '9179484443') %>" placeholder="9179484443">
+                    </div>
+                </div>
+
+                <div class="grid grid-2 gap-3">
+                    <div class="form-group">
+                        <label for="emergency_phone" class="form-label">Support / Assistance Number</label>
+                        <input type="text" name="emergency_phone" id="emergency_phone" class="form-control" value="<%= old('emergency_phone', settings['emergency_phone']?.value ?? '') %>" placeholder="Optional emergency number">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="whatsapp_number" class="form-label">WhatsApp Number (with Country Code)</label>
+                        <input type="text" name="whatsapp_number" id="whatsapp_number" class="form-control" value="<%= old('whatsapp_number', settings['whatsapp_number']?.value ?? '9244784443') %>" placeholder="9244784443">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Head Office Address & GST -->
+            <div class="card mb-4">
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;"><%- icon('map-pin', { size: 16, class: 'me-1 inline' }) %> Bilaspur Head Office Address</h3>
+
+                <div class="grid grid-2 gap-3 mb-3">
+                    <div class="form-group">
+                        <label for="address_line_1" class="form-label">Address Line 1 *</label>
+                        <input type="text" name="address_line_1" id="address_line_1" class="form-control" value="<%= old('address_line_1', settings['address_line_1']?.value ?? 'Mangal Chowk') %>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address_line_2" class="form-label">Address Line 2 / Landmark *</label>
+                        <input type="text" name="address_line_2" id="address_line_2" class="form-control" value="<%= old('address_line_2', settings['address_line_2']?.value ?? 'Bilaspur') %>" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-3 gap-3 mb-3">
+                    <div class="form-group">
+                        <label for="city" class="form-label">City *</label>
+                        <input type="text" name="city" id="city" class="form-control" value="<%= old('city', settings['city']?.value ?? 'Bilaspur') %>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="state" class="form-label">State *</label>
+                        <input type="text" name="state" id="state" class="form-control" value="<%= old('state', settings['state']?.value ?? 'Chhattisgarh') %>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pincode" class="form-label">PIN Code *</label>
+                        <input type="text" name="pincode" id="pincode" class="form-control" value="<%= old('pincode', settings['pincode']?.value ?? '495001') %>" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="gstin" class="form-label">Goods & Services Tax (GSTIN) Number</label>
+                    <input type="text" name="gstin" id="gstin" class="form-control" value="<%= old('gstin', settings['gstin']?.value ?? config('vaishnavi.gstin')) %>">
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">Bank Details for Invoices</h3>
+
+                <div class="grid grid-2 gap-3 mb-3">
+                    <div class="form-group">
+                        <label for="bank_account_name" class="form-label">Account Name</label>
+                        <input type="text" name="bank_account_name" id="bank_account_name" class="form-control" value="<%= old('bank_account_name', settings['bank_account_name']?.value ?? config('vaishnavi.bank_account_name')) %>">
+                    </div>
+                    <div class="form-group">
+                        <label for="bank_name" class="form-label">Bank</label>
+                        <input type="text" name="bank_name" id="bank_name" class="form-control" value="<%= old('bank_name', settings['bank_name']?.value ?? config('vaishnavi.bank_name')) %>">
+                    </div>
+                </div>
+
+                <div class="grid grid-2 gap-3">
+                    <div class="form-group">
+                        <label for="bank_account_number" class="form-label">Account Number</label>
+                        <input type="text" name="bank_account_number" id="bank_account_number" class="form-control" value="<%= old('bank_account_number', settings['bank_account_number']?.value ?? config('vaishnavi.bank_account_number')) %>">
+                    </div>
+                    <div class="form-group">
+                        <label for="bank_ifsc_code" class="form-label">IFSC Code</label>
+                        <input type="text" name="bank_ifsc_code" id="bank_ifsc_code" class="form-control" value="<%= old('bank_ifsc_code', settings['bank_ifsc_code']?.value ?? config('vaishnavi.bank_ifsc_code')) %>">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Google Business Profile & Google Reviews Integration -->
+            <div class="card mb-4" style="border: 2px solid #E0E7FF; background: #FFFFFF;">
+                <div class="d-flex justify-between align-center mb-3">
+                    <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+                        </svg>
+                        Google Business Profile &amp; Reviews Integration
+                    </h3>
+                    <span class="badge" style="background: #DEF7EC; color: #03543F; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 9999px;">
+                        <%- icon('check-circle-2', { size: 13, class: 'me-1 inline text-emerald-600' }) %> Verified Listing
+                    </span>
+                </div>
+
+                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px 16px; margin-bottom: 1.25rem;">
+                    <div style="font-size: 0.85rem; font-weight: 700; color: #1E293B; margin-bottom: 4px;">
+                        Resolved Business Profile: <span style="color: #2563EB;">Vaishnavi Tours Taxi Cab Service Car Rental</span>
+                    </div>
+                    <div style="font-size: 0.775rem; color: #64748B;">
+                        Knowledge Graph Machine ID (kgmid): <code>/g/11tjf7l5kx</code> &bull; Location: Bilaspur, Chhattisgarh
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="google_share_url" class="form-label">Official Google Maps Share Link</label>
+                    <input type="url" name="google_share_url" id="google_share_url" class="form-control" value="<%= old('google_share_url', settings['google_share_url']?.value ?? config('vaishnavi.google_share_url')) %>" placeholder="https://share.google/0Z3hLSDusfgPwsJx0">
+                    <small style="color: var(--slate-500); font-size: 0.775rem;">Official short link used for customer sharing and app redirection.</small>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="google_maps_url" class="form-label">Resolved Google Maps / Business Profile URL *</label>
+                    <div class="d-flex gap-2">
+                        <input type="url" name="google_maps_url" id="google_maps_url" class="form-control" value="<%= old('google_maps_url', settings['google_maps_url']?.value ?? config('vaishnavi.google_maps_url')) %>" required>
+                        <a href="<%= settings['google_maps_url']?.value ?? config('vaishnavi.google_maps_url') %>" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="white-space: nowrap; font-size: 0.8rem; padding: 0.5rem 0.875rem;">
+                            ↗ Test Link
+                        </a>
+                    </div>
+                    <small style="color: var(--slate-500); font-size: 0.775rem;">Target destination for website "View on Google Maps" and business verification.</small>
+                </div>
+
+                <div class="grid grid-2 gap-3 mb-3">
+                    <div class="form-group">
+                        <label for="google_write_review_url" class="form-label">Direct "Write a Review" URL *</label>
+                        <div class="d-flex gap-2">
+                            <input type="url" name="google_write_review_url" id="google_write_review_url" class="form-control" value="<%= old('google_write_review_url', settings['google_write_review_url']?.value ?? config('vaishnavi.google_write_review_url')) %>" required>
+                            <a href="<%= settings['google_write_review_url']?.value ?? config('vaishnavi.google_write_review_url') %>" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="white-space: nowrap; font-size: 0.8rem; padding: 0.5rem 0.875rem;">
+                                ↗ Test
+                            </a>
+                        </div>
+                        <small style="color: var(--slate-500); font-size: 0.775rem;">Opens Google's review modal directly for customers.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="google_all_reviews_url" class="form-label">Direct "Read All Reviews" URL *</label>
+                        <div class="d-flex gap-2">
+                            <input type="url" name="google_all_reviews_url" id="google_all_reviews_url" class="form-control" value="<%= old('google_all_reviews_url', settings['google_all_reviews_url']?.value ?? config('vaishnavi.google_all_reviews_url')) %>" required>
+                            <a href="<%= settings['google_all_reviews_url']?.value ?? config('vaishnavi.google_all_reviews_url') %>" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="white-space: nowrap; font-size: 0.8rem; padding: 0.5rem 0.875rem;">
+                                ↗ Test
+                            </a>
+                        </div>
+                        <small style="color: var(--slate-500); font-size: 0.775rem;">Opens all verified reviews in Google Maps/Search.</small>
+                    </div>
+                </div>
+
+                <div class="grid grid-3 gap-3 mb-2">
+                    <div class="form-group">
+                        <label for="google_place_id" class="form-label">Google Place ID (Optional)</label>
+                        <input type="text" name="google_place_id" id="google_place_id" class="form-control" value="<%= old('google_place_id', settings['google_place_id']?.value ?? config('vaishnavi.google_place_id')) %>" placeholder="e.g. ChIJ...">
+                        <small style="color: var(--slate-500); font-size: 0.775rem;">Place ID if provided by Google Cloud Console.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="google_rating" class="form-label">Google Star Rating *</label>
+                        <input type="text" name="google_rating" id="google_rating" class="form-control" value="<%= old('google_rating', settings['google_rating']?.value ?? config('vaishnavi.google_rating', '4.9')) %>" required>
+                        <small style="color: var(--slate-500); font-size: 0.775rem;">Verified score (e.g. 4.9 out of 5).</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="google_review_count" class="form-label">Verified Review Count *</label>
+                        <input type="text" name="google_review_count" id="google_review_count" class="form-control" value="<%= old('google_review_count', settings['google_review_count']?.value ?? config('vaishnavi.google_review_count', '160+')) %>" required>
+                        <small style="color: var(--slate-500); font-size: 0.775rem;">Total verified reviews count.</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Google Maps, Places & Routes API Configuration -->
+            <div class="card mb-4" style="border: 2px solid #BFDBFE; background: #FFFFFF;">
+                <div class="d-flex justify-between align-center mb-3">
+                    <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <span><%- icon('map', { size: 16 }) %></span>
+                        Google Maps Platform, Places &amp; Routes API Configuration
+                    </h3>
+                    <span class="badge" style="background: #EFF6FF; color: #1D4ED8; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 9999px;">
+                        Interactive Map &amp; Road Routing
+                    </span>
+                </div>
+
+                <!-- API Setup Guide Alert -->
+                <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 12px 16px; margin-bottom: 1.25rem;">
+                    <strong style="color: #166534; font-size: 0.85rem; display: block; margin-bottom: 4px;">
+                        <%- icon('key', { size: 16, class: 'me-1 inline text-amber-500' }) %> Required Google Cloud Console APIs &amp; Security Restrictions:
+                    </strong>
+                    <div style="font-size: 0.785rem; color: #15803D; line-height: 1.5;">
+                        <ul style="margin: 0; padding-left: 1.2rem;">
+                            <li><strong>Client Key:</strong> Enable <em>Maps JavaScript API</em> &amp; <em>Places API</em>. Under <strong>API Restrictions</strong>, lock to these 2 APIs. Under <strong>Application Restrictions</strong>, set <em>HTTP Referrers</em> to your domains (e.g. <code>https://vaishnavitours.com/*</code>, <code>https://vaishnavitours.vercel.app/*</code>).</li>
+                            <li><strong>Server Key:</strong> Enable <em>Routes API</em>, <em>Directions API</em>, and <em>Geocoding API</em>. Under <strong>Application Restrictions</strong>, restrict by server IP or leave unrestricted behind backend env. Kept completely private on server.</li>
+                            <li><em>Note: If API keys are left blank, Vaishnavi Tours automatically activates the calibrated fallback mapping engine with zero downtime.</em></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="grid grid-2 gap-3 mb-3">
+                    <div class="form-group">
+                        <label for="google_maps_client_api_key" class="form-label">
+                            Browser / Client API Key (Public JavaScript)
+                        </label>
+                        <input type="text" name="google_maps_client_api_key" id="google_maps_client_api_key" class="form-control" value="<%= old('google_maps_client_api_key', settings['google_maps_client_api_key']?.value ?? config('vaishnavi.google_maps_client_api_key')) %>" placeholder="AIzaSy...">
+                        <small style="color: var(--slate-500); font-size: 0.775rem;">Used in client browser for Places Autocomplete and interactive map picker. Restrict by HTTP referrer.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="google_maps_server_api_key" class="form-label">
+                            Server-Side API Key (Private Backend)
+                        </label>
+                        <input type="password" name="google_maps_server_api_key" id="google_maps_server_api_key" class="form-control" value="<%= old('google_maps_server_api_key', settings['google_maps_server_api_key']?.value ?? config('vaishnavi.google_maps_server_api_key')) %>" placeholder="AIzaSy... (Kept private)">
+                        <small style="color: var(--slate-500); font-size: 0.775rem;">Used strictly on server for Routes API &amp; Geocoding. Never sent to frontend or public users.</small>
+                    </div>
+                </div>
+
+                <div class="grid grid-3 gap-3 mb-2">
+                    <div class="form-group">
+                        <label for="map_center_lat" class="form-label">Default Center Latitude</label>
+                        <input type="number" step="0.0001" name="map_center_lat" id="map_center_lat" class="form-control" value="<%= old('map_center_lat', settings['map_center_lat']?.value ?? config('vaishnavi.map_center_lat', 22.0797)) %>">
+                        <small style="color: var(--slate-500); font-size: 0.775rem;">Default: 22.0797 (Bilaspur)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="map_center_lng" class="form-label">Default Center Longitude</label>
+                        <input type="number" step="0.0001" name="map_center_lng" id="map_center_lng" class="form-control" value="<%= old('map_center_lng', settings['map_center_lng']?.value ?? config('vaishnavi.map_center_lng', 82.1409)) %>">
+                        <small style="color: var(--slate-500); font-size: 0.775rem;">Default: 82.1409 (Bilaspur)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="map_default_zoom" class="form-label">Default Map Zoom</label>
+                        <input type="number" name="map_default_zoom" id="map_default_zoom" class="form-control" value="<%= old('map_default_zoom', settings['map_default_zoom']?.value ?? config('vaishnavi.map_default_zoom', 12)) %>">
+                        <small style="color: var(--slate-500); font-size: 0.775rem;">Default: 12</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Policy Terms -->
+            <div class="card mb-4">
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;"><%- icon('file-text', { size: 16, class: 'me-1 inline' }) %> Booking Policy Terms & Conditions</h3>
+
+                <div class="form-group">
+                    <label for="booking_terms" class="form-label">Standard Customer Policy (Printed on Invoices)</label>
+                    <textarea name="booking_terms" id="booking_terms" class="form-control" rows="3"><%= old('booking_terms', settings['booking_terms']?.value ?? config('vaishnavi.booking_terms')) %></textarea>
+                </div>
+            </div>
+
+            
+            <div class="card mb-4" style="border: 2px solid #25D366;">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span style="display:inline-flex;align-items:center;"><%- icon('smartphone', { size: 22, class: 'text-primary' }) %></span>
+                    <div>
+                        <h3 style="font-size: 1.15rem; font-weight: 800; margin:0;">WhatsApp Notifications (OpenWA)</h3>
+                        <p style="font-size:0.8rem;color:var(--slate-500);margin:0;">
+                            Connect your self-hosted OpenWA gateway to send automatic booking notifications.
+                            <a href="<%= (globalThis.routeHelper || route)('admin.whatsapp.templates') %>" style="color:#25D366;">Manage message templates →</a>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-2 gap-3 mb-3">
+                    <div class="form-group">
+                        <label for="openwa_base_url" class="form-label">OpenWA API Base URL</label>
+                        <input type="url" name="openwa_base_url" id="openwa_base_url" class="form-control"
+                            value="<%= old('openwa_base_url', settings['openwa_base_url']?.value ?? '') %>"
+                            placeholder="http://localhost:3000">
+                        <small style="color:var(--slate-500);font-size:0.775rem;">URL where OpenWA is running (e.g. http://your-vps:3000)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="openwa_api_key" class="form-label">API Key (optional)</label>
+                        <input type="text" name="openwa_api_key" id="openwa_api_key" class="form-control"
+                            value="<%= old('openwa_api_key', settings['openwa_api_key']?.value ?? '') %>"
+                            placeholder="Bearer token if configured">
+                    </div>
+                </div>
+
+                <div class="grid grid-2 gap-3 mb-3">
+                    <div class="form-group">
+                        <label for="openwa_admin_number" class="form-label">Admin WhatsApp Number</label>
+                        <input type="text" name="openwa_admin_number" id="openwa_admin_number" class="form-control"
+                            value="<%= old('openwa_admin_number', settings['openwa_admin_number']?.value ?? settings['whatsapp_number']?.value ?? '') %>"
+                            placeholder="9244784443">
+                        <small style="color:var(--slate-500);font-size:0.775rem;">Every customer message is also sent here as an admin copy.</small>
+                    </div>
+                    <div class="form-group d-flex align-items-center" style="padding-top:1.5rem;">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="openwa_enabled" id="openwa_enabled" value="1"
+                                <%= (settings['openwa_enabled']?.value ?? '1') === '1' ? 'checked' : '' %>>
+                            <label class="form-check-label fw-semibold" for="openwa_enabled">Enable WhatsApp Notifications</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background:#f0fdf4;border-radius:6px;padding:10px 14px;font-size:0.8rem;color:#166534;">
+                    <strong>Quick Setup:</strong>
+                    Clone OpenWA → <code>npm install &amp;&amp; npm start</code> → Scan QR with your WhatsApp →
+                    Enter URL above → Save → Test on <a href="<%= (globalThis.routeHelper || route)('admin.whatsapp.templates') %>" style="color:#15803d;font-weight:600;">Templates page</a>.
+                </div>
+            </div>
+
+            <div class="d-flex justify-end gap-2 mb-5">
+                <button type="submit" class="btn btn-primary" style="min-width: 200px;">
+                    <%- icon('save', { size: 16, class: 'me-1 inline' }) %> Save All Settings
+                </button>
+            </div>
+
+
+        </div>
+
+        <!-- Right 1 Col: Quick Info -->
+        <div>
+            <div class="card mb-4" style="background: var(--slate-50);">
+                <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 0.5rem;"><%- icon('building-2', { size: 15, class: 'me-1 inline' }) %> Vaishnavi Tours HQ</h4>
+                <p style="font-size: 0.825rem; color: var(--slate-600); line-height: 1.5; margin-bottom: 0.75rem;">
+                    The contact numbers and addresses configured here are automatically synchronized across:
+                </p>
+                <ul style="font-size: 0.8rem; color: var(--slate-600); padding-left: 1.2rem; line-height: 1.6; margin: 0;">
+                    <li>Public website header, footer & contact cards</li>
+                    <li>24/7 Emergency Ambulance banner</li>
+                    <li>Official GST Tax Invoices and customer receipts</li>
+                    <li>Customer booking SMS/WhatsApp dispatch templates</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+<%- include('../../layouts/admin_footer') %>
