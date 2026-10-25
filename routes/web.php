@@ -29,6 +29,7 @@ use App\Http\Controllers\Customer\CustomerDashboardController;
 use App\Http\Controllers\Customer\CustomerInvoiceController;
 use App\Http\Controllers\Customer\CustomerNotificationController;
 use App\Http\Controllers\Customer\CustomerProfileController;
+use App\Http\Controllers\PublicPaymentController;
 use App\Http\Controllers\PublicWebsiteController;
 use App\Models\Booking;
 use Illuminate\Support\Facades\Route;
@@ -42,6 +43,12 @@ Route::get('/', [PublicWebsiteController::class, 'home'])->name('home');
 Route::get('/booking', [PublicWebsiteController::class, 'booking'])->name('booking');
 Route::post('/booking', [PublicWebsiteController::class, 'storeBooking'])->name('booking.store');
 Route::get('/booking-success/{booking}', [PublicWebsiteController::class, 'bookingSuccess'])->name('booking.success');
+
+// Razorpay Online Payments & Webhook
+Route::get('/pay/{booking}', [PublicPaymentController::class, 'showPayPage'])->name('payment.pay');
+Route::post('/api/payments/razorpay/create-order', [PublicPaymentController::class, 'createOrder'])->name('api.payments.razorpay.create-order');
+Route::post('/api/payments/razorpay/verify', [PublicPaymentController::class, 'verifyPayment'])->name('api.payments.razorpay.verify');
+Route::post('/api/payments/razorpay/webhook', [PublicPaymentController::class, 'webhook'])->name('api.payments.razorpay.webhook');
 
 Route::get('/services', [PublicWebsiteController::class, 'services'])->name('services');
 Route::get('/ambulance-services', [PublicWebsiteController::class, 'ambulanceServices'])->name('ambulance-services');

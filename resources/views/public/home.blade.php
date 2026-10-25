@@ -991,6 +991,7 @@
             </div>
 
             <!-- Review Cards Grid -->
+            @if($feedbacks->isNotEmpty())
             <div class="grid grid-3 gap-3">
                 @php
                     $avatarColors = [
@@ -1067,6 +1068,36 @@
                     </div>
                 @endforeach
             </div>
+            @else
+            <div style="background: #FFFFFF; border: 1.5px solid #E2E8F0; border-radius: 14px; padding: 2.25rem 2rem; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+                <div style="max-width: 620px; margin: 0 auto;">
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: #DEF7EC; color: #03543F; font-size: 0.8rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; margin-bottom: 0.85rem;">
+                        <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        100% Genuine Google Customer Reviews
+                    </div>
+                    <h3 style="font-size: 1.25rem; font-weight: 700; color: #0F172A; margin-bottom: 0.5rem;">
+                        Authentic Feedback from Real Passengers
+                    </h3>
+                    <p style="font-size: 0.9rem; color: #64748B; margin-bottom: 1.5rem; line-height: 1.6;">
+                        We believe in genuine trust. Vaishnavi Tours maintains a verified <strong>{{ \App\Models\Setting::get('google_rating', config('vaishnavi.google_rating', '4.9')) }} ★ rating</strong> based on <strong>{{ \App\Models\Setting::get('google_review_count', config('vaishnavi.google_review_count', '160+')) }} traveler reviews</strong> on our official Google Business Profile.
+                    </p>
+                    <div class="d-flex justify-center gap-2 flex-wrap">
+                        <a href="{{ \App\Models\Setting::get('google_all_reviews_url', config('vaishnavi.google_all_reviews_url')) }}"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="btn btn-primary"
+                           style="background: #1A73E8; border-color: #1A73E8; font-size: 0.875rem;">
+                            Read Verified Reviews on Google &rarr;
+                        </a>
+                        <a href="{{ route('feedback') }}" class="btn btn-outline" style="font-size: 0.875rem;">
+                            Share Your Experience
+                        </a>
+                    </div>
+                </div>
+            </div>
+            @endif
 
             <!-- Bottom Attribution & Mobile Buttons -->
             <div class="text-center" style="margin-top: 2rem;">

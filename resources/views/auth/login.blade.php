@@ -14,19 +14,6 @@
                 <p style="font-size: 0.875rem; color: var(--slate-500);">Access your bookings, track live trip status & view invoices.</p>
             </div>
 
-            <!-- Demo Credentials Quick Fill Buttons -->
-            <div style="background: var(--slate-100); border-radius: var(--radius-md); padding: 0.85rem; margin-bottom: 1.5rem; font-size: 0.825rem;">
-                <div style="font-weight: 700; margin-bottom: 0.5rem; color: var(--dark-800);">🚀 Quick Demo Logins:</div>
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-outline btn-sm" onclick="fillCreds('admin@vaishnavitours.com', 'Password@123')" style="flex: 1; font-size: 0.775rem;">
-                        Admin Login
-                    </button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="fillCreds('rajesh.sharma@gmail.com', 'Password@123')" style="flex: 1; font-size: 0.775rem;">
-                        Customer Login
-                    </button>
-                </div>
-            </div>
-
             <form action="{{ route('login.submit') }}" method="POST">
                 @csrf
 
@@ -66,12 +53,3 @@
     </div>
 </section>
 @endsection
-
-@push('scripts')
-<script>
-    function fillCreds(email, pwd) {
-        document.getElementById('loginEmail').value = email;
-        document.getElementById('loginPassword').value = pwd;
-    }
-</script>
-@endpush

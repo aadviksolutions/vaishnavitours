@@ -323,6 +323,11 @@
             @endif
 
             <div style="margin-top: 1.25rem;">
+                @if($booking->balance_amount > 0 && $booking->booking_status !== 'Cancelled')
+                    <a href="{{ route('payment.pay', $booking->id) }}" class="btn btn-primary btn-block mb-2" style="text-align: center; font-weight: 800;">
+                        💳 Pay Balance Online (₹{{ number_format($booking->balance_amount, 2) }})
+                    </a>
+                @endif
                 <a href="{{ route('invoice.show', $booking->id) }}" class="btn btn-outline btn-block" style="text-align: center;" target="_blank">
                     🧾 View / Print Tax Invoice
                 </a>

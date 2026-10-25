@@ -19,6 +19,10 @@ $app = Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureAdmin::class,
             'customer' => EnsureCustomer::class,
         ]);
+        $middleware->validateCsrfTokens(except: [
+            'api/payments/razorpay/*',
+            'api/payments/razorpay/webhook',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

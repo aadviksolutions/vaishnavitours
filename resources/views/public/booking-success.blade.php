@@ -98,9 +98,28 @@
                         <strong>Agreed Terms:</strong> By confirming this booking, you agreed to Vaishnavi Tour's 
                         <a href="{{ route('terms-and-conditions') }}" target="_blank" style="color: #15803D; font-weight: 700; text-decoration: underline;">Cancellation Policy &amp; Terms &amp; Conditions</a>
                         (Version {{ $booking->terms_version ?? '1.0' }}).
-                    </div>
                 </div>
             </div>
+
+            @if((float)($booking->balance_amount ?? 0) > 0 && (float)($booking->total_amount ?? 0) > 0)
+                <div style="background: #FFFBEB; border: 1.5px solid #FCD34D; border-radius: var(--radius-md); padding: 1.5rem; text-align: center; margin-bottom: 2rem;">
+                    <h3 style="font-size: 1.15rem; font-weight: 800; color: #92400E; margin-bottom: 0.5rem;">
+                        Pay Online to Confirm Booking Instantly
+                    </h3>
+                    <p style="color: #78350F; font-size: 0.875rem; margin-bottom: 1.25rem;">
+                        Pay securely using UPI, Credit/Debit Card, or Netbanking via Razorpay.
+                    </p>
+                    <a href="{{ route('payment.pay', $booking->id) }}" class="btn btn-primary btn-lg" style="font-weight: 800; padding: 0.75rem 2rem;">
+                        <x-icon name="shield-check" size="18" style="margin-right: 6px;" /> Pay ₹{{ number_format($booking->balance_amount, 2) }} Online
+                    </a>
+                </div>
+            @elseif($booking->payment_status === 'Paid')
+                <div style="background: #F0FDF4; border: 1.5px solid #BBF7D0; border-radius: var(--radius-md); padding: 1.25rem; text-align: center; margin-bottom: 2rem;">
+                    <span style="color: #166534; font-weight: 800; font-size: 1.05rem;">
+                        ✓ Payment of ₹{{ number_format($booking->paid_amount, 2) }} Verified & Confirmed
+                    </span>
+                </div>
+            @endif
 
             <!-- If customer is not logged in: Ask whether they want to create an account -->
             @guest

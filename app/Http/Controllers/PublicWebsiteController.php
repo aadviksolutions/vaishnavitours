@@ -33,20 +33,16 @@ class PublicWebsiteController extends Controller
             $feedbacks = collect([]);
         }
 
-        if ($feedbacks->isEmpty()) {
-            $feedbacks = $this->getFallbackFeedbacks();
-        }
-
         try {
             $stats = [
-                'trips_completed' => Booking::where('booking_status', 'Completed')->count() + 15400,
+                'trips_completed' => Booking::where('booking_status', 'Completed')->count(),
                 'active_vehicles' => $bookingData['vehicles']->count() ?: 12,
                 'satisfaction_rate' => '99.4%',
                 'support_hours' => '24/7',
             ];
         } catch (\Throwable $e) {
             $stats = [
-                'trips_completed' => 15400,
+                'trips_completed' => 0,
                 'active_vehicles' => 12,
                 'satisfaction_rate' => '99.4%',
                 'support_hours' => '24/7',
@@ -743,62 +739,6 @@ class PublicWebsiteController extends Controller
             $vehicle->exists = true;
 
             return $vehicle;
-        });
-    }
-
-    protected function getFallbackFeedbacks()
-    {
-        $items = [
-            [
-                'name' => 'Rajesh Sharma',
-                'rating' => 5,
-                'trip' => 'Bilaspur → Raipur Airport Transfer',
-                'date_human' => '2 weeks ago',
-                'comment' => 'Excellent on-time service from Bilaspur to Raipur Swami Vivekananda Airport (RPR). The chauffeur arrived 15 minutes ahead of reporting time at Mangal Chowk. Spotless Dzire sedan, smooth highway driving, and polite behavior.',
-            ],
-            [
-                'name' => 'Dr. Anita Agrawal',
-                'rating' => 5,
-                'trip' => 'Family Outstation • Bilaspur to Amarkantak',
-                'date_human' => '1 month ago',
-                'comment' => 'Booked an Innova Crysta for our family trip to Amarkantak. The car was sanitized, smelling fresh, and the chauffeur handled the mountain ghat sections with utmost safety. Transparent billing with zero hidden charges.',
-            ],
-            [
-                'name' => 'Sunil Verma',
-                'rating' => 5,
-                'trip' => 'Corporate Travel • Bilaspur to Korba',
-                'date_human' => '1 month ago',
-                'comment' => 'Regular business traveler between Bilaspur and the Korba industrial belt. Vaishnavi Tours is consistently dependable. Clean cabs, professional chauffeurs, and instant automated GST invoices on trip completion.',
-            ],
-            [
-                'name' => 'Meenakshi Dewangan',
-                'rating' => 5,
-                'trip' => 'Emergency Travel • Bilaspur to Raipur',
-                'date_human' => '2 months ago',
-                'comment' => 'Had an urgent late-night medical travel requirement to Raipur. Called their 24/7 dispatch helpline and the cab arrived at our doorstep within 20 minutes. Truly a reliable lifeline service for Chhattisgarh families.',
-            ],
-            [
-                'name' => 'Vikas Patel',
-                'rating' => 5,
-                'trip' => 'Outstation Tour • Bilaspur to Mainpat & Ambikapur',
-                'date_human' => '2 months ago',
-                'comment' => 'We hired an Ertiga for a weekend getaway to Mainpat and Ambikapur. Excellent vehicle condition, chilled AC, polite driver with great knowledge of local attractions and food stops. 10/10 recommendation!',
-            ],
-            [
-                'name' => 'Amitabh Tiwari',
-                'rating' => 5,
-                'trip' => 'Local City & Railway Station Drop • Bilaspur',
-                'date_human' => '3 months ago',
-                'comment' => 'Best taxi service in Bilaspur without a doubt. Punctual doorstep pickup, genuine fixed rates without surging, and courteous support staff on call. Will always book with Vaishnavi Tours.',
-            ],
-        ];
-
-        return collect($items)->map(function ($attributes) {
-            $feedback = new Feedback;
-            $feedback->forceFill($attributes);
-            $feedback->exists = true;
-
-            return $feedback;
         });
     }
 }

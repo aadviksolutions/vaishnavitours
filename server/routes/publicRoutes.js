@@ -68,18 +68,11 @@ export function getBookingData() {
 // 1. Home
 router.get('/', (req, res) => {
     const bookingData = getBookingData();
-    let feedbacks = getAll("SELECT * FROM feedback WHERE is_public = 1 ORDER BY created_at DESC LIMIT 6");
-    if (!feedbacks.length) {
-        feedbacks = [
-            { name: 'Amit Sharma', rating: 5, comment: 'Punctual driver, clean Innova, and smooth ride from Bilaspur to Raipur Airport. Highly recommended!', created_at: '2026-10-15' },
-            { name: 'Pooja Dewangan', rating: 5, comment: 'Booked an outstation cab for Amarkantak trip. Excellent driving skills and polite chauffeur.', created_at: '2026-10-18' },
-            { name: 'Dr. R. K. Gupta', rating: 5, comment: '24/7 reliability in Bilaspur. Always my first choice for family and corporate travel.', created_at: '2026-10-20' }
-        ];
-    }
+    const feedbacks = getAll("SELECT * FROM feedback WHERE is_public = 1 ORDER BY created_at DESC LIMIT 6");
 
     const tripCountRow = getOne("SELECT count(*) as count FROM bookings WHERE booking_status = 'Completed'");
     const stats = {
-        trips_completed: (tripCountRow?.count || 0) + 15400,
+        trips_completed: tripCountRow?.count || 0,
         active_vehicles: bookingData.vehicles.length || 12,
         satisfaction_rate: '99.4%',
         support_hours: '24/7'

@@ -165,4 +165,73 @@ class PaymentService
             return $payment;
         });
     }
+
+    /**
+     * Confirm a verified Razorpay payment and sync booking balances & invoice
+     */
+    public function confirmRazorpayPayment(Booking $booking, array $paymentDetails): Payment
+    {
+        return DB::transaction(function () use ($booking, $paymentDetails) {
+            $amount = (float) ($paymentDetails['amount'] ?? 0);
+            $orderId = $paymentDetails['razorpay_order_id'] ?? null;
+            $paymentId = $paymentDetails['razorpay_payment_id'] ?? null;
+            $method = $paymentDetails['method'] ?? 'Razorpay Online';
+
+            $existing = Payment::where('razorpay_payment_id', $paymentId)
+                ->orWhere('transaction_id', $paymentId)
+                ->first();
+
+            if ($existing) {
+                return $existing;
+            }
+
+            $payment = Payment::create([
+                'booking_id' => $booking->id,
+                'customer_id' => $booking->customer_id,
+                'gateway' => 'Razorpay',
+                'transaction_id' => $paymentId ?: ('RZP-'.strtoupper(uniqid())),
+                'razorpay_order_id' => $orderId,
+                'razorpay_payment_id' => $paymentId,
+                'signature_verified' => 1,
+                'amount' => $amount,
+                'currency' => 'INR',
+                'payment_method' => ucfirst($method),
+                'status' => 'Success',
+                'paid_at' => now(),
+                'captured_at' => now(),
+                'notes' => 'Online payment verified via Razorpay Checkout',
+            ]);
+
+            $newPaid = (float) $booking->paid_amount + $amount;
+            $newBalance = max(0, (float) $booking->total_amount - $newPaid);
+            $paymentStatus = $newBalance <= 0 ? 'Paid' : 'Partial';
+
+            $bookingUpdates = [
+                'paid_amount' => $newPaid,
+                'balance_amount' => $newBalance,
+                'payment_status' => $paymentStatus,
+                'razorpay_order_id' => $orderId,
+            ];
+
+            if ($booking->booking_status === 'Pending') {
+                $bookingUpdates['booking_status'] = 'Confirmed';
+                $bookingUpdates['confirmed_at'] = now();
+            }
+
+            $booking->update($bookingUpdates);
+            $this->syncInvoice($booking);
+
+            if ($booking->customer_id) {
+                Notification::create([
+                    'user_id' => $booking->customer_id,
+                    'title' => 'Payment Confirmed: ₹'.number_format($amount, 2),
+                    'message' => 'Online payment confirmed for booking #'.$booking->booking_id.'. Remaining balance: ₹'.number_format($newBalance, 2),
+                    'type' => 'payment',
+                    'action_url' => '/customer/bookings/'.$booking->id,
+                ]);
+            }
+
+            return $payment;
+        });
+    }
 }
