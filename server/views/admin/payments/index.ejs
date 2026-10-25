@@ -1,137 +1,442 @@
-<% let pageTitle = 'Payments Ledger'; %>
+<% let pageTitle = 'Payment Gateway & Transactions Ledger'; %>
 <%- include('../../layouts/admin_header') %>
-
-
-
-
-
 
 <div class="d-flex justify-between align-center flex-wrap gap-2 mb-4">
     <div>
-        <h1 style="font-size: 1.65rem; font-weight: 800; margin: 0;">Financial Payments Ledger</h1>
-        <p style="color: var(--slate-500); margin: 2px 0 0 0; font-size: 0.875rem;">Comprehensive record of cash collections, UPI transfers, card payments, and receipts.</p>
+        <h1 style="font-size: 1.65rem; font-weight: 800; margin: 0; color: var(--dark-950);">
+            Payment Gateway &amp; Financial Ledger
+        </h1>
+        <p style="color: var(--slate-500); margin: 3px 0 0 0; font-size: 0.875rem;">
+            Real-time Razorpay checkout captures, UPI/Card transactions, webhook audits, and settlement reconciliation.
+        </p>
     </div>
     <div class="d-flex align-center gap-2">
-        <a href="<%= (globalThis.routeHelper || route)('admin.payments.create') %>" class="btn btn-primary btn-sm">+ Record Payment</a>
+        <button type="button" class="btn btn-outline btn-sm" onclick="location.reload()">
+            <%- icon('refresh-cw', { size: 14, style: 'margin-right: 4px;' }) %> Refresh
+        </button>
+        <a href="/admin/invoices" class="btn btn-outline btn-sm">
+            <%- icon('file-text', { size: 14, style: 'margin-right: 4px;' }) %> Invoices
+        </a>
     </div>
 </div>
 
-<!-- KPI Banner -->
-<div class="card mb-4" style="background: linear-gradient(135deg, var(--dark-900) 0%, #1e293b 100%); color: #fff; padding: 1.5rem 2rem;">
-    <div class="d-flex justify-between align-center flex-wrap gap-3">
-        <div>
-            <div style="color: var(--slate-400); font-size: 0.85rem; text-transform: uppercase; font-weight: 700;">Total Collections Recorded</div>
-            <div style="font-size: 2.25rem; font-weight: 800; color: var(--primary); margin-top: 4px;">
-                ₹<%= number_format(totalCollected, 2) %>
-            </div>
-            <div style="font-size: 0.8rem; color: var(--slate-300); margin-top: 2px;">Verified successful payments across all travel bookings</div>
+<!-- KPI Metrics Cards -->
+<div class="grid grid-4 gap-3 mb-4">
+    <div class="card" style="padding: 1.25rem; border-left: 4px solid #10B981;">
+        <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--slate-500);">Total Revenue Captured</div>
+        <div style="font-size: 1.65rem; font-weight: 900; color: #059669; margin-top: 4px;">
+            ₹<%= number_format(metrics?.total_collected || totalCollected || 0, 2) %>
         </div>
-        <div>
-            <a href="<%= (globalThis.routeHelper || route)('admin.invoices.index') %>" class="btn btn-outline" style="color: #fff; border-color: rgba(255,255,255,0.3);">
-                View Tax Invoices →
-            </a>
+        <div style="font-size: 0.75rem; color: var(--slate-400); margin-top: 2px;">All verified successful payments</div>
+    </div>
+
+    <div class="card" style="padding: 1.25rem; border-left: 4px solid var(--primary);">
+        <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--slate-500);">Razorpay Online Gateway</div>
+        <div style="font-size: 1.65rem; font-weight: 900; color: #D97706; margin-top: 4px;">
+            ₹<%= number_format(metrics?.razorpay_collected || 0, 2) %>
         </div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); margin-top: 2px;">UPI, Credit/Debit Cards, Netbanking</div>
+    </div>
+
+    <div class="card" style="padding: 1.25rem; border-left: 4px solid #8B5CF6;">
+        <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--slate-500);">Total Refunds Issued</div>
+        <div style="font-size: 1.65rem; font-weight: 900; color: #7C3AED; margin-top: 4px;">
+            ₹<%= number_format(metrics?.total_refunded || 0, 2) %>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); margin-top: 2px;">Customer adjustments &amp; cancellations</div>
+    </div>
+
+    <div class="card" style="padding: 1.25rem; border-left: 4px solid #F59E0B;">
+        <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--slate-500);">Pending / In-Flight Attempts</div>
+        <div style="font-size: 1.65rem; font-weight: 900; color: #B45309; margin-top: 4px;">
+            <%= metrics?.pending_count || 0 %>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--slate-400); margin-top: 2px;">Awaiting capture or authorization</div>
     </div>
 </div>
 
-<!-- Filters Bar -->
+<!-- Advanced Filters Bar (Section 7) -->
 <div class="card mb-4" style="padding: 1.25rem;">
-    <form method="GET" action="<%= (globalThis.routeHelper || route)('admin.payments.index') %>" class="d-flex align-center gap-3 flex-wrap">
-        <div style="min-width: 200px;">
-            <select name="method" class="form-select form-select-sm" onchange="this.form.submit()">
-                <option value="">-- All Payment Methods --</option>
-                <% ((['Cash', 'UPI / QR', 'Bank Transfer', 'Card', 'Online Gateway']) || []).forEach((m, _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>
-                    <option value="<%= m %>" <%= request('method') === m ? 'selected' : '' %>><%= m %></option>
-                <% }); %>
-            </select>
+    <form method="GET" action="/admin/payments" id="paymentFilterForm">
+        <div class="grid grid-4 gap-3 mb-3">
+            <div>
+                <label style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--slate-600); display: block; margin-bottom: 4px;">
+                    Search All References
+                </label>
+                <input type="text" name="search" class="form-control form-control-sm" placeholder="Booking ID, Customer, Mobile, Ref..." value="<%= filters?.search || '' %>">
+            </div>
+
+            <div>
+                <label style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--slate-600); display: block; margin-bottom: 4px;">
+                    Booking Category
+                </label>
+                <select name="booking_category" class="form-select form-select-sm">
+                    <option value="">-- All Categories --</option>
+                    <option value="WEB" <%= filters?.booking_category === 'WEB' ? 'selected' : '' %>>Website (WEB)</option>
+                    <option value="CORP" <%= filters?.booking_category === 'CORP' ? 'selected' : '' %>>Corporate (CORP)</option>
+                    <option value="MAN" <%= filters?.booking_category === 'MAN' ? 'selected' : '' %>>Manual (MAN)</option>
+                    <option value="TP" <%= filters?.booking_category === 'TP' ? 'selected' : '' %>>Travel Partner (TP)</option>
+                </select>
+            </div>
+
+            <div>
+                <label style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--slate-600); display: block; margin-bottom: 4px;">
+                    Payment Method
+                </label>
+                <select name="method" class="form-select form-select-sm">
+                    <option value="">-- All Methods --</option>
+                    <option value="UPI" <%= filters?.method === 'UPI' || filters?.method === 'UPI / QR' ? 'selected' : '' %>>UPI (Google Pay, PhonePe, BHIM)</option>
+                    <option value="CARD" <%= filters?.method === 'CARD' || filters?.method === 'Card' ? 'selected' : '' %>>Credit / Debit Cards</option>
+                    <option value="NETBANKING" <%= filters?.method === 'NETBANKING' || filters?.method === 'Netbanking' ? 'selected' : '' %>>Netbanking</option>
+                    <option value="Cash" <%= filters?.method === 'Cash' ? 'selected' : '' %>>Cash</option>
+                    <option value="Bank Transfer" <%= filters?.method === 'Bank Transfer' ? 'selected' : '' %>>Bank Transfer / NEFT</option>
+                    <option value="Online Gateway" <%= filters?.method === 'Online Gateway' ? 'selected' : '' %>>Online Gateway (General)</option>
+                </select>
+            </div>
+
+            <div>
+                <label style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--slate-600); display: block; margin-bottom: 4px;">
+                    Payment Status
+                </label>
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">-- All Statuses --</option>
+                    <option value="Success" <%= filters?.status === 'Success' ? 'selected' : '' %>>Success / Captured</option>
+                    <option value="Authorized" <%= filters?.status === 'Authorized' ? 'selected' : '' %>>Authorized (Uncaptured)</option>
+                    <option value="Pending" <%= filters?.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                    <option value="Created" <%= filters?.status === 'Created' ? 'selected' : '' %>>Order Created</option>
+                    <option value="Failed" <%= filters?.status === 'Failed' ? 'selected' : '' %>>Failed</option>
+                    <option value="Refunded" <%= filters?.status === 'Refunded' ? 'selected' : '' %>>Refunded</option>
+                </select>
+            </div>
         </div>
 
-        <div style="min-width: 180px;">
-            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
-                <option value="">-- All Statuses --</option>
-                <% ((['Success', 'Pending', 'Failed', 'Refunded']) || []).forEach((st, _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>
-                    <option value="<%= st %>" <%= request('status') === st ? 'selected' : '' %>><%= st %></option>
-                <% }); %>
-            </select>
+        <div class="grid grid-4 gap-3 mb-3">
+            <div>
+                <label style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--slate-600); display: block; margin-bottom: 4px;">
+                    Date From (Asia/Kolkata)
+                </label>
+                <input type="date" name="date_from" class="form-control form-control-sm" value="<%= filters?.date_from || '' %>">
+            </div>
+
+            <div>
+                <label style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--slate-600); display: block; margin-bottom: 4px;">
+                    Date To (Asia/Kolkata)
+                </label>
+                <input type="date" name="date_to" class="form-control form-control-sm" value="<%= filters?.date_to || '' %>">
+            </div>
+
+            <div>
+                <label style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--slate-600); display: block; margin-bottom: 4px;">
+                    Razorpay Order ID
+                </label>
+                <input type="text" name="razorpay_order_id" class="form-control form-control-sm" placeholder="order_..." value="<%= filters?.razorpay_order_id || '' %>">
+            </div>
+
+            <div>
+                <label style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--slate-600); display: block; margin-bottom: 4px;">
+                    Razorpay Payment ID
+                </label>
+                <input type="text" name="razorpay_payment_id" class="form-control form-control-sm" placeholder="pay_..." value="<%= filters?.razorpay_payment_id || '' %>">
+            </div>
         </div>
 
-        <% if (request()?.hasAny(['method', 'status'])) { %>
-            <a href="<%= (globalThis.routeHelper || route)('admin.payments.index') %>" class="btn btn-outline btn-sm">Reset</a>
-        <% } %>
+        <div class="d-flex justify-between align-center flex-wrap gap-2 pt-2" style="border-top: 1px dashed var(--slate-200);">
+            <div style="font-size: 0.825rem; color: var(--slate-500);">
+                Showing <strong><%= payments?.length || 0 %></strong> transactions matching filter criteria
+            </div>
+            <div class="d-flex gap-2">
+                <a href="/admin/payments" class="btn btn-outline btn-sm">Reset Filters</a>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <%- icon('search', { size: 14, style: 'margin-right: 4px;' }) %> Apply Filters
+                </button>
+            </div>
+        </div>
     </form>
 </div>
 
-<!-- Payments Table -->
-<div class="card">
+<!-- Payments Transactions Table (Section 7) -->
+<div class="card" style="padding: 0; overflow: hidden;">
     <div class="table-responsive">
-        <table class="table">
+        <table class="table" style="margin-bottom: 0;">
             <thead>
-                <tr>
-                    <th>Payment ID</th>
-                    <th>Booking Ref</th>
-                    <th>Customer</th>
-                    <th>Amount Paid</th>
-                    <th>Method</th>
-                    <th>Transaction Ref</th>
-                    <th>Status</th>
-                    <th>Date & Time</th>
+                <tr style="background: var(--slate-100); border-bottom: 1.5px solid var(--slate-200);">
+                    <th style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--slate-600);">Transaction Ref</th>
+                    <th style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--slate-600);">Booking ID</th>
+                    <th style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--slate-600);">Customer</th>
+                    <th style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--slate-600);">Category</th>
+                    <th style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--slate-600);">Razorpay References</th>
+                    <th style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--slate-600);">Amount</th>
+                    <th style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--slate-600);">Method</th>
+                    <th style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--slate-600);">Status</th>
+                    <th style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--slate-600);">Date &amp; Time (IST)</th>
+                    <th style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--slate-600); text-align: right;">Action</th>
                 </tr>
             </thead>
             <tbody>
-                <% if ((payments) && (Array.isArray(payments) ? (payments).length > 0 : Object.keys(payments).length > 0)) { (Array.isArray(payments) ? (payments) : Object.values(payments)).forEach((p, _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>
+                <% if (payments && payments.length > 0) { %>
+                    <% payments.forEach(p => { %>
+                        <tr style="border-bottom: 1px solid var(--slate-100);">
+                            <td>
+                                <div style="font-family: monospace; font-weight: 800; font-size: 0.85rem; color: var(--dark-950);">
+                                    <%= p.payment_id %>
+                                </div>
+                                <span class="badge <%= p.gateway === 'Razorpay' ? 'badge-primary' : 'badge-secondary' %>" style="font-size: 0.7rem; padding: 2px 6px;">
+                                    <%= p.gateway %>
+                                </span>
+                            </td>
+
+                            <td>
+                                <div>
+                                    <a href="/admin/bookings/<%= p.booking_id %>" style="font-weight: 800; color: var(--primary-dark); text-decoration: none;">
+                                        #<%= p.b_code || p.booking_id %>
+                                    </a>
+                                </div>
+                                <% if (p.invoice_number) { %>
+                                    <div style="font-size: 0.725rem; color: var(--slate-500); font-family: monospace;">
+                                        <%- icon('file-text', { size: 10, style: 'display:inline; margin-right: 2px;' }) %><%= p.invoice_number %>
+                                    </div>
+                                <% } %>
+                                <span class="badge <%= p.booking_status === 'Confirmed' ? 'badge-success' : (p.booking_status === 'Completed' ? 'badge-info' : 'badge-warning') %>" style="font-size: 0.65rem; padding: 1px 5px;">
+                                    <%= p.booking_status || 'Pending' %>
+                                </span>
+                            </td>
+
+                            <td>
+                                <div style="font-weight: 700; font-size: 0.85rem; color: var(--dark-950);"><%= p.customer_name || 'Customer' %></div>
+                                <div style="font-size: 0.75rem; color: var(--slate-500);"><%= p.customer_mobile || '' %></div>
+                            </td>
+
+                            <td>
+                                <span class="badge" style="font-size: 0.725rem; font-weight: 800; background: #EEF2F6; color: #334155;">
+                                    <%= p.booking_category || p.b_cat || 'WEB' %>
+                                </span>
+                            </td>
+
+                            <td>
+                                <% if (p.razorpay_payment_id) { %>
+                                    <div style="font-family: monospace; font-size: 0.775rem; color: #1E40AF; font-weight: 700;">
+                                        <%= p.razorpay_payment_id %>
+                                    </div>
+                                <% } %>
+                                <% if (p.razorpay_order_id) { %>
+                                    <div style="font-family: monospace; font-size: 0.725rem; color: var(--slate-400);">
+                                        <%= p.razorpay_order_id %>
+                                    </div>
+                                <% } %>
+                                <% if (!p.razorpay_payment_id && !p.razorpay_order_id) { %>
+                                    <span style="font-size: 0.75rem; color: var(--slate-400);">Manual / Direct</span>
+                                <% } %>
+                                <% if (p.signature_verified) { %>
+                                    <span style="display: inline-flex; align-items: center; gap: 2px; color: #16A34A; font-size: 0.675rem; font-weight: 700;">
+                                        ✓ Sig Verified
+                                    </span>
+                                <% } %>
+                            </td>
+
+                            <td>
+                                <div style="font-weight: 900; font-size: 1rem; color: <%= p.status === 'Success' ? '#16A34A' : (p.status === 'Refunded' ? '#7C3AED' : '#DC2626') %>;">
+                                    ₹<%= number_format(p.amount, 2) %>
+                                </div>
+                                <% if (p.fee > 0) { %>
+                                    <div style="font-size: 0.7rem; color: var(--slate-400);">Fee: ₹<%= number_format(p.fee, 2) %></div>
+                                <% } %>
+                            </td>
+
+                            <td>
+                                <span class="badge badge-secondary" style="font-size: 0.75rem; font-weight: 700;">
+                                    <%= p.payment_method %>
+                                </span>
+                                <% if (p.parsed_method_details?.vpa) { %>
+                                    <div style="font-size: 0.7rem; color: var(--slate-500);"><%= p.parsed_method_details.vpa %></div>
+                                <% } else if (p.parsed_method_details?.card_last4) { %>
+                                    <div style="font-size: 0.7rem; color: var(--slate-500);"><%= p.parsed_method_details.card_network %> •••• <%= p.parsed_method_details.card_last4 %></div>
+                                <% } %>
+                            </td>
+
+                            <td>
+                                <span class="badge 
+                                    <%= p.status === 'Success' ? 'badge-success' : '' %>
+                                    <%= p.status === 'Authorized' ? 'badge-primary' : '' %>
+                                    <%= p.status === 'Pending' || p.status === 'Created' ? 'badge-warning' : '' %>
+                                    <%= p.status === 'Failed' ? 'badge-danger' : '' %>
+                                    <%= p.status === 'Refunded' ? 'badge-secondary' : '' %>
+                                " style="font-size: 0.75rem; font-weight: 800;">
+                                    <%= p.status === 'Success' ? 'Captured' : p.status %>
+                                </span>
+                                <% if (p.refund_status) { %>
+                                    <div style="font-size: 0.675rem; color: #7C3AED; font-weight: 700;">Refund <%= p.refund_status %></div>
+                                <% } %>
+                            </td>
+
+                            <td>
+                                <div style="font-size: 0.8rem; color: var(--slate-600); font-weight: 600;">
+                                    <%= formatKolkataDateTime(p.paid_at || p.created_at) %>
+                                </div>
+                            </td>
+
+                            <td style="text-align: right;">
+                                <div class="d-flex justify-end gap-1">
+                                    <button type="button" class="btn btn-outline btn-sm" onclick="openPaymentDetails('<%= p.id %>')" title="View Full Payment Metadata">
+                                        <%- icon('eye', { size: 13 }) %>
+                                    </button>
+                                    <% if (p.gateway === 'Razorpay') { %>
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="reconcilePayment('<%= p.id %>')" title="Reconcile with Razorpay Gateway">
+                                            <%- icon('refresh-cw', { size: 13 }) %>
+                                        </button>
+                                    <% } %>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }); %>
+                <% } else { %>
                     <tr>
-                        <td style="font-family: monospace; font-size: 0.85rem; font-weight: 700;">
-                            <%= p?.payment_id %>
-                        </td>
-                        <td>
-                            <a href="<%= (globalThis.routeHelper || route)('admin.bookings.show', p?.booking_id) %>" style="font-weight: 800; color: var(--primary-dark);">
-                                #<%= p?.booking?.booking_id ?? p?.booking_id %>
-                            </a>
-                        </td>
-                        <td>
-                            <div style="font-weight: 700; font-size: 0.85rem;"><%= p?.customer?.name ?? 'Customer' %></div>
-                            <div style="font-size: 0.75rem; color: var(--slate-500);"><%= p?.customer?.phone ?? '' %></div>
-                        </td>
-                        <td style="font-weight: 800; font-size: 1rem; color: #16a34a;">
-                            ₹<%= number_format(p?.amount, 2) %>
-                        </td>
-                        <td>
-                            <span class="badge badge-secondary"><%= p?.payment_method %></span>
-                        </td>
-                        <td style="font-family: monospace; font-size: 0.8rem; color: var(--slate-600);">
-                            <%= p?.transaction_id ?? 'N/A' %>
-                        </td>
-                        <td>
-                            <span class="badge 
-                                <%= p?.status === 'Success' ? 'badge-success' : '' %>
-                                <%= p?.status === 'Pending' ? 'badge-warning' : '' %>
-                                <%= p?.status === 'Failed' ? 'badge-danger' : '' %>
-                                <%= p?.status === 'Refunded' ? 'badge-secondary' : '' %>
-                            ">
-                                <%= p?.status %>
-                            </span>
-                        </td>
-                        <td style="font-size: 0.8rem; color: var(--slate-500);">
-                            <%= p?.created_at?.format('d M Y, h:i A') %>
-                        </td>
-                    </tr>
-                <% }); } else { %>
-                    <tr>
-                        <td colspan="8" class="text-center py-5" style="color: var(--slate-500);">
-                            No payment transactions found.
+                        <td colspan="10" class="text-center py-5" style="color: var(--slate-400); font-size: 0.95rem;">
+                            No payment records found matching the specified filters.
                         </td>
                     </tr>
                 <% } %>
             </tbody>
         </table>
     </div>
-
-    <% if (payments?.hasPages()) { %>
-        <div class="mt-4">
-            <%= payments?.links() %>
-        </div>
-    <% } %>
 </div>
 
+<!-- Payment Details Modal -->
+<div id="paymentDetailsModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 9999; align-items: center; justify-content: center; padding: 1rem;">
+    <div style="background: #ffffff; width: 100%; max-width: 720px; max-height: 90vh; overflow-y: auto; border-radius: var(--radius-lg); box-shadow: var(--shadow-xl); padding: 2rem;">
+        <div class="d-flex justify-between align-center mb-3" style="border-bottom: 1.5px solid var(--slate-100); padding-bottom: 1rem;">
+            <h3 style="margin: 0; font-size: 1.25rem; font-weight: 900; color: var(--dark-950);">
+                Payment Transaction Details
+            </h3>
+            <button type="button" onclick="closePaymentModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--slate-400); line-height: 1;">&times;</button>
+        </div>
+
+        <div id="modalLoading" style="text-align: center; padding: 3rem 0; color: var(--slate-500);">
+            Loading payment details...
+        </div>
+
+        <div id="modalContent" style="display: none;">
+            <!-- Rendered dynamically by openPaymentDetails -->
+        </div>
+    </div>
+</div>
+
+<script>
+async function openPaymentDetails(paymentId) {
+    const modal = document.getElementById('paymentDetailsModal');
+    const loading = document.getElementById('modalLoading');
+    const content = document.getElementById('modalContent');
+
+    modal.style.display = 'flex';
+    loading.style.display = 'block';
+    content.style.display = 'none';
+
+    try {
+        const res = await fetch('/admin/payments/' + paymentId + '/details');
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.message || 'Failed to fetch details');
+
+        const p = data.payment;
+        loading.style.display = 'none';
+        content.style.display = 'block';
+
+        content.innerHTML = `
+            <div style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">
+                <div class="d-flex justify-between align-center mb-2">
+                    <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--slate-500);">Internal Payment ID</span>
+                    <strong style="font-family: monospace; font-size: 1rem;">${p.payment_id}</strong>
+                </div>
+                <div class="d-flex justify-between align-center mb-2">
+                    <span style="color: var(--slate-600); font-size: 0.85rem;">Booking Reference:</span>
+                    <a href="/admin/bookings/${p.booking_id}" target="_blank" style="font-weight: 800; color: var(--primary-dark);">#${p.b_code || p.booking_id}</a>
+                </div>
+                ${p.invoice_number ? `
+                <div class="d-flex justify-between align-center mb-2">
+                    <span style="color: var(--slate-600); font-size: 0.85rem;">Tax Invoice:</span>
+                    <a href="/invoice/${p.booking_id}" target="_blank" style="font-family: monospace; font-weight: 700;">${p.invoice_number}</a>
+                </div>` : ''}
+                <div class="d-flex justify-between align-center mb-2">
+                    <span style="color: var(--slate-600); font-size: 0.85rem;">Customer:</span>
+                    <strong>${p.customer_name || 'Customer'} (${p.customer_mobile || 'N/A'})</strong>
+                </div>
+                <div class="d-flex justify-between align-center">
+                    <span style="color: var(--slate-600); font-size: 0.85rem;">Category &amp; Trip:</span>
+                    <span>${p.booking_category || p.b_cat || 'WEB'} • ${p.trip_type || 'One-Way'}</span>
+                </div>
+            </div>
+
+            <div class="grid grid-2 gap-3 mb-3" style="font-size: 0.9rem;">
+                <div style="border: 1px solid var(--slate-200); padding: 1rem; border-radius: var(--radius-sm);">
+                    <div style="color: var(--slate-500); font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Amount Paid</div>
+                    <div style="font-size: 1.4rem; font-weight: 900; color: #16a34a; margin-top: 4px;">₹${parseFloat(p.amount).toFixed(2)} ${p.currency || 'INR'}</div>
+                    <div style="font-size: 0.75rem; color: var(--slate-400); margin-top: 2px;">Gateway Fee: ₹${parseFloat(p.fee || 0).toFixed(2)} | Tax: ₹${parseFloat(p.tax || 0).toFixed(2)}</div>
+                </div>
+
+                <div style="border: 1px solid var(--slate-200); padding: 1rem; border-radius: var(--radius-sm);">
+                    <div style="color: var(--slate-500); font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Payment Status</div>
+                    <div style="font-size: 1.15rem; font-weight: 800; margin-top: 4px;">${p.status}</div>
+                    <div style="font-size: 0.75rem; color: var(--slate-500); margin-top: 2px;">Method: ${p.payment_method}</div>
+                </div>
+            </div>
+
+            <div style="background: #ffffff; border: 1px solid var(--slate-200); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem; font-size: 0.85rem;">
+                <h4 style="font-size: 0.85rem; font-weight: 800; text-transform: uppercase; color: var(--slate-700); margin-bottom: 0.75rem;">Razorpay Verification &amp; Security</h4>
+                <div class="d-flex justify-between align-center mb-2">
+                    <span style="color: var(--slate-600);">Razorpay Order ID:</span>
+                    <span style="font-family: monospace; font-weight: 700;">${p.razorpay_order_id || 'N/A'}</span>
+                </div>
+                <div class="d-flex justify-between align-center mb-2">
+                    <span style="color: var(--slate-600);">Razorpay Payment ID:</span>
+                    <span style="font-family: monospace; font-weight: 700; color: #1E40AF;">${p.razorpay_payment_id || 'N/A'}</span>
+                </div>
+                <div class="d-flex justify-between align-center mb-2">
+                    <span style="color: var(--slate-600);">Signature Verified:</span>
+                    <strong style="color: ${p.signature_verified ? '#16A34A' : '#DC2626'};">${p.signature_verified ? '✓ Verified Valid HMAC-SHA256' : 'Not Verified / Manual'}</strong>
+                </div>
+                <div class="d-flex justify-between align-center mb-2">
+                    <span style="color: var(--slate-600);">Recorded Timestamp (IST):</span>
+                    <span>${p.paid_at || p.created_at || 'N/A'}</span>
+                </div>
+                ${p.error_code ? `
+                <div style="background: #FEE2E2; color: #991B1B; padding: 0.5rem 0.75rem; border-radius: 4px; margin-top: 0.5rem;">
+                    <strong>Failure [${p.error_code}]:</strong> ${p.error_description || 'Declined'}
+                </div>` : ''}
+            </div>
+
+            <div class="d-flex justify-between align-center gap-2 pt-2">
+                <div>
+                    ${p.gateway === 'Razorpay' ? `
+                    <button type="button" class="btn btn-primary btn-sm" onclick="reconcilePayment('${p.id}')">
+                        Reconcile with Razorpay API
+                    </button>` : ''}
+                </div>
+                <button type="button" class="btn btn-outline btn-sm" onclick="closePaymentModal()">Close</button>
+            </div>
+        `;
+    } catch (err) {
+        loading.style.display = 'none';
+        content.style.display = 'block';
+        content.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+    }
+}
+
+function closePaymentModal() {
+    document.getElementById('paymentDetailsModal').style.display = 'none';
+}
+
+async function reconcilePayment(paymentId) {
+    if (!confirm('Reconcile this transaction directly against Razorpay gateway?')) return;
+    try {
+        const res = await fetch('/admin/payments/' + paymentId + '/reconcile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        alert(data.message || (data.success ? 'Reconciliation complete' : 'Reconciliation failed'));
+        location.reload();
+    } catch (e) {
+        alert('Reconciliation error: ' + e.message);
+    }
+}
+</script>
 
 <%- include('../../layouts/admin_footer') %>

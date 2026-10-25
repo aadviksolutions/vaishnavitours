@@ -1144,17 +1144,187 @@ router.get('/invoices/:id', (req, res) => {
     });
 });
 
-// 9. Payments
+// 9. Payments Management
 router.get('/payments', (req, res) => {
-    const payments = getAll(`
-        SELECT p.*, b.booking_id as b_code, u.name as customer_name
+    const {
+        search,
+        booking_id,
+        customer_name,
+        mobile,
+        date_from,
+        date_to,
+        booking_category,
+        method,
+        status,
+        booking_status,
+        razorpay_payment_id,
+        razorpay_order_id
+    } = req.query;
+
+    let sql = `
+        SELECT p.*,
+               b.booking_id as b_code,
+               b.booking_status,
+               b.booking_category as b_cat,
+               b.pickup_location,
+               b.destination,
+               b.total_amount as booking_total,
+               b.paid_amount as booking_paid,
+               b.balance_amount as booking_balance,
+               u.name as customer_name,
+               u.phone as customer_mobile,
+               u.email as customer_email,
+               inv.invoice_number
         FROM payments p
         LEFT JOIN bookings b ON p.booking_id = b.id
         LEFT JOIN users u ON p.customer_id = u.id
-        ORDER BY p.id DESC
-    `);
+        LEFT JOIN invoices inv ON inv.booking_id = b.id
+        WHERE 1=1
+    `;
+    const params = [];
+
+    if (search) {
+        const s = `%${search.trim()}%`;
+        sql += ` AND (
+            p.payment_id LIKE ? OR 
+            p.transaction_id LIKE ? OR 
+            p.razorpay_payment_id LIKE ? OR 
+            p.razorpay_order_id LIKE ? OR 
+            b.booking_id LIKE ? OR 
+            u.name LIKE ? OR 
+            u.phone LIKE ? OR
+            inv.invoice_number LIKE ?
+        )`;
+        params.push(s, s, s, s, s, s, s, s);
+    }
+
+    if (booking_id) {
+        sql += ` AND (b.booking_id LIKE ? OR p.booking_id = ?)`;
+        params.push(`%${booking_id.trim()}%`, booking_id.trim());
+    }
+
+    if (customer_name) {
+        sql += ` AND u.name LIKE ?`;
+        params.push(`%${customer_name.trim()}%`);
+    }
+
+    if (mobile) {
+        sql += ` AND u.phone LIKE ?`;
+        params.push(`%${mobile.trim()}%`);
+    }
+
+    if (date_from) {
+        sql += ` AND date(p.created_at) >= date(?)`;
+        params.push(date_from);
+    }
+
+    if (date_to) {
+        sql += ` AND date(p.created_at) <= date(?)`;
+        params.push(date_to);
+    }
+
+    if (booking_category) {
+        sql += ` AND (b.booking_category = ? OR p.booking_category = ?)`;
+        params.push(booking_category, booking_category);
+    }
+
+    if (method) {
+        sql += ` AND p.payment_method = ?`;
+        params.push(method);
+    }
+
+    if (status) {
+        sql += ` AND p.status = ?`;
+        params.push(status);
+    }
+
+    if (booking_status) {
+        sql += ` AND b.booking_status = ?`;
+        params.push(booking_status);
+    }
+
+    if (razorpay_payment_id) {
+        sql += ` AND p.razorpay_payment_id LIKE ?`;
+        params.push(`%${razorpay_payment_id.trim()}%`);
+    }
+
+    if (razorpay_order_id) {
+        sql += ` AND p.razorpay_order_id LIKE ?`;
+        params.push(`%${razorpay_order_id.trim()}%`);
+    }
+
+    sql += ` ORDER BY p.id DESC`;
+
+    const payments = getAll(sql, params);
+
+    // Parse method_details JSON
+    for (const p of payments) {
+        if (p.method_details && typeof p.method_details === 'string') {
+            try { p.parsed_method_details = JSON.parse(p.method_details); } catch (e) {}
+        }
+    }
+
+    // Key Performance Metrics
     const totalCollected = parseFloat(getOne("SELECT COALESCE(sum(amount), 0) as s FROM payments WHERE status = 'Success'")?.s || 0);
-    res.render('admin/payments/index', { payments, totalCollected, page_title: 'Payments Registry' });
+    const razorpayCollected = parseFloat(getOne("SELECT COALESCE(sum(amount), 0) as s FROM payments WHERE gateway = 'Razorpay' AND status = 'Success'")?.s || 0);
+    const totalRefunded = parseFloat(getOne("SELECT COALESCE(sum(ABS(amount)), 0) as s FROM payments WHERE status = 'Refunded' OR payment_method = 'Refund'")?.s || 0);
+    const pendingTransactionsCount = getOne("SELECT count(*) as c FROM payments WHERE status IN ('Pending', 'Created', 'Authorized')")?.c || 0;
+
+    const metrics = {
+        total_collected: totalCollected,
+        razorpay_collected: razorpayCollected,
+        total_refunded: totalRefunded,
+        pending_count: pendingTransactionsCount
+    };
+
+    res.render('admin/payments/index', {
+        payments,
+        metrics,
+        totalCollected,
+        filters: req.query,
+        page_title: 'Payment Gateway & Transactions Ledger'
+    });
+});
+
+// Admin Payment Details JSON / Drawer
+router.get('/payments/:id/details', (req, res) => {
+    const payment = getOne(`
+        SELECT p.*,
+               b.booking_id as b_code,
+               b.booking_status,
+               b.booking_category as b_cat,
+               b.trip_type,
+               b.pickup_location,
+               b.destination,
+               b.travel_date,
+               b.travel_time,
+               b.total_amount as booking_total,
+               b.paid_amount as booking_paid,
+               b.balance_amount as booking_balance,
+               u.name as customer_name,
+               u.phone as customer_mobile,
+               u.email as customer_email,
+               inv.invoice_number
+        FROM payments p
+        LEFT JOIN bookings b ON p.booking_id = b.id
+        LEFT JOIN users u ON p.customer_id = u.id
+        LEFT JOIN invoices inv ON inv.booking_id = b.id
+        WHERE p.id = ? OR p.payment_id = ?
+    `, [req.params.id, req.params.id]);
+
+    if (!payment) {
+        return res.status(404).json({ success: false, message: 'Payment record not found' });
+    }
+
+    if (payment.method_details && typeof payment.method_details === 'string') {
+        try { payment.method_details = JSON.parse(payment.method_details); } catch (e) {}
+    }
+
+    if (payment.gateway_response && typeof payment.gateway_response === 'string') {
+        try { payment.gateway_response = JSON.parse(payment.gateway_response); } catch (e) {}
+    }
+
+    res.json({ success: true, payment });
 });
 
 // 10. Expenses

@@ -5,6 +5,35 @@ import { guestOnly } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// Rate limiting for login attempts (Brute-force protection)
+const loginAttempts = new Map();
+
+function isRateLimited(key) {
+    const record = loginAttempts.get(key);
+    if (!record) return false;
+    const now = Date.now();
+    if (now > record.resetTime) {
+        loginAttempts.delete(key);
+        return false;
+    }
+    return record.count >= 5;
+}
+
+function recordFailedLogin(key) {
+    const now = Date.now();
+    const record = loginAttempts.get(key) || { count: 0, resetTime: now + 15 * 60 * 1000 };
+    if (now > record.resetTime) {
+        record.count = 0;
+        record.resetTime = now + 15 * 60 * 1000;
+    }
+    record.count++;
+    loginAttempts.set(key, record);
+}
+
+function resetLoginAttempts(key) {
+    loginAttempts.delete(key);
+}
+
 router.get('/login', guestOnly, (req, res) => {
     res.render('auth/login', {
         pageTitle: 'Login | Vaishnavi Tours',
@@ -21,16 +50,31 @@ router.post('/login', guestOnly, (req, res) => {
     }
 
     const cleanInput = String(email).trim();
+    const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+    const rateLimitKey = `${ip}_${cleanInput.toLowerCase()}`;
+
+    if (isRateLimited(rateLimitKey) || isRateLimited(ip)) {
+        res.setFlash('error', 'Too many failed login attempts. Please wait 15 minutes before trying again.');
+        res.setOldInput(req.body);
+        return res.redirect('/login');
+    }
+
     const user = getOne(
         "SELECT * FROM users WHERE (email = ? OR phone = ?) AND is_active = 1",
         [cleanInput, cleanInput]
     );
 
     if (!user || !bcrypt.compareSync(password, user.password)) {
+        recordFailedLogin(rateLimitKey);
+        recordFailedLogin(ip);
         res.setFlash('error', 'The provided credentials do not match our records.');
         res.setOldInput(req.body);
         return res.redirect('/login');
     }
+
+    // Reset rate limits on success
+    resetLoginAttempts(rateLimitKey);
+    resetLoginAttempts(ip);
 
     req.session.userId = user.id;
 

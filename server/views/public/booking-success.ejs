@@ -1,18 +1,32 @@
 <% let pageTitle = 'Booking Request Received - Vaishnavi Tours'; %>
 <%- include('../layouts/app_header') %>
 
-
-
-
+<% const isPaid = booking?.payment_status === 'Paid' || (booking?.paid_amount > 0 && (booking?.balance_amount || 0) <= 0); %>
 
 <section style="padding: 4rem 0 6rem; background: var(--slate-50);">
-    <div class="container" style="max-width: 720px;">
-        <div class="card" style="text-align: center; padding: 3rem 2.5rem; border-top: 6px solid var(--primary); box-shadow: var(--shadow-lg);">
-            <div style="width: 76px; height: 76px; background: #FEF3C7; color: #D97706; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 1.25rem;">
-                ⏳
-            </div>
+    <div class="container" style="max-width: 740px;">
+        <div class="card" style="text-align: center; padding: 3rem 2.5rem; border-top: 6px solid <%= isPaid ? '#10B981' : 'var(--primary)' %>; box-shadow: var(--shadow-lg);">
+            
+            <% if (isPaid) { %>
+                <div style="width: 76px; height: 76px; background: #DCFCE7; color: #16A34A; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 1.25rem;">
+                    ✓
+                </div>
 
-            <% if ((booking?.total_amount ?? 0) <= 0 || (booking?.pricing_details['is_query'] ?? false)) { %>
+                <span class="badge badge-success" style="font-size: 0.95rem; padding: 0.4rem 1.25rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem; display: inline-block;">
+                    Booking Confirmed &amp; Payment Verified
+                </span>
+
+                <h1 style="font-size: 2.15rem; font-weight: 900; margin-bottom: 0.5rem; color: var(--dark-950);">
+                    Thank You, <%= booking?.customer?.name ?? 'Customer' %>!
+                </h1>
+                <p style="color: var(--slate-600); font-size: 1.05rem; margin-bottom: 2rem;">
+                    Your payment of <strong>₹<%= number_format(booking?.paid_amount, 2) %></strong> has been securely captured via Razorpay. Your cab booking is officially confirmed!
+                </p>
+            <% } else if ((booking?.total_amount ?? 0) <= 0 || (booking?.pricing_details && booking?.pricing_details['is_query'])) { %>
+                <div style="width: 76px; height: 76px; background: #FEF3C7; color: #D97706; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 1.25rem;">
+                    ⏳
+                </div>
+
                 <span class="badge" style="font-size: 0.95rem; padding: 0.4rem 1.25rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem; display: inline-block; background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D;">
                     Route Query Received
                 </span>
@@ -24,15 +38,19 @@
                     Your custom route query for <strong><%= booking?.pickup_location %> to <%= booking?.destination %></strong> has been received. Our dispatch team will review route parameters and share a customized quotation shortly.
                 </p>
             <% } else { %>
+                <div style="width: 76px; height: 76px; background: #FEF3C7; color: #D97706; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 1.25rem;">
+                    💳
+                </div>
+
                 <span class="badge badge-warning" style="font-size: 0.95rem; padding: 0.4rem 1.25rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem; display: inline-block;">
-                    Booking Request Received
+                    Booking Awaiting Payment
                 </span>
 
                 <h1 style="font-size: 2.15rem; font-weight: 900; margin-bottom: 0.5rem; color: var(--dark-950);">
                     Thank You, <%= booking?.customer?.name ?? 'Customer' %>!
                 </h1>
                 <p style="color: var(--slate-600); font-size: 1.05rem; margin-bottom: 2rem;">
-                    Your cab booking request has been received by our Bilaspur dispatch team. We are assigning your vehicle & chauffeur.
+                    Your cab request is registered. Complete payment now via Razorpay (UPI, Cards, Netbanking) to automatically confirm your vehicle.
                 </p>
             <% } %>
 
@@ -46,7 +64,7 @@
                     <div style="text-align: right;">
                         <span style="color: var(--slate-500); font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">BOOKING STATUS</span>
                         <div>
-                            <span class="badge badge-warning" style="font-size: 0.85rem; font-weight: 800;">
+                            <span class="badge <%= isPaid ? 'badge-success' : 'badge-warning' %>" style="font-size: 0.85rem; font-weight: 800;">
                                 <%= booking?.booking_status %>
                             </span>
                         </div>
@@ -61,7 +79,7 @@
                     <div>
                         <span style="color: var(--slate-500); font-size: 0.8rem; font-weight: 600;">Vehicle:</span>
                         <div style="font-weight: 700; color: var(--dark-900);">
-                            <%= booking?.vehicle ? booking?.vehicle?.name + ' (' + booking?.vehicle?.vehicle_type + ')' : (booking?.rateVehiclePrice?.vehicle_category ?? 'AC Cab Category') %>
+                            <%= booking?.vehicle ? booking?.vehicle?.name + ' (' + booking?.vehicle?.vehicle_type + ')' : (booking?.vehicle_category ?? 'AC Cab Category') %>
                         </div>
                     </div>
                     <div>
@@ -74,22 +92,33 @@
                     </div>
                     <div>
                         <span style="color: var(--slate-500); font-size: 0.8rem; font-weight: 600;">Travel Date:</span>
-                        <div style="font-weight: 700; color: var(--dark-900);"><%= booking?.travel_date ? (is_string(booking?.travel_date) ? date('d M, Y', strtotime(booking?.travel_date)) : booking?.travel_date?.format('d M, Y')) : date('d M, Y') %></div>
+                        <div style="font-weight: 700; color: var(--dark-900);"><%= booking?.travel_date %></div>
                     </div>
                     <div>
                         <span style="color: var(--slate-500); font-size: 0.8rem; font-weight: 600;">Travel Time:</span>
-                        <div style="font-weight: 700; color: var(--dark-900);"><%= booking?.travel_time ? date('h:i A', strtotime(booking?.travel_time)) : 'Morning' %></div>
+                        <div style="font-weight: 700; color: var(--dark-900);"><%= booking?.travel_time %></div>
                     </div>
                 </div>
 
-                <div class="d-flex justify-between align-center" style="border-top: 1.5px solid var(--slate-100); padding-top: 1rem; margin-top: 1.25rem;">
-                    <span style="color: var(--slate-600); font-weight: 700;">Quotation Fare:</span>
-                    <% if ((booking?.total_amount ?? 0) > 0) { %>
-                        <strong style="font-size: 1.35rem; color: var(--dark-950);">₹<%= number_format((booking?.total_amount ?? 0), 2) %></strong>
-                    <% } else { %>
-                        <span class="badge" style="background: #FEF3C7; color: #92400E; font-size: 0.95rem; font-weight: 800; padding: 0.35rem 0.85rem; border: 1px solid #FDE68A;">
-                            Custom Quotation on Review
-                        </span>
+                <!-- Fare and Payment Balances -->
+                <div style="border-top: 1.5px solid var(--slate-100); padding-top: 1rem; margin-top: 1.25rem;">
+                    <div class="d-flex justify-between align-center mb-1">
+                        <span style="color: var(--slate-600); font-weight: 600;">Total Fare:</span>
+                        <strong style="font-size: 1.15rem; color: var(--dark-950);">₹<%= number_format((booking?.total_amount ?? 0), 2) %></strong>
+                    </div>
+
+                    <% if ((booking?.paid_amount ?? 0) > 0) { %>
+                        <div class="d-flex justify-between align-center mb-1">
+                            <span style="color: var(--slate-600); font-weight: 600;">Paid Amount:</span>
+                            <strong style="color: #059669;">₹<%= number_format(booking?.paid_amount, 2) %></strong>
+                        </div>
+                    <% } %>
+
+                    <% if ((booking?.balance_amount ?? 0) > 0) { %>
+                        <div class="d-flex justify-between align-center pt-2" style="border-top: 1px dashed var(--slate-200);">
+                            <span style="color: #DC2626; font-weight: 700;">Payable Balance:</span>
+                            <strong style="font-size: 1.35rem; color: #DC2626;">₹<%= number_format(booking?.balance_amount, 2) %></strong>
+                        </div>
                     <% } %>
                 </div>
 
@@ -98,15 +127,51 @@
                     <%- icon('circle-check', { size: 24, class: '', style: 'color: #16A34A; flex-shrink: 0;' }) %>
                     <div style="font-size: 0.885rem; color: #166534; line-height: 1.5;">
                         <strong>Agreed Terms:</strong> By confirming this booking, you agreed to Vaishnavi Tour's 
-                        <a href="<%= (globalThis.routeHelper || route)('terms-and-conditions') %>" target="_blank" style="color: #15803D; font-weight: 700; text-decoration: underline;">Cancellation Policy &amp; Terms &amp; Conditions</a>
-                        (Version <%= booking?.terms_version ?? '1.0' %>).
+                        <a href="/terms-and-conditions" target="_blank" style="color: #15803D; font-weight: 700; text-decoration: underline;">Cancellation Policy &amp; Terms &amp; Conditions</a>.
                     </div>
                 </div>
             </div>
 
+            <!-- Razorpay Pay Now Section if Balance > 0 -->
+            <% if ((booking?.balance_amount || 0) > 0 && booking?.booking_status !== 'Cancelled') { %>
+                <div style="background: #FFFBEB; border: 2px solid #F59E0B; border-radius: var(--radius-md); padding: 2rem 1.5rem; margin-bottom: 2rem;">
+                    <h3 style="font-size: 1.25rem; font-weight: 900; color: #78350F; margin-bottom: 0.5rem;">
+                        Instant Confirmation with Razorpay
+                    </h3>
+                    <p style="color: #92400E; font-size: 0.95rem; margin-bottom: 1.25rem;">
+                        Pay securely using any UPI app (GPay, PhonePe, Paytm, BHIM), Credit/Debit Card, or Netbanking.
+                    </p>
+
+                    <button id="rzpCheckoutBtn" type="button" class="btn btn-primary btn-lg" style="padding: 1rem 2.25rem; font-size: 1.15rem; font-weight: 800; border-radius: var(--radius-md); box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4); display: inline-flex; align-items: center; gap: 8px;">
+                        <%- icon('shield-check', { size: 20 }) %>
+                        <span>Pay ₹<%= number_format(booking?.balance_amount, 2) %> Online Now</span>
+                    </button>
+
+                    <div id="bookingPayMsg" style="display: none; margin-top: 1rem; padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 600;"></div>
+
+                    <div style="margin-top: 1rem; font-size: 0.8rem; color: #B45309;">
+                        Or open dedicated payment page: <a href="/pay/<%= booking?.id %>" style="color: #78350F; font-weight: 700; text-decoration: underline;">vaishnavitours.com/pay/<%= booking?.booking_id %></a>
+                    </div>
+                </div>
+            <% } %>
+
+            <!-- Invoices and Customer Portal Links -->
+            <% if (isPaid) { %>
+                <div style="margin-bottom: 2rem; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+                    <a href="/invoice/<%= booking?.id %>" target="_blank" class="btn btn-outline">
+                        <%- icon('file-text', { size: 16, style: 'margin-right: 4px;' }) %> View GST Tax Invoice
+                    </a>
+                    <% if (isAuthenticated) { %>
+                        <a href="/customer/bookings/<%= booking?.id %>" class="btn btn-primary">
+                            Track Booking &amp; Journey Details →
+                        </a>
+                    <% } %>
+                </div>
+            <% } %>
+
             <!-- If customer is not logged in: Ask whether they want to create an account -->
             <% if (!isAuthenticated) { %>
-                <div style="background: #FFFBEB; border: 1.5px dashed #F59E0B; border-radius: var(--radius-md); padding: 1.5rem; text-align: left; margin-bottom: 2rem;">
+                <div style="background: #F8FAFC; border: 1.5px dashed var(--slate-300); border-radius: var(--radius-md); padding: 1.5rem; text-align: left; margin-bottom: 2rem;">
                     <div class="d-flex align-start gap-3">
                         <div class="icon-box icon-box-md icon-box-primary"><%- icon('user', { size: 24, class: '', style: '' }) %></div>
                         <div style="flex: 1;">
@@ -117,20 +182,20 @@
                                 An account lets you track chauffeur allocation live, monitor vehicle location, view payment receipts, and download GST tax invoices.
                             </p>
                             <div class="d-flex gap-2 flex-wrap">
-                                <a href="<%= (globalThis.routeHelper || route)('register', {'phone' : booking?.customer?.phone, 'name' : booking?.customer?.name, 'email' : booking?.customer?.email}) %>" class="btn btn-primary btn-sm">
+                                <a href="/register?phone=<%= booking?.customer?.phone || '' %>&name=<%= encodeURIComponent(booking?.customer?.name || '') %>" class="btn btn-primary btn-sm">
                                     Create My Account
                                 </a>
-                                <a href="<%= (globalThis.routeHelper || route)('login') %>" class="btn btn-outline btn-sm">
+                                <a href="/login" class="btn btn-outline btn-sm">
                                     Log In to Existing Account
                                 </a>
                             </div>
                         </div>
                     </div>
                 </div>
-            <% } else { %>
+            <% } else if (!isPaid) { %>
                 <div style="margin-bottom: 2rem;">
-                    <a href="<%= (globalThis.routeHelper || route)('customer.bookings.show', booking?.id) %>" class="btn btn-primary">
-                        <span style="display: inline-flex; align-items: center; gap: 6px;"><%- icon('map-pin', { size: 16, class: '', style: '' }) %><span>Track Booking & View Journey Details <%- icon('arrow-right', { size: 16, class: '', style: 'margin-left: 4px;' }) %></span></span>
+                    <a href="/customer/bookings/<%= booking?.id %>" class="btn btn-outline">
+                        View in Customer Dashboard →
                     </a>
                 </div>
             <% } %>
@@ -140,12 +205,130 @@
             </p>
 
             <div class="d-flex justify-center gap-3 flex-wrap">
-                <a href="<%= (globalThis.routeHelper || route)('home') %>" class="btn btn-outline">← Back to Home</a>
-                <a href="<%= (globalThis.routeHelper || route)('contact') %>" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px;"><%- icon('message-square', { size: 16, class: '', style: '' }) %><span>Contact Support</span></a>
+                <a href="/" class="btn btn-outline">← Back to Home</a>
+                <a href="/contact" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px;"><%- icon('message-square', { size: 16, class: '', style: '' }) %><span>Contact Support</span></a>
             </div>
         </div>
     </div>
 </section>
 
+<!-- Razorpay Checkout Integration -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const payBtn = document.getElementById('rzpCheckoutBtn');
+    const msgBox = document.getElementById('bookingPayMsg');
+
+    if (!payBtn) return;
+
+    function showMsg(type, text) {
+        msgBox.style.display = 'block';
+        if (type === 'error') {
+            msgBox.style.background = '#FEE2E2';
+            msgBox.style.border = '1px solid #FCA5A5';
+            msgBox.style.color = '#991B1B';
+        } else if (type === 'success') {
+            msgBox.style.background = '#DCFCE7';
+            msgBox.style.border = '1px solid #86EFAC';
+            msgBox.style.color = '#166534';
+        } else {
+            msgBox.style.background = '#EFF6FF';
+            msgBox.style.border = '1px solid #BFDBFE';
+            msgBox.style.color = '#1E40AF';
+        }
+        msgBox.innerText = text;
+    }
+
+    payBtn.addEventListener('click', async function () {
+        try {
+            payBtn.disabled = true;
+            payBtn.innerText = 'Connecting to Razorpay...';
+            showMsg('info', 'Creating secure payment order...');
+
+            const orderRes = await fetch('/api/payments/razorpay/create-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ booking_id: '<%= booking?.id %>' })
+            });
+
+            const orderData = await orderRes.json();
+            if (!orderRes.ok || !orderData.success) {
+                throw new Error(orderData.message || 'Could not initiate payment');
+            }
+
+            const options = {
+                key: orderData.key_id,
+                amount: orderData.amount,
+                currency: orderData.currency || 'INR',
+                name: 'Vaishnavi Tours',
+                description: 'Payment for Booking #' + (orderData.booking?.booking_id || '<%= booking?.booking_id %>'),
+                order_id: orderData.order_id,
+                prefill: {
+                    name: orderData.customer?.name || '',
+                    email: orderData.customer?.email || '',
+                    contact: orderData.customer?.phone || ''
+                },
+                theme: {
+                    color: '#F59E0B'
+                },
+                modal: {
+                    ondismiss: function () {
+                        payBtn.disabled = false;
+                        payBtn.innerText = 'Pay ₹<%= number_format(booking?.balance_amount, 2) %> Online Now';
+                        showMsg('info', 'Payment dismissed. You can retry at any time.');
+                    }
+                },
+                handler: async function (response) {
+                    try {
+                        payBtn.innerText = 'Verifying Payment...';
+                        showMsg('info', 'Verifying signature and confirming booking...');
+
+                        const verifyRes = await fetch('/api/payments/razorpay/verify', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature,
+                                booking_id: '<%= booking?.id %>'
+                            })
+                        });
+
+                        const verifyData = await verifyRes.json();
+                        if (!verifyRes.ok || !verifyData.success) {
+                            throw new Error(verifyData.message || 'Verification failed');
+                        }
+
+                        showMsg('success', 'Payment verified! Refreshing confirmation...');
+                        setTimeout(function () {
+                            window.location.href = '/booking-success/<%= booking?.id %>?paid=1';
+                        }, 1200);
+                    } catch (verifyErr) {
+                        console.error('Verify error:', verifyErr);
+                        payBtn.disabled = false;
+                        payBtn.innerText = 'Retry Payment';
+                        showMsg('error', 'Verification error: ' + verifyErr.message);
+                    }
+                }
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.on('payment.failed', function (failResp) {
+                payBtn.disabled = false;
+                payBtn.innerText = 'Retry Payment';
+                const errDesc = failResp.error ? failResp.error.description : 'Payment declined or failed';
+                showMsg('error', 'Payment Failed: ' + errDesc);
+            });
+
+            rzp.open();
+        } catch (err) {
+            console.error('Payment error:', err);
+            payBtn.disabled = false;
+            payBtn.innerText = 'Pay ₹<%= number_format(booking?.balance_amount, 2) %> Online Now';
+            showMsg('error', err.message || 'Payment launch failed');
+        }
+    });
+});
+</script>
 
 <%- include('../layouts/app_footer') %>

@@ -1,6 +1,31 @@
+<% let pageTitle = '500 - Server Issue | Vaishnavi Tours'; %>
+<%- include('../layouts/app_header') %>
 
+<section style="padding: 5rem 0 7rem; background: var(--slate-50); min-height: 70vh; display: flex; align-items: center;">
+    <div class="container" style="max-width: 640px; text-align: center;">
+        <div class="card" style="padding: 3rem 2rem; border-top: 6px solid #DC2626; box-shadow: var(--shadow-lg);">
+            <div style="font-size: 5rem; font-weight: 900; color: #DC2626; line-height: 1; margin-bottom: 0.5rem;">
+                500
+            </div>
+            <h1 style="font-size: 1.85rem; font-weight: 900; color: var(--dark-950); margin-bottom: 0.75rem;">
+                System Encountered An Issue
+            </h1>
+            <p style="color: var(--slate-600); font-size: 1.05rem; line-height: 1.6; margin-bottom: 2rem;">
+                We encountered an unexpected server condition while processing your request. Our engineering team has been notified. Please try again shortly or contact our 24/7 Bilaspur dispatch desk directly.
+            </p>
 
+            <div class="d-flex justify-center gap-3 flex-wrap">
+                <a href="/" class="btn btn-primary btn-lg" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <%- icon('home', { size: 18 }) %>
+                    <span>Return to Home</span>
+                </a>
+                <a href="tel:+919244784443" class="btn btn-outline btn-lg" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <%- icon('phone-call', { size: 18 }) %>
+                    <span>Call +91 9244784443</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
 
-@section('code', '500')
-@section('headline', 'System Encountered An Issue')
-@section('message', 'Something went wrong. Please try again.')
+<%- include('../layouts/app_footer') %>

@@ -249,6 +249,23 @@ export function setupViewGlobals(app) {
                 return String(dateVal);
             }
         };
+        res.locals.formatKolkataDateTime = (dateVal) => {
+            if (!dateVal) return 'N/A';
+            try {
+                const d = new Date(dateVal);
+                return d.toLocaleString('en-IN', {
+                    timeZone: 'Asia/Kolkata',
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+            } catch (e) {
+                return String(dateVal);
+            }
+        };
         res.locals.csrfToken = () => 'static-csrf-token';
         res.locals.csrfField = () => '<input type="hidden" name="_token" value="static-csrf-token">';
 

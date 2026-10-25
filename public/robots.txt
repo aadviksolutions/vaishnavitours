@@ -20,5 +20,7 @@ Disallow: /notifications
 Disallow: /profile
 Disallow: /booking-success/
 Disallow: /invoice/
+Disallow: /pay/
+Disallow: /api/
 
 Sitemap: https://vaishnavitours.vercel.app/sitemap.xml

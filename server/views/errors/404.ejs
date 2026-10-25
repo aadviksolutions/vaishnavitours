@@ -1,6 +1,35 @@
+<% let pageTitle = '404 - Page Not Found | Vaishnavi Tours'; %>
+<%- include('../layouts/app_header') %>
 
+<section style="padding: 5rem 0 7rem; background: var(--slate-50); min-height: 70vh; display: flex; align-items: center;">
+    <div class="container" style="max-width: 640px; text-align: center;">
+        <div class="card" style="padding: 3rem 2rem; border-top: 6px solid var(--primary); box-shadow: var(--shadow-lg);">
+            <div style="font-size: 5rem; font-weight: 900; color: var(--primary); line-height: 1; margin-bottom: 0.5rem;">
+                404
+            </div>
+            <h1 style="font-size: 1.85rem; font-weight: 900; color: var(--dark-950); margin-bottom: 0.75rem;">
+                Destination Not Found
+            </h1>
+            <p style="color: var(--slate-600); font-size: 1.05rem; line-height: 1.6; margin-bottom: 2rem;">
+                The page or route you are looking for does not exist, has been moved, or the URL might have a typo. Let's get you back on the road!
+            </p>
 
+            <div class="d-flex justify-center gap-3 flex-wrap">
+                <a href="/" class="btn btn-primary btn-lg" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <%- icon('home', { size: 18 }) %>
+                    <span>Return to Home</span>
+                </a>
+                <a href="/booking" class="btn btn-outline btn-lg" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <%- icon('car', { size: 18 }) %>
+                    <span>Book a Cab</span>
+                </a>
+                <a href="/contact" class="btn btn-outline btn-lg" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <%- icon('phone', { size: 18 }) %>
+                    <span>24/7 Support</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
 
-@section('code', '404')
-@section('headline', 'Destination Not Found')
-@section('message', 'The page or route you are looking for does not exist, has been moved, or the URL might have a typo. Let\'s get you back on the road!')
+<%- include('../layouts/app_footer') %>

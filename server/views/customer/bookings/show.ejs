@@ -320,6 +320,14 @@
                 </div>
             <% } %>
 
+            <% if ((booking?.balance_amount || 0) > 0 && booking?.booking_status !== 'Cancelled') { %>
+                <div style="margin-top: 1rem;">
+                    <a href="/pay/<%= booking?.id %>" class="btn btn-primary btn-block" style="text-align: center; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <%- icon('shield-check', { size: 16 }) %> Pay Balance ₹<%= number_format(booking?.balance_amount, 2) %> Online
+                    </a>
+                </div>
+            <% } %>
+
             <div style="margin-top: 1.25rem;">
                 <a href="<%= (globalThis.routeHelper || route)('invoice.show', booking?.id) %>" class="btn btn-outline btn-block" style="text-align: center;" target="_blank">
                     <%- icon('file-text', { size: 14, class: 'me-1 inline' }) %> View / Print Tax Invoice

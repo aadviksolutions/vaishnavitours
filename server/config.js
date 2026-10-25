@@ -33,6 +33,12 @@ export const config = {
         url: process.env.APP_URL || 'http://localhost:8080',
         sessionSecret: process.env.SESSION_SECRET || process.env.APP_KEY || 'vaishnavi-tours-secure-secret-key-2026'
     },
+    razorpay: {
+        key_id: process.env.RAZORPAY_KEY_ID || '',
+        key_secret: process.env.RAZORPAY_KEY_SECRET || '',
+        webhook_secret: process.env.RAZORPAY_WEBHOOK_SECRET || '',
+        mode: process.env.RAZORPAY_MODE || 'test'
+    },
     vaishnavi: {
         business_name: dbSettings.company_name || 'Vaishnavi Tours',
         tagline: dbSettings.company_tagline || '24/7 Car Rentals, Cabs & Travel Service',

@@ -9,17 +9,27 @@ import config from './config.js';
 import setupViewGlobals from './helpers/viewHelpers.js';
 import { hydrateUser } from './middleware/auth.js';
 import flashMiddleware from './middleware/flash.js';
+import { runPaymentMigrations } from './migrations/payment_migrations.js';
+
+// Run payment migrations on server boot
+runPaymentMigrations();
 
 import publicRoutes from './routes/publicRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import apiRoutes from './routes/apiRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
+
+import { getOne } from './db.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
+// Trust reverse proxies (Vercel, Caddy, Cloudflare, Nginx)
+app.set('trust proxy', 1);
 
 // View Engine Setup (EJS)
 app.set('view engine', 'ejs');
@@ -28,7 +38,11 @@ app.set('views', path.join(__dirname, 'views'));
 // Core Middlewares
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.json({
+    verify: (req, res, buf) => {
+        req.rawBody = buf;
+    }
+}));
 app.use(cookieParser());
 app.use(methodOverride('_method'));
 
@@ -43,9 +57,30 @@ app.use(session({
     cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
         httpOnly: true,
-        secure: config.app.env === 'production'
+        secure: config.app.env === 'production',
+        sameSite: 'lax'
     }
 }));
+
+// Production Health Check Endpoints
+app.get('/health', (req, res) => {
+    try {
+        const dbCheck = getOne("SELECT 1 as ok");
+        res.status(200).json({
+            status: 'healthy',
+            uptime_seconds: Math.floor(process.uptime()),
+            timestamp: new Date().toISOString(),
+            database: dbCheck?.ok === 1 ? 'connected' : 'degraded',
+            environment: config.app.env
+        });
+    } catch (err) {
+        res.status(503).json({
+            status: 'unhealthy',
+            error: 'Database connectivity failed'
+        });
+    }
+});
+app.get('/api/health', (req, res) => res.redirect('/health'));
 
 // Setup Auth, Flash, and Globals
 app.use(hydrateUser);
@@ -53,10 +88,12 @@ app.use(flashMiddleware);
 setupViewGlobals(app);
 
 // Mount API routes
+app.use('/api/payments', paymentRoutes);
 app.use('/api', apiRoutes);
 app.use(apiRoutes);
 
 // Mount Public & Auth Routes
+app.use('/', paymentRoutes);
 app.use('/', authRoutes);
 app.use('/', publicRoutes);
 
@@ -94,7 +131,7 @@ app.use((err, req, res, next) => {
         error: err
     }, (renderErr, html) => {
         if (renderErr) {
-            return res.status(500).send(`<h1>500 - Internal Server Error</h1><p>${err.message}</p>`);
+            return res.status(500).send('<h1>500 - Internal Server Error</h1><p>An unexpected condition occurred. Our team has been notified. Please return to <a href="/">Vaishnavi Tours Home</a>.</p>');
         }
         res.status(500).send(html);
     });
