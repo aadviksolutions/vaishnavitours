@@ -42,19 +42,61 @@
     <!-- Left 1 Col: Profile Card -->
     <div>
         <div class="card mb-4">
-            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem;"><x-icon name="user" size="20" class="text-primary" style="margin-right: 6px;" /> Contact Details</h3>
+            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem;"><x-icon name="user" size="20" class="text-primary" style="margin-right: 6px;" /> Contact & Account Details</h3>
+
+            @php
+                $custType = $user->customer->customer_type ?? 'individual';
+            @endphp
+
+            <div class="mb-2">
+                @if($custType === 'corporate')
+                    <span class="badge" style="background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; font-size: 0.775rem; font-weight: 700;">
+                        <x-icon name="building-2" :size="13" class="me-1 inline" /> Corporate Client
+                    </span>
+                @elseif($custType === 'travel_partner')
+                    <span class="badge" style="background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; font-size: 0.775rem; font-weight: 700;">
+                        <x-icon name="handshake" :size="13" class="me-1 inline" /> Travel Partner
+                    </span>
+                @else
+                    <span class="badge" style="background: #F8FAFC; color: #475569; border: 1px solid #E2E8F0; font-size: 0.775rem; font-weight: 600;">
+                        <x-icon name="user" :size="13" class="me-1 inline" /> Individual Passenger
+                    </span>
+                @endif
+            </div>
 
             <div style="font-weight: 800; font-size: 1.15rem; color: var(--dark-900);">{{ $user->name }}</div>
-            <div style="margin-top: 6px; font-size: 0.9rem;"><x-icon name="phone" size="14" style="margin-right: 4px;" /><a href="tel:{{ $user->phone }}">{{ $user->phone }}</a></div>
-            <div style="font-size: 0.9rem; color: var(--slate-600);">✉️ {{ $user->email }}</div>
+
+            @if($custType === 'corporate' && !empty($user->customer->company_name) && $user->customer->company_name !== $user->name)
+                <div style="font-size: 0.875rem; color: #2563EB; font-weight: 700; margin-top: 2px;">Company: {{ $user->customer->company_name }}</div>
+            @elseif($custType === 'travel_partner' && !empty($user->customer->partner_name) && $user->customer->partner_name !== $user->name)
+                <div style="font-size: 0.875rem; color: #D97706; font-weight: 700; margin-top: 2px;">Agency: {{ $user->customer->partner_name }}</div>
+            @endif
+
+            <div style="margin-top: 8px; font-size: 0.9rem;"><x-icon name="phone" size="14" style="margin-right: 4px;" /><a href="tel:{{ $user->phone }}" style="font-weight: 700;">{{ $user->phone }}</a></div>
+            <div style="font-size: 0.9rem; color: var(--slate-600); margin-top: 4px;"><x-icon name="mail" size="14" style="margin-right: 4px;" /> {{ $user->email }}</div>
 
             @if($user->customer)
+                @if($user->customer->contact_person && $user->customer->contact_person !== $user->name)
+                    <div style="font-size: 0.85rem; color: var(--slate-700); margin-top: 6px;">
+                        <strong>Contact Person:</strong> {{ $user->customer->contact_person }}
+                    </div>
+                @endif
                 @if($user->customer->alternate_phone)
                     <div style="font-size: 0.85rem; color: var(--slate-500); margin-top: 4px;">Alt Phone: {{ $user->customer->alternate_phone }}</div>
                 @endif
+                @if($user->customer->gstin)
+                    <div style="font-size: 0.85rem; margin-top: 6px;">
+                        <strong>GSTIN:</strong> <code style="background: #F1F5F9; padding: 2px 6px; border-radius: 4px; font-weight: 700; color: #0F172A;">{{ $user->customer->gstin }}</code>
+                    </div>
+                @endif
+                @if($user->customer->partner_commission)
+                    <div style="font-size: 0.85rem; color: #92400E; margin-top: 6px;">
+                        <strong>Agreed Commission:</strong> {{ $user->customer->partner_commission }}
+                    </div>
+                @endif
                 <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px dashed var(--slate-200); font-size: 0.85rem; color: var(--slate-600);">
                     <strong>Pickup / Billing Address:</strong><br>
-                    {{ $user->customer->address ?? 'Bilaspur' }}<br>
+                    {{ $user->customer->billing_address ?? $user->customer->address ?? 'Bilaspur' }}<br>
                     {{ $user->customer->city ?? 'Bilaspur' }}, {{ $user->customer->state ?? 'Chhattisgarh' }} - {{ $user->customer->pincode ?? '495001' }}
                 </div>
             @endif

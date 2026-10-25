@@ -226,6 +226,13 @@ class Vehicle extends Model
             return asset('assets/vehicles/tata-tiago-wagonr.jpg');
         }
 
+        if (str_contains($name, 'urbania')) {
+            return asset('assets/vehicles/force-urbania.jpg');
+        }
+        if (str_contains($name, 'bus') || str_contains($name, 'coach')) {
+            return asset('assets/vehicles/luxury-bus-coach.jpg');
+        }
+
         $type = strtolower($this->vehicle_type ?? '');
         if (str_contains($type, 'sedan')) {
             return asset('assets/vehicles/maruti-suzuki-dzire.jpg');
@@ -233,11 +240,17 @@ class Vehicle extends Model
         if (str_contains($type, 'innova') || str_contains($type, 'crysta')) {
             return asset('assets/vehicles/toyota-innova-crysta.jpg');
         }
+        if (str_contains($type, 'urbania')) {
+            return asset('assets/vehicles/force-urbania.jpg');
+        }
         if (str_contains($type, 'muv') || str_contains($type, 'suv')) {
             return asset('assets/vehicles/maruti-suzuki-ertiga.jpg');
         }
         if (str_contains($type, 'tempo') || str_contains($type, 'traveller')) {
             return asset('assets/vehicles/force-tempo-traveller.jpg');
+        }
+        if (str_contains($type, 'bus') || str_contains($type, 'coach')) {
+            return asset('assets/vehicles/luxury-bus-coach.jpg');
         }
         if (str_contains($type, 'hatchback')) {
             return asset('assets/vehicles/tata-tiago-wagonr.jpg');

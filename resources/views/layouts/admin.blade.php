@@ -68,7 +68,7 @@
                 <x-icon name="layers" size="15" /> Booking Categories
             </a>
             <a href="{{ route('admin.customers.index') }}" class="admin-nav-item {{ request()->routeIs('admin.customers.*') ? 'active' : '' }}">
-                <x-icon name="users" size="15" /> Customers
+                <x-icon name="users" size="15" /> Customers & Partners
             </a>
 
             <div class="admin-menu-heading">Finance & Billing</div>

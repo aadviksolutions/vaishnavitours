@@ -200,7 +200,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('drivers', AdminDriverController::class);
 
     // Customers
+    Route::get('/customers/sample-csv', [AdminCustomerController::class, 'sampleCsv'])->name('customers.sample-csv');
+    Route::post('/customers/bulk-upload', [AdminCustomerController::class, 'bulkUpload'])->name('customers.bulk-upload');
     Route::get('/customers', [AdminCustomerController::class, 'index'])->name('customers.index');
+    Route::get('/customers/create', [AdminCustomerController::class, 'create'])->name('customers.create');
+    Route::post('/customers', [AdminCustomerController::class, 'store'])->name('customers.store');
     Route::get('/customers/{user}', [AdminCustomerController::class, 'show'])->name('customers.show');
 
     // Payments & Refunds
