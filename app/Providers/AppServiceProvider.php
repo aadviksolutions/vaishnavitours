@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Booking;
 use App\Models\Notification;
 use App\Policies\BookingPolicy;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
@@ -25,6 +26,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Paginator::defaultView('vendor.pagination.custom');
+        Paginator::defaultSimpleView('vendor.pagination.custom');
+
         Gate::policy(Booking::class, BookingPolicy::class);
 
         View::share('vaishnavi', config('vaishnavi'));

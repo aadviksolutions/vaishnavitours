@@ -24,9 +24,12 @@ class AdminPaymentController extends Controller
         }
 
         $payments = $query->latest()->paginate(15);
-        $totalCollected = Payment::where('status', 'Success')->sum('amount');
+        $totalCollected = (float) Payment::where('status', 'Success')->sum('amount');
+        $successfulCount = Payment::where('status', 'Success')->count();
+        $totalPendingBalance = (float) Booking::where('balance_amount', '>', 0)->sum('balance_amount');
+        $pendingBookingsCount = Booking::where('balance_amount', '>', 0)->count();
 
-        return view('admin.payments.index', compact('payments', 'totalCollected'));
+        return view('admin.payments.index', compact('payments', 'totalCollected', 'successfulCount', 'totalPendingBalance', 'pendingBookingsCount'));
     }
 
     public function create(Request $request)

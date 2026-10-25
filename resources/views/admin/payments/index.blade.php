@@ -14,19 +14,60 @@
     </div>
 </div>
 
-<!-- KPI Banner -->
-<div class="card mb-4" style="background: linear-gradient(135deg, var(--dark-900) 0%, #1e293b 100%); color: #fff; padding: 1.5rem 2rem;">
-    <div class="d-flex justify-between align-center flex-wrap gap-3">
-        <div>
-            <div style="color: var(--slate-400); font-size: 0.85rem; text-transform: uppercase; font-weight: 700;">Total Collections Recorded</div>
-            <div style="font-size: 2.25rem; font-weight: 800; color: var(--primary); margin-top: 4px;">
-                ₹{{ number_format($totalCollected, 2) }}
-            </div>
-            <div style="font-size: 0.8rem; color: var(--slate-300); margin-top: 2px;">Verified successful payments across all travel bookings</div>
+<!-- High-Contrast Financial Overview Cards -->
+<div class="grid grid-3 gap-3 mb-4">
+    <!-- Card 1: Total Collections Recorded (High-Contrast Slate Navy & Pure White/Emerald) -->
+    <div class="card" style="background: #0F172A; border-left: 4px solid #10B981; padding: 1.25rem 1.5rem; border-radius: 8px;">
+        <div class="d-flex justify-between align-center mb-1">
+            <span style="color: #94A3B8; font-size: 0.775rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">
+                Total Collections
+            </span>
+            <span style="background: rgba(16, 185, 129, 0.2); color: #34D399; font-size: 0.725rem; font-weight: 800; padding: 2px 8px; border-radius: 20px;">
+                Verified
+            </span>
         </div>
+        <div style="font-size: 2.15rem; font-weight: 900; color: #FFFFFF; letter-spacing: -0.5px; line-height: 1.2;">
+            ₹{{ number_format($totalCollected, 2) }}
+        </div>
+        <div style="font-size: 0.8rem; color: #CBD5E1; margin-top: 6px; font-weight: 500;">
+            <x-icon name="circle-check" :size="13" style="color: #10B981; vertical-align: middle; margin-right: 4px;" /> {{ $successfulCount ?? 0 }} verified payments recorded
+        </div>
+    </div>
+
+    <!-- Card 2: Pending Balance To Collect -->
+    <div class="card" style="background: #FFFFFF; border-left: 4px solid #F59E0B; padding: 1.25rem 1.5rem; border-radius: 8px; border: 1px solid var(--slate-200);">
+        <div class="d-flex justify-between align-center mb-1">
+            <span style="color: var(--slate-600); font-size: 0.775rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">
+                Pending Balance Due
+            </span>
+            <span style="background: #FEF3C7; color: #92400E; font-size: 0.725rem; font-weight: 800; padding: 2px 8px; border-radius: 20px;">
+                To Collect
+            </span>
+        </div>
+        <div style="font-size: 2.15rem; font-weight: 900; color: #B45309; letter-spacing: -0.5px; line-height: 1.2;">
+            ₹{{ number_format($totalPendingBalance ?? 0, 2) }}
+        </div>
+        <div style="font-size: 0.8rem; color: var(--slate-500); margin-top: 6px; font-weight: 500;">
+            <x-icon name="clock" :size="13" style="color: #F59E0B; vertical-align: middle; margin-right: 4px;" /> Across {{ $pendingBookingsCount ?? 0 }} bookings with outstanding due
+        </div>
+    </div>
+
+    <!-- Card 3: Tax Invoices & Quick Record -->
+    <div class="card" style="background: #FFFFFF; border-left: 4px solid #2563EB; padding: 1.25rem 1.5rem; border-radius: 8px; border: 1px solid var(--slate-200); display: flex; flex-direction: column; justify-content: space-between;">
         <div>
-            <a href="{{ route('admin.invoices.index') }}" class="btn btn-outline" style="color: #fff; border-color: rgba(255,255,255,0.3);">
-                View Tax Invoices →
+            <div style="color: var(--slate-600); font-size: 0.775rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">
+                Billing & Accounts Desk
+            </div>
+            <div style="font-size: 0.85rem; color: var(--slate-600); margin-top: 6px; line-height: 1.4;">
+                Generate official GST invoices, track cash advances, and issue payment receipts.
+            </div>
+        </div>
+        <div class="d-flex gap-2 mt-3 flex-wrap">
+            <a href="{{ route('admin.invoices.index') }}" class="btn btn-outline btn-sm" style="font-weight: 700; font-size: 0.8rem; color: #1E40AF; border-color: #93C5FD; background: #EFF6FF;">
+                <x-icon name="receipt" :size="13" class="me-1 inline" /> Tax Invoices
+            </a>
+            <a href="{{ route('admin.payments.create') }}" class="btn btn-primary btn-sm" style="font-weight: 700; font-size: 0.8rem;">
+                + Record Payment
             </a>
         </div>
     </div>

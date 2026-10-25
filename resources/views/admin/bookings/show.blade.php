@@ -54,10 +54,10 @@
         </form>
 
         <!-- WhatsApp Direct Message -->
-        <button type="button" class="btn btn-sm"
+        <button type="button" class="btn btn-sm d-inline-flex align-center"
             style="background:#25D366;color:#fff;border:none;"
             onclick="document.getElementById('wa-direct-modal').style.display='flex'">
-            📱 WhatsApp
+            <x-icon name="message-circle" :size="14" style="margin-right: 5px;" /> WhatsApp
         </button>
     </div>
 </div>
@@ -67,7 +67,9 @@
     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
     <div style="background:#fff;border-radius:12px;padding:24px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
         <div class="d-flex align-items-center justify-content-between mb-3">
-            <h5 style="font-weight:800;margin:0;">📱 Send WhatsApp to Customer</h5>
+            <h5 style="font-weight:800;margin:0;display:flex;align-items:center;gap:6px;">
+                <x-icon name="message-circle" :size="16" style="color:#25D366;" /> Send WhatsApp to Customer
+            </h5>
             <button onclick="document.getElementById('wa-direct-modal').style.display='none'"
                 style="background:none;border:none;font-size:1.2rem;cursor:pointer;">✕</button>
         </div>
@@ -253,7 +255,7 @@ Regarding your booking *{{ $booking->booking_id }}* from {{ $booking->pickup_loc
                         <span style="color: var(--slate-500); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; display: block;">Phone / Mobile:</span>
                         @if($booking->travel_partner_phone)
                             <a href="tel:{{ $booking->travel_partner_phone }}" style="color: #D97706; font-weight: 700; text-decoration: none;">
-                                📞 {{ $booking->travel_partner_phone }}
+                                {{ $booking->travel_partner_phone }}
                             </a>
                         @else
                             <span style="color: var(--slate-400);">N/A</span>
@@ -288,7 +290,7 @@ Regarding your booking *{{ $booking->booking_id }}* from {{ $booking->pickup_loc
             <div class="card mb-4" style="border-left: 4px solid #7C3AED; background: #FDFCFF;">
                 <div class="d-flex justify-between align-center mb-2">
                     <h3 style="font-size: 1rem; font-weight: 800; color: #5B21B6; margin: 0; display: flex; align-items: center; gap: 6px;">
-                        🏢 Corporate Client Account
+                        <x-icon name="building-2" :size="15" /> Corporate Client Account
                     </h3>
                     <span class="badge" style="background: #EDE9FE; color: #5B21B6; font-weight: 700;">
                         CORP Category
@@ -412,7 +414,7 @@ Regarding your booking *{{ $booking->booking_id }}* from {{ $booking->pickup_loc
 
                         <div><span style="color: var(--slate-500); font-size: 0.8rem; text-transform: uppercase; font-weight: 700;">Mobile:</span></div>
                         <div style="font-weight: 700; color: var(--dark-900); margin-bottom: 0.5rem;">
-                            📞 {{ $booking->driver->mobile }}
+                            {{ $booking->driver->mobile }}
                         </div>
 
                         <div><span style="color: var(--slate-500); font-size: 0.8rem; text-transform: uppercase; font-weight: 700;">License / Rating:</span></div>
@@ -663,8 +665,8 @@ Regarding your booking *{{ $booking->booking_id }}* from {{ $booking->pickup_loc
             <!-- Process Refund Form (if paid > 0) -->
             @if($booking->paid_amount > 0)
                 <div class="mt-3 pt-3" style="border-top: 1px dashed var(--slate-200);">
-                    <h4 style="font-size: 0.9rem; font-weight: 800; color: #DC2626; margin-bottom: 0.75rem;">
-                        💸 Process Refund
+                    <h4 style="font-size: 0.9rem; font-weight: 800; color: #DC2626; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 6px;">
+                        <x-icon name="rotate-ccw" :size="14" /> Process Refund
                     </h4>
                     <form action="{{ route('admin.payments.refund', $booking->id) }}" method="POST" onsubmit="return confirm('Process refund of this amount to customer?');">
                         @csrf
@@ -701,8 +703,8 @@ Regarding your booking *{{ $booking->booking_id }}* from {{ $booking->pickup_loc
         @endphp
         <div class="card mb-4" style="border-top: 4px solid #25D366;">
             <div class="d-flex justify-between align-center mb-2">
-                <h3 style="font-size: 1rem; font-weight: 800; color: #15803D; margin: 0;">
-                    💬 WhatsApp Dispatch Actions
+                <h3 style="font-size: 1rem; font-weight: 800; color: #15803D; margin: 0; display: flex; align-items: center; gap: 6px;">
+                    <x-icon name="message-square" :size="16" /> WhatsApp Dispatch Actions
                 </h3>
                 <span class="badge" style="background: #DCFCE7; color: #166534; font-size: 0.7rem;">Quick Send</span>
             </div>
@@ -712,27 +714,27 @@ Regarding your booking *{{ $booking->booking_id }}* from {{ $booking->pickup_loc
 
             <div class="d-flex flex-column gap-2">
                 <a href="https://wa.me/{{ $cleanPhone }}?text={{ urlencode($confirmMsg) }}" target="_blank" class="btn btn-outline btn-sm d-flex align-center justify-between" style="border-color: #25D366; color: #166534; font-weight: 700; font-size: 0.8rem;">
-                    <span>📲 Send Booking Confirmation</span>
+                    <span style="display: flex; align-items: center; gap: 6px;"><x-icon name="send" :size="13" /> Send Booking Confirmation</span>
                     <span>➔</span>
                 </a>
 
                 @if($booking->driver)
                     <a href="https://wa.me/{{ $cleanPhone }}?text={{ urlencode($driverMsg) }}" target="_blank" class="btn btn-outline btn-sm d-flex align-center justify-between" style="border-color: #3B82F6; color: #1D4ED8; font-weight: 700; font-size: 0.8rem;">
-                        <span>🚗 Send Driver & Vehicle Details</span>
+                        <span style="display: flex; align-items: center; gap: 6px;"><x-icon name="car" :size="13" /> Send Driver & Vehicle Details</span>
                         <span>➔</span>
                     </a>
                 @endif
 
                 @if($booking->balance_amount > 0)
                     <a href="https://wa.me/{{ $cleanPhone }}?text={{ urlencode($remindMsg) }}" target="_blank" class="btn btn-outline btn-sm d-flex align-center justify-between" style="border-color: #F59E0B; color: #B45309; font-weight: 700; font-size: 0.8rem;">
-                        <span>⚠️ Send Payment Reminder (₹{{ number_format($booking->balance_amount) }})</span>
+                        <span style="display: flex; align-items: center; gap: 6px;"><x-icon name="bell" :size="13" /> Send Payment Reminder (₹{{ number_format($booking->balance_amount) }})</span>
                         <span>➔</span>
                     </a>
                 @endif
 
                 @if($booking->booking_status === 'Completed')
                     <a href="https://wa.me/{{ $cleanPhone }}?text={{ urlencode($reviewMsg) }}" target="_blank" class="btn btn-outline btn-sm d-flex align-center justify-between" style="border-color: #8B5CF6; color: #6D28D9; font-weight: 700; font-size: 0.8rem;">
-                        <span>⭐ Request Google Review</span>
+                        <span style="display: flex; align-items: center; gap: 6px;"><x-icon name="star" :size="13" /> Request Google Review</span>
                         <span>➔</span>
                     </a>
                 @endif

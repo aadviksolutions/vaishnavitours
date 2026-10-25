@@ -29,7 +29,9 @@
         <!-- Left 2 Cols: Form -->
         <div style="grid-column: span 2;">
             <div class="card mb-4">
-                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">💳 Payment Transaction Details</h3>
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px;">
+                    <x-icon name="credit-card" :size="16" /> Payment Transaction Details
+                </h3>
 
                 <div class="form-group mb-3">
                     <label for="booking_id" class="form-label">Select Booking with Due Balance *</label>
@@ -82,7 +84,9 @@
 
                 <div class="d-flex justify-end gap-2">
                     <a href="{{ route('admin.payments.index') }}" class="btn btn-outline">Cancel</a>
-                    <button type="submit" class="btn btn-primary" style="min-width: 180px;">💾 Record & Sync</button>
+                    <button type="submit" class="btn btn-primary d-inline-flex align-center justify-center gap-1" style="min-width: 180px;">
+                        <x-icon name="check-circle" :size="15" /> Record & Sync
+                    </button>
                 </div>
             </div>
         </div>
@@ -90,7 +94,9 @@
         <!-- Right 1 Col: Info -->
         <div>
             <div class="card mb-4" style="background: var(--slate-50);">
-                <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 0.5rem;">ℹ️ Automated Financial Sync</h4>
+                <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px;">
+                    <x-icon name="info" :size="15" style="color: var(--primary);" /> Automated Financial Sync
+                </h4>
                 <p style="font-size: 0.825rem; color: var(--slate-600); line-height: 1.5; margin-bottom: 0.75rem;">
                     When a payment is marked as <strong>Success</strong>:
                 </p>

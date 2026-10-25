@@ -99,7 +99,7 @@
                 <x-icon name="star" size="15" /> Customer Reviews
             </a>
             <a href="{{ route('admin.whatsapp.scan') }}" class="admin-nav-item {{ request()->routeIs('admin.whatsapp.*') ? 'active' : '' }}">
-                📱 WhatsApp & QR Scan
+                <x-icon name="message-circle" size="15" /> WhatsApp & QR Scan
             </a>
             <a href="{{ route('admin.settings.index') }}" class="admin-nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
                 <x-icon name="settings" size="15" /> Company Settings

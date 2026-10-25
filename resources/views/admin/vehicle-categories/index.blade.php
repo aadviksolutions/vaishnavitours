@@ -6,7 +6,10 @@
 @section('content')
 <div class="d-flex justify-between align-center flex-wrap gap-2 mb-3">
     <div>
-        <h1 style="font-size: 19px; font-weight: 800; margin: 0; color: var(--dark-900);">🚗 Fleet Vehicle Categories & Models</h1>
+        <h1 style="font-size: 19px; font-weight: 800; margin: 0; color: var(--dark-900); display: flex; align-items: center; gap: 8px;">
+            <x-icon name="car" :size="20" style="color: var(--primary);" />
+            Fleet Vehicle Categories & Models
+        </h1>
         <p style="color: var(--slate-500); margin: 3px 0 0 0; font-size: 13px;">
             Configure commercial vehicle categories (Hatchback, Sedan, SUV/MUV, Traveller, Urbania, Bus) and manage customer model options.
         </p>

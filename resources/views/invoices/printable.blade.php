@@ -219,13 +219,113 @@
     </style>
 </head>
 <body>
+@php
+    $invoiceUrl = url()->current();
+    $custPhone = preg_replace('/\D/', '', $document['customer']['phone'] ?? '');
+    $waPhone = (strlen($custPhone) === 10) ? '91' . $custPhone : $custPhone;
+
+    $waMessage = "Namaste *" . ($document['customer']['name'] ?? 'Customer') . "*,\n\n"
+        . "Here is your Tax Invoice from *Vaishnavi Tours & Travels*:\n"
+        . "• Invoice No: " . $invoice->invoice_number . "\n"
+        . "• Booking Ref: #" . $booking->booking_id . "\n"
+        . "• Route: " . ($document['service']['pickup'] ?? 'Bilaspur') . " to " . ($document['service']['drop'] ?? 'Drop Location') . "\n"
+        . "• Total Amount: Rs. " . number_format($document['totals']['total_amount'] ?? 0, 2) . "\n"
+        . "• Received: Rs. " . number_format($document['totals']['received_amount'] ?? 0, 2) . "\n"
+        . "• Balance Due: Rs. " . number_format($document['totals']['balance_amount'] ?? 0, 2) . "\n\n"
+        . "View & Download Invoice:\n" . $invoiceUrl . "\n\n"
+        . "24/7 Support: +91 9244784443 / +91 9179484443\nThank you for travelling with us!";
+
+    $waUrl = "https://wa.me/" . ($waPhone ? $waPhone : '') . "?text=" . urlencode($waMessage);
+
+    $mailSubject = "Tax Invoice " . $invoice->invoice_number . " - Vaishnavi Tours";
+    $mailBody = "Dear " . ($document['customer']['name'] ?? 'Customer') . ",\n\n"
+        . "Please find your tax invoice details from Vaishnavi Tours below:\n\n"
+        . "Invoice Number: " . $invoice->invoice_number . "\n"
+        . "Booking ID: #" . $booking->booking_id . "\n"
+        . "Route: " . ($document['service']['pickup'] ?? '') . " to " . ($document['service']['drop'] ?? '') . "\n"
+        . "Total Amount: Rs. " . number_format($document['totals']['total_amount'] ?? 0, 2) . "\n"
+        . "Paid Amount: Rs. " . number_format($document['totals']['received_amount'] ?? 0, 2) . "\n"
+        . "Balance Due: Rs. " . number_format($document['totals']['balance_amount'] ?? 0, 2) . "\n\n"
+        . "You can view and print your complete invoice online at:\n" . $invoiceUrl . "\n\n"
+        . "Warm regards,\nVaishnavi Tours Team\nBilaspur, Chhattisgarh\nSupport: +91 9244784443";
+    $mailUrl = "mailto:" . ($document['customer']['email'] ?? '') . "?subject=" . urlencode($mailSubject) . "&body=" . urlencode($mailBody);
+@endphp
+
     <div class="invoice-actions no-print">
-        <a href="{{ $backUrl }}" class="invoice-button">Back</a>
+        <a href="{{ $backUrl }}" class="invoice-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px;"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Back
+        </a>
+
         <div class="invoice-action-group">
-            <button type="button" class="invoice-button invoice-button-primary" onclick="window.print()">Print Invoice</button>
-            <button type="button" class="invoice-button" onclick="window.print()" title="Choose Save as PDF in the print dialog">Download PDF</button>
+            <!-- Share on WhatsApp -->
+            <a href="{{ $waUrl }}" target="_blank" rel="noopener noreferrer" class="invoice-button" style="background: #16A34A; color: #fff; border-color: #15803D;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"/></svg> Share via WhatsApp
+            </a>
+
+            <!-- Share via Email -->
+            <a href="{{ $mailUrl }}" class="invoice-button" style="background: #2563EB; color: #fff; border-color: #1D4ED8;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg> Email Invoice
+            </a>
+
+            <!-- Copy Link -->
+            <button type="button" class="invoice-button" onclick="copyInvoiceLink()" id="btnCopyLink" title="Copy public invoice URL">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> <span id="copyLinkText">Copy Link</span>
+            </button>
+
+            <!-- Native Share for Mobile -->
+            <button type="button" class="invoice-button" onclick="shareNativeInvoice()" id="btnNativeShare" style="display: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg> More Share
+            </button>
+
+            <!-- Print & PDF -->
+            <button type="button" class="invoice-button invoice-button-primary" onclick="window.print()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg> Print
+            </button>
+            <button type="button" class="invoice-button" onclick="window.print()" title="Choose Save as PDF in the print dialog">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg> Download PDF
+            </button>
         </div>
     </div>
+
+    <script>
+        if (navigator.share) {
+            const btn = document.getElementById('btnNativeShare');
+            if (btn) btn.style.display = 'inline-flex';
+        }
+
+        function copyInvoiceLink() {
+            const url = window.location.href;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(url).then(showCopiedState);
+            } else {
+                const ta = document.createElement('textarea');
+                ta.value = url;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showCopiedState();
+            }
+        }
+
+        function showCopiedState() {
+            const txt = document.getElementById('copyLinkText');
+            if (txt) {
+                txt.textContent = 'Copied!';
+                setTimeout(() => { txt.textContent = 'Copy Link'; }, 2000);
+            }
+        }
+
+        function shareNativeInvoice() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Tax Invoice {{ $invoice->invoice_number }} - Vaishnavi Tours',
+                    text: 'Tax invoice for booking #{{ $booking->booking_id }} from Vaishnavi Tours.',
+                    url: window.location.href
+                }).catch(() => {});
+            }
+        }
+    </script>
 
     <main class="invoice-print-root">
         <article class="invoice-paper" aria-label="Tax invoice">

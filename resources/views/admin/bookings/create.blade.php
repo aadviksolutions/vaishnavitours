@@ -41,7 +41,7 @@
     <!-- SECTION 4: Mandatory Booking Category Selection (CORP, MAN, TP) -->
     <div class="card mb-4" style="background: #fff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 1.25rem;">
         <div style="font-weight: 800; font-size: 1rem; color: var(--dark-900); margin-bottom: 0.75rem;">
-            🏷️ 1. Booking Category / Source Classification *
+            <x-icon name="tag" :size="16" style="color: var(--primary); vertical-align: middle; margin-right: 6px;" /> 1. Booking Category / Source Classification *
         </div>
         <p style="font-size: 0.8rem; color: var(--slate-500); margin: 0 0 0.85rem 0;">
             Select the booking source. Unique collision-safe booking ID sequence will be assigned with appropriate prefix (CORP, MAN, TP).
@@ -74,8 +74,8 @@
 
         <!-- Corporate Dedicated Workflow Fields (Section 4 requirement) -->
         <div id="corporateFieldsCard" style="display: {{ old('booking_category', isset($prefill) && $prefill->source === 'corporate' ? 'CORP' : 'MAN') === 'CORP' ? 'block' : 'none' }}; margin-top: 1rem; padding: 1rem; background: #F5F3FF; border: 1px solid #DDD6FE; border-radius: 6px;">
-            <div style="font-weight: 700; font-size: 13px; color: #5B21B6; margin-bottom: 0.5rem;">
-                🏢 Corporate Account & GST Billing Profile
+            <div style="font-weight: 700; font-size: 13px; color: #5B21B6; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px;">
+                <x-icon name="building-2" :size="14" /> Corporate Account & GST Billing Profile
             </div>
             <div class="grid grid-3 gap-2 mb-2">
                 <div>
@@ -100,7 +100,7 @@
         <!-- Travel Partner Dedicated Workflow Fields -->
         <div id="travelPartnerFieldsCard" style="display: {{ old('booking_category', isset($prefill) && $prefill->source === 'third_party' ? 'TP' : 'MAN') === 'TP' ? 'block' : 'none' }}; margin-top: 1rem; padding: 1.15rem; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px;">
             <div style="font-weight: 800; font-size: 13.5px; color: #92400E; margin-bottom: 0.65rem; display: flex; align-items: center; gap: 6px;">
-                🤝 Travel Partner / Agent Referral Details
+                <x-icon name="users" :size="15" /> Travel Partner / Agent Referral Details
             </div>
             <div class="grid grid-3 gap-3 mb-2">
                 <div>
@@ -139,14 +139,16 @@
             <!-- Customer Selection Card -->
             <div class="card mb-4">
                 <div class="d-flex justify-between align-center flex-wrap gap-2 mb-3">
-                    <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">👤 2. Passenger & Customer Details</h3>
+                    <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <x-icon name="user" :size="16" /> 2. Passenger & Customer Details
+                    </h3>
                     <!-- Mode Switch Buttons -->
                     <div class="d-flex gap-1" style="background: var(--slate-100); padding: 4px; border-radius: 8px;">
                         <button type="button" id="modeExistingBtn" class="btn btn-sm" onclick="setCustomerMode('existing')" style="border-radius: 6px; font-weight: 700; font-size: 0.8rem; padding: 5px 14px; transition: all 0.2s;">
-                            👥 Existing Customer
+                            Existing Customer
                         </button>
                         <button type="button" id="modeNewBtn" class="btn btn-sm" onclick="setCustomerMode('new')" style="border-radius: 6px; font-weight: 700; font-size: 0.8rem; padding: 5px 14px; transition: all 0.2s;">
-                            ➕ New Customer
+                            + New Customer
                         </button>
                     </div>
                 </div>
@@ -159,23 +161,23 @@
                         <label for="customer_id" class="form-label">Select Registered Customer *</label>
                         <select name="customer_id" id="customer_id" class="form-select">
                             <option value="">-- Choose Existing Customer --</option>
-                            <option value="new" style="font-weight: 700; color: var(--primary);">✨ + Add New Customer Instead</option>
+                            <option value="new" style="font-weight: 700; color: var(--primary);">+ Add New Customer Instead</option>
                             @foreach($customers as $c)
                                 <option value="{{ $c->id }}" {{ old('customer_id') == $c->id ? 'selected' : '' }}>
-                                    {{ $c->name }} (📞 {{ $c->phone }} | ✉️ {{ $c->email }})
+                                    {{ $c->name }} ({{ $c->phone }} | {{ $c->email }})
                                 </option>
                             @endforeach
                         </select>
                     </div>
                     <p style="font-size: 0.8rem; color: var(--slate-500); margin: 0;">
-                        Can't find the customer? Click <strong>➕ New Customer</strong> above to enter customer name & phone directly.
+                        Can't find the customer? Click <strong>+ New Customer</strong> above to enter customer name & phone directly.
                     </p>
                 </div>
 
                 <!-- New Customer Mode -->
                 <div id="newCustomerSection" style="display: none; background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 8px; padding: 1.25rem;">
                     <div class="d-flex align-center gap-2 mb-3">
-                        <span style="font-size: 1.25rem;">✨</span>
+                        <x-icon name="user-plus" :size="18" style="color: #92400E;" />
                         <div>
                             <strong style="color: #92400E; font-size: 0.95rem;">Enter New Passenger / Customer Information</strong>
                             <p style="font-size: 0.8rem; color: #B45309; margin: 0;">A customer account will be created automatically and linked to this booking.</p>
@@ -215,7 +217,9 @@
 
             <!-- Route & Schedule Card -->
             <div class="card mb-4">
-                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">🚖 3. Route & Schedule Information</h3>
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px;">
+                    <x-icon name="map-pin" :size="16" /> 3. Route & Schedule Information
+                </h3>
 
                 <div class="grid grid-2 gap-3 mb-3">
                     <div class="form-group">
@@ -262,7 +266,9 @@
                     <div class="form-group">
                         <div class="d-flex justify-between align-center mb-1">
                             <label for="pickup_location" class="form-label" style="margin: 0;">Pickup Location *</label>
-                            <button type="button" class="btn btn-xs btn-outline btn-admin-select-map" data-target="pickup" style="font-size: 11px; padding: 1px 6px; border-radius: 4px; color: #2563EB; border-color: #BFDBFE; background: #EFF6FF;">🗺️ Pick Map</button>
+                            <button type="button" class="btn btn-xs btn-outline btn-admin-select-map" data-target="pickup" style="font-size: 11px; padding: 2px 7px; border-radius: 4px; color: #2563EB; border-color: #BFDBFE; background: #EFF6FF; display: inline-flex; align-items: center; gap: 4px;">
+                                <x-icon name="map-pin" :size="11" /> Pick Map
+                            </button>
                         </div>
                         <input type="text" name="pickup_location" id="pickup_location" class="form-control" list="pickupLocationsList" value="{{ old('pickup_location', $prefill->pickup_location ?? 'Bilaspur') }}" required>
                         <datalist id="pickupLocationsList">
@@ -273,7 +279,9 @@
                     <div class="form-group">
                         <div class="d-flex justify-between align-center mb-1">
                             <label for="via_location" class="form-label" style="margin: 0;">Via Location (Round-Trip)</label>
-                            <button type="button" class="btn btn-xs btn-outline btn-admin-select-map" data-target="via" style="font-size: 11px; padding: 1px 6px; border-radius: 4px; color: #2563EB; border-color: #BFDBFE; background: #EFF6FF;">🗺️ Pick Map</button>
+                            <button type="button" class="btn btn-xs btn-outline btn-admin-select-map" data-target="via" style="font-size: 11px; padding: 2px 7px; border-radius: 4px; color: #2563EB; border-color: #BFDBFE; background: #EFF6FF; display: inline-flex; align-items: center; gap: 4px;">
+                                <x-icon name="map-pin" :size="11" /> Pick Map
+                            </button>
                         </div>
                         <input type="text" name="via_location" id="via_location" class="form-control" placeholder="e.g. Amarkantak" value="{{ old('via_location', $prefill->via_location ?? '') }}">
                     </div>
@@ -281,7 +289,9 @@
                     <div class="form-group">
                         <div class="d-flex justify-between align-center mb-1">
                             <label for="destination" class="form-label" style="margin: 0;">Drop Destination *</label>
-                            <button type="button" class="btn btn-xs btn-outline btn-admin-select-map" data-target="destination" style="font-size: 11px; padding: 1px 6px; border-radius: 4px; color: #2563EB; border-color: #BFDBFE; background: #EFF6FF;">🗺️ Pick Map</button>
+                            <button type="button" class="btn btn-xs btn-outline btn-admin-select-map" data-target="destination" style="font-size: 11px; padding: 2px 7px; border-radius: 4px; color: #2563EB; border-color: #BFDBFE; background: #EFF6FF; display: inline-flex; align-items: center; gap: 4px;">
+                                <x-icon name="map-pin" :size="11" /> Pick Map
+                            </button>
                         </div>
                         <input type="text" name="destination" id="destination" class="form-control" list="destinationLocationsList" value="{{ old('destination', $prefill->destination ?? 'Raipur') }}" required>
                         <datalist id="destinationLocationsList">
@@ -294,7 +304,7 @@
                 <div id="adminRoutePreviewBox" style="display: none; margin-bottom: 1rem; border: 1px solid #BFDBFE; border-radius: 8px; overflow: hidden; background: #EFF6FF;">
                     <div style="padding: 0.6rem 0.85rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; border-bottom: 1px solid #BFDBFE; background: #DBEAFE;">
                         <div style="display: flex; align-items: center; gap: 6px;">
-                            <span>🛣️</span>
+                            <x-icon name="navigation" :size="14" style="color: #1E40AF;" />
                             <strong style="color: #1E40AF; font-size: 12.5px;">Google Road Route & Driving Distance</strong>
                         </div>
                         <div style="display: flex; align-items: center; gap: 6px;">
@@ -368,7 +378,9 @@
 
             <!-- Fleet & Driver Assignment Card -->
             <div class="card mb-4">
-                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">🚗 Immediate Fleet & Chauffeur Assignment (Optional)</h3>
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px;">
+                    <x-icon name="car" :size="16" /> Immediate Fleet & Chauffeur Assignment (Optional)
+                </h3>
 
                 <div class="grid grid-2 gap-3">
                     <div class="form-group">
@@ -389,7 +401,7 @@
                             <option value="">-- Assign Later --</option>
                             @foreach($drivers as $drv)
                                 <option value="{{ $drv->id }}" {{ old('driver_id') == $drv->id ? 'selected' : '' }}>
-                                    {{ $drv->name }} (📞 {{ $drv->mobile }} • {{ $drv->status }})
+                                    {{ $drv->name }} ({{ $drv->mobile }} • {{ $drv->status }})
                                 </option>
                             @endforeach
                         </select>
@@ -402,7 +414,9 @@
         <div>
             <!-- Status & Billing Card -->
             <div class="card mb-4">
-                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">💳 Fare & Booking Status</h3>
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px;">
+                    <x-icon name="credit-card" :size="16" /> Fare & Booking Status
+                </h3>
 
                 <div class="form-group mb-3">
                     <label for="booking_status" class="form-label">Initial Booking Status *</label>
@@ -439,8 +453,8 @@
                     </select>
                 </div>
 
-                <button type="submit" class="btn btn-primary btn-block" style="text-align: center; font-weight: 800;">
-                    🚀 Confirm & Create Booking
+                <button type="submit" class="btn btn-primary btn-block" style="text-align: center; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <x-icon name="check-circle" :size="16" /> Confirm & Create Booking
                 </button>
             </div>
         </div>

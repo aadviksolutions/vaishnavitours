@@ -68,6 +68,7 @@ class AdminCalendarController extends Controller
 
         $prevDate = $currentDate->copy()->subMonth();
         $nextDate = $currentDate->copy()->addMonth();
+        $sortedBookings = $bookings->sortBy('travel_date')->values();
 
         return view('admin.calendar.index', compact(
             'year',
@@ -79,7 +80,8 @@ class AdminCalendarController extends Controller
             'totalVehicles',
             'totalDrivers',
             'prevDate',
-            'nextDate'
+            'nextDate',
+            'sortedBookings'
         ));
     }
 }

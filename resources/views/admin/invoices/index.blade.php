@@ -193,9 +193,20 @@
                             </span>
                         </td>
                         <td style="text-align: right; white-space: nowrap;">
-                            <a href="{{ route('admin.invoices.show', $inv->id) }}" class="btn btn-outline btn-sm" style="padding: 2px 7px; font-size: 11px;" target="_blank">
-                                📄 View / Print PDF
-                            </a>
+                            @php
+                                $cPhone = preg_replace('/\D/', '', $inv->customer->phone ?? '');
+                                $waPhone = (strlen($cPhone) === 10) ? '91' . $cPhone : $cPhone;
+                                $invUrl = route('admin.invoices.show', $inv->id);
+                                $waText = "Namaste *" . ($inv->customer->name ?? 'Customer') . "*,\nYour Tax Invoice *" . $inv->invoice_number . "* (Rs. " . number_format($inv->total_amount, 2) . ") for Booking #" . ($inv->booking->booking_id ?? '') . " is ready.\nView & Download Invoice: " . $invUrl . "\nVaishnavi Tours: +91 9244784443";
+                            @endphp
+                            <div class="d-inline-flex align-center gap-1">
+                                <a href="https://wa.me/{{ $waPhone }}?text={{ urlencode($waText) }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm" style="padding: 2px 7px; font-size: 11px; background: #DCFCE7; color: #15803D; border: 1px solid #BBF7D0; font-weight: 700;" title="Share Invoice on WhatsApp">
+                                    <x-icon name="message-circle" :size="12" class="me-1 inline" /> WhatsApp
+                                </a>
+                                <a href="{{ route('admin.invoices.show', $inv->id) }}" class="btn btn-outline btn-sm" style="padding: 2px 7px; font-size: 11px;" target="_blank" title="View & Print Invoice">
+                                    <x-icon name="printer" :size="12" class="me-1 inline" /> View / Print
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 @empty
