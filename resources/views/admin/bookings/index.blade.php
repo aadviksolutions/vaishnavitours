@@ -370,8 +370,8 @@
                                 ★ Current: {{ $booking->vehicle->name }} ({{ $booking->vehicle->registration_number }}) - [{{ $booking->vehicle->status }}]
                             </option>
                         @endif
-                        <optgroup label="Available Fleet Cars">
-                            @foreach($availableVehicles as $v)
+                        <optgroup label="🏢 Available Own Fleet">
+                            @foreach($availableVehicles->where('is_third_party', false) as $v)
                                 @if(!$booking->vehicle || $v->id !== $booking->vehicle_id)
                                     <option value="{{ $v->id }}">
                                         {{ $v->name }} ({{ $v->registration_number }}) - {{ $v->vehicle_type }} ({{ $v->seating_capacity }} Seater) [{{ $v->status }}]
@@ -379,6 +379,17 @@
                                 @endif
                             @endforeach
                         </optgroup>
+                        @if($availableVehicles->where('is_third_party', true)->isNotEmpty())
+                            <optgroup label="🤝 Available Third-Party Partner Vehicles (No docs required)">
+                                @foreach($availableVehicles->where('is_third_party', true) as $v)
+                                    @if(!$booking->vehicle || $v->id !== $booking->vehicle_id)
+                                        <option value="{{ $v->id }}">
+                                            {{ $v->registration_number }} - {{ $v->name }} (Partner: {{ $v->vendor_name ?: 'Partner' }})
+                                        </option>
+                                    @endif
+                                @endforeach
+                            </optgroup>
+                        @endif
                         @if($allVehicles->where('status', '!=', 'Available')->where('id', '!=', $booking->vehicle_id)->isNotEmpty())
                             <optgroup label="Other Fleet (Busy / Inactive / In Maintenance)">
                                 @foreach($allVehicles->where('status', '!=', 'Available')->where('id', '!=', $booking->vehicle_id) as $v)
@@ -390,7 +401,7 @@
                         @endif
                     </select>
                     <div style="font-size: 0.725rem; color: var(--slate-500); margin-top: 3px;">
-                        Only vehicles with valid compliance documents &amp; available status can be dispatched.
+                        Own fleet cars require valid documents; Third-party travel partner vehicles require only vehicle number.
                     </div>
                 </div>
 

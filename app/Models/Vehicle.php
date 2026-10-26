@@ -38,7 +38,18 @@ class Vehicle extends Model
         'vendor_paid_amount',
         'vendor_balance_amount',
         'vendor_payment_status',
+        'ownership_type',
     ];
+
+    public function getOwnershipTypeAttribute(): string
+    {
+        return $this->is_third_party ? 'third_party' : 'owned';
+    }
+
+    public function setOwnershipTypeAttribute($value): void
+    {
+        $this->attributes['is_third_party'] = ($value === 'third_party');
+    }
 
     protected $casts = [
         'per_km_rate' => 'decimal:2',
@@ -138,9 +149,14 @@ class Vehicle extends Model
 
     /**
      * Check if mandatory documents (Insurance, PUC) are expired.
+     * Note: Third-Party vehicles from travel partners do NOT require documents. Only vehicle number is mandatory.
      */
     public function hasExpiredMandatoryDocuments(): bool
     {
+        if ($this->is_third_party || ($this->attributes['is_third_party'] ?? false)) {
+            return false;
+        }
+
         $today = now()->startOfDay();
 
         if ($this->insurance_expiry && $this->insurance_expiry->startOfDay()->isPast()) {
@@ -161,6 +177,10 @@ class Vehicle extends Model
     {
         $date = $this->{$field};
         if (! $date) {
+            if ($this->is_third_party || ($this->attributes['is_third_party'] ?? false)) {
+                return ['status' => 'not_required', 'label' => 'Not Required (Partner)', 'class' => 'bg-amber-50 text-amber-800 border-amber-200'];
+            }
+
             return ['status' => 'missing', 'label' => 'Not Uploaded', 'class' => 'bg-gray-100 text-gray-700 border-gray-300'];
         }
 

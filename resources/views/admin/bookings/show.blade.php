@@ -373,18 +373,44 @@ Regarding your booking *{{ $booking->booking_id }}* from {{ $booking->pickup_loc
                     <div class="mt-3 pt-3" style="border-top: 1px solid var(--slate-200);">
                         <form action="{{ route('admin.bookings.assign-vehicle', $booking->id) }}" method="POST">
                             @csrf
-                            <label class="form-label" style="font-size: 0.8rem; font-weight: 700;">Assign Vehicle (Available Only)</label>
-                            <div class="d-flex gap-2">
-                                <select name="vehicle_id" class="form-select form-select-sm" required style="font-size: 0.85rem;">
+                            <label class="form-label" style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.35rem;">Allocate Vehicle</label>
+                            
+                            <div class="d-flex gap-3 mb-2" style="font-size: 12px; font-weight: 600;">
+                                <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                                    <input type="radio" name="vehicle_source" value="own" checked onchange="document.getElementById('showAssignOwnBox').style.display='flex'; document.getElementById('showAssignTpBox').style.display='none';"> 🏢 Own Fleet
+                                </label>
+                                <label style="cursor: pointer; display: flex; align-items: center; gap: 4px; color: #B45309;">
+                                    <input type="radio" name="vehicle_source" value="third_party" onchange="document.getElementById('showAssignOwnBox').style.display='none'; document.getElementById('showAssignTpBox').style.display='block';"> 🤝 Third Party Vehicle (Travel Partner)
+                                </label>
+                            </div>
+
+                            <div id="showAssignOwnBox" class="d-flex gap-2">
+                                <select name="vehicle_id" class="form-select form-select-sm" style="font-size: 0.85rem;">
                                     <option value="">-- Select Available Vehicle --</option>
                                     @foreach($availableVehicles as $v)
                                         <option value="{{ $v->id }}" {{ $booking->vehicle_id == $v->id ? 'selected' : '' }}>
-                                            {{ $v->name }} ({{ $v->registration_number }}) - {{ $v->status }}
+                                            {{ $v->name }} ({{ $v->registration_number }}) - {{ $v->is_third_party ? 'Third-Party' : 'Own Fleet' }} [{{ $v->status }}]
                                         </option>
                                     @endforeach
                                 </select>
                                 <button type="submit" class="btn btn-primary btn-sm" style="white-space: nowrap;">
                                     Assign Vehicle
+                                </button>
+                            </div>
+
+                            <div id="showAssignTpBox" style="display: none; background: #FFFBEB; border: 1px solid #FCD34D; padding: 0.75rem; border-radius: 6px;">
+                                <div style="font-size: 11px; font-weight: 700; color: #92400E; margin-bottom: 6px;">
+                                    Travel Partner Vehicle (No documents required · Only vehicle number mandatory)
+                                </div>
+                                <div class="mb-2">
+                                    <input type="text" name="third_party_vehicle_number" class="form-control form-control-sm" placeholder="Enter Vehicle Number * (e.g. CG 04 HA 4521)" style="text-transform: uppercase; font-weight: 700;">
+                                </div>
+                                <div class="grid grid-2 gap-2 mb-2">
+                                    <input type="text" name="third_party_vehicle_name" class="form-control form-control-sm" placeholder="Model (e.g. Dzire / Ertiga)">
+                                    <input type="text" name="third_party_vendor_name" class="form-control form-control-sm" placeholder="Partner / Agency Name" value="{{ $booking->travel_partner_name }}">
+                                </div>
+                                <button type="submit" class="btn btn-warning btn-sm" style="font-weight: 800; color: #78350F;">
+                                    Assign Partner Vehicle
                                 </button>
                             </div>
                         </form>

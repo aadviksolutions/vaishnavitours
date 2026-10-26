@@ -91,10 +91,22 @@
                 </h3>
 
                 <div class="form-group mb-3">
-                    <label for="trip_type" class="form-label">Trip Type *</label>
+                    <label for="trip_type" class="form-label" style="font-weight: 700;">Trip Type / Service *</label>
                     <select name="trip_type" id="trip_type" class="form-select" required>
-                        @foreach(['One-Way Outstation', 'Round-Trip Outstation', 'Local 8hr/80km Rental', 'Airport Transfer (Raipur RPR)', '24/7 Emergency Ambulance Cab'] as $type)
-                            <option value="{{ $type }}" {{ old('trip_type', $booking->trip_type) == $type ? 'selected' : '' }}>{{ $type }}</option>
+                        @php
+                            $types = [
+                                'One-Way' => '🚗 Oneway trip',
+                                'Round-Trip' => '🔄 Round trip',
+                                'Tour Package' => '🌴 Tour Package',
+                                'Ambulance' => '🚑 Ambulance',
+                                'Airport Transfer' => '✈️ Airport Transfer',
+                                'Local Hourly' => '⏱️ Local Hourly Rental',
+                            ];
+                        @endphp
+                        @foreach($types as $val => $lbl)
+                            <option value="{{ $val }}" {{ old('trip_type', $booking->trip_type) === $val || (str_contains($booking->trip_type ?? '', $val)) ? 'selected' : '' }}>
+                                {{ $lbl }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -225,14 +237,23 @@
 
                 <div class="grid grid-2 gap-3">
                     <div class="form-group">
-                        <label for="vehicle_id" class="form-label">Vehicle</label>
+                        <label for="vehicle_id" class="form-label" style="font-weight: 700;">Assign Vehicle</label>
                         <select name="vehicle_id" id="vehicle_id" class="form-select">
                             <option value="">-- No Vehicle Assigned --</option>
-                            @foreach($vehicles as $veh)
-                                <option value="{{ $veh->id }}" {{ old('vehicle_id', $booking->vehicle_id) == $veh->id ? 'selected' : '' }}>
-                                    {{ $veh->name }} - {{ $veh->registration_number }} ({{ $veh->vehicle_type }})
-                                </option>
-                            @endforeach
+                            <optgroup label="🏢 Own Company Fleet">
+                                @foreach($vehicles->where('is_third_party', false) as $veh)
+                                    <option value="{{ $veh->id }}" {{ old('vehicle_id', $booking->vehicle_id) == $veh->id ? 'selected' : '' }}>
+                                        {{ $veh->name }} - {{ $veh->registration_number }} ({{ $veh->vehicle_type }} • {{ $veh->status }})
+                                    </option>
+                                @endforeach
+                            </optgroup>
+                            <optgroup label="🤝 Third Party Vehicles (Travel Partner)">
+                                @foreach($vehicles->where('is_third_party', true) as $tpVeh)
+                                    <option value="{{ $tpVeh->id }}" {{ old('vehicle_id', $booking->vehicle_id) == $tpVeh->id ? 'selected' : '' }}>
+                                        {{ $tpVeh->registration_number }} - {{ $tpVeh->name }} (Partner: {{ $tpVeh->vendor_name ?: 'Partner' }})
+                                    </option>
+                                @endforeach
+                            </optgroup>
                         </select>
                     </div>
 

@@ -184,7 +184,7 @@ class BookingService
                         'rate_category' => $data['rate_category'],
                         'vehicle_category' => $data['vehicle_category'] ?? null,
                     ];
-                } elseif (in_array($data['rate_category'], ['tour_package', 'emergency', 'round_trip'], true) || ($data['trip_type'] ?? '') === 'Round-Trip') {
+                } elseif (in_array($data['rate_category'], ['tour_package', 'emergency', 'ambulance', 'round_trip'], true) || ($data['trip_type'] ?? '') === 'Round-Trip' || ($data['trip_type'] ?? '') === 'Tour Package' || ($data['trip_type'] ?? '') === 'Ambulance') {
                     $totalAmount = 0.00;
                     $pricingDetails = [
                         'total_amount' => 0.00,
@@ -649,8 +649,9 @@ class BookingService
                 ]);
             }
 
-            // Validation: Prevent assignment of vehicles with expired mandatory compliance documents (Section 3)
-            if ($vehicle->hasExpiredMandatoryDocuments()) {
+            // Validation: Prevent assignment of company vehicles with expired mandatory compliance documents (Section 3)
+            // Note: Third-Party vehicles from travel partners do NOT require documents
+            if (! $vehicle->is_third_party && $vehicle->hasExpiredMandatoryDocuments()) {
                 throw ValidationException::withMessages([
                     'vehicle_id' => ["Vehicle {$vehicle->registration_number} cannot be assigned because its mandatory documents (Insurance/PUC) have expired. Please renew the documents before dispatch."],
                 ]);

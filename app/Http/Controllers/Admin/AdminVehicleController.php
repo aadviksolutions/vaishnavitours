@@ -56,11 +56,14 @@ class AdminVehicleController extends Controller
 
         $stats = [
             'total' => Vehicle::count(),
-            'owned' => Vehicle::where('ownership_type', 'owned')->count(),
-            'third_party' => Vehicle::where('ownership_type', 'third_party')->count(),
+            'owned' => Vehicle::where('is_third_party', false)->count(),
+            'third_party' => Vehicle::where('is_third_party', true)->count(),
             'available' => Vehicle::where('status', 'Available')->count(),
-            'expired_docs' => Vehicle::where('insurance_expiry', '<', now()->toDateString())
-                ->orWhere('puc_expiry', '<', now()->toDateString())
+            'expired_docs' => Vehicle::where('is_third_party', false)
+                ->where(function ($q) {
+                    $q->where('insurance_expiry', '<', now()->toDateString())
+                        ->orWhere('puc_expiry', '<', now()->toDateString());
+                })
                 ->count(),
         ];
 
@@ -76,6 +79,8 @@ class AdminVehicleController extends Controller
 
     public function store(Request $request)
     {
+        $isThirdParty = ($request->input('ownership_type') === 'third_party');
+
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'registration_number' => 'required|string|max:50|unique:vehicles',
@@ -85,20 +90,22 @@ class AdminVehicleController extends Controller
             'seating_capacity' => 'required|integer|min:1|max:70',
             'ac_non_ac' => 'required|string',
             'insurance_number' => 'nullable|string|max:100',
-            'insurance_expiry' => 'required|date',
+            'insurance_expiry' => $isThirdParty ? 'nullable|date' : 'required|date',
             'fitness_expiry' => 'nullable|date',
             'permit_expiry' => 'nullable|date',
-            'puc_expiry' => 'required|date',
+            'puc_expiry' => $isThirdParty ? 'nullable|date' : 'required|date',
             'per_km_rate' => 'nullable|numeric|min:0',
             'per_hour_rate' => 'nullable|numeric|min:0',
             'status' => 'required|string',
             'notes' => 'nullable|string',
             'ownership_type' => 'required|in:owned,third_party',
-            'vendor_name' => 'nullable|required_if:ownership_type,third_party|string|max:255',
+            'vendor_name' => 'nullable|string|max:255',
             'vendor_phone' => 'nullable|string|max:20',
             'vendor_email' => 'nullable|email|max:255',
             'agreed_vendor_amount' => 'nullable|numeric|min:0',
         ]);
+
+        $data['is_third_party'] = $isThirdParty;
 
         if (! empty($data['vehicle_category_id'])) {
             $cat = VehicleCategory::find($data['vehicle_category_id']);
@@ -109,7 +116,7 @@ class AdminVehicleController extends Controller
             $data['vehicle_type'] = 'Sedan';
         }
 
-        if (($data['ownership_type'] ?? 'owned') === 'third_party') {
+        if ($isThirdParty) {
             $agreed = (float) ($data['agreed_vendor_amount'] ?? 0);
             $data['vendor_balance_amount'] = $agreed;
             $data['vendor_paid_amount'] = 0;
@@ -146,6 +153,8 @@ class AdminVehicleController extends Controller
 
     public function update(Request $request, Vehicle $vehicle)
     {
+        $isThirdParty = ($request->input('ownership_type') === 'third_party');
+
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'registration_number' => 'required|string|max:50|unique:vehicles,registration_number,'.$vehicle->id,
@@ -155,20 +164,22 @@ class AdminVehicleController extends Controller
             'seating_capacity' => 'required|integer|min:1|max:70',
             'ac_non_ac' => 'required|string',
             'insurance_number' => 'nullable|string|max:100',
-            'insurance_expiry' => 'required|date',
+            'insurance_expiry' => $isThirdParty ? 'nullable|date' : 'required|date',
             'fitness_expiry' => 'nullable|date',
             'permit_expiry' => 'nullable|date',
-            'puc_expiry' => 'required|date',
+            'puc_expiry' => $isThirdParty ? 'nullable|date' : 'required|date',
             'per_km_rate' => 'nullable|numeric|min:0',
             'per_hour_rate' => 'nullable|numeric|min:0',
             'status' => 'required|string',
             'notes' => 'nullable|string',
             'ownership_type' => 'required|in:owned,third_party',
-            'vendor_name' => 'nullable|required_if:ownership_type,third_party|string|max:255',
+            'vendor_name' => 'nullable|string|max:255',
             'vendor_phone' => 'nullable|string|max:20',
             'vendor_email' => 'nullable|email|max:255',
             'agreed_vendor_amount' => 'nullable|numeric|min:0',
         ]);
+
+        $data['is_third_party'] = $isThirdParty;
 
         if (! empty($data['vehicle_category_id'])) {
             $cat = VehicleCategory::find($data['vehicle_category_id']);
@@ -177,7 +188,7 @@ class AdminVehicleController extends Controller
             }
         }
 
-        if (($data['ownership_type'] ?? 'owned') === 'third_party') {
+        if ($isThirdParty) {
             $agreed = (float) ($data['agreed_vendor_amount'] ?? 0);
             $paid = (float) $vehicle->vendor_paid_amount;
             $data['vendor_balance_amount'] = max(0, $agreed - $paid);

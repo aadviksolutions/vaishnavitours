@@ -223,24 +223,59 @@
 
                 <div class="grid grid-2 gap-3 mb-3">
                     <div class="form-group">
-                        <label for="trip_type" class="form-label">Trip Type *</label>
-                        <select name="rate_category" id="rate_category" class="form-select" required>
-                            @foreach(['outstation' => 'Outstation Route', 'airport' => 'Quick Airport Booking', 'round_trip' => 'Round Trip', 'local_8h_80km' => 'Local 8 Hours / 80 KM', 'local_4h_40km' => 'Local 4 Hours / 40 KM'] as $key => $label)
-                                <option value="{{ $key }}" {{ old('rate_category', isset($prefill) && $prefill->booking_type === 'Round-Trip' ? 'round_trip' : 'outstation') === $key ? 'selected' : '' }}>{{ $label }}</option>
-                            @endforeach
+                        <label for="rate_category" class="form-label" style="font-weight: 700;">Trip Type / Service *</label>
+                        <select name="rate_category" id="rate_category" class="form-select" onchange="onTripTypeChange()" required>
+                            <option value="outstation" {{ old('rate_category', isset($prefill) && $prefill->booking_type === 'Round-Trip' ? 'round_trip' : 'outstation') === 'outstation' ? 'selected' : '' }}>
+                                🚗 Oneway trip
+                            </option>
+                            <option value="round_trip" {{ old('rate_category') === 'round_trip' ? 'selected' : '' }}>
+                                🔄 Round trip
+                            </option>
+                            <option value="tour_package" {{ old('rate_category') === 'tour_package' ? 'selected' : '' }}>
+                                🌴 Tour Package
+                            </option>
+                            <option value="ambulance" {{ old('rate_category') === 'ambulance' ? 'selected' : '' }}>
+                                🚑 Ambulance
+                            </option>
+                            <option value="airport" {{ old('rate_category') === 'airport' ? 'selected' : '' }}>
+                                ✈️ Quick Airport Booking
+                            </option>
+                            <option value="local_8h_80km" {{ old('rate_category') === 'local_8h_80km' ? 'selected' : '' }}>
+                                ⏱️ Local 8 Hours / 80 KM
+                            </option>
+                            <option value="local_4h_40km" {{ old('rate_category') === 'local_4h_40km' ? 'selected' : '' }}>
+                                ⏱️ Local 4 Hours / 40 KM
+                            </option>
                         </select>
                     </div>
 
-                    <div class="form-group">
-                        <label for="tour_package_id" class="form-label">Linked Tour Package (Optional)</label>
-                        <select name="tour_package_id" id="tour_package_id" class="form-select">
-                            <option value="">-- No Tour Package --</option>
+                    <div class="form-group" id="tourPackageGroup" style="display: {{ old('rate_category') === 'tour_package' ? 'block' : 'none' }};">
+                        <label for="tour_package_id" class="form-label" style="font-weight: 700; color: #166534;">Linked Tour Package</label>
+                        <select name="tour_package_id" id="tour_package_id" class="form-select" onchange="onTourPackageChange(this)">
+                            <option value="">-- Choose Tour Package --</option>
                             @if(isset($tourPackages))
                                 @foreach($tourPackages as $tp)
-                                    <option value="{{ $tp->id }}" {{ old('tour_package_id') == $tp->id ? 'selected' : '' }}>{{ $tp->name }} ({{ $tp->duration_days }} Days)</option>
+                                    <option value="{{ $tp->id }}" 
+                                            data-name="{{ $tp->name }}"
+                                            data-route="{{ $tp->route }}" 
+                                            data-duration="{{ $tp->duration }}" 
+                                            data-days="{{ $tp->duration_days }}" 
+                                            data-sedan="{{ $tp->sedan_price }}" 
+                                            data-ertiga="{{ $tp->ertiga_price }}" 
+                                            data-innova="{{ $tp->innova_price }}"
+                                            {{ old('tour_package_id') == $tp->id ? 'selected' : '' }}>
+                                        {{ $tp->name }} ({{ $tp->duration_days }} Days{{ $tp->sedan_price ? ' · from ₹'.number_format($tp->sedan_price, 0) : '' }})
+                                    </option>
                                 @endforeach
                             @endif
                         </select>
+                    </div>
+
+                    <div class="form-group" id="ambulanceNoticeGroup" style="display: {{ old('rate_category') === 'ambulance' ? 'block' : 'none' }};">
+                        <label class="form-label" style="font-weight: 700; color: #991B1B;">Emergency Ambulance Service</label>
+                        <div style="background: #FEF2F2; border: 1px solid #FCA5A5; color: #991B1B; padding: 7px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                            🚑 24/7 Patient Emergency Cab (BLS / Oxygen Support available).
+                        </div>
                     </div>
                 </div>
 
@@ -377,34 +412,145 @@
             </div>
 
             <!-- Fleet & Driver Assignment Card -->
-            <div class="card mb-4">
-                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px;">
+            <div class="card mb-4" id="fleetAssignmentCard">
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
                     <x-icon name="car" :size="16" /> Immediate Fleet & Chauffeur Assignment (Optional)
                 </h3>
 
-                <div class="grid grid-2 gap-3">
-                    <div class="form-group">
-                        <label for="vehicle_id" class="form-label">Assign Vehicle</label>
-                        <select name="vehicle_id" id="vehicle_id" class="form-select">
-                            <option value="">-- Assign Later --</option>
-                            @foreach($vehicles as $veh)
-                                <option value="{{ $veh->id }}" {{ old('vehicle_id') == $veh->id ? 'selected' : '' }}>
-                                    {{ $veh->name }} - {{ $veh->registration_number }} ({{ $veh->vehicle_type }} • {{ $veh->status }})
-                                </option>
-                            @endforeach
-                        </select>
+                <!-- Vehicle Source Option (Own Vehicle vs Third Party Vehicle) -->
+                <div class="mb-3" style="background: #F8FAFC; border: 1px solid var(--slate-200); border-radius: 8px; padding: 0.85rem 1rem;">
+                    <label class="form-label" style="font-size: 0.85rem; font-weight: 800; color: var(--dark-900); display: block; margin-bottom: 0.5rem;">
+                        Select Vehicle Source / Type *
+                    </label>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <label style="border: 2px solid {{ old('vehicle_assignment_source', 'own') === 'own' ? '#2563EB' : 'var(--slate-200)' }}; background: {{ old('vehicle_assignment_source', 'own') === 'own' ? '#EFF6FF' : '#fff' }}; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 10px; flex: 1; min-width: 220px;" id="lblVehicleSourceOwn">
+                            <input type="radio" name="vehicle_assignment_source" value="own" {{ old('vehicle_assignment_source', 'own') === 'own' ? 'checked' : '' }} onchange="toggleVehicleSource('own')">
+                            <div>
+                                <strong style="color: #1E40AF; display: block; font-size: 13.5px;">🏢 Own Vehicle (Company Fleet)</strong>
+                                <span style="font-size: 11px; color: var(--slate-500);">Assign from Vaishnavi Tours owned fleet & regular drivers</span>
+                            </div>
+                        </label>
+
+                        <label style="border: 2px solid {{ old('vehicle_assignment_source') === 'third_party' ? '#D97706' : 'var(--slate-200)' }}; background: {{ old('vehicle_assignment_source') === 'third_party' ? '#FFFBEB' : '#fff' }}; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 10px; flex: 1; min-width: 220px;" id="lblVehicleSourceThirdParty">
+                            <input type="radio" name="vehicle_assignment_source" value="third_party" {{ old('vehicle_assignment_source') === 'third_party' ? 'checked' : '' }} onchange="toggleVehicleSource('third_party')">
+                            <div>
+                                <strong style="color: #B45309; display: block; font-size: 13.5px;">🤝 Third Party Vehicle (Travel Partner)</strong>
+                                <span style="font-size: 11px; color: var(--slate-500);">Travel partner vehicle — Only vehicle number required, no documents needed</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- SECTION A: Own Vehicle Assignment -->
+                <div id="ownVehicleSection" style="display: {{ old('vehicle_assignment_source', 'own') === 'own' ? 'block' : 'none' }};">
+                    <div class="grid grid-2 gap-3">
+                        <div class="form-group">
+                            <label for="vehicle_id" class="form-label">Assign Fleet Vehicle</label>
+                            <select name="vehicle_id" id="vehicle_id" class="form-select">
+                                <option value="">-- Assign Later --</option>
+                                @foreach($vehicles->where('is_third_party', false) as $veh)
+                                    <option value="{{ $veh->id }}" {{ old('vehicle_id') == $veh->id ? 'selected' : '' }}>
+                                        {{ $veh->name }} - {{ $veh->registration_number }} ({{ $veh->vehicle_type }} • {{ $veh->status }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="driver_id" class="form-label">Assign Chauffeur / Driver</label>
+                            <select name="driver_id" id="driver_id" class="form-select">
+                                <option value="">-- Assign Later --</option>
+                                @foreach($drivers as $drv)
+                                    <option value="{{ $drv->id }}" {{ old('driver_id') == $drv->id ? 'selected' : '' }}>
+                                        {{ $drv->name }} ({{ $drv->mobile }} • {{ $drv->status }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION B: Third Party Vehicle Assignment (Travel Partner) -->
+                <div id="thirdPartyVehicleSection" style="display: {{ old('vehicle_assignment_source') === 'third_party' ? 'block' : 'none' }}; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 1.15rem;">
+                    <div class="d-flex align-center justify-between mb-3 flex-wrap gap-2">
+                        <div class="d-flex align-center gap-2">
+                            <x-icon name="truck" :size="18" style="color: #92400E;" />
+                            <div>
+                                <strong style="color: #92400E; font-size: 0.95rem;">Travel Partner Vehicle Assignment</strong>
+                                <p style="font-size: 0.8rem; color: #B45309; margin: 0;">Vehicle dispatched from travel partner. Documents are not required.</p>
+                            </div>
+                        </div>
+                        <span class="badge" style="background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; font-size: 11px; font-weight: 700;">
+                            ✓ Only Vehicle Number Mandatory
+                        </span>
                     </div>
 
-                    <div class="form-group">
-                        <label for="driver_id" class="form-label">Assign Chauffeur / Driver</label>
-                        <select name="driver_id" id="driver_id" class="form-select">
-                            <option value="">-- Assign Later --</option>
-                            @foreach($drivers as $drv)
-                                <option value="{{ $drv->id }}" {{ old('driver_id') == $drv->id ? 'selected' : '' }}>
-                                    {{ $drv->name }} ({{ $drv->mobile }} • {{ $drv->status }})
-                                </option>
-                            @endforeach
-                        </select>
+                    @if($vehicles->where('is_third_party', true)->count() > 0)
+                        <div class="form-group mb-3">
+                            <label for="existing_tp_vehicle_id" class="form-label" style="font-size: 0.8rem; font-weight: 700; color: #78350F;">
+                                Select Existing Partner Vehicle (Or enter new details below)
+                            </label>
+                            <select name="existing_tp_vehicle_id" id="existing_tp_vehicle_id" class="form-select form-select-sm" onchange="onExistingTpVehicleSelect(this)">
+                                <option value="">-- Enter New Third-Party Vehicle Details Below --</option>
+                                @foreach($vehicles->where('is_third_party', true) as $tpVeh)
+                                    <option value="{{ $tpVeh->id }}" 
+                                            data-number="{{ $tpVeh->registration_number }}" 
+                                            data-name="{{ $tpVeh->name }}" 
+                                            data-vendor="{{ $tpVeh->vendor_name }}" 
+                                            data-phone="{{ $tpVeh->vendor_phone }}"
+                                            {{ old('existing_tp_vehicle_id') == $tpVeh->id ? 'selected' : '' }}>
+                                        {{ $tpVeh->registration_number }} — {{ $tpVeh->name }} (Partner: {{ $tpVeh->vendor_name ?: 'Partner' }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
+
+                    <div class="grid grid-2 gap-3 mb-3">
+                        <div class="form-group">
+                            <label for="third_party_vehicle_number" class="form-label" style="font-size: 0.825rem; font-weight: 700; color: #78350F;">
+                                Third Party Vehicle Number * <span class="text-danger">(Mandatory)</span>
+                            </label>
+                            <input type="text" name="third_party_vehicle_number" id="third_party_vehicle_number" class="form-control form-control-sm" placeholder="e.g. CG 04 HA 4521" value="{{ old('third_party_vehicle_number') }}" style="font-weight: 700; text-transform: uppercase;">
+                            <small style="color: #92400E; font-size: 11px;">Vehicle number of partner's car. No documents required.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="third_party_vehicle_name" class="form-label" style="font-size: 0.825rem; font-weight: 700; color: #78350F;">
+                                Vehicle Model / Name (Optional)
+                            </label>
+                            <input type="text" name="third_party_vehicle_name" id="third_party_vehicle_name" class="form-control form-control-sm" placeholder="e.g. Maruti Dzire White / Ertiga" value="{{ old('third_party_vehicle_name') }}">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-3 gap-3 mb-2">
+                        <div class="form-group">
+                            <label for="third_party_vendor_name" class="form-label" style="font-size: 0.825rem; font-weight: 700; color: #78350F;">
+                                Travel Partner / Agency Name
+                            </label>
+                            <input type="text" name="third_party_vendor_name" id="third_party_vendor_name" class="form-control form-control-sm" placeholder="e.g. Maa Sharda Travels / MMT Partner" value="{{ old('third_party_vendor_name') }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="third_party_driver_name" class="form-label" style="font-size: 0.825rem; font-weight: 700; color: #78350F;">
+                                Partner Driver Name (Optional)
+                            </label>
+                            <input type="text" name="third_party_driver_name" id="third_party_driver_name" class="form-control form-control-sm" placeholder="e.g. Suresh Kumar" value="{{ old('third_party_driver_name') }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="third_party_driver_phone" class="form-label" style="font-size: 0.825rem; font-weight: 700; color: #78350F;">
+                                Partner Driver Phone (Optional)
+                            </label>
+                            <input type="tel" name="third_party_driver_phone" id="third_party_driver_phone" class="form-control form-control-sm" placeholder="e.g. 9827100000" value="{{ old('third_party_driver_phone') }}">
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-0">
+                        <label for="third_party_agreed_amount" class="form-label" style="font-size: 0.825rem; font-weight: 700; color: #78350F;">
+                            Partner Agreed Hire Cost (₹) (Optional)
+                        </label>
+                        <input type="number" step="0.01" name="third_party_agreed_amount" id="third_party_agreed_amount" class="form-control form-control-sm" placeholder="e.g. 2200.00" value="{{ old('third_party_agreed_amount') }}" style="max-width: 300px;">
                     </div>
                 </div>
             </div>
@@ -514,11 +660,129 @@
         }
     }
 
+    function onTripTypeChange() {
+        const cat = rateCategory.value;
+        const tpGroup = document.getElementById('tourPackageGroup');
+        const ambGroup = document.getElementById('ambulanceNoticeGroup');
+
+        if (tpGroup) tpGroup.style.display = (cat === 'tour_package') ? 'block' : 'none';
+        if (ambGroup) ambGroup.style.display = (cat === 'ambulance') ? 'block' : 'none';
+
+        if (cat === 'round_trip') {
+            if (estimatedKmGroup) estimatedKmGroup.style.display = 'block';
+            if (estimatedKm) estimatedKm.required = true;
+        } else {
+            if (estimatedKmGroup) estimatedKmGroup.style.display = 'none';
+            if (estimatedKm) estimatedKm.required = false;
+        }
+
+        updateFare();
+    }
+
+    function onTourPackageChange(select) {
+        if (!select || !select.value) return;
+        const opt = select.options[select.selectedIndex];
+        if (!opt) return;
+
+        const route = opt.dataset.route;
+        const sedanPrice = opt.dataset.sedan;
+        const ertigaPrice = opt.dataset.ertiga;
+        const innovaPrice = opt.dataset.innova;
+        const catVal = (vehicleCategory.value || '').toLowerCase();
+
+        let price = sedanPrice;
+        if (catVal.includes('ertiga') || catVal.includes('suv') || catVal.includes('muv')) {
+            price = ertigaPrice || sedanPrice;
+        } else if (catVal.includes('innova') || catVal.includes('crysta')) {
+            price = innovaPrice || ertigaPrice || sedanPrice;
+        }
+
+        if (price && Number(price) > 0) {
+            totalAmount.value = Number(price).toFixed(2);
+            fareDetails.innerHTML = '🌴 <strong style="color:#166534;">' + opt.dataset.name + ':</strong> Fixed tour package rate ₹' + price + ' applied (' + (opt.dataset.days || 1) + ' Days).';
+        }
+    }
+
+    function toggleVehicleSource(source) {
+        const ownSection = document.getElementById('ownVehicleSection');
+        const tpSection = document.getElementById('thirdPartyVehicleSection');
+        const lblOwn = document.getElementById('lblVehicleSourceOwn');
+        const lblTp = document.getElementById('lblVehicleSourceThirdParty');
+
+        if (source === 'third_party') {
+            if (ownSection) ownSection.style.display = 'none';
+            if (tpSection) tpSection.style.display = 'block';
+            if (lblOwn) {
+                lblOwn.style.borderColor = 'var(--slate-200)';
+                lblOwn.style.background = '#fff';
+            }
+            if (lblTp) {
+                lblTp.style.borderColor = '#D97706';
+                lblTp.style.background = '#FFFBEB';
+            }
+
+            // Sync partner name & phone from Category Section if available
+            const tpNameInput = document.querySelector('input[name="travel_partner_name"]');
+            const tpVendorInput = document.getElementById('third_party_vendor_name');
+            if (tpNameInput && tpVendorInput && !tpVendorInput.value && tpNameInput.value) {
+                tpVendorInput.value = tpNameInput.value;
+            }
+            const tpPhoneInput = document.querySelector('input[name="travel_partner_phone"]');
+            const tpDriverPhone = document.getElementById('third_party_driver_phone');
+            if (tpPhoneInput && tpDriverPhone && !tpDriverPhone.value && tpPhoneInput.value) {
+                tpDriverPhone.value = tpPhoneInput.value;
+            }
+        } else {
+            if (ownSection) ownSection.style.display = 'block';
+            if (tpSection) tpSection.style.display = 'none';
+            if (lblOwn) {
+                lblOwn.style.borderColor = '#2563EB';
+                lblOwn.style.background = '#EFF6FF';
+            }
+            if (lblTp) {
+                lblTp.style.borderColor = 'var(--slate-200)';
+                lblTp.style.background = '#fff';
+            }
+        }
+    }
+
+    function onExistingTpVehicleSelect(select) {
+        if (!select || !select.value) return;
+        const opt = select.options[select.selectedIndex];
+        if (!opt) return;
+
+        const regInput = document.getElementById('third_party_vehicle_number');
+        const nameInput = document.getElementById('third_party_vehicle_name');
+        const vendorInput = document.getElementById('third_party_vendor_name');
+        const phoneInput = document.getElementById('third_party_driver_phone');
+
+        if (regInput && opt.dataset.number) regInput.value = opt.dataset.number;
+        if (nameInput && opt.dataset.name) nameInput.value = opt.dataset.name;
+        if (vendorInput && opt.dataset.vendor) vendorInput.value = opt.dataset.vendor;
+        if (phoneInput && opt.dataset.phone) phoneInput.value = opt.dataset.phone;
+    }
+
     function updateFare() {
         if (document.getElementById('customFareToggle')?.checked) {
             return;
         }
         const category = rateCategory.value;
+
+        if (category === 'tour_package') {
+            const tpSelect = document.getElementById('tour_package_id');
+            if (tpSelect && tpSelect.value) {
+                onTourPackageChange(tpSelect);
+            } else {
+                fareDetails.innerHTML = '🌴 <strong style="color:#166534;">Tour Package:</strong> Please select a tour package from the dropdown, or tick <label for="customFareToggle" style="text-decoration:underline; cursor:pointer; font-weight:700; color:#2563EB;">Custom Fare</label>.';
+            }
+            return;
+        }
+
+        if (category === 'ambulance') {
+            fareDetails.innerHTML = '🚑 <strong style="color:#991B1B;">Emergency Ambulance:</strong> 24/7 Patient Dispatch. Tick <label for="customFareToggle" style="text-decoration:underline; cursor:pointer; font-weight:700; color:#2563EB;">Custom Fare</label> to enter agreed trip rate.';
+            return;
+        }
+
         const globalRate = category.startsWith('local_') || category === 'round_trip';
         estimatedKmGroup.style.display = category === 'round_trip' ? 'block' : 'none';
         estimatedKm.required = category === 'round_trip';

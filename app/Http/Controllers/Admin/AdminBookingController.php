@@ -151,6 +151,8 @@ class AdminBookingController extends Controller
             'trip_type' => match ($request->input('rate_category')) {
                 'airport' => 'Airport Transfer',
                 'round_trip' => 'Round-Trip',
+                'tour_package' => 'Tour Package',
+                'ambulance', 'emergency' => 'Ambulance',
                 'local_8h_80km', 'local_4h_40km' => 'Local Hourly',
                 default => 'One-Way',
             },
@@ -162,7 +164,7 @@ class AdminBookingController extends Controller
             'pickup_location' => 'required|string|max:255',
             'via_location' => 'nullable|string|max:255',
             'destination' => 'required|string|max:255',
-            'rate_category' => 'required|in:airport,outstation,round_trip,local_8h_80km,local_4h_40km',
+            'rate_category' => 'required|in:outstation,round_trip,tour_package,ambulance,emergency,airport,local_8h_80km,local_4h_40km',
             'vehicle_category' => 'required|string|max:80',
             'vehicle_model' => 'nullable|string|max:80',
             'vehicle_category_id' => 'nullable|exists:vehicle_categories,id',
@@ -173,6 +175,14 @@ class AdminBookingController extends Controller
             'return_date' => 'nullable|date',
             'vehicle_id' => 'nullable|exists:vehicles,id',
             'driver_id' => 'nullable|exists:drivers,id',
+            'vehicle_assignment_source' => 'nullable|in:own,third_party',
+            'third_party_vehicle_number' => 'nullable|string|max:50',
+            'third_party_vehicle_name' => 'nullable|string|max:100',
+            'third_party_vendor_name' => 'nullable|string|max:255',
+            'third_party_driver_name' => 'nullable|string|max:255',
+            'third_party_driver_phone' => 'nullable|string|max:50',
+            'third_party_agreed_amount' => 'nullable|numeric|min:0',
+            'existing_tp_vehicle_id' => 'nullable|exists:vehicles,id',
             'total_amount' => 'required|numeric|min:0',
             'paid_amount' => 'nullable|numeric|min:0',
             'booking_status' => 'required|string',
@@ -299,6 +309,67 @@ class AdminBookingController extends Controller
             $user = User::findOrFail($data['customer_id']);
         }
 
+        // Handle Vehicle Assignment: Own vs Third-Party Travel Partner
+        $vehicleSource = $request->input('vehicle_assignment_source', 'own');
+        if ($vehicleSource === 'third_party') {
+            $tpNumber = strtoupper(trim((string) $request->input('third_party_vehicle_number')));
+            $existingTpId = $request->input('existing_tp_vehicle_id');
+
+            if (! empty($tpNumber)) {
+                $partnerName = $request->input('third_party_vendor_name') ?: $request->input('travel_partner_name');
+                $partnerPhone = $request->input('third_party_driver_phone') ?: $request->input('travel_partner_phone');
+                $agreedAmount = $request->filled('third_party_agreed_amount') ? (float) $request->input('third_party_agreed_amount') : null;
+                $vehName = $request->input('third_party_vehicle_name') ?: 'Partner Cab ('.$tpNumber.')';
+
+                $tpVehicle = Vehicle::where('registration_number', $tpNumber)->first();
+                if (! $tpVehicle) {
+                    $tpVehicle = Vehicle::create([
+                        'name' => $vehName,
+                        'registration_number' => $tpNumber,
+                        'vehicle_type' => $data['vehicle_category'] ?? 'Sedan',
+                        'vehicle_category_id' => $data['vehicle_category_id'] ?? null,
+                        'seating_capacity' => 4,
+                        'ac_non_ac' => 'AC',
+                        'status' => 'Available',
+                        'ownership_type' => 'third_party',
+                        'is_third_party' => true,
+                        'vendor_name' => $partnerName,
+                        'vendor_phone' => $partnerPhone,
+                        'vendor_agreed_amount' => $agreedAmount,
+                        'vendor_balance_amount' => $agreedAmount ?? 0,
+                        'vendor_paid_amount' => 0,
+                        'vendor_payment_status' => ($agreedAmount && $agreedAmount > 0) ? 'Pending' : 'Settled',
+                    ]);
+                } else {
+                    $tpVehicle->update([
+                        'ownership_type' => 'third_party',
+                        'is_third_party' => true,
+                        'vendor_name' => $tpVehicle->vendor_name ?: $partnerName,
+                        'vendor_phone' => $tpVehicle->vendor_phone ?: $partnerPhone,
+                    ]);
+                }
+                $data['vehicle_id'] = $tpVehicle->id;
+            } elseif ($existingTpId) {
+                $data['vehicle_id'] = (int) $existingTpId;
+            }
+
+            if ($request->filled('third_party_driver_name')) {
+                $drvName = trim($request->input('third_party_driver_name'));
+                $drvPhone = trim($request->input('third_party_driver_phone') ?: '9999999999');
+                $driver = Driver::where('mobile', $drvPhone)->first();
+                if (! $driver) {
+                    $driver = Driver::create([
+                        'name' => $drvName,
+                        'mobile' => $drvPhone,
+                        'license_number' => 'TP-'.strtoupper(substr(md5(uniqid()), 0, 8)),
+                        'status' => 'Available',
+                        'is_active' => true,
+                    ]);
+                }
+                $data['driver_id'] = $driver->id;
+            }
+        }
+
         $booking = $bookingService->createBooking($data, $user);
 
         // If specific admin overrides were provided:
@@ -312,6 +383,7 @@ class AdminBookingController extends Controller
             'total_amount' => $total,
             'paid_amount' => $paid,
             'balance_amount' => $balance,
+            'vehicle_id' => $data['vehicle_id'] ?? $booking->vehicle_id,
             'driver_id' => $data['driver_id'] ?? null,
             'travel_partner_name' => $data['travel_partner_name'] ?? null,
             'travel_partner_phone' => $data['travel_partner_phone'] ?? null,
@@ -320,6 +392,10 @@ class AdminBookingController extends Controller
             'travel_partner_commission' => $data['travel_partner_commission'] ?? null,
             'travel_partner_notes' => $data['travel_partner_notes'] ?? null,
         ]);
+
+        if (! empty($data['vehicle_id'])) {
+            Vehicle::where('id', $data['vehicle_id'])->update(['status' => 'On Trip']);
+        }
 
         if ($request->filled('from_enquiry_id')) {
             Enquiry::where('id', $request->from_enquiry_id)->update([
@@ -558,12 +634,40 @@ class AdminBookingController extends Controller
      */
     public function assignVehicle(Request $request, Booking $booking, BookingService $bookingService)
     {
-        $request->validate([
-            'vehicle_id' => 'required|exists:vehicles,id',
-        ]);
+        $vehicleSource = $request->input('vehicle_source', 'own');
+        if ($vehicleSource === 'third_party' && $request->filled('third_party_vehicle_number')) {
+            $regNum = strtoupper(trim((string) $request->input('third_party_vehicle_number')));
+            $tpVehicle = Vehicle::where('registration_number', $regNum)->first();
+            if (! $tpVehicle) {
+                $tpVehicle = Vehicle::create([
+                    'name' => $request->input('third_party_vehicle_name') ?: 'Partner Cab ('.$regNum.')',
+                    'registration_number' => $regNum,
+                    'vehicle_type' => $booking->vehicle_category ?: 'Sedan',
+                    'seating_capacity' => 4,
+                    'ac_non_ac' => 'AC',
+                    'status' => 'Available',
+                    'ownership_type' => 'third_party',
+                    'is_third_party' => true,
+                    'vendor_name' => $request->input('third_party_vendor_name') ?: $booking->travel_partner_name,
+                    'vendor_phone' => $request->input('third_party_vendor_phone') ?: $booking->travel_partner_phone,
+                ]);
+            } else {
+                $tpVehicle->update([
+                    'ownership_type' => 'third_party',
+                    'is_third_party' => true,
+                    'status' => 'Available',
+                ]);
+            }
+            $vehicleId = $tpVehicle->id;
+        } else {
+            $request->validate([
+                'vehicle_id' => 'required|exists:vehicles,id',
+            ]);
+            $vehicleId = (int) $request->vehicle_id;
+        }
 
         try {
-            $bookingService->assignVehicle($booking, (int) $request->vehicle_id, Auth::user());
+            $bookingService->assignVehicle($booking, $vehicleId, Auth::user());
 
             return back()->with('success', "Vehicle successfully allocated to Booking #{$booking->booking_id}!");
         } catch (ValidationException $e) {
@@ -594,24 +698,49 @@ class AdminBookingController extends Controller
      */
     public function assignVehicleDriver(Request $request, Booking $booking, BookingService $bookingService)
     {
-        $request->validate([
-            'vehicle_id' => 'nullable|exists:vehicles,id',
-            'driver_id' => 'nullable|exists:drivers,id',
-        ]);
+        $vehicleSource = $request->input('vehicle_source', 'own');
+        $vehicleId = $request->input('vehicle_id');
+        $driverId = $request->input('driver_id');
 
-        if (! $request->filled('vehicle_id') && ! $request->filled('driver_id')) {
+        if ($vehicleSource === 'third_party' && $request->filled('third_party_vehicle_number')) {
+            $regNum = strtoupper(trim((string) $request->input('third_party_vehicle_number')));
+            $tpVehicle = Vehicle::where('registration_number', $regNum)->first();
+            if (! $tpVehicle) {
+                $tpVehicle = Vehicle::create([
+                    'name' => $request->input('third_party_vehicle_name') ?: 'Partner Cab ('.$regNum.')',
+                    'registration_number' => $regNum,
+                    'vehicle_type' => $booking->vehicle_category ?: 'Sedan',
+                    'seating_capacity' => 4,
+                    'ac_non_ac' => 'AC',
+                    'status' => 'Available',
+                    'ownership_type' => 'third_party',
+                    'is_third_party' => true,
+                    'vendor_name' => $request->input('third_party_vendor_name') ?: $booking->travel_partner_name,
+                    'vendor_phone' => $request->input('third_party_vendor_phone') ?: $booking->travel_partner_phone,
+                ]);
+            } else {
+                $tpVehicle->update([
+                    'ownership_type' => 'third_party',
+                    'is_third_party' => true,
+                    'status' => 'Available',
+                ]);
+            }
+            $vehicleId = $tpVehicle->id;
+        }
+
+        if (empty($vehicleId) && empty($driverId)) {
             return back()->with('error', 'Please select at least a vehicle or a chauffeur to allocate.');
         }
 
         try {
             $parts = [];
-            if ($request->filled('vehicle_id')) {
-                $bookingService->assignVehicle($booking, (int) $request->vehicle_id, Auth::user());
+            if (! empty($vehicleId)) {
+                $bookingService->assignVehicle($booking, (int) $vehicleId, Auth::user());
                 $parts[] = 'Vehicle allocated';
             }
 
-            if ($request->filled('driver_id')) {
-                $bookingService->assignDriver($booking, (int) $request->driver_id, Auth::user());
+            if (! empty($driverId)) {
+                $bookingService->assignDriver($booking, (int) $driverId, Auth::user());
                 $parts[] = 'Chauffeur assigned & Trip activated';
             }
 
