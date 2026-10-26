@@ -304,7 +304,7 @@
                     <!-- 4. Vehicle Category Selection Dropdown -->
                     <div class="form-group" style="margin-bottom: 1.25rem;">
                         <label class="form-label" for="bookingVehicleCategorySelect" style="font-weight: 600; font-size: 13px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-                            <span>4. Vehicle Category Preference *</span>
+                            <span id="bookingVehicleCategoryLabel">4. Vehicle Category Preference *</span>
                             <span style="font-size: 11px; font-weight: normal; color: var(--slate-500);">Fleet verified AC commercial cabs</span>
                         </label>
                         <div style="position: relative;">
@@ -509,6 +509,8 @@
 @push('scripts')
 <script>
     const rateOptions = @json($rateOptions);
+    const activeVehicleCategoriesData = @json($activeVehicleCategories ?? []);
+    window.activeVehicleCategoriesData = activeVehicleCategoriesData;
     const categoryInput = document.querySelector('#rateCategory');
     const pickupInput = document.querySelector('#pickupLocation');
     const destinationInput = document.querySelector('#destinationLocation');
@@ -793,6 +795,77 @@
     const flightNumberWrap = document.getElementById('bookingFlightNumberWrap');
     let airportMode = 'drop'; // 'drop' (City -> Raipur Airport) or 'pickup' (Raipur Airport -> City)
 
+    const ambulanceCategoryOptions = [
+        { name: 'Ambulance with Body Freezer', label: '❄️ Ambulance with Body Freezer' },
+        { name: 'Ambulance with Ventilator', label: '🫁 Ambulance with Ventilator' },
+        { name: 'ICU Ambulance', label: '🏥 ICU Ambulance' },
+        { name: 'Dead Body Transfer', label: '🕊️ Dead Body Transfer' }
+    ];
+    const ambulanceCategoryNames = ambulanceCategoryOptions.map(a => a.name);
+
+    function syncPublicBookingVehicleCategories(preferredCategory) {
+        const selectedTrip = document.querySelector('input[name="trip_type"]:checked');
+        const isAmbulance = selectedTrip && (selectedTrip.value === 'Ambulance Service' || selectedTrip.dataset.rateCategory === 'emergency' || selectedTrip.value.toLowerCase().includes('ambulance'));
+        const vehCatSelect = document.getElementById('bookingVehicleCategorySelect');
+        const vehCatLabel = document.getElementById('bookingVehicleCategoryLabel');
+        const modelBox = document.getElementById('bookingModelSelectionBox');
+
+        if (!vehCatSelect) return;
+
+        const currentVal = (preferredCategory !== undefined && preferredCategory !== '') ? preferredCategory : vehCatSelect.value;
+        vehCatSelect.innerHTML = '';
+
+        if (isAmbulance) {
+            if (vehCatLabel) vehCatLabel.textContent = '4. Ambulance Category Preference *';
+            if (modelBox) modelBox.style.display = 'none';
+
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = '';
+            defaultOpt.textContent = '-- Select Ambulance Category --';
+            vehCatSelect.appendChild(defaultOpt);
+
+            ambulanceCategoryOptions.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.name;
+                opt.textContent = item.label;
+                const dbCat = (window.activeVehicleCategoriesData || []).find(c => c.name === item.name);
+                if (dbCat) {
+                    opt.dataset.categoryId = dbCat.id;
+                    opt.dataset.categoryName = dbCat.name;
+                }
+                if (currentVal === item.name) {
+                    opt.selected = true;
+                }
+                vehCatSelect.appendChild(opt);
+            });
+        } else {
+            if (vehCatLabel) vehCatLabel.textContent = '4. Vehicle Category Preference *';
+
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = '';
+            defaultOpt.textContent = '-- Select Vehicle Category --';
+            vehCatSelect.appendChild(defaultOpt);
+
+            const standardCats = (window.activeVehicleCategoriesData || []).filter(c => !ambulanceCategoryNames.includes(c.name));
+            standardCats.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat.name;
+                opt.dataset.categoryId = cat.id;
+                opt.dataset.categoryName = cat.name;
+                opt.dataset.models = JSON.stringify(cat.active_models || []);
+                const modelsText = (cat.active_models && cat.active_models.length > 0) ? cat.active_models.map(m => m.name).join(', ') : '';
+                const capText = cat.is_capacity_configurable ? `${cat.min_seating_capacity}-${cat.max_seating_capacity} Seats` : `${cat.default_seating_capacity} Seats`;
+                opt.textContent = `${cat.name} (${modelsText ? modelsText + ' • ' : ''}${capText})`;
+                if (currentVal === cat.name) {
+                    opt.selected = true;
+                }
+                vehCatSelect.appendChild(opt);
+            });
+        }
+
+        renderBookingModelPills(vehCatSelect.options[vehCatSelect.selectedIndex]);
+    }
+
     function handleTripTypeChange() {
         const selectedTrip = document.querySelector('input[name="trip_type"]:checked');
         const isAirport = selectedTrip && (selectedTrip.value === 'Airport Transfer' || selectedTrip.dataset.rateCategory === 'airport');
@@ -806,6 +879,7 @@
                 destinationInput.placeholder = destinationInput.dataset.originalPlaceholder;
             }
         }
+        syncPublicBookingVehicleCategories();
     }
 
     // Payment preference card styling

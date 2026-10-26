@@ -354,19 +354,24 @@
                 </div>
 
                 <div class="grid grid-3 gap-3 mb-3">
-                    <div class="form-group">
-                        <label for="vehicle_category" class="form-label">Vehicle Category *</label>
+                    <div class="form-group" id="vehicleCategoryGroup">
+                        <label for="vehicle_category" class="form-label" id="vehicleCategoryLabel">Vehicle Category *</label>
                         <select name="vehicle_category" id="vehicle_category" class="form-select" onchange="onAdminBookingCategoryChange()" required>
                             <option value="">Select vehicle category</option>
+                            @php
+                                $ambNames = ['Ambulance with Body Freezer', 'Ambulance with Ventilator', 'ICU Ambulance', 'Dead Body Transfer'];
+                            @endphp
                             @if(isset($activeVehicleCategories))
                                 @foreach($activeVehicleCategories as $cat)
-                                    <option value="{{ $cat->name }}" data-id="{{ $cat->id }}" {{ old('vehicle_category') === $cat->name ? 'selected' : '' }}>
-                                        {{ $cat->name }} ({{ $cat->is_capacity_configurable ? 'Configurable '.$cat->min_seating_capacity.'-'.$cat->max_seating_capacity.' Seats' : $cat->default_seating_capacity.' Seats' }})
-                                    </option>
+                                    @if(!in_array($cat->name, $ambNames))
+                                        <option value="{{ $cat->name }}" data-id="{{ $cat->id }}" {{ old('vehicle_category') === $cat->name ? 'selected' : '' }}>
+                                            {{ $cat->name }} ({{ $cat->is_capacity_configurable ? 'Configurable '.$cat->min_seating_capacity.'-'.$cat->max_seating_capacity.' Seats' : $cat->default_seating_capacity.' Seats' }})
+                                        </option>
+                                    @endif
                                 @endforeach
                             @endif
                             @foreach($vehicleCategories as $category)
-                                @if(!isset($activeVehicleCategories) || !$activeVehicleCategories->contains('name', $category))
+                                @if(!in_array($category, $ambNames) && (!isset($activeVehicleCategories) || !$activeVehicleCategories->contains('name', $category)))
                                     <option value="{{ $category }}" {{ old('vehicle_category') === $category ? 'selected' : '' }}>{{ $category }}</option>
                                 @endif
                             @endforeach
@@ -374,7 +379,7 @@
                         <input type="hidden" name="vehicle_category_id" id="admin_vehicle_category_id" value="{{ old('vehicle_category_id') }}">
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" id="vehicleModelGroup">
                         <label for="vehicle_model_id" class="form-label">Vehicle Model Preference (Optional)</label>
                         <select name="vehicle_model_id" id="vehicle_model_id" class="form-select" onchange="onAdminBookingModelChange()">
                             <option value="">-- Any / All Models in Category --</option>
@@ -619,6 +624,74 @@
     const totalAmount = document.querySelector('#total_amount');
     const fareDetails = document.querySelector('#fareDetails');
 
+    const ambulanceCategoryOptions = [
+        { name: 'Ambulance with Body Freezer', label: '❄️ Ambulance with Body Freezer' },
+        { name: 'Ambulance with Ventilator', label: '🫁 Ambulance with Ventilator' },
+        { name: 'ICU Ambulance', label: '🏥 ICU Ambulance' },
+        { name: 'Dead Body Transfer', label: '🕊️ Dead Body Transfer' }
+    ];
+    const ambulanceCategoryNames = ambulanceCategoryOptions.map(a => a.name);
+    const standardCategoriesList = activeVehicleCategoriesData.filter(c => !ambulanceCategoryNames.includes(c.name));
+
+    function syncVehicleCategoriesForTripType(preferredCategory) {
+        const cat = rateCategory ? rateCategory.value : '';
+        const isAmbulance = (cat === 'ambulance');
+        const vehCatSelect = document.getElementById('vehicle_category');
+        const vehCatLabel = document.getElementById('vehicleCategoryLabel');
+        const modelGroup = document.getElementById('vehicleModelGroup');
+
+        if (!vehCatSelect) return;
+
+        const currentVal = (preferredCategory !== undefined && preferredCategory !== '') ? preferredCategory : vehCatSelect.value;
+        vehCatSelect.innerHTML = '';
+
+        if (isAmbulance) {
+            if (vehCatLabel) vehCatLabel.textContent = 'Ambulance Category *';
+            if (modelGroup) modelGroup.style.display = 'none';
+
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = '';
+            defaultOpt.textContent = '-- Choose Ambulance Category --';
+            vehCatSelect.appendChild(defaultOpt);
+
+            ambulanceCategoryOptions.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.name;
+                opt.textContent = item.label;
+                const dbCat = activeVehicleCategoriesData.find(c => c.name === item.name);
+                if (dbCat) {
+                    opt.dataset.id = dbCat.id;
+                }
+                if (currentVal === item.name) {
+                    opt.selected = true;
+                }
+                vehCatSelect.appendChild(opt);
+            });
+        } else {
+            if (vehCatLabel) vehCatLabel.textContent = 'Vehicle Category *';
+            if (modelGroup) modelGroup.style.display = 'block';
+
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = '';
+            defaultOpt.textContent = 'Select vehicle category';
+            vehCatSelect.appendChild(defaultOpt);
+
+            standardCategoriesList.forEach(catObj => {
+                const opt = document.createElement('option');
+                opt.value = catObj.name;
+                opt.dataset.id = catObj.id;
+                const cap = catObj.is_capacity_configurable ? `Configurable ${catObj.min_seating_capacity}-${catObj.max_seating_capacity} Seats` : `${catObj.default_seating_capacity} Seats`;
+                opt.textContent = `${catObj.name} (${cap})`;
+                if (currentVal === catObj.name) {
+                    opt.selected = true;
+                }
+                vehCatSelect.appendChild(opt);
+            });
+        }
+
+        onAdminBookingCategoryChange();
+    }
+
     function onAdminBookingCategoryChange() {
         const catSelect = document.getElementById('vehicle_category');
         const catIdInput = document.getElementById('admin_vehicle_category_id');
@@ -676,6 +749,7 @@
             if (estimatedKm) estimatedKm.required = false;
         }
 
+        syncVehicleCategoriesForTripType();
         updateFare();
     }
 
@@ -904,6 +978,7 @@
     toggleCategoryFields();
 
     [rateCategory, pickup, destination, vehicleCategory, estimatedKm].forEach((input) => input.addEventListener('change', updateFare));
+    syncVehicleCategoriesForTripType(@json(old('vehicle_category', '')));
     updateFare();
 
     // Google Maps Location Picker & Route Preview Integration for Admin

@@ -491,9 +491,10 @@
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label class="form-label">Ambulance Service Category</label>
                                 <select class="form-select" name="service_category" id="ambulanceCategorySelect">
-                                    <option value="Basic Life Support (BLS) Ambulance">Basic Life Support (BLS) Ambulance</option>
-                                    <option value="Patient Transport Vehicle (Eco/Van)">Patient Transport Vehicle (Eco / Van)</option>
-                                    <option value="Advanced Cardiac Life Support (ACLS ICU)">Advanced Cardiac Life Support (ACLS ICU)</option>
+                                    <option value="Ambulance with Body Freezer">Ambulance with Body Freezer</option>
+                                    <option value="Ambulance with Ventilator">Ambulance with Ventilator</option>
+                                    <option value="ICU Ambulance">ICU Ambulance</option>
+                                    <option value="Dead Body Transfer">Dead Body Transfer</option>
                                 </select>
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
@@ -584,26 +585,33 @@
                         <div style="position: relative;">
                             <select name="vehicle_category" id="homeVehicleCategorySelect" class="form-select" required style="width: 100%; height: 42px; font-weight: 600; font-size: 13.5px; border-radius: 6px; border: 1.5px solid var(--slate-300); background-color: #ffffff; cursor: pointer; padding: 0 0.75rem;">
                                 <option value="">-- Select Vehicle Category --</option>
+                                @php
+                                    $ambNames = ['Ambulance with Body Freezer', 'Ambulance with Ventilator', 'ICU Ambulance', 'Dead Body Transfer'];
+                                @endphp
                                 @if(isset($activeVehicleCategories) && $activeVehicleCategories->isNotEmpty())
                                     @foreach($activeVehicleCategories as $cat)
-                                        @php
-                                            $modelsText = $cat->activeModels->isNotEmpty() ? $cat->activeModels->pluck('name')->implode(', ') : '';
-                                            $capacityText = $cat->is_capacity_configurable ? $cat->min_seating_capacity.'-'.$cat->max_seating_capacity.' Seats' : $cat->default_seating_capacity.' Seats';
-                                            $fullLabel = $cat->name . ' (' . ($modelsText ? $modelsText . ' • ' : '') . $capacityText . ')';
-                                        @endphp
-                                        <option value="{{ $cat->name }}" 
-                                                data-category-id="{{ $cat->id }}" 
-                                                data-category-name="{{ $cat->name }}"
-                                                data-models="{{ json_encode($cat->activeModels) }}"
-                                                {{ old('vehicle_category', $loop->first ? $cat->name : '') === $cat->name ? 'selected' : '' }}>
-                                            {{ $fullLabel }}
-                                        </option>
+                                        @if(!in_array($cat->name, $ambNames))
+                                            @php
+                                                $modelsText = $cat->activeModels->isNotEmpty() ? $cat->activeModels->pluck('name')->implode(', ') : '';
+                                                $capacityText = $cat->is_capacity_configurable ? $cat->min_seating_capacity.'-'.$cat->max_seating_capacity.' Seats' : $cat->default_seating_capacity.' Seats';
+                                                $fullLabel = $cat->name . ' (' . ($modelsText ? $modelsText . ' • ' : '') . $capacityText . ')';
+                                            @endphp
+                                            <option value="{{ $cat->name }}" 
+                                                    data-category-id="{{ $cat->id }}" 
+                                                    data-category-name="{{ $cat->name }}"
+                                                    data-models="{{ json_encode($cat->activeModels) }}"
+                                                    {{ old('vehicle_category', $loop->first ? $cat->name : '') === $cat->name ? 'selected' : '' }}>
+                                                {{ $fullLabel }}
+                                            </option>
+                                        @endif
                                     @endforeach
                                 @else
                                     @foreach($vehicleCategories as $vCat)
-                                        <option value="{{ $vCat }}" {{ old('vehicle_category', $loop->first ? $vCat : '') === $vCat ? 'selected' : '' }}>
-                                            {{ $vCat }} (AC Commercial Cab)
-                                        </option>
+                                        @if(!in_array($vCat, $ambNames))
+                                            <option value="{{ $vCat }}" {{ old('vehicle_category', $loop->first ? $vCat : '') === $vCat ? 'selected' : '' }}>
+                                                {{ $vCat }} (AC Commercial Cab)
+                                            </option>
+                                        @endif
                                     @endforeach
                                 @endif
                             </select>
@@ -1153,6 +1161,7 @@
 
 @push('scripts')
 <script>
+window.activeVehicleCategoriesData = @json($activeVehicleCategories ?? []);
 document.addEventListener('DOMContentLoaded', function() {
     // Google Maps Location Picker Trigger for Home Booking Widget
     document.querySelectorAll('.btn-home-select-map').forEach(btn => {
@@ -1325,6 +1334,10 @@ document.addEventListener('DOMContentLoaded', function() {
             submitText.textContent = 'Book Airport Transfer';
         } else {
             submitText.textContent = 'Book Now';
+        }
+
+        if (typeof syncHomeVehicleCategories === 'function') {
+            syncHomeVehicleCategories(tab);
         }
 
         updateFareQuote();
@@ -1735,10 +1748,91 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const homeVehicleCatSelect = document.getElementById('homeVehicleCategorySelect');
+    const ambulanceCategoryOptions = [
+        { name: 'Ambulance with Body Freezer', label: '❄️ Ambulance with Body Freezer' },
+        { name: 'Ambulance with Ventilator', label: '🫁 Ambulance with Ventilator' },
+        { name: 'ICU Ambulance', label: '🏥 ICU Ambulance' },
+        { name: 'Dead Body Transfer', label: '🕊️ Dead Body Transfer' }
+    ];
+    const ambulanceCategoryNames = ambulanceCategoryOptions.map(a => a.name);
+
+    function syncHomeVehicleCategories(tab) {
+        if (!homeVehicleCatSelect) return;
+        const isAmbulance = (tab === 'ambulance');
+        const currentVal = homeVehicleCatSelect.value;
+        const modelBox = document.getElementById('homeModelSelectionBox');
+        homeVehicleCatSelect.innerHTML = '';
+
+        if (isAmbulance) {
+            if (modelBox) modelBox.style.display = 'none';
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = '';
+            defaultOpt.textContent = '-- Select Ambulance Category --';
+            homeVehicleCatSelect.appendChild(defaultOpt);
+
+            ambulanceCategoryOptions.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.name;
+                opt.textContent = item.label;
+                const dbCat = (window.activeVehicleCategoriesData || []).find(c => c.name === item.name);
+                if (dbCat) {
+                    opt.dataset.categoryId = dbCat.id;
+                    opt.dataset.categoryName = dbCat.name;
+                }
+                if (currentVal === item.name) {
+                    opt.selected = true;
+                }
+                homeVehicleCatSelect.appendChild(opt);
+            });
+            if (!homeVehicleCatSelect.value && homeVehicleCatSelect.options.length > 1) {
+                homeVehicleCatSelect.selectedIndex = 1;
+            }
+        } else {
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = '';
+            defaultOpt.textContent = '-- Select Vehicle Category --';
+            homeVehicleCatSelect.appendChild(defaultOpt);
+
+            const standardCats = (window.activeVehicleCategoriesData || []).filter(c => !ambulanceCategoryNames.includes(c.name));
+            standardCats.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat.name;
+                opt.dataset.categoryId = cat.id;
+                opt.dataset.categoryName = cat.name;
+                opt.dataset.models = JSON.stringify(cat.active_models || []);
+                const modelsText = (cat.active_models && cat.active_models.length > 0) ? cat.active_models.map(m => m.name).join(', ') : '';
+                const capText = cat.is_capacity_configurable ? `${cat.min_seating_capacity}-${cat.max_seating_capacity} Seats` : `${cat.default_seating_capacity} Seats`;
+                opt.textContent = `${cat.name} (${modelsText ? modelsText + ' • ' : ''}${capText})`;
+                if (currentVal === cat.name) {
+                    opt.selected = true;
+                }
+                homeVehicleCatSelect.appendChild(opt);
+            });
+            if (!homeVehicleCatSelect.value && homeVehicleCatSelect.options.length > 1) {
+                homeVehicleCatSelect.selectedIndex = 1;
+            }
+        }
+
+        renderHomeModelPills(homeVehicleCatSelect.options[homeVehicleCatSelect.selectedIndex]);
+    }
+
+    const homeAmbulanceSelect = document.getElementById('ambulanceCategorySelect');
+    if (homeAmbulanceSelect && homeVehicleCatSelect) {
+        homeAmbulanceSelect.addEventListener('change', function() {
+            if (currentTab === 'ambulance') {
+                homeVehicleCatSelect.value = this.value;
+                updateFareQuote();
+            }
+        });
+    }
+
     if (homeVehicleCatSelect) {
         homeVehicleCatSelect.addEventListener('change', function() {
             const selectedOpt = this.options[this.selectedIndex];
             renderHomeModelPills(selectedOpt);
+            if (currentTab === 'ambulance' && homeAmbulanceSelect && this.value) {
+                homeAmbulanceSelect.value = this.value;
+            }
             updateFareQuote();
         });
 

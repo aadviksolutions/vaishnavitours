@@ -100,7 +100,7 @@ class AdminBookingController extends Controller
         $routes = RateRoute::query()->where('active', true)->with('vehiclePrices')->get();
         $locations = $routes->flatMap(fn (RateRoute $route): array => array_filter([$route->origin, $route->destination]))
             ->unique()->sort()->values();
-        $activeVehicleCategories = VehicleCategory::where('is_active', true)->with('activeModels')->orderBy('display_order')->get();
+        $activeVehicleCategories = VehicleCategory::where('is_active', true)->with('activeModels')->orderBy('sort_order')->get();
         $dbCategories = $activeVehicleCategories->pluck('name')->toArray();
         $ratePriceCategories = RateVehiclePrice::query()->distinct()->pluck('vehicle_category')->toArray();
         $vehicleCategories = collect(array_merge($dbCategories, $ratePriceCategories))->unique()->values();
@@ -439,7 +439,7 @@ class AdminBookingController extends Controller
         $customers = User::where('role', 'customer')->orderBy('name')->get();
         $vehicles = Vehicle::where('status', '!=', 'Inactive')->get();
         $drivers = Driver::where('status', '!=', 'Inactive')->get();
-        $activeVehicleCategories = VehicleCategory::where('is_active', true)->with('activeModels')->orderBy('display_order')->get();
+        $activeVehicleCategories = VehicleCategory::where('is_active', true)->with('activeModels')->orderBy('sort_order')->get();
 
         return view('admin.bookings.edit', compact('booking', 'customers', 'vehicles', 'drivers', 'activeVehicleCategories'));
     }

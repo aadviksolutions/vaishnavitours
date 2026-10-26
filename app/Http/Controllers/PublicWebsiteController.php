@@ -81,7 +81,7 @@ class PublicWebsiteController extends Controller
             ->sort()
             ->values();
         $tourPackages = TourPackage::where('is_active', true)->get();
-        $activeVehicleCategories = VehicleCategory::where('is_active', true)->with('activeModels')->orderBy('display_order')->get();
+        $activeVehicleCategories = VehicleCategory::where('is_active', true)->with('activeModels')->orderBy('sort_order')->get();
         $dbCategoryNames = $activeVehicleCategories->pluck('name')->toArray();
         $rateCategoryNames = RateVehiclePrice::query()->distinct()->pluck('vehicle_category')->toArray();
         $vehicleCategories = collect(array_merge($dbCategoryNames, $rateCategoryNames))->unique()->values();
