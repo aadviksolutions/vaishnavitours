@@ -153,7 +153,7 @@
                 ⚙️ Current Gateway Status
             </h4>
             <div style="font-size: 0.85rem; line-height: 1.6; color: #475569;">
-                <div><strong>Gateway URL:</strong> <code>{{ config('services.openwa.base_url', 'http://localhost:2785') }}</code></div>
+                <div><strong>Gateway URL:</strong> <code>{{ \App\Models\Setting::get('openwa_base_url') ?: config('services.openwa.base_url', 'http://localhost:2785') }}</code></div>
                 <div><strong>Admin Phone:</strong> {{ $adminPhone ? '+91 ' . $adminPhone : 'Not configured yet' }}</div>
                 <div class="mt-3">
                     <a href="{{ route('admin.settings.index') }}" class="btn btn-link p-0 text-primary" style="font-size: 0.85rem;">
@@ -210,7 +210,18 @@ function fetchQrStatus(forceRefresh = false) {
                     qrContainer.innerHTML = `<img id="qr-image" src="${data.qr}" alt="WhatsApp QR Code" style="max-width:260px;max-height:260px;border:4px solid #fff;border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,0.12);">`;
                 }
             } else {
-                badge.innerHTML = `<span class="badge" style="background:#fee2e2;color:#991b1b;padding:8px 16px;font-size:0.95rem;font-weight:700;border-radius:20px;">● ${data.status}</span>`;
+                badge.innerHTML = `<span class="badge" style="background:#fee2e2;color:#991b1b;padding:8px 16px;font-size:0.95rem;font-weight:700;border-radius:20px;">● Offline</span>`;
+                connectedBox.style.display = 'none';
+                qrBox.style.display = 'block';
+                qrContainer.innerHTML = `
+                    <div class="p-4 text-center" style="background:#fef2f2; border:2px dashed #f87171; border-radius:12px; width:280px; min-height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                        <span style="font-size:2rem; margin-bottom:8px;">⚠️</span>
+                        <strong style="color:#991b1b; font-size:0.95rem; margin-bottom:4px;">Gateway Service Offline</strong>
+                        <p style="font-size:0.8rem; color:#7f1d1d; margin-bottom:8px; line-height:1.4;">
+                            ${data.message || 'OpenWA gateway is not running or unreachable at the configured URL.'}
+                        </p>
+                        <small style="color:#b91c1c; font-size:0.75rem;">Please check your Settings or start the gateway service.</small>
+                    </div>`;
             }
         })
         .catch(err => {

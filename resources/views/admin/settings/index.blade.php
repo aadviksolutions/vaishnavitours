@@ -324,8 +324,8 @@
                         <label for="openwa_base_url" class="form-label">OpenWA API Base URL</label>
                         <input type="url" name="openwa_base_url" id="openwa_base_url" class="form-control"
                             value="{{ old('openwa_base_url', $settings['openwa_base_url']->value ?? '') }}"
-                            placeholder="http://localhost:3000">
-                        <small style="color:var(--slate-500);font-size:0.775rem;">URL where OpenWA is running (e.g. http://your-vps:3000)</small>
+                            placeholder="http://localhost:2785">
+                        <small style="color:var(--slate-500);font-size:0.775rem;">URL where OpenWA is running (e.g. http://localhost:2785 or https://your-wa-gateway.onrender.com)</small>
                     </div>
                     <div class="form-group">
                         <label for="openwa_api_key" class="form-label">API Key (optional)</label>

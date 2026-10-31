@@ -5,6 +5,7 @@
     "scripts": {
         "start": "node server/index.js",
         "server": "node server/index.js",
+        "whatsapp": "node server/openwa-simulator.cjs",
         "build": "vite build",
         "dev": "vite"
     },
