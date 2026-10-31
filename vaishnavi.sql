@@ -1,7 +1,8 @@
 -- -------------------------------------------------------------
 -- Vaishnavi Tours & Travels MySQL Database Dump
 -- Database: vaishnavi
--- Generated: 2026-10-31 14:38:26
+-- Generated: 2026-10-31 14:57:09
+-- 100% Compatible with MySQL 5.7+, MySQL 8.0+, MariaDB & phpMyAdmin
 -- -------------------------------------------------------------
 
 SET FOREIGN_KEY_CHECKS = 0;
@@ -16,7 +17,16 @@ USE `vaishnavi`;
 -- Table structure for `booking_categories`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `booking_categories`;
-CREATE TABLE `booking_categories` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `code` varchar(255) not null, `name` varchar(255) not null, `description` longtext, `is_active` tinyint(1) not null default '1', `is_system` tinyint(1) not null default '0', `created_at` datetime, `updated_at` datetime) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `booking_categories` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `code` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `description` longtext NULL DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `is_system` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `booking_categories`
 INSERT INTO `booking_categories` (`id`, `code`, `name`, `description`, `is_active`, `is_system`, `created_at`, `updated_at`) VALUES
@@ -29,7 +39,16 @@ INSERT INTO `booking_categories` (`id`, `code`, `name`, `description`, `is_activ
 -- Table structure for `booking_status_histories`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `booking_status_histories`;
-CREATE TABLE `booking_status_histories` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `booking_id` int(11) not null, `changed_by` int(11), `old_status` varchar(255), `new_status` varchar(255) not null, `comment` longtext, `created_at` datetime not null default CURRENT_TIMESTAMP, `remarks` longtext, foreign key(`booking_id`) references `bookings`(`id`) on delete cascade, foreign key(`changed_by`) references `users`(`id`) on delete set null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `booking_status_histories` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `booking_id` bigint(20) UNSIGNED NOT NULL,
+  `changed_by` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `old_status` varchar(255) NULL DEFAULT NULL,
+  `new_status` varchar(255) NOT NULL,
+  `comment` longtext NULL DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `remarks` longtext NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `booking_status_histories`
 INSERT INTO `booking_status_histories` (`id`, `booking_id`, `changed_by`, `old_status`, `new_status`, `comment`, `created_at`, `remarks`) VALUES
@@ -223,7 +242,86 @@ INSERT INTO `booking_status_histories` (`id`, `booking_id`, `changed_by`, `old_s
 -- Table structure for `bookings`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `bookings`;
-CREATE TABLE `bookings` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `booking_id` varchar(255) not null, `customer_id` int(11) not null, `trip_type` varchar(255) not null DEFAULT 'One-Way', `pickup_location` varchar(255) not null, `destination` varchar(255) not null, `travel_date` date not null, `travel_time` time not null, `return_date` date, `vehicle_id` int(11), `driver_id` int(11), `total_amount` decimal(12,2) not null DEFAULT '0', `paid_amount` decimal(12,2) not null DEFAULT '0', `balance_amount` decimal(12,2) not null DEFAULT '0', `payment_status` varchar(255) not null DEFAULT 'Pending', `booking_status` varchar(255) not null DEFAULT 'Pending', `notes` longtext, `cancellation_reason` longtext, `created_at` datetime, `updated_at` datetime, `cancelled_at` datetime, `cancelled_by` int(11), `cancellation_status` varchar(255), `terms_accepted` tinyint(1) not null DEFAULT '0', `terms_accepted_at` datetime, `terms_version` varchar(255), `rate_vehicle_price_id` int(11), `rate_category` varchar(255), `pricing_details` longtext, `booking_category` varchar(255) not null DEFAULT 'WEB', `via_location` varchar(255), `tour_package_id` int(11), `corporate_company_name` varchar(255), `corporate_contact_person` varchar(255), `corporate_phone` varchar(255), `corporate_email` varchar(255), `corporate_gstin` varchar(255), `corporate_billing_address` longtext, `corporate_payment_terms` varchar(255), `corporate_agreed_rate` decimal(12,2), `duration_days` int(11) not null DEFAULT '1', `duration_hours` decimal(12,2), `duration_notes` longtext, `return_time` time, `taxable_amount` decimal(12,2), `gst_rate` decimal(12,2) not null DEFAULT '5', `cgst_amount` decimal(12,2) not null DEFAULT '0', `sgst_amount` decimal(12,2) not null DEFAULT '0', `igst_amount` decimal(12,2) not null DEFAULT '0', `gst_amount` decimal(12,2) not null DEFAULT '0', `is_interstate` tinyint(1) not null DEFAULT '0', `travel_partner_name` varchar(255), `travel_partner_phone` varchar(255), `travel_partner_email` varchar(255), `travel_partner_address` longtext, `travel_partner_commission` decimal(12,2), `travel_partner_notes` longtext, `pickup_latitude` decimal(12,2), `pickup_longitude` decimal(12,2), `pickup_place_id` varchar(255), `via_latitude` decimal(12,2), `via_longitude` decimal(12,2), `via_place_id` varchar(255), `destination_latitude` decimal(12,2), `destination_longitude` decimal(12,2), `destination_place_id` varchar(255), `route_distance_km` decimal(12,2), `route_duration_text` varchar(255), `route_duration_minutes` int(11), `route_legs` longtext, `route_geometry` longtext, `routed_at` datetime, `vehicle_category` varchar(255), `vehicle_model` varchar(255), `vehicle_category_id` int(11), `vehicle_model_id` int(11), razorpay_order_id varchar(255), confirmed_at datetime, foreign key(`tour_package_id`) references tour_packages(`id`) on delete set null on update no action, foreign key(`cancelled_by`) references users(`id`) on delete set null on update no action, foreign key(`customer_id`) references users(`id`) on delete cascade on update no action, foreign key(`vehicle_id`) references vehicles(`id`) on delete set null on update no action, foreign key(`driver_id`) references drivers(`id`) on delete set null on update no action, foreign key(`rate_vehicle_price_id`) references rate_vehicle_prices(`id`) on delete set null on update no action, foreign key(`vehicle_category_id`) references `vehicle_categories`(`id`) on delete set null, foreign key(`vehicle_model_id`) references `vehicle_models`(`id`) on delete set null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `bookings` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `booking_id` bigint(20) UNSIGNED NOT NULL,
+  `customer_id` bigint(20) UNSIGNED NOT NULL,
+  `trip_type` varchar(255) NOT NULL DEFAULT 'One-Way',
+  `pickup_location` varchar(255) NOT NULL,
+  `destination` varchar(255) NOT NULL,
+  `travel_date` date NOT NULL,
+  `travel_time` time NOT NULL,
+  `return_date` date NULL DEFAULT NULL,
+  `vehicle_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `driver_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `total_amount` decimal(12,2) NOT NULL DEFAULT '0',
+  `paid_amount` decimal(12,2) NOT NULL DEFAULT '0',
+  `balance_amount` decimal(12,2) NOT NULL DEFAULT '0',
+  `payment_status` varchar(255) NOT NULL DEFAULT 'Pending',
+  `booking_status` varchar(255) NOT NULL DEFAULT 'Pending',
+  `notes` longtext NULL DEFAULT NULL,
+  `cancellation_reason` longtext NULL DEFAULT NULL,
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL,
+  `cancelled_at` datetime NULL DEFAULT NULL,
+  `cancelled_by` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `cancellation_status` varchar(255) NULL DEFAULT NULL,
+  `terms_accepted` tinyint(1) NOT NULL DEFAULT '0',
+  `terms_accepted_at` datetime NULL DEFAULT NULL,
+  `terms_version` varchar(255) NULL DEFAULT NULL,
+  `rate_vehicle_price_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `rate_category` varchar(255) NULL DEFAULT NULL,
+  `pricing_details` longtext NULL DEFAULT NULL,
+  `booking_category` varchar(255) NOT NULL DEFAULT 'WEB',
+  `via_location` varchar(255) NULL DEFAULT NULL,
+  `tour_package_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `corporate_company_name` varchar(255) NULL DEFAULT NULL,
+  `corporate_contact_person` varchar(255) NULL DEFAULT NULL,
+  `corporate_phone` varchar(255) NULL DEFAULT NULL,
+  `corporate_email` varchar(255) NULL DEFAULT NULL,
+  `corporate_gstin` varchar(255) NULL DEFAULT NULL,
+  `corporate_billing_address` longtext NULL DEFAULT NULL,
+  `corporate_payment_terms` varchar(255) NULL DEFAULT NULL,
+  `corporate_agreed_rate` decimal(12,2) NULL DEFAULT NULL,
+  `duration_days` int(11) NOT NULL DEFAULT '1',
+  `duration_hours` decimal(12,2) NULL DEFAULT NULL,
+  `duration_notes` longtext NULL DEFAULT NULL,
+  `return_time` time NULL DEFAULT NULL,
+  `taxable_amount` decimal(12,2) NULL DEFAULT NULL,
+  `gst_rate` decimal(12,2) NOT NULL DEFAULT '5',
+  `cgst_amount` decimal(12,2) NOT NULL DEFAULT '0',
+  `sgst_amount` decimal(12,2) NOT NULL DEFAULT '0',
+  `igst_amount` decimal(12,2) NOT NULL DEFAULT '0',
+  `gst_amount` decimal(12,2) NOT NULL DEFAULT '0',
+  `is_interstate` tinyint(1) NOT NULL DEFAULT '0',
+  `travel_partner_name` varchar(255) NULL DEFAULT NULL,
+  `travel_partner_phone` varchar(255) NULL DEFAULT NULL,
+  `travel_partner_email` varchar(255) NULL DEFAULT NULL,
+  `travel_partner_address` longtext NULL DEFAULT NULL,
+  `travel_partner_commission` decimal(12,2) NULL DEFAULT NULL,
+  `travel_partner_notes` longtext NULL DEFAULT NULL,
+  `pickup_latitude` decimal(12,2) NULL DEFAULT NULL,
+  `pickup_longitude` decimal(12,2) NULL DEFAULT NULL,
+  `pickup_place_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `via_latitude` decimal(12,2) NULL DEFAULT NULL,
+  `via_longitude` decimal(12,2) NULL DEFAULT NULL,
+  `via_place_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `destination_latitude` decimal(12,2) NULL DEFAULT NULL,
+  `destination_longitude` decimal(12,2) NULL DEFAULT NULL,
+  `destination_place_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `route_distance_km` decimal(12,2) NULL DEFAULT NULL,
+  `route_duration_text` varchar(255) NULL DEFAULT NULL,
+  `route_duration_minutes` int(11) NULL DEFAULT NULL,
+  `route_legs` longtext NULL DEFAULT NULL,
+  `route_geometry` longtext NULL DEFAULT NULL,
+  `routed_at` datetime NULL DEFAULT NULL,
+  `vehicle_category` varchar(255) NULL DEFAULT NULL,
+  `vehicle_model` varchar(255) NULL DEFAULT NULL,
+  `vehicle_category_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `vehicle_model_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `razorpay_order_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `confirmed_at` datetime NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `bookings`
 INSERT INTO `bookings` (`id`, `booking_id`, `customer_id`, `trip_type`, `pickup_location`, `destination`, `travel_date`, `travel_time`, `return_date`, `vehicle_id`, `driver_id`, `total_amount`, `paid_amount`, `balance_amount`, `payment_status`, `booking_status`, `notes`, `cancellation_reason`, `created_at`, `updated_at`, `cancelled_at`, `cancelled_by`, `cancellation_status`, `terms_accepted`, `terms_accepted_at`, `terms_version`, `rate_vehicle_price_id`, `rate_category`, `pricing_details`, `booking_category`, `via_location`, `tour_package_id`, `corporate_company_name`, `corporate_contact_person`, `corporate_phone`, `corporate_email`, `corporate_gstin`, `corporate_billing_address`, `corporate_payment_terms`, `corporate_agreed_rate`, `duration_days`, `duration_hours`, `duration_notes`, `return_time`, `taxable_amount`, `gst_rate`, `cgst_amount`, `sgst_amount`, `igst_amount`, `gst_amount`, `is_interstate`, `travel_partner_name`, `travel_partner_phone`, `travel_partner_email`, `travel_partner_address`, `travel_partner_commission`, `travel_partner_notes`, `pickup_latitude`, `pickup_longitude`, `pickup_place_id`, `via_latitude`, `via_longitude`, `via_place_id`, `destination_latitude`, `destination_longitude`, `destination_place_id`, `route_distance_km`, `route_duration_text`, `route_duration_minutes`, `route_legs`, `route_geometry`, `routed_at`, `vehicle_category`, `vehicle_model`, `vehicle_category_id`, `vehicle_model_id`, `razorpay_order_id`, `confirmed_at`) VALUES
@@ -355,25 +453,69 @@ INSERT INTO `bookings` (`id`, `booking_id`, `customer_id`, `trip_type`, `pickup_
 -- Table structure for `cache`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `cache`;
-CREATE TABLE `cache` (`key` varchar(255) not null, `value` longtext not null, `expiration` int(11) not null, primary key (`key`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `cache` (
+  `key` varchar(255) NOT NULL,
+  `value` longtext NOT NULL,
+  `expiration` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -------------------------------------------------------------
 -- Table structure for `cache_locks`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `cache_locks`;
-CREATE TABLE `cache_locks` (`key` varchar(255) not null, `owner` varchar(255) not null, `expiration` int(11) not null, primary key (`key`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `cache_locks` (
+  `key` varchar(255) NOT NULL,
+  `owner` varchar(255) NOT NULL,
+  `expiration` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -------------------------------------------------------------
 -- Table structure for `complaints`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `complaints`;
-CREATE TABLE `complaints` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `type` varchar(255) not null, `booking_id` int(11), `driver_id` int(11), `vehicle_id` int(11), `customer_name` varchar(255) not null, `customer_mobile` varchar(255), `customer_email` varchar(255), `description` longtext not null, `rating` int(11), `complaint_date` date not null, `status` varchar(255) not null default 'Open', `resolution_notes` longtext, `resolved_at` datetime, `resolved_by` int(11), `created_at` datetime, `updated_at` datetime, foreign key(`booking_id`) references `bookings`(`id`) on delete set null, foreign key(`driver_id`) references `drivers`(`id`) on delete set null, foreign key(`vehicle_id`) references `vehicles`(`id`) on delete set null, foreign key(`resolved_by`) references `users`(`id`) on delete set null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `complaints` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `type` varchar(255) NOT NULL,
+  `booking_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `driver_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `vehicle_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `customer_name` varchar(255) NOT NULL,
+  `customer_mobile` varchar(255) NULL DEFAULT NULL,
+  `customer_email` varchar(255) NULL DEFAULT NULL,
+  `description` longtext NOT NULL,
+  `rating` int(11) NULL DEFAULT NULL,
+  `complaint_date` date NOT NULL,
+  `status` varchar(255) NOT NULL DEFAULT 'Open',
+  `resolution_notes` longtext NULL DEFAULT NULL,
+  `resolved_at` datetime NULL DEFAULT NULL,
+  `resolved_by` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -------------------------------------------------------------
 -- Table structure for `customers`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `customers`;
-CREATE TABLE `customers` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `user_id` int(11) not null, `alternate_phone` varchar(255), `address` longtext, `city` varchar(255) not null default 'Bilaspur', `state` varchar(255) not null default 'Chhattisgarh', `pincode` varchar(255) not null default '495001', `notes` longtext, `created_at` datetime, `updated_at` datetime, customer_type VARCHAR(50) DEFAULT 'individual', company_name VARCHAR(255), contact_person VARCHAR(255), gstin VARCHAR(30), billing_address longtext, partner_name VARCHAR(255), partner_commission VARCHAR(100), foreign key(`user_id`) references `users`(`id`) on delete cascade) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `customers` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `alternate_phone` varchar(255) NULL DEFAULT NULL,
+  `address` longtext NULL DEFAULT NULL,
+  `city` varchar(255) NOT NULL DEFAULT 'Bilaspur',
+  `state` varchar(255) NOT NULL DEFAULT 'Chhattisgarh',
+  `pincode` varchar(255) NOT NULL DEFAULT '495001',
+  `notes` longtext NULL DEFAULT NULL,
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL,
+  `customer_type` varchar(255) NULL DEFAULT 'individual',
+  `company_name` varchar(255) NULL DEFAULT NULL,
+  `contact_person` varchar(255) NULL DEFAULT NULL,
+  `gstin` varchar(255) NULL DEFAULT NULL,
+  `billing_address` longtext NULL DEFAULT NULL,
+  `partner_name` varchar(255) NULL DEFAULT NULL,
+  `partner_commission` varchar(255) NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `customers`
 INSERT INTO `customers` (`id`, `user_id`, `alternate_phone`, `address`, `city`, `state`, `pincode`, `notes`, `created_at`, `updated_at`, `customer_type`, `company_name`, `contact_person`, `gstin`, `billing_address`, `partner_name`, `partner_commission`) VALUES
@@ -420,7 +562,21 @@ INSERT INTO `customers` (`id`, `user_id`, `alternate_phone`, `address`, `city`, 
 -- Table structure for `drivers`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `drivers`;
-CREATE TABLE `drivers` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `name` varchar(255) not null, `mobile` varchar(255) not null, `alternate_mobile` varchar(255), `license_number` varchar(255) not null, `license_expiry` date, `address` longtext, `status` varchar(255) not null default 'Available', `assigned_vehicle_id` int(11), `rating` decimal(12,2) not null default '5', `notes` longtext, `created_at` datetime, `updated_at` datetime, foreign key(`assigned_vehicle_id`) references `vehicles`(`id`) on delete set null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `drivers` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `name` varchar(255) NOT NULL,
+  `mobile` varchar(255) NOT NULL,
+  `alternate_mobile` varchar(255) NULL DEFAULT NULL,
+  `license_number` varchar(255) NOT NULL,
+  `license_expiry` date NULL DEFAULT NULL,
+  `address` longtext NULL DEFAULT NULL,
+  `status` varchar(255) NOT NULL DEFAULT 'Available',
+  `assigned_vehicle_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `rating` decimal(12,2) NOT NULL DEFAULT '5',
+  `notes` longtext NULL DEFAULT NULL,
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `drivers`
 INSERT INTO `drivers` (`id`, `name`, `mobile`, `alternate_mobile`, `license_number`, `license_expiry`, `address`, `status`, `assigned_vehicle_id`, `rating`, `notes`, `created_at`, `updated_at`) VALUES
@@ -433,7 +589,47 @@ INSERT INTO `drivers` (`id`, `name`, `mobile`, `alternate_mobile`, `license_numb
 -- Table structure for `enquiries`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `enquiries`;
-CREATE TABLE `enquiries` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `name` varchar(255) not null, `email` varchar(255), `phone` varchar(255) not null, `service_type` varchar(255), `subject` varchar(255), `message` longtext not null, `status` varchar(255) not null DEFAULT 'New', `created_at` datetime, `updated_at` datetime, `enquiry_id` varchar(255), `source` varchar(255) not null default 'Website', `booking_type` varchar(255), `pickup_location` varchar(255), `via_location` varchar(255), `destination` varchar(255), `travel_date` date, `return_date` date, `duration_days` int(11), `vehicle_preference` varchar(255), `quotation_amount` decimal(12,2), `assigned_to` int(11), `notes` longtext, `converted_booking_id` int(11), `pickup_latitude` decimal(12,2), `pickup_longitude` decimal(12,2), `pickup_place_id` varchar(255), `via_latitude` decimal(12,2), `via_longitude` decimal(12,2), `via_place_id` varchar(255), `destination_latitude` decimal(12,2), `destination_longitude` decimal(12,2), `destination_place_id` varchar(255), `route_distance_km` decimal(12,2), `route_duration_text` varchar(255), `route_duration_minutes` int(11), `route_legs` longtext, `route_geometry` longtext, `routed_at` datetime, foreign key(`assigned_to`) references `users`(`id`) on delete set null, foreign key(`converted_booking_id`) references `bookings`(`id`) on delete set null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `enquiries` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `name` varchar(255) NOT NULL,
+  `email` varchar(255) NULL DEFAULT NULL,
+  `phone` varchar(255) NOT NULL,
+  `service_type` varchar(255) NULL DEFAULT NULL,
+  `subject` varchar(255) NULL DEFAULT NULL,
+  `message` longtext NOT NULL,
+  `status` varchar(255) NOT NULL DEFAULT 'New',
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL,
+  `enquiry_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `source` varchar(255) NOT NULL DEFAULT 'Website',
+  `booking_type` varchar(255) NULL DEFAULT NULL,
+  `pickup_location` varchar(255) NULL DEFAULT NULL,
+  `via_location` varchar(255) NULL DEFAULT NULL,
+  `destination` varchar(255) NULL DEFAULT NULL,
+  `travel_date` date NULL DEFAULT NULL,
+  `return_date` date NULL DEFAULT NULL,
+  `duration_days` int(11) NULL DEFAULT NULL,
+  `vehicle_preference` varchar(255) NULL DEFAULT NULL,
+  `quotation_amount` decimal(12,2) NULL DEFAULT NULL,
+  `assigned_to` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `notes` longtext NULL DEFAULT NULL,
+  `converted_booking_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `pickup_latitude` decimal(12,2) NULL DEFAULT NULL,
+  `pickup_longitude` decimal(12,2) NULL DEFAULT NULL,
+  `pickup_place_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `via_latitude` decimal(12,2) NULL DEFAULT NULL,
+  `via_longitude` decimal(12,2) NULL DEFAULT NULL,
+  `via_place_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `destination_latitude` decimal(12,2) NULL DEFAULT NULL,
+  `destination_longitude` decimal(12,2) NULL DEFAULT NULL,
+  `destination_place_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `route_distance_km` decimal(12,2) NULL DEFAULT NULL,
+  `route_duration_text` varchar(255) NULL DEFAULT NULL,
+  `route_duration_minutes` int(11) NULL DEFAULT NULL,
+  `route_legs` longtext NULL DEFAULT NULL,
+  `route_geometry` longtext NULL DEFAULT NULL,
+  `routed_at` datetime NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `enquiries`
 INSERT INTO `enquiries` (`id`, `name`, `email`, `phone`, `service_type`, `subject`, `message`, `status`, `created_at`, `updated_at`, `enquiry_id`, `source`, `booking_type`, `pickup_location`, `via_location`, `destination`, `travel_date`, `return_date`, `duration_days`, `vehicle_preference`, `quotation_amount`, `assigned_to`, `notes`, `converted_booking_id`, `pickup_latitude`, `pickup_longitude`, `pickup_place_id`, `via_latitude`, `via_longitude`, `via_place_id`, `destination_latitude`, `destination_longitude`, `destination_place_id`, `route_distance_km`, `route_duration_text`, `route_duration_minutes`, `route_legs`, `route_geometry`, `routed_at`) VALUES
@@ -445,25 +641,78 @@ INSERT INTO `enquiries` (`id`, `name`, `email`, `phone`, `service_type`, `subjec
 -- Table structure for `expenses`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `expenses`;
-CREATE TABLE `expenses` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `booking_id` int(11), `trip_id` int(11), `category` varchar(255) not null default 'Fuel', `amount` decimal(12,2) not null, `expense_date` date not null, `description` longtext, `receipt_number` varchar(255), `receipt_path` varchar(255), `entered_by` int(11), `created_at` datetime, `updated_at` datetime, foreign key(`booking_id`) references `bookings`(`id`) on delete set null, foreign key(`trip_id`) references `trips`(`id`) on delete set null, foreign key(`entered_by`) references `users`(`id`) on delete set null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `expenses` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `booking_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `trip_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `category` varchar(255) NOT NULL DEFAULT 'Fuel',
+  `amount` decimal(12,2) NOT NULL,
+  `expense_date` date NOT NULL,
+  `description` longtext NULL DEFAULT NULL,
+  `receipt_number` varchar(255) NULL DEFAULT NULL,
+  `receipt_path` varchar(255) NULL DEFAULT NULL,
+  `entered_by` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -------------------------------------------------------------
 -- Table structure for `failed_jobs`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `failed_jobs`;
-CREATE TABLE `failed_jobs` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `uuid` varchar(255) not null, `connection` varchar(255) not null, `queue` varchar(255) not null, `payload` longtext not null, `exception` longtext not null, `failed_at` datetime not null default CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `failed_jobs` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `uuid` varchar(255) NOT NULL,
+  `connection` varchar(255) NOT NULL,
+  `queue` varchar(255) NOT NULL,
+  `payload` longtext NOT NULL,
+  `exception` longtext NOT NULL,
+  `failed_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -------------------------------------------------------------
 -- Table structure for `feedback`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `feedback`;
-CREATE TABLE `feedback` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `user_id` int(11), `booking_id` int(11), `name` varchar(255) not null, `email` varchar(255), `rating` int(11) not null default '5', `comment` longtext not null, `is_public` tinyint(1) not null default '1', `created_at` datetime, `updated_at` datetime, foreign key(`user_id`) references `users`(`id`) on delete set null, foreign key(`booking_id`) references `bookings`(`id`) on delete set null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `feedback` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `user_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `booking_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `name` varchar(255) NOT NULL,
+  `email` varchar(255) NULL DEFAULT NULL,
+  `rating` int(11) NOT NULL DEFAULT '5',
+  `comment` longtext NOT NULL,
+  `is_public` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -------------------------------------------------------------
 -- Table structure for `invoices`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `invoices`;
-CREATE TABLE `invoices` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `invoice_number` varchar(255) not null, `booking_id` int(11) not null, `customer_id` int(11) not null, `total_amount` decimal(12,2) not null, `paid_amount` decimal(12,2) not null default '0', `balance_amount` decimal(12,2) not null default '0', `status` varchar(255) not null default 'Paid', `issued_at` datetime, `created_at` datetime, `updated_at` datetime, `taxable_amount` decimal(12,2), `gst_rate` decimal(12,2) not null default '5', `cgst_amount` decimal(12,2) not null default '0', `sgst_amount` decimal(12,2) not null default '0', `igst_amount` decimal(12,2) not null default '0', `gst_amount` decimal(12,2) not null default '0', `customer_gstin` varchar(255), `booking_category` varchar(255) not null default 'WEB', `version` int(11) not null default '1', foreign key(`booking_id`) references `bookings`(`id`) on delete cascade, foreign key(`customer_id`) references `users`(`id`) on delete cascade) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `invoices` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `invoice_number` varchar(255) NOT NULL,
+  `booking_id` bigint(20) UNSIGNED NOT NULL,
+  `customer_id` bigint(20) UNSIGNED NOT NULL,
+  `total_amount` decimal(12,2) NOT NULL,
+  `paid_amount` decimal(12,2) NOT NULL DEFAULT '0',
+  `balance_amount` decimal(12,2) NOT NULL DEFAULT '0',
+  `status` varchar(255) NOT NULL DEFAULT 'Paid',
+  `issued_at` datetime NULL DEFAULT NULL,
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL,
+  `taxable_amount` decimal(12,2) NULL DEFAULT NULL,
+  `gst_rate` decimal(12,2) NOT NULL DEFAULT '5',
+  `cgst_amount` decimal(12,2) NOT NULL DEFAULT '0',
+  `sgst_amount` decimal(12,2) NOT NULL DEFAULT '0',
+  `igst_amount` decimal(12,2) NOT NULL DEFAULT '0',
+  `gst_amount` decimal(12,2) NOT NULL DEFAULT '0',
+  `customer_gstin` varchar(255) NULL DEFAULT NULL,
+  `booking_category` varchar(255) NOT NULL DEFAULT 'WEB',
+  `version` int(11) NOT NULL DEFAULT '1'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `invoices`
 INSERT INTO `invoices` (`id`, `invoice_number`, `booking_id`, `customer_id`, `total_amount`, `paid_amount`, `balance_amount`, `status`, `issued_at`, `created_at`, `updated_at`, `taxable_amount`, `gst_rate`, `cgst_amount`, `sgst_amount`, `igst_amount`, `gst_amount`, `customer_gstin`, `booking_category`, `version`) VALUES
@@ -511,19 +760,42 @@ INSERT INTO `invoices` (`id`, `invoice_number`, `booking_id`, `customer_id`, `to
 -- Table structure for `job_batches`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `job_batches`;
-CREATE TABLE `job_batches` (`id` varchar(255) not null, `name` varchar(255) not null, `total_jobs` int(11) not null, `pending_jobs` int(11) not null, `failed_jobs` int(11) not null, `failed_job_ids` longtext not null, `options` longtext, `cancelled_at` int(11), `created_at` int(11) not null, `finished_at` int(11), primary key (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `job_batches` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `name` varchar(255) NOT NULL,
+  `total_jobs` int(11) NOT NULL,
+  `pending_jobs` int(11) NOT NULL,
+  `failed_jobs` int(11) NOT NULL,
+  `failed_job_ids` longtext NOT NULL,
+  `options` longtext NULL DEFAULT NULL,
+  `cancelled_at` int(11) NULL DEFAULT NULL,
+  `created_at` int(11) NOT NULL,
+  `finished_at` int(11) NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -------------------------------------------------------------
 -- Table structure for `jobs`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `jobs`;
-CREATE TABLE `jobs` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `queue` varchar(255) not null, `payload` longtext not null, `attempts` int(11) not null, `reserved_at` int(11), `available_at` int(11) not null, `created_at` int(11) not null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `jobs` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `queue` varchar(255) NOT NULL,
+  `payload` longtext NOT NULL,
+  `attempts` int(11) NOT NULL,
+  `reserved_at` int(11) NULL DEFAULT NULL,
+  `available_at` int(11) NOT NULL,
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -------------------------------------------------------------
 -- Table structure for `migrations`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `migrations`;
-CREATE TABLE `migrations` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `migration` varchar(255) not null, `batch` int(11) not null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `migrations` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `migration` varchar(255) NOT NULL,
+  `batch` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `migrations`
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
@@ -561,7 +833,17 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 -- Table structure for `notifications`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `notifications`;
-CREATE TABLE `notifications` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `user_id` int(11), `title` varchar(255) not null, `message` longtext not null, `type` varchar(255) not null default 'booking', `is_read` tinyint(1) not null default '0', `action_url` varchar(255), `created_at` datetime, `updated_at` datetime, foreign key(`user_id`) references `users`(`id`) on delete cascade) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `notifications` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `user_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `title` varchar(255) NOT NULL,
+  `message` longtext NOT NULL,
+  `type` varchar(255) NOT NULL DEFAULT 'booking',
+  `is_read` tinyint(1) NOT NULL DEFAULT '0',
+  `action_url` varchar(255) NULL DEFAULT NULL,
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `notifications`
 INSERT INTO `notifications` (`id`, `user_id`, `title`, `message`, `type`, `is_read`, `action_url`, `created_at`, `updated_at`) VALUES
@@ -827,13 +1109,52 @@ INSERT INTO `notifications` (`id`, `user_id`, `title`, `message`, `type`, `is_re
 -- Table structure for `password_reset_tokens`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `password_reset_tokens`;
-CREATE TABLE `password_reset_tokens` (`email` varchar(255) not null, `token` varchar(255) not null, `created_at` datetime, primary key (`email`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `password_reset_tokens` (
+  `email` varchar(255) NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `created_at` datetime NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -------------------------------------------------------------
 -- Table structure for `payments`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `payments`;
-CREATE TABLE `payments` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `payment_id` varchar(255) not null, `booking_id` int(11) not null, `customer_id` int(11) not null, `gateway` varchar(255) not null default 'Manual / Direct', `transaction_id` varchar(255), `amount` decimal(12,2) not null, `currency` varchar(255) not null default 'INR', `payment_method` varchar(255) not null default 'Cash', `status` varchar(255) not null default 'Success', `gateway_response` longtext, `paid_at` datetime, `notes` varchar(255), `created_at` datetime, `updated_at` datetime, razorpay_order_id varchar(255), razorpay_payment_id varchar(255), razorpay_signature varchar(255), signature_verified int(11) DEFAULT 0, booking_category varchar(255), booking_type varchar(255), expected_amount decimal(12,2), fee decimal(12,2) DEFAULT 0, tax decimal(12,2) DEFAULT 0, error_code varchar(255), error_description longtext, refund_id varchar(255), refund_amount decimal(12,2) DEFAULT 0, refund_status varchar(255), authorized_at datetime, captured_at datetime, webhook_status varchar(255), reconciliation_status varchar(255), method_details longtext, foreign key(`booking_id`) references `bookings`(`id`) on delete cascade, foreign key(`customer_id`) references `users`(`id`) on delete cascade) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `payments` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `payment_id` bigint(20) UNSIGNED NOT NULL,
+  `booking_id` bigint(20) UNSIGNED NOT NULL,
+  `customer_id` bigint(20) UNSIGNED NOT NULL,
+  `gateway` varchar(255) NOT NULL DEFAULT 'Manual / Direct',
+  `transaction_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `amount` decimal(12,2) NOT NULL,
+  `currency` varchar(255) NOT NULL DEFAULT 'INR',
+  `payment_method` varchar(255) NOT NULL DEFAULT 'Cash',
+  `status` varchar(255) NOT NULL DEFAULT 'Success',
+  `gateway_response` longtext NULL DEFAULT NULL,
+  `paid_at` datetime NULL DEFAULT NULL,
+  `notes` varchar(255) NULL DEFAULT NULL,
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL,
+  `razorpay_order_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `razorpay_payment_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `razorpay_signature` varchar(255) NULL DEFAULT NULL,
+  `signature_verified` int(11) NULL DEFAULT 0,
+  `booking_category` varchar(255) NULL DEFAULT NULL,
+  `booking_type` varchar(255) NULL DEFAULT NULL,
+  `expected_amount` decimal(12,2) NULL DEFAULT NULL,
+  `fee` decimal(12,2) NULL DEFAULT 0,
+  `tax` decimal(12,2) NULL DEFAULT 0,
+  `error_code` varchar(255) NULL DEFAULT NULL,
+  `error_description` longtext NULL DEFAULT NULL,
+  `refund_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `refund_amount` decimal(12,2) NULL DEFAULT 0,
+  `refund_status` varchar(255) NULL DEFAULT NULL,
+  `authorized_at` datetime NULL DEFAULT NULL,
+  `captured_at` datetime NULL DEFAULT NULL,
+  `webhook_status` varchar(255) NULL DEFAULT NULL,
+  `reconciliation_status` varchar(255) NULL DEFAULT NULL,
+  `method_details` longtext NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `payments`
 INSERT INTO `payments` (`id`, `payment_id`, `booking_id`, `customer_id`, `gateway`, `transaction_id`, `amount`, `currency`, `payment_method`, `status`, `gateway_response`, `paid_at`, `notes`, `created_at`, `updated_at`, `razorpay_order_id`, `razorpay_payment_id`, `razorpay_signature`, `signature_verified`, `booking_category`, `booking_type`, `expected_amount`, `fee`, `tax`, `error_code`, `error_description`, `refund_id`, `refund_amount`, `refund_status`, `authorized_at`, `captured_at`, `webhook_status`, `reconciliation_status`, `method_details`) VALUES
@@ -908,7 +1229,17 @@ INSERT INTO `payments` (`id`, `payment_id`, `booking_id`, `customer_id`, `gatewa
 -- Table structure for `pickup_locations`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `pickup_locations`;
-CREATE TABLE `pickup_locations` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `name` varchar(255) not null, `address` varchar(255), `city` varchar(255) not null default 'Bilaspur', `state` varchar(255) not null default 'Chhattisgarh', `is_active` tinyint(1) not null default '1', `created_by` int(11), `created_at` datetime, `updated_at` datetime, foreign key(`created_by`) references `users`(`id`) on delete set null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `pickup_locations` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `name` varchar(255) NOT NULL,
+  `address` varchar(255) NULL DEFAULT NULL,
+  `city` varchar(255) NOT NULL DEFAULT 'Bilaspur',
+  `state` varchar(255) NOT NULL DEFAULT 'Chhattisgarh',
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_by` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `pickup_locations`
 INSERT INTO `pickup_locations` (`id`, `name`, `address`, `city`, `state`, `is_active`, `created_by`, `created_at`, `updated_at`) VALUES
@@ -925,7 +1256,18 @@ INSERT INTO `pickup_locations` (`id`, `name`, `address`, `city`, `state`, `is_ac
 -- Table structure for `rate_routes`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `rate_routes`;
-CREATE TABLE `rate_routes` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `category` varchar(255) not null, `origin` varchar(255), `destination` varchar(255), `km_limit` int(11), `included_hours` decimal(12,2), `return_same_rate` tinyint(1) not null default '0', `active` tinyint(1) not null default '1', `created_at` datetime, `updated_at` datetime) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `rate_routes` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `category` varchar(255) NOT NULL,
+  `origin` varchar(255) NULL DEFAULT NULL,
+  `destination` varchar(255) NULL DEFAULT NULL,
+  `km_limit` int(11) NULL DEFAULT NULL,
+  `included_hours` decimal(12,2) NULL DEFAULT NULL,
+  `return_same_rate` tinyint(1) NOT NULL DEFAULT '0',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `rate_routes`
 INSERT INTO `rate_routes` (`id`, `category`, `origin`, `destination`, `km_limit`, `included_hours`, `return_same_rate`, `active`, `created_at`, `updated_at`) VALUES
@@ -947,7 +1289,24 @@ INSERT INTO `rate_routes` (`id`, `category`, `origin`, `destination`, `km_limit`
 -- Table structure for `rate_vehicle_prices`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `rate_vehicle_prices`;
-CREATE TABLE `rate_vehicle_prices` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `rate_route_id` int(11) not null, `vehicle_category` varchar(255) not null, `base_fare` decimal(12,2), `gst_applicable` tinyint(1) not null default '0', `extra_km_rate` decimal(12,2), `extra_hour_rate` decimal(12,2), `vehicle_rent` decimal(12,2), `per_km_rate` decimal(12,2), `night_charge` decimal(12,2), `toll_type` varchar(255), `parking_type` varchar(255), `border_tax_type` varchar(255), `driver_food_type` varchar(255), `created_at` datetime, `updated_at` datetime, foreign key(`rate_route_id`) references `rate_routes`(`id`) on delete cascade) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `rate_vehicle_prices` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `rate_route_id` bigint(20) UNSIGNED NOT NULL,
+  `vehicle_category` varchar(255) NOT NULL,
+  `base_fare` decimal(12,2) NULL DEFAULT NULL,
+  `gst_applicable` tinyint(1) NOT NULL DEFAULT '0',
+  `extra_km_rate` decimal(12,2) NULL DEFAULT NULL,
+  `extra_hour_rate` decimal(12,2) NULL DEFAULT NULL,
+  `vehicle_rent` decimal(12,2) NULL DEFAULT NULL,
+  `per_km_rate` decimal(12,2) NULL DEFAULT NULL,
+  `night_charge` decimal(12,2) NULL DEFAULT NULL,
+  `toll_type` varchar(255) NULL DEFAULT NULL,
+  `parking_type` varchar(255) NULL DEFAULT NULL,
+  `border_tax_type` varchar(255) NULL DEFAULT NULL,
+  `driver_food_type` varchar(255) NULL DEFAULT NULL,
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `rate_vehicle_prices`
 INSERT INTO `rate_vehicle_prices` (`id`, `rate_route_id`, `vehicle_category`, `base_fare`, `gst_applicable`, `extra_km_rate`, `extra_hour_rate`, `vehicle_rent`, `per_km_rate`, `night_charge`, `toll_type`, `parking_type`, `border_tax_type`, `driver_food_type`, `created_at`, `updated_at`) VALUES
@@ -995,16 +1354,16 @@ INSERT INTO `rate_vehicle_prices` (`id`, `rate_route_id`, `vehicle_category`, `b
 -- Table structure for `razorpay_webhook_events`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `razorpay_webhook_events`;
-CREATE TABLE razorpay_webhook_events (
-            id int(11) PRIMARY KEY AUTOINCREMENT,
-            event_id varchar(255) UNIQUE NOT NULL,
-            event_type varchar(255) NOT NULL,
-            payload longtext NOT NULL,
-            status varchar(255) NOT NULL DEFAULT 'Processed',
-            error_message longtext,
-            created_at datetime DEFAULT CURRENT_TIMESTAMP,
-            processed_at datetime
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `razorpay_webhook_events` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `event_id` bigint(20) UNSIGNED NOT NULL,
+  `event_type` varchar(255) NOT NULL,
+  `payload` longtext NOT NULL,
+  `status` varchar(255) NOT NULL DEFAULT 'Processed',
+  `error_message` longtext NULL DEFAULT NULL,
+  `created_at` datetime NULL DEFAULT CURRENT_TIMESTAMP,
+  `processed_at` datetime NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `razorpay_webhook_events`
 INSERT INTO `razorpay_webhook_events` (`id`, `event_id`, `event_type`, `payload`, `status`, `error_message`, `created_at`, `processed_at`) VALUES
@@ -1026,13 +1385,20 @@ INSERT INTO `razorpay_webhook_events` (`id`, `event_id`, `event_type`, `payload`
 -- Table structure for `sessions`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `sessions`;
-CREATE TABLE `sessions` (`id` varchar(255) not null, `user_id` int(11), `ip_address` varchar(255), `user_agent` longtext, `payload` longtext not null, `last_activity` int(11) not null, primary key (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `sessions` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `user_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `ip_address` varchar(255) NULL DEFAULT NULL,
+  `user_agent` longtext NULL DEFAULT NULL,
+  `payload` longtext NOT NULL,
+  `last_activity` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `sessions`
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
 ('Y55i4wldXIGJB7xk6XRBJTbJTxjPVuqWxxHdAQ7k', NULL, '127.0.0.1', 'curl/8.13.0', 'eyJfdG9rZW4iOiJBMERjWFVqdEg0b3VMR3J0dDNtdXhNaW1oUENqNnpNWXNkUFkzUktDIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwIiwicm91dGUiOiJob21lIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfX0=', 1793452153),
 ('XWy4wtkavqslitLK1478tPAxHKgVZyIC7VI8ZTPE', NULL, '127.0.0.1', 'curl/8.13.0', 'eyJfdG9rZW4iOiJpS2FBTGwyMjc1VzN1UnVaVXFDZWhwRzh5RUpBS2tVWkNiNXRLWWFhIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==', 1793452177),
-('UMW9OQU1tbSUShFDqq1rQvjvKSt1QLtvp4AOHTNK', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJqSE8wMzU1bnVIQUc4WmtKaURmbDBvVkNxWUk1VVUzTEl1SmpveFhPIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDAwXC9hZG1pblwvd2hhdHNhcHBcL3FyLXN0YXR1cyIsInJvdXRlIjoiYWRtaW4ud2hhdHNhcHAucXItc3RhdHVzIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjF9', 1793456765),
+('UMW9OQU1tbSUShFDqq1rQvjvKSt1QLtvp4AOHTNK', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJqSE8wMzU1bnVIQUc4WmtKaURmbDBvVkNxWUk1VVUzTEl1SmpveFhPIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDAwXC9hZG1pblwvd2hhdHNhcHBcL3FyLXN0YXR1cyIsInJvdXRlIjoiYWRtaW4ud2hhdHNhcHAucXItc3RhdHVzIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjF9', 1793458619),
 ('zWXtt4RX2Qv3mDgUMOdPcAuDsFfjpfLC8dq9yNs7', NULL, '127.0.0.1', 'curl/8.13.0', 'eyJfdG9rZW4iOiIzMWFNZ204UzVaVTN2MnJ5MjZCaHhMOVE3SnBzMkNScW02TU5TZUY1IiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==', 1793453725),
 ('S6pfVUmN5Zz7Befvec4IidDE3BlvDh6NjGBILd4W', NULL, '127.0.0.1', 'curl/8.13.0', 'eyJfdG9rZW4iOiJtRVlUQ3oyYzNxQlNlbkNJWExhNXZBUGRmU25xcXRrU294Y2czcGtOIiwidXJsIjp7ImludGVuZGVkIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL2FkbWluXC93aGF0c2FwcFwvcXItc3RhdHVzIn0sIl9wcmV2aW91cyI6eyJ1cmwiOiJodHRwOlwvXC8xMjcuMC4wLjE6ODAwMFwvYWRtaW5cL3doYXRzYXBwXC9xci1zdGF0dXMiLCJyb3V0ZSI6ImFkbWluLndoYXRzYXBwLnFyLXN0YXR1cyJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19', 1793455092);
 
@@ -1040,7 +1406,14 @@ INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, 
 -- Table structure for `settings`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `settings`;
-CREATE TABLE `settings` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `key` varchar(255) not null, `value` longtext, `group` varchar(255) not null default 'general', `created_at` datetime, `updated_at` datetime) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `settings` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `key` varchar(255) NOT NULL,
+  `value` longtext NULL DEFAULT NULL,
+  `group` varchar(255) NOT NULL DEFAULT 'general',
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `settings`
 INSERT INTO `settings` (`id`, `key`, `value`, `group`, `created_at`, `updated_at`) VALUES
@@ -1084,13 +1457,47 @@ INSERT INTO `settings` (`id`, `key`, `value`, `group`, `created_at`, `updated_at
 -- Table structure for `third_party_payments`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `third_party_payments`;
-CREATE TABLE `third_party_payments` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `vehicle_id` int(11) not null, `booking_id` int(11), `amount` decimal(12,2) not null, `payment_date` date not null, `payment_method` varchar(255) not null default 'UPI', `reference_number` varchar(255), `notes` longtext, `recorded_by` int(11), `created_at` datetime, `updated_at` datetime, foreign key(`vehicle_id`) references `vehicles`(`id`) on delete cascade, foreign key(`booking_id`) references `bookings`(`id`) on delete set null, foreign key(`recorded_by`) references `users`(`id`) on delete set null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `third_party_payments` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `vehicle_id` bigint(20) UNSIGNED NOT NULL,
+  `booking_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `amount` decimal(12,2) NOT NULL,
+  `payment_date` date NOT NULL,
+  `payment_method` varchar(255) NOT NULL DEFAULT 'UPI',
+  `reference_number` varchar(255) NULL DEFAULT NULL,
+  `notes` longtext NULL DEFAULT NULL,
+  `recorded_by` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -------------------------------------------------------------
 -- Table structure for `tour_packages`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `tour_packages`;
-CREATE TABLE `tour_packages` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `name` varchar(255) not null, `slug` varchar(255) not null, `description` longtext, `route` varchar(255), `duration` varchar(255) not null default '1 Day', `duration_days` int(11) not null default '1', `destinations` longtext, `applicable_vehicles` longtext, `sedan_price` decimal(12,2), `ertiga_price` decimal(12,2), `innova_price` decimal(12,2), `terms` longtext, `is_active` tinyint(1) not null default '1', `created_at` datetime, `updated_at` datetime, `route_distance_km` decimal(12,2), `route_duration_text` varchar(255), `route_legs` longtext, `route_geometry` longtext, `route_locations` longtext) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `tour_packages` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `name` varchar(255) NOT NULL,
+  `slug` varchar(255) NOT NULL,
+  `description` longtext NULL DEFAULT NULL,
+  `route` varchar(255) NULL DEFAULT NULL,
+  `duration` varchar(255) NOT NULL DEFAULT '1 Day',
+  `duration_days` int(11) NOT NULL DEFAULT '1',
+  `destinations` longtext NULL DEFAULT NULL,
+  `applicable_vehicles` longtext NULL DEFAULT NULL,
+  `sedan_price` decimal(12,2) NULL DEFAULT NULL,
+  `ertiga_price` decimal(12,2) NULL DEFAULT NULL,
+  `innova_price` decimal(12,2) NULL DEFAULT NULL,
+  `terms` longtext NULL DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL,
+  `route_distance_km` decimal(12,2) NULL DEFAULT NULL,
+  `route_duration_text` varchar(255) NULL DEFAULT NULL,
+  `route_legs` longtext NULL DEFAULT NULL,
+  `route_geometry` longtext NULL DEFAULT NULL,
+  `route_locations` longtext NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `tour_packages`
 INSERT INTO `tour_packages` (`id`, `name`, `slug`, `description`, `route`, `duration`, `duration_days`, `destinations`, `applicable_vehicles`, `sedan_price`, `ertiga_price`, `innova_price`, `terms`, `is_active`, `created_at`, `updated_at`, `route_distance_km`, `route_duration_text`, `route_legs`, `route_geometry`, `route_locations`) VALUES
@@ -1102,7 +1509,26 @@ INSERT INTO `tour_packages` (`id`, `name`, `slug`, `description`, `route`, `dura
 -- Table structure for `trips`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `trips`;
-CREATE TABLE `trips` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `booking_id` int(11) not null, `vehicle_id` int(11), `driver_id` int(11), `start_odometer` int(11), `end_odometer` int(11), `status` varchar(255) not null DEFAULT 'Booked', `started_at` datetime, `completed_at` datetime, `route_notes` longtext, `created_at` datetime, `updated_at` datetime, `trip_status` varchar(255) not null DEFAULT 'Scheduled', `notes` longtext, `journey_status` varchar(255) not null default 'Scheduled', `closed_at` datetime, `closed_by` int(11), `closure_reason` longtext, foreign key(`driver_id`) references drivers(`id`) on delete set null on update no action, foreign key(`vehicle_id`) references vehicles(`id`) on delete set null on update no action, foreign key(`booking_id`) references bookings(`id`) on delete cascade on update no action, foreign key(`closed_by`) references `users`(`id`) on delete set null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `trips` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `booking_id` bigint(20) UNSIGNED NOT NULL,
+  `vehicle_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `driver_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `start_odometer` int(11) NULL DEFAULT NULL,
+  `end_odometer` int(11) NULL DEFAULT NULL,
+  `status` varchar(255) NOT NULL DEFAULT 'Booked',
+  `started_at` datetime NULL DEFAULT NULL,
+  `completed_at` datetime NULL DEFAULT NULL,
+  `route_notes` longtext NULL DEFAULT NULL,
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL,
+  `trip_status` varchar(255) NOT NULL DEFAULT 'Scheduled',
+  `notes` longtext NULL DEFAULT NULL,
+  `journey_status` varchar(255) NOT NULL DEFAULT 'Scheduled',
+  `closed_at` datetime NULL DEFAULT NULL,
+  `closed_by` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `closure_reason` longtext NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `trips`
 INSERT INTO `trips` (`id`, `booking_id`, `vehicle_id`, `driver_id`, `start_odometer`, `end_odometer`, `status`, `started_at`, `completed_at`, `route_notes`, `created_at`, `updated_at`, `trip_status`, `notes`, `journey_status`, `closed_at`, `closed_by`, `closure_reason`) VALUES
@@ -1118,7 +1544,20 @@ INSERT INTO `trips` (`id`, `booking_id`, `vehicle_id`, `driver_id`, `start_odome
 -- Table structure for `users`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `users`;
-CREATE TABLE `users` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `name` varchar(255) not null, `email` varchar(255) not null, `phone` varchar(255), `role` varchar(255) not null default 'customer', `is_active` tinyint(1) not null default '1', `avatar` varchar(255), `email_verified_at` datetime, `password` varchar(255) not null, `remember_token` varchar(255), `created_at` datetime, `updated_at` datetime) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `users` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `name` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `phone` varchar(255) NULL DEFAULT NULL,
+  `role` varchar(255) NOT NULL DEFAULT 'customer',
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `avatar` varchar(255) NULL DEFAULT NULL,
+  `email_verified_at` datetime NULL DEFAULT NULL,
+  `password` varchar(255) NOT NULL,
+  `remember_token` varchar(255) NULL DEFAULT NULL,
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `users`
 INSERT INTO `users` (`id`, `name`, `email`, `phone`, `role`, `is_active`, `avatar`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES
@@ -1168,7 +1607,21 @@ INSERT INTO `users` (`id`, `name`, `email`, `phone`, `role`, `is_active`, `avata
 -- Table structure for `vehicle_categories`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `vehicle_categories`;
-CREATE TABLE `vehicle_categories` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `code` varchar(255) not null, `name` varchar(255) not null, `display_name` varchar(255), `description` longtext, `default_seating_capacity` int(11) not null default '4', `min_seating_capacity` int(11) not null default '1', `max_seating_capacity` int(11) not null default '60', `is_capacity_configurable` tinyint(1) not null default '0', `is_active` tinyint(1) not null default '1', `sort_order` int(11) not null default '0', `created_at` datetime, `updated_at` datetime) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `vehicle_categories` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `code` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `display_name` varchar(255) NULL DEFAULT NULL,
+  `description` longtext NULL DEFAULT NULL,
+  `default_seating_capacity` int(11) NOT NULL DEFAULT '4',
+  `min_seating_capacity` int(11) NOT NULL DEFAULT '1',
+  `max_seating_capacity` int(11) NOT NULL DEFAULT '60',
+  `is_capacity_configurable` tinyint(1) NOT NULL DEFAULT '0',
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `sort_order` int(11) NOT NULL DEFAULT '0',
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `vehicle_categories`
 INSERT INTO `vehicle_categories` (`id`, `code`, `name`, `display_name`, `description`, `default_seating_capacity`, `min_seating_capacity`, `max_seating_capacity`, `is_capacity_configurable`, `is_active`, `sort_order`, `created_at`, `updated_at`) VALUES
@@ -1189,7 +1642,17 @@ INSERT INTO `vehicle_categories` (`id`, `code`, `name`, `display_name`, `descrip
 -- Table structure for `vehicle_models`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `vehicle_models`;
-CREATE TABLE `vehicle_models` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `vehicle_category_id` int(11) not null, `name` varchar(255) not null, `brand` varchar(255), `default_seating_capacity` int(11), `is_active` tinyint(1) not null default '1', `sort_order` int(11) not null default '0', `created_at` datetime, `updated_at` datetime, foreign key(`vehicle_category_id`) references `vehicle_categories`(`id`) on delete cascade) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `vehicle_models` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `vehicle_category_id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `brand` varchar(255) NULL DEFAULT NULL,
+  `default_seating_capacity` int(11) NULL DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `sort_order` int(11) NOT NULL DEFAULT '0',
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `vehicle_models`
 INSERT INTO `vehicle_models` (`id`, `vehicle_category_id`, `name`, `brand`, `default_seating_capacity`, `is_active`, `sort_order`, `created_at`, `updated_at`) VALUES
@@ -1209,7 +1672,36 @@ INSERT INTO `vehicle_models` (`id`, `vehicle_category_id`, `name`, `brand`, `def
 -- Table structure for `vehicles`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `vehicles`;
-CREATE TABLE `vehicles` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `name` varchar(255) not null, `registration_number` varchar(255) not null, `vehicle_type` varchar(255) not null, `seating_capacity` int(11) not null DEFAULT '4', `ac_non_ac` varchar(255) not null DEFAULT 'AC', `per_km_rate` decimal(12,2), `per_hour_rate` decimal(12,2), `status` varchar(255) not null DEFAULT 'Available', `image` varchar(255), `notes` longtext, `created_at` datetime, `updated_at` datetime, `insurance_number` varchar(255), `insurance_expiry` date, `fitness_expiry` date, `permit_expiry` date, `puc_expiry` date, `is_third_party` tinyint(1) not null DEFAULT '0', `vendor_name` varchar(255), `vendor_phone` varchar(255), `vendor_email` varchar(255), `vendor_agreed_amount` decimal(12,2), `vendor_paid_amount` decimal(12,2) not null DEFAULT '0', `vendor_balance_amount` decimal(12,2) not null DEFAULT '0', `vendor_payment_status` varchar(255) not null DEFAULT 'Pending', `vehicle_category_id` int(11), `vehicle_model_id` int(11), foreign key(`vehicle_category_id`) references `vehicle_categories`(`id`) on delete set null, foreign key(`vehicle_model_id`) references `vehicle_models`(`id`) on delete set null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `vehicles` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `name` varchar(255) NOT NULL,
+  `registration_number` varchar(255) NOT NULL,
+  `vehicle_type` varchar(255) NOT NULL,
+  `seating_capacity` int(11) NOT NULL DEFAULT '4',
+  `ac_non_ac` varchar(255) NOT NULL DEFAULT 'AC',
+  `per_km_rate` decimal(12,2) NULL DEFAULT NULL,
+  `per_hour_rate` decimal(12,2) NULL DEFAULT NULL,
+  `status` varchar(255) NOT NULL DEFAULT 'Available',
+  `image` varchar(255) NULL DEFAULT NULL,
+  `notes` longtext NULL DEFAULT NULL,
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL,
+  `insurance_number` varchar(255) NULL DEFAULT NULL,
+  `insurance_expiry` date NULL DEFAULT NULL,
+  `fitness_expiry` date NULL DEFAULT NULL,
+  `permit_expiry` date NULL DEFAULT NULL,
+  `puc_expiry` date NULL DEFAULT NULL,
+  `is_third_party` tinyint(1) NOT NULL DEFAULT '0',
+  `vendor_name` varchar(255) NULL DEFAULT NULL,
+  `vendor_phone` varchar(255) NULL DEFAULT NULL,
+  `vendor_email` varchar(255) NULL DEFAULT NULL,
+  `vendor_agreed_amount` decimal(12,2) NULL DEFAULT NULL,
+  `vendor_paid_amount` decimal(12,2) NOT NULL DEFAULT '0',
+  `vendor_balance_amount` decimal(12,2) NOT NULL DEFAULT '0',
+  `vendor_payment_status` varchar(255) NOT NULL DEFAULT 'Pending',
+  `vehicle_category_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `vehicle_model_id` bigint(20) UNSIGNED NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `vehicles`
 INSERT INTO `vehicles` (`id`, `name`, `registration_number`, `vehicle_type`, `seating_capacity`, `ac_non_ac`, `per_km_rate`, `per_hour_rate`, `status`, `image`, `notes`, `created_at`, `updated_at`, `insurance_number`, `insurance_expiry`, `fitness_expiry`, `permit_expiry`, `puc_expiry`, `is_third_party`, `vendor_name`, `vendor_phone`, `vendor_email`, `vendor_agreed_amount`, `vendor_paid_amount`, `vendor_balance_amount`, `vendor_payment_status`, `vehicle_category_id`, `vehicle_model_id`) VALUES
@@ -1227,7 +1719,19 @@ INSERT INTO `vehicles` (`id`, `name`, `registration_number`, `vehicle_type`, `se
 -- Table structure for `whatsapp_logs`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `whatsapp_logs`;
-CREATE TABLE `whatsapp_logs` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `event_key` varchar(255) not null, `recipient_type` varchar(255) not null, `to_number` varchar(255) not null, `message` longtext not null, `status` varchar(255) not null default 'pending', `response` longtext, `related_type` varchar(255), `related_id` int(11), `created_at` datetime, `updated_at` datetime) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `whatsapp_logs` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `event_key` varchar(255) NOT NULL,
+  `recipient_type` varchar(255) NOT NULL,
+  `to_number` varchar(255) NOT NULL,
+  `message` longtext NOT NULL,
+  `status` varchar(255) NOT NULL DEFAULT 'pending',
+  `response` longtext NULL DEFAULT NULL,
+  `related_type` varchar(255) NULL DEFAULT NULL,
+  `related_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `whatsapp_logs`
 INSERT INTO `whatsapp_logs` (`id`, `event_key`, `recipient_type`, `to_number`, `message`, `status`, `response`, `related_type`, `related_id`, `created_at`, `updated_at`) VALUES
@@ -1313,7 +1817,18 @@ INSERT INTO `whatsapp_logs` (`id`, `event_key`, `recipient_type`, `to_number`, `
 -- Table structure for `whatsapp_templates`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `whatsapp_templates`;
-CREATE TABLE `whatsapp_templates` (`id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, `event_key` varchar(255) not null, `event_label` varchar(255) not null, `template_body` longtext not null, `is_active` tinyint(1) not null default '1', `send_to_customer` tinyint(1) not null default '1', `send_to_admin` tinyint(1) not null default '1', `available_variables` longtext, `created_at` datetime, `updated_at` datetime) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `whatsapp_templates` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `event_key` varchar(255) NOT NULL,
+  `event_label` varchar(255) NOT NULL,
+  `template_body` longtext NOT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `send_to_customer` tinyint(1) NOT NULL DEFAULT '1',
+  `send_to_admin` tinyint(1) NOT NULL DEFAULT '1',
+  `available_variables` longtext NULL DEFAULT NULL,
+  `created_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `whatsapp_templates`
 INSERT INTO `whatsapp_templates` (`id`, `event_key`, `event_label`, `template_body`, `is_active`, `send_to_customer`, `send_to_admin`, `available_variables`, `created_at`, `updated_at`) VALUES
@@ -1388,5 +1903,82 @@ CREATE INDEX idx_payments_booking_id ON payments(booking_id);
 CREATE INDEX idx_bookings_razorpay_order ON bookings(razorpay_order_id);
 CREATE INDEX idx_webhook_event_id ON razorpay_webhook_events(event_id);
 
+
+-- -------------------------------------------------------------
+-- Foreign Key Constraints
+-- -------------------------------------------------------------
+ALTER TABLE `booking_status_histories`
+  ADD CONSTRAINT `fk_booking_status_histories_changed_by_1` FOREIGN KEY (`changed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_booking_status_histories_booking_id_2` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE;
+
+ALTER TABLE `bookings`
+  ADD CONSTRAINT `fk_bookings_vehicle_model_id_1` FOREIGN KEY (`vehicle_model_id`) REFERENCES `vehicle_models` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_bookings_vehicle_category_id_2` FOREIGN KEY (`vehicle_category_id`) REFERENCES `vehicle_categories` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_bookings_rate_vehicle_price_id_3` FOREIGN KEY (`rate_vehicle_price_id`) REFERENCES `rate_vehicle_prices` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_bookings_driver_id_4` FOREIGN KEY (`driver_id`) REFERENCES `drivers` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_bookings_vehicle_id_5` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_bookings_customer_id_6` FOREIGN KEY (`customer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_bookings_cancelled_by_7` FOREIGN KEY (`cancelled_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_bookings_tour_package_id_8` FOREIGN KEY (`tour_package_id`) REFERENCES `tour_packages` (`id`) ON DELETE SET NULL;
+
+ALTER TABLE `complaints`
+  ADD CONSTRAINT `fk_complaints_resolved_by_1` FOREIGN KEY (`resolved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_complaints_vehicle_id_2` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_complaints_driver_id_3` FOREIGN KEY (`driver_id`) REFERENCES `drivers` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_complaints_booking_id_4` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE SET NULL;
+
+ALTER TABLE `customers`
+  ADD CONSTRAINT `fk_customers_user_id_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+ALTER TABLE `drivers`
+  ADD CONSTRAINT `fk_drivers_assigned_vehicle_id_1` FOREIGN KEY (`assigned_vehicle_id`) REFERENCES `vehicles` (`id`) ON DELETE SET NULL;
+
+ALTER TABLE `enquiries`
+  ADD CONSTRAINT `fk_enquiries_converted_booking_id_1` FOREIGN KEY (`converted_booking_id`) REFERENCES `bookings` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_enquiries_assigned_to_2` FOREIGN KEY (`assigned_to`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+ALTER TABLE `expenses`
+  ADD CONSTRAINT `fk_expenses_entered_by_1` FOREIGN KEY (`entered_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_expenses_trip_id_2` FOREIGN KEY (`trip_id`) REFERENCES `trips` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_expenses_booking_id_3` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE SET NULL;
+
+ALTER TABLE `feedback`
+  ADD CONSTRAINT `fk_feedback_booking_id_1` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_feedback_user_id_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+ALTER TABLE `invoices`
+  ADD CONSTRAINT `fk_invoices_customer_id_1` FOREIGN KEY (`customer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_invoices_booking_id_2` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE;
+
+ALTER TABLE `notifications`
+  ADD CONSTRAINT `fk_notifications_user_id_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+ALTER TABLE `payments`
+  ADD CONSTRAINT `fk_payments_customer_id_1` FOREIGN KEY (`customer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_payments_booking_id_2` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE;
+
+ALTER TABLE `pickup_locations`
+  ADD CONSTRAINT `fk_pickup_locations_created_by_1` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+ALTER TABLE `rate_vehicle_prices`
+  ADD CONSTRAINT `fk_rate_vehicle_prices_rate_route_id_1` FOREIGN KEY (`rate_route_id`) REFERENCES `rate_routes` (`id`) ON DELETE CASCADE;
+
+ALTER TABLE `third_party_payments`
+  ADD CONSTRAINT `fk_third_party_payments_recorded_by_1` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_third_party_payments_booking_id_2` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_third_party_payments_vehicle_id_3` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`) ON DELETE CASCADE;
+
+ALTER TABLE `trips`
+  ADD CONSTRAINT `fk_trips_closed_by_1` FOREIGN KEY (`closed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_trips_booking_id_2` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_trips_vehicle_id_3` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_trips_driver_id_4` FOREIGN KEY (`driver_id`) REFERENCES `drivers` (`id`) ON DELETE SET NULL;
+
+ALTER TABLE `vehicle_models`
+  ADD CONSTRAINT `fk_vehicle_models_vehicle_category_id_1` FOREIGN KEY (`vehicle_category_id`) REFERENCES `vehicle_categories` (`id`) ON DELETE CASCADE;
+
+ALTER TABLE `vehicles`
+  ADD CONSTRAINT `fk_vehicles_vehicle_model_id_1` FOREIGN KEY (`vehicle_model_id`) REFERENCES `vehicle_models` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_vehicles_vehicle_category_id_2` FOREIGN KEY (`vehicle_category_id`) REFERENCES `vehicle_categories` (`id`) ON DELETE SET NULL;
 
 SET FOREIGN_KEY_CHECKS = 1;
