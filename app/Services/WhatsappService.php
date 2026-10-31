@@ -51,26 +51,30 @@ class WhatsappService
         ?string $customerPhone = null,
         mixed $related = null
     ): void {
-        if (! $this->enabled || empty($this->baseUrl)) {
-            return;
-        }
+        try {
+            if (! $this->enabled || empty($this->baseUrl)) {
+                return;
+            }
 
-        $template = WhatsappTemplate::getTemplate($eventKey);
-        if (! $template) {
-            return;
-        }
+            $template = WhatsappTemplate::getTemplate($eventKey);
+            if (! $template) {
+                return;
+            }
 
-        $message = $this->renderTemplate($template->template_body, $variables);
+            $message = $this->renderTemplate($template->template_body, $variables);
 
-        // Send to customer
-        if ($template->send_to_customer && $customerPhone) {
-            $this->dispatch($eventKey, 'customer', $customerPhone, $message, $related);
-        }
+            // Send to customer
+            if ($template->send_to_customer && $customerPhone) {
+                $this->dispatch($eventKey, 'customer', $customerPhone, $message, $related);
+            }
 
-        // Send to admin (same message for confirmation)
-        if ($template->send_to_admin && $this->adminNumber) {
-            $adminMessage = "📢 *[ADMIN COPY]* — {$template->event_label}\n\n{$message}";
-            $this->dispatch($eventKey, 'admin', $this->adminNumber, $adminMessage, $related);
+            // Send to admin (same message for confirmation)
+            if ($template->send_to_admin && $this->adminNumber) {
+                $adminMessage = "📢 *[ADMIN COPY]* — {$template->event_label}\n\n{$message}";
+                $this->dispatch($eventKey, 'admin', $this->adminNumber, $adminMessage, $related);
+            }
+        } catch (\Throwable $e) {
+            Log::warning("WhatsApp sendEvent failed for event '{$eventKey}': ".$e->getMessage());
         }
     }
 
@@ -126,13 +130,38 @@ class WhatsappService
         $driver = $booking->driver;
         $vehicle = $booking->vehicle;
 
+        $formatDate = function ($dt) {
+            if (! $dt) {
+                return '';
+            }
+            if ($dt instanceof \DateTimeInterface) {
+                return $dt->format('d M Y');
+            }
+            try {
+                return Carbon::parse($dt)->format('d M Y');
+            } catch (\Throwable) {
+                return (string) $dt;
+            }
+        };
+
+        $formatTime = function ($tm) {
+            if (! $tm) {
+                return '';
+            }
+            try {
+                return Carbon::parse($tm)->format('h:i A');
+            } catch (\Throwable) {
+                return (string) $tm;
+            }
+        };
+
         return [
             'customer_name' => $customer?->name ?? 'Valued Customer',
             'booking_id' => $booking->booking_id,
             'pickup' => $booking->pickup_location,
             'destination' => $booking->destination,
-            'travel_date' => $booking->travel_date ? Carbon::parse($booking->travel_date)->format('d M Y') : '',
-            'travel_time' => $booking->travel_time ? Carbon::parse($booking->travel_time)->format('h:i A') : '',
+            'travel_date' => $formatDate($booking->travel_date),
+            'travel_time' => $formatTime($booking->travel_time),
             'vehicle_category' => $booking->vehicle_category ?? 'TBD',
             'total_amount' => number_format((float) $booking->total_amount, 0),
             'paid_amount' => number_format((float) $booking->paid_amount, 0),
@@ -140,7 +169,7 @@ class WhatsappService
             'payment_status' => $booking->payment_status ?? 'Pending',
             'booking_status' => $booking->booking_status,
             'driver_name' => $driver?->name ?? 'To be assigned',
-            'driver_phone' => $driver?->phone ?? '',
+            'driver_phone' => $driver?->mobile ?? $driver?->phone ?? '',
             'vehicle_name' => $vehicle?->name ?? ($booking->vehicle_category ?? 'TBD'),
             'vehicle_number' => $vehicle?->registration_number ?? '',
             'company_phone' => Setting::get('phone_primary') ?? '',

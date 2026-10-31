@@ -166,6 +166,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Advance Booking Calendar
     Route::get('/calendar', [AdminCalendarController::class, 'index'])->name('calendar.index');
 
+    // Quick Add AJAX endpoints for Vehicles and Categories
+    Route::post('/vehicles/quick', [AdminVehicleController::class, 'storeQuick'])->name('vehicles.quick');
+    Route::post('/vehicle-categories/quick', [AdminVehicleCategoryController::class, 'storeQuick'])->name('vehicle-categories.quick');
+    Route::post('/vehicle-models/quick', [AdminVehicleCategoryController::class, 'storeModelQuick'])->name('vehicle-categories.models.quick');
+
     // Vehicles CRUD & Vendor Payments
     Route::resource('vehicles', AdminVehicleController::class);
     Route::post('/vehicles/{vehicle}/payments', [AdminVehicleController::class, 'storeThirdPartyPayment'])->name('vehicles.payments.store');

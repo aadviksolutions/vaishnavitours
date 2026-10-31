@@ -15,9 +15,10 @@ use Illuminate\View\View;
 class AdminRateController extends Controller
 {
     private const CATEGORIES = [
-        'airport' => 'Quick Airport Booking',
+        'oneway' => 'One-Way Trip',
         'outstation' => 'Outstation Route',
         'round_trip' => 'Round Trip Per KM',
+        'airport' => 'Quick Airport Booking',
         'local_8h_80km' => 'Local Rental 8 Hours / 80 KM',
         'local_4h_40km' => 'Local Rental 4 Hours / 40 KM',
     ];
@@ -86,8 +87,8 @@ class AdminRateController extends Controller
 
         $data = $request->validate([
             'category' => ['required', Rule::in(array_keys(self::CATEGORIES))],
-            'origin' => [Rule::requiredIf(in_array($category, ['airport', 'outstation'], true)), 'nullable', 'string', 'max:255'],
-            'destination' => [Rule::requiredIf(in_array($category, ['airport', 'outstation'], true)), 'nullable', 'string', 'max:255'],
+            'origin' => [Rule::requiredIf(in_array($category, ['airport', 'outstation', 'oneway'], true)), 'nullable', 'string', 'max:255'],
+            'destination' => [Rule::requiredIf(in_array($category, ['airport', 'outstation', 'oneway'], true)), 'nullable', 'string', 'max:255'],
             'km_limit' => ['nullable', 'integer', 'min:0'],
             'included_hours' => ['nullable', 'numeric', 'min:0'],
             'return_same_rate' => ['sometimes', 'boolean'],

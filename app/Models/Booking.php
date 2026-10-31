@@ -22,10 +22,10 @@ class Booking extends Model
 
     public const WORKFLOW_TRANSITIONS = [
         'Pending' => ['Confirmed', 'Cancelled'],
-        'Confirmed' => ['Vehicle Assigned', 'Cancelled'],
-        'Vehicle Assigned' => ['Driver Assigned', 'Cancelled'],
-        'Driver Assigned' => ['Trip Started', 'Cancelled'],
-        'Trip Started' => ['On The Way', 'Cancelled'],
+        'Confirmed' => ['Vehicle Assigned', 'Driver Assigned', 'Trip Started', 'Completed', 'Cancelled'],
+        'Vehicle Assigned' => ['Driver Assigned', 'Trip Started', 'Completed', 'Cancelled'],
+        'Driver Assigned' => ['Trip Started', 'On The Way', 'Completed', 'Cancelled'],
+        'Trip Started' => ['On The Way', 'Completed', 'Cancelled'],
         'On The Way' => ['Completed', 'Cancelled'],
         'Completed' => [],
         'Cancelled' => [],

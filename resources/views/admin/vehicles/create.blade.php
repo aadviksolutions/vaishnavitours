@@ -47,9 +47,15 @@
 
                 <div class="grid grid-2 gap-3 mb-3">
                     <div class="form-group">
-                        <label for="vehicle_category_id" class="form-label">Vehicle Category *</label>
+                        <div class="d-flex justify-between align-center mb-1">
+                            <label for="vehicle_category_id" class="form-label mb-0">Vehicle Category *</label>
+                            <button type="button" onclick="openQuickCategoryModal()" style="background: none; border: none; color: #2563EB; font-weight: 700; font-size: 11px; cursor: pointer; text-decoration: underline; padding: 0;">
+                                + Add Category
+                            </button>
+                        </div>
                         <select name="vehicle_category_id" id="vehicle_category_id" class="form-select" onchange="onAdminCategoryChange()" required>
                             <option value="">-- Select Category --</option>
+                            <option value="new_category" style="font-weight: 800; color: #2563EB; background: #EFF6FF;">➕ + Add New Category</option>
                             @foreach($categories as $cat)
                                 <option value="{{ $cat->id }}" 
                                         data-name="{{ $cat->name }}" 
@@ -66,9 +72,15 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="vehicle_model_id" class="form-label">Vehicle Model Option</label>
+                        <div class="d-flex justify-between align-center mb-1">
+                            <label for="vehicle_model_id" class="form-label mb-0">Vehicle Model Option</label>
+                            <button type="button" onclick="openQuickModelModal()" style="background: none; border: none; color: #2563EB; font-weight: 700; font-size: 11px; cursor: pointer; text-decoration: underline; padding: 0;">
+                                + Add Model
+                            </button>
+                        </div>
                         <select name="vehicle_model_id" id="vehicle_model_id" class="form-select" onchange="onAdminModelChange()">
                             <option value="">-- Optional / Other Model --</option>
+                            <option value="new_model" style="font-weight: 800; color: #2563EB; background: #EFF6FF;">➕ + Add New Model</option>
                         </select>
                     </div>
                 </div>
@@ -235,11 +247,242 @@
     </div>
 </form>
 
+<!-- Quick Add Category Modal -->
+<div id="quickCategoryModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10000; align-items: center; justify-content: center; padding: 1rem;">
+    <div style="background: #fff; border-radius: 8px; width: 100%; max-width: 480px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.25);">
+        <div class="d-flex justify-between align-center mb-3">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--dark-900);">➕ Add New Vehicle Category</h3>
+            <button type="button" onclick="closeQuickCategoryModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
+        </div>
+        <form id="quickCategoryForm" onsubmit="submitQuickCategory(event)">
+            <div class="mb-3">
+                <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 2px;">Category Name *</label>
+                <input type="text" id="qc_name" class="form-control form-control-sm" placeholder="e.g. Luxury SUV, Mini Bus" required>
+            </div>
+            <div class="grid grid-2 gap-2 mb-3">
+                <div>
+                    <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 2px;">Default Seats *</label>
+                    <input type="number" id="qc_default_capacity" class="form-control form-control-sm" value="4" min="1" max="70" required>
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 2px;">Max Seats (if range)</label>
+                    <input type="number" id="qc_max_capacity" class="form-control form-control-sm" value="4" min="1" max="70">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px; font-weight: 600;">
+                    <input type="checkbox" id="qc_configurable" value="1">
+                    Allow Configurable Seating Capacity
+                </label>
+            </div>
+            <div id="qc_error" style="display: none; color: #dc2626; font-size: 12px; margin-bottom: 10px;"></div>
+            <div class="d-flex justify-end gap-2">
+                <button type="button" onclick="closeQuickCategoryModal()" class="btn btn-outline btn-sm">Cancel</button>
+                <button type="submit" id="qc_submit_btn" class="btn btn-primary btn-sm">Save & Select Category</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Quick Add Model Modal -->
+<div id="quickModelModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10000; align-items: center; justify-content: center; padding: 1rem;">
+    <div style="background: #fff; border-radius: 8px; width: 100%; max-width: 450px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.25);">
+        <div class="d-flex justify-between align-center mb-3">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--dark-900);">➕ Add New Vehicle Model</h3>
+            <button type="button" onclick="closeQuickModelModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
+        </div>
+        <form id="quickModelForm" onsubmit="submitQuickModel(event)">
+            <div class="mb-3">
+                <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 2px;">Model Name *</label>
+                <input type="text" id="qm_name" class="form-control form-control-sm" placeholder="e.g. Innova Hycross, Kia Carens" required>
+            </div>
+            <div class="grid grid-2 gap-2 mb-3">
+                <div>
+                    <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 2px;">Brand / Make</label>
+                    <input type="text" id="qm_brand" class="form-control form-control-sm" placeholder="e.g. Toyota, Kia">
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 2px;">Default Seats</label>
+                    <input type="number" id="qm_capacity" class="form-control form-control-sm" min="1" max="70" placeholder="Optional">
+                </div>
+            </div>
+            <div id="qm_error" style="display: none; color: #dc2626; font-size: 12px; margin-bottom: 10px;"></div>
+            <div class="d-flex justify-end gap-2">
+                <button type="button" onclick="closeQuickModelModal()" class="btn btn-outline btn-sm">Cancel</button>
+                <button type="submit" id="qm_submit_btn" class="btn btn-primary btn-sm">Save & Select Model</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
-    const vehicleCategoriesData = @json($categories);
+    let vehicleCategoriesData = @json($categories);
+    let lastValidCategory = '';
+    let lastValidModel = '';
+
+    function openQuickCategoryModal() {
+        const modal = document.getElementById('quickCategoryModal');
+        modal.style.display = 'flex';
+        document.getElementById('qc_name').focus();
+    }
+
+    function closeQuickCategoryModal() {
+        const modal = document.getElementById('quickCategoryModal');
+        modal.style.display = 'none';
+        document.getElementById('qc_error').style.display = 'none';
+        const catSelect = document.getElementById('vehicle_category_id');
+        if (catSelect.value === 'new_category') {
+            catSelect.value = lastValidCategory;
+        }
+    }
+
+    function openQuickModelModal() {
+        const catSelect = document.getElementById('vehicle_category_id');
+        if (!catSelect.value || catSelect.value === 'new_category') {
+            alert('Please select a valid Vehicle Category first.');
+            return;
+        }
+        const modal = document.getElementById('quickModelModal');
+        modal.style.display = 'flex';
+        document.getElementById('qm_name').focus();
+    }
+
+    function closeQuickModelModal() {
+        const modal = document.getElementById('quickModelModal');
+        modal.style.display = 'none';
+        document.getElementById('qm_error').style.display = 'none';
+        const modelSelect = document.getElementById('vehicle_model_id');
+        if (modelSelect.value === 'new_model') {
+            modelSelect.value = lastValidModel;
+        }
+    }
+
+    async function submitQuickCategory(e) {
+        e.preventDefault();
+        const btn = document.getElementById('qc_submit_btn');
+        const err = document.getElementById('qc_error');
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+        err.style.display = 'none';
+
+        const name = document.getElementById('qc_name').value.trim();
+        const cap = parseInt(document.getElementById('qc_default_capacity').value) || 4;
+        const maxCap = parseInt(document.getElementById('qc_max_capacity').value) || cap;
+        const conf = document.getElementById('qc_configurable').checked ? 1 : 0;
+
+        try {
+            const resp = await fetch('{{ route('admin.vehicle-categories.quick') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: name,
+                    default_seating_capacity: cap,
+                    min_seating_capacity: cap,
+                    max_seating_capacity: maxCap,
+                    is_capacity_configurable: conf
+                })
+            });
+            const data = await resp.json();
+            if (data.success && data.category) {
+                const cat = data.category;
+                vehicleCategoriesData.push(cat);
+                const catSelect = document.getElementById('vehicle_category_id');
+                const opt = document.createElement('option');
+                opt.value = cat.id;
+                opt.dataset.name = cat.name;
+                opt.dataset.capacity = cat.default_seating_capacity;
+                opt.dataset.min = cat.min_seating_capacity;
+                opt.dataset.max = cat.max_seating_capacity;
+                opt.dataset.configurable = cat.is_capacity_configurable ? '1' : '0';
+                opt.textContent = `${cat.name} (${cat.is_capacity_configurable ? 'Configurable ' + cat.min_seating_capacity + '-' + cat.max_seating_capacity + ' Seats' : cat.default_seating_capacity + ' Seats'})`;
+                
+                catSelect.appendChild(opt);
+                catSelect.value = cat.id;
+                lastValidCategory = cat.id;
+                closeQuickCategoryModal();
+                onAdminCategoryChange();
+                alert(`✓ Category '${cat.name}' created and selected successfully!`);
+            } else {
+                err.textContent = data.message || 'Error creating category.';
+                err.style.display = 'block';
+            }
+        } catch (ex) {
+            err.textContent = 'Server error creating category: ' + ex.message;
+            err.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Save & Select Category';
+        }
+    }
+
+    async function submitQuickModel(e) {
+        e.preventDefault();
+        const catSelect = document.getElementById('vehicle_category_id');
+        const catId = catSelect.value;
+        const btn = document.getElementById('qm_submit_btn');
+        const err = document.getElementById('qm_error');
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+        err.style.display = 'none';
+
+        const name = document.getElementById('qm_name').value.trim();
+        const brand = document.getElementById('qm_brand').value.trim();
+        const cap = document.getElementById('qm_capacity').value;
+
+        try {
+            const resp = await fetch('{{ route('admin.vehicle-categories.models.quick') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    vehicle_category_id: catId,
+                    name: name,
+                    brand: brand,
+                    default_seating_capacity: cap ? parseInt(cap) : null
+                })
+            });
+            const data = await resp.json();
+            if (data.success && data.model) {
+                const m = data.model;
+                const modelSelect = document.getElementById('vehicle_model_id');
+                const opt = document.createElement('option');
+                opt.value = m.id;
+                opt.textContent = m.name + (m.brand ? ` (${m.brand})` : '');
+                opt.dataset.name = m.name;
+                opt.dataset.capacity = m.default_seating_capacity || '';
+                modelSelect.appendChild(opt);
+                modelSelect.value = m.id;
+                lastValidModel = m.id;
+                closeQuickModelModal();
+                onAdminModelChange();
+                alert(`✓ Model '${m.name}' created and selected successfully!`);
+            } else {
+                err.textContent = data.message || 'Error creating model.';
+                err.style.display = 'block';
+            }
+        } catch (ex) {
+            err.textContent = 'Server error creating model: ' + ex.message;
+            err.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Save & Select Model';
+        }
+    }
 
     function onAdminCategoryChange() {
         const catSelect = document.getElementById('vehicle_category_id');
+        if (catSelect.value === 'new_category') {
+            openQuickCategoryModal();
+            return;
+        }
+        lastValidCategory = catSelect.value;
         const modelSelect = document.getElementById('vehicle_model_id');
         const typeHidden = document.getElementById('vehicle_type');
         const capInput = document.getElementById('seating_capacity');
@@ -278,7 +521,7 @@
         // Populate models
         const catObj = vehicleCategoriesData.find(c => c.id === catId);
         const currentModelVal = modelSelect.value;
-        modelSelect.innerHTML = '<option value="">-- Optional / Other Model --</option>';
+        modelSelect.innerHTML = '<option value="">-- Optional / Other Model --</option><option value="new_model" style="font-weight: 800; color: #2563EB; background: #EFF6FF;">➕ + Add New Model</option>';
         if (catObj && catObj.active_models && catObj.active_models.length > 0) {
             catObj.active_models.forEach(m => {
                 const opt = document.createElement('option');
@@ -294,6 +537,11 @@
 
     function onAdminModelChange() {
         const modelSelect = document.getElementById('vehicle_model_id');
+        if (modelSelect.value === 'new_model') {
+            openQuickModelModal();
+            return;
+        }
+        lastValidModel = modelSelect.value;
         const nameInput = document.getElementById('name');
         const capInput = document.getElementById('seating_capacity');
 

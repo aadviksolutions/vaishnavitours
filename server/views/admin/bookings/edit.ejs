@@ -36,14 +36,72 @@
                 <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;"><%- icon('user', { size: 16, class: 'me-1 inline' }) %> Customer & Passenger</h3>
 
                 <div class="form-group mb-3">
-                    <label for="customer_id" class="form-label">Customer *</label>
-                    <select name="customer_id" id="customer_id" class="form-select" required>
-                        <% ((customers) || []).forEach((c, _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>
-                            <option value="<%= c?.id %>" <%= old('customer_id', booking?.customer_id) == c?.id ? 'selected' : '' %>>
-                                <%= c?.name %> (<%- icon('phone', { size: 12, class: 'inline text-slate-500' }) %> <%= c?.phone %> | <%- icon('mail', { size: 12, class: 'inline text-slate-500' }) %> <%= c?.email %>)
-                            </option>
-                        <% }); %>
-                    </select>
+                    <div class="d-flex justify-between align-center mb-1">
+                        <label for="customer_search_input" class="form-label mb-0" style="font-weight: 700;">
+                            Customer *
+                        </label>
+                        <span id="customerCountBadge" class="badge" style="background: #E2E8F0; color: #475569; font-size: 0.75rem; font-weight: 600; padding: 3px 8px; border-radius: 9999px;">
+                            <%= ((customers) || []).length %> Registered
+                        </span>
+                    </div>
+
+                    <!-- Search Input with Icon and Clear Button -->
+                    <div style="position: relative;" class="customer-search-container mb-2">
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <span style="position: absolute; left: 12px; color: var(--slate-400); pointer-events: none; display: flex; align-items: center;">
+                                <%- icon('search', { size: 16 }) %>
+                            </span>
+                            <input type="text" 
+                                   id="customer_search_input" 
+                                   class="form-control" 
+                                   placeholder="🔍 Type Name or Mobile number to switch customer..." 
+                                   autocomplete="off"
+                                   style="padding-left: 38px; padding-right: 36px; height: 42px; border-radius: 8px; font-size: 0.875rem; border: 1.5px solid var(--slate-300);">
+                            <button type="button" 
+                                    id="clear_customer_search" 
+                                    style="display: none; position: absolute; right: 10px; background: transparent; border: none; color: var(--slate-400); cursor: pointer; font-size: 16px; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"
+                                    title="Clear search">✕</button>
+                        </div>
+
+                        <!-- Live Floating Autocomplete Suggestions -->
+                        <div id="customer_search_dropdown" 
+                             style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #ffffff; border: 1px solid var(--slate-200); border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1); max-height: 260px; overflow-y: auto; z-index: 1050;">
+                        </div>
+                    </div>
+
+                    <!-- Selected Customer Confirmation Card -->
+                    <div id="selected_customer_card" style="display: none; background: #F0FDF4; border: 1.5px solid #86EFAC; border-radius: 8px; padding: 10px 14px; margin-bottom: 10px;">
+                        <div class="d-flex justify-between align-center">
+                            <div class="d-flex align-center gap-2">
+                                <span style="background: #16A34A; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0;">✓</span>
+                                <div>
+                                    <div style="font-weight: 700; color: #166534; font-size: 0.875rem;" id="selected_customer_name_display"></div>
+                                    <div style="font-size: 0.775rem; color: #15803D;" id="selected_customer_detail_display"></div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm" id="btn_change_customer" style="font-size: 0.75rem; padding: 3px 10px; background: #DCFCE7; border: 1px solid #86EFAC; color: #166534; border-radius: 6px; font-weight: 600;">
+                                Change
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Customer Select Dropdown -->
+                    <div class="customer-select-wrapper">
+                        <label for="customer_id" class="form-label" style="font-size: 0.75rem; color: var(--slate-500); margin-bottom: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                            Or select from registered customer list:
+                        </label>
+                        <select name="customer_id" id="customer_id" class="form-select" style="border-radius: 8px; font-size: 0.875rem; height: 40px;" required>
+                            <% ((customers) || []).forEach((c, _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>
+                                <option value="<%= c?.id %>" 
+                                        data-name="<%= c?.name %>" 
+                                        data-phone="<%= c?.phone %>" 
+                                        data-email="<%= c?.email || '' %>"
+                                        <%= old('customer_id', booking?.customer_id) == c?.id ? 'selected' : '' %>>
+                                    <%= c?.name %> (<%= c?.phone %><%= c?.email ? ' | ' + c?.email : '' %>)
+                                </option>
+                            <% }); %>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -532,6 +590,319 @@
         }
         setTimeout(() => adminRouteMap.invalidateSize(), 200);
     }
+
+    // Searchable Customer Dropdown & Autocomplete Handler
+    (function initEditCustomerSearchableSelect() {
+        const searchInput = document.getElementById('customer_search_input');
+        const clearBtn = document.getElementById('clear_customer_search');
+        const dropdown = document.getElementById('customer_search_dropdown');
+        const select = document.getElementById('customer_id');
+        const countBadge = document.getElementById('customerCountBadge');
+        const selectedCard = document.getElementById('selected_customer_card');
+        const selectedNameDisplay = document.getElementById('selected_customer_name_display');
+        const selectedDetailDisplay = document.getElementById('selected_customer_detail_display');
+        const btnChange = document.getElementById('btn_change_customer');
+
+        if (!searchInput || !select || !dropdown) return;
+
+        const customers = [];
+        Array.from(select.options).forEach(opt => {
+            if (!opt.value) return;
+            const name = opt.getAttribute('data-name') || opt.text.split('(')[0].trim();
+            const phone = opt.getAttribute('data-phone') || '';
+            const email = opt.getAttribute('data-email') || '';
+            const cleanPhone = (phone || '').replace(/\D/g, '');
+
+            customers.push({
+                id: opt.value,
+                name: name,
+                phone: phone,
+                cleanPhone: cleanPhone,
+                email: email,
+                label: `${name} (${phone}${email ? ' | ' + email : ''})`
+            });
+        });
+
+        let activeIndex = -1;
+        let currentFiltered = [];
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function highlightMatch(text, query) {
+            if (!query || !query.trim()) return escapeHtml(text);
+            const escapedQuery = query.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(`(${escapedQuery})`, 'gi');
+            return escapeHtml(text).replace(regex, '<mark style="background:#FEF08A;color:#854D0E;padding:0 2px;border-radius:2px;font-weight:700;">$1</mark>');
+        }
+
+        function renderDropdown(items, query) {
+            currentFiltered = items;
+            activeIndex = -1;
+            dropdown.innerHTML = '';
+
+            if (items.length === 0) {
+                const noMatch = document.createElement('div');
+                noMatch.style.padding = '14px';
+                noMatch.style.textAlign = 'center';
+                noMatch.style.color = 'var(--slate-500)';
+                noMatch.style.fontSize = '0.85rem';
+                const qSafe = escapeHtml(query || '');
+                noMatch.innerHTML = `<div>No registered customer matches <strong>"${qSafe}"</strong></div>`;
+                dropdown.appendChild(noMatch);
+                dropdown.style.display = 'block';
+                return;
+            }
+
+            const maxDisplay = 15;
+            const displayItems = items.slice(0, maxDisplay);
+
+            displayItems.forEach((c, idx) => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'customer-search-item';
+                itemEl.dataset.id = c.id;
+                itemEl.dataset.index = idx;
+                itemEl.style.cssText = 'padding: 9px 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.15s;';
+
+                const nameHtml = highlightMatch(c.name, query);
+                const phoneHtml = c.phone ? highlightMatch(c.phone, query) : '';
+                const emailHtml = c.email ? `<span style="font-size: 0.75rem; color: #64748b; margin-left: 6px;">${escapeHtml(c.email)}</span>` : '';
+
+                itemEl.innerHTML = `
+                    <div style="flex: 1; min-width: 0; padding-right: 8px;">
+                        <div style="font-weight: 700; font-size: 0.875rem; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            👤 ${nameHtml}
+                        </div>
+                        ${emailHtml ? `<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${emailHtml}</div>` : ''}
+                    </div>
+                    ${phoneHtml ? `
+                    <div style="flex-shrink: 0;">
+                        <span style="background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; padding: 2px 7px; border-radius: 6px; font-size: 0.775rem; font-weight: 700; font-family: monospace;">
+                            📞 ${phoneHtml}
+                        </span>
+                    </div>` : ''}
+                `;
+
+                itemEl.addEventListener('mouseenter', () => {
+                    setActiveIndex(idx);
+                });
+
+                itemEl.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    selectCustomer(c.id);
+                });
+
+                dropdown.appendChild(itemEl);
+            });
+
+            if (items.length > maxDisplay) {
+                const footerEl = document.createElement('div');
+                footerEl.style.cssText = 'padding: 6px 12px; font-size: 0.75rem; color: #64748b; background: #f8fafc; text-align: center; font-style: italic;';
+                footerEl.textContent = `Showing 15 of ${items.length} matching customers. Type more to narrow down.`;
+                dropdown.appendChild(footerEl);
+            }
+
+            dropdown.style.display = 'block';
+        }
+
+        function setActiveIndex(index) {
+            activeIndex = index;
+            const allItems = dropdown.querySelectorAll('.customer-search-item');
+            allItems.forEach((el, idx) => {
+                if (idx === index) {
+                    el.style.background = '#EFF6FF';
+                } else {
+                    el.style.background = '#ffffff';
+                }
+            });
+        }
+
+        function filterCustomers(query) {
+            const trimmed = (query || '').trim().toLowerCase();
+            const cleanQueryDigits = trimmed.replace(/\D/g, '');
+
+            if (!trimmed) {
+                return customers;
+            }
+
+            return customers.filter(c => {
+                const nameMatch = c.name.toLowerCase().includes(trimmed);
+                const emailMatch = c.email.toLowerCase().includes(trimmed);
+                const rawPhoneMatch = c.phone.toLowerCase().includes(trimmed);
+                const digitsMatch = cleanQueryDigits.length > 0 && c.cleanPhone.includes(cleanQueryDigits);
+                return nameMatch || emailMatch || rawPhoneMatch || digitsMatch;
+            });
+        }
+
+        function syncSelectOptions(matchingItems) {
+            const matchingIds = new Set(matchingItems.map(m => String(m.id)));
+            const currentVal = select.value;
+
+            select.innerHTML = '';
+
+            customers.forEach(c => {
+                if (matchingIds.has(String(c.id))) {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.setAttribute('data-name', c.name);
+                    opt.setAttribute('data-phone', c.phone);
+                    opt.setAttribute('data-email', c.email);
+                    opt.textContent = c.label;
+                    if (String(c.id) === String(currentVal)) {
+                        opt.selected = true;
+                    }
+                    select.appendChild(opt);
+                }
+            });
+
+            if (countBadge) {
+                countBadge.textContent = `${matchingItems.length} Available`;
+            }
+        }
+
+        function selectCustomer(id, updateSelect = true) {
+            const c = customers.find(item => String(item.id) === String(id));
+            if (!c) return;
+
+            if (updateSelect) {
+                let opt = select.querySelector(`option[value="${c.id}"]`);
+                if (!opt) {
+                    opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.setAttribute('data-name', c.name);
+                    opt.setAttribute('data-phone', c.phone);
+                    opt.setAttribute('data-email', c.email);
+                    opt.textContent = c.label;
+                    select.appendChild(opt);
+                }
+                select.value = c.id;
+                select.dispatchEvent(new Event('change'));
+            }
+
+            searchInput.value = `${c.name} — ${c.phone}`;
+            if (clearBtn) clearBtn.style.display = 'flex';
+
+            if (selectedCard) {
+                if (selectedNameDisplay) selectedNameDisplay.textContent = c.name;
+                if (selectedDetailDisplay) {
+                    const details = [
+                        c.phone ? `📞 ${c.phone}` : '',
+                        c.email ? `✉️ ${c.email}` : ''
+                    ].filter(Boolean).join('  ·  ');
+                    selectedDetailDisplay.textContent = details;
+                }
+                selectedCard.style.display = 'block';
+            }
+
+            dropdown.style.display = 'none';
+        }
+
+        function clearSelection() {
+            searchInput.value = '';
+            if (clearBtn) clearBtn.style.display = 'none';
+            if (selectedCard) selectedCard.style.display = 'none';
+
+            syncSelectOptions(customers);
+            select.value = '';
+            select.dispatchEvent(new Event('change'));
+
+            renderDropdown(customers.slice(0, 15), '');
+            searchInput.focus();
+        }
+
+        searchInput.addEventListener('input', function() {
+            const q = this.value;
+            if (clearBtn) {
+                clearBtn.style.display = q.length > 0 ? 'flex' : 'none';
+            }
+            const filtered = filterCustomers(q);
+            renderDropdown(filtered, q);
+            syncSelectOptions(filtered);
+        });
+
+        searchInput.addEventListener('focus', function() {
+            const q = this.value;
+            const filtered = filterCustomers(q);
+            renderDropdown(filtered, q);
+        });
+
+        searchInput.addEventListener('keydown', function(e) {
+            if (dropdown.style.display === 'none') {
+                if (e.key === 'ArrowDown') {
+                    const filtered = filterCustomers(this.value);
+                    renderDropdown(filtered, this.value);
+                    e.preventDefault();
+                }
+                return;
+            }
+
+            const visibleCount = currentFiltered.slice(0, 15).length;
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (visibleCount > 0) {
+                    setActiveIndex((activeIndex + 1) % visibleCount);
+                    const activeEl = dropdown.querySelector(`[data-index="${activeIndex}"]`);
+                    if (activeEl) activeEl.scrollIntoView({ block: 'nearest' });
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (visibleCount > 0) {
+                    setActiveIndex((activeIndex - 1 + visibleCount) % visibleCount);
+                    const activeEl = dropdown.querySelector(`[data-index="${activeIndex}"]`);
+                    if (activeEl) activeEl.scrollIntoView({ block: 'nearest' });
+                }
+            } else if (e.key === 'Enter') {
+                if (activeIndex >= 0 && activeIndex < currentFiltered.length) {
+                    e.preventDefault();
+                    selectCustomer(currentFiltered[activeIndex].id);
+                }
+            } else if (e.key === 'Escape') {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                clearSelection();
+            });
+        }
+
+        if (btnChange) {
+            btnChange.addEventListener('click', function(e) {
+                e.preventDefault();
+                clearSelection();
+            });
+        }
+
+        select.addEventListener('change', function() {
+            if (this.value) {
+                selectCustomer(this.value, false);
+            } else {
+                searchInput.value = '';
+                if (clearBtn) clearBtn.style.display = 'none';
+                if (selectedCard) selectedCard.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            const container = searchInput.closest('.customer-search-container');
+            if (container && !container.contains(e.target) && e.target !== btnChange) {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        if (select.value) {
+            selectCustomer(select.value, false);
+        }
+    })();
 </script>
 
 

@@ -8,7 +8,7 @@ use App\Models\Trip;
 use App\Services\BookingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 
 class AdminTripController extends Controller
 {
@@ -112,25 +112,27 @@ class AdminTripController extends Controller
 
         $trip->update($update);
 
-        if ($trip->booking && $trip->booking->booking_status !== $newStatus) {
+        $canonicalStatus = ($newStatus === 'Journey Completed') ? 'Completed' : $newStatus;
+
+        if ($trip->booking && $trip->booking->booking_status !== $canonicalStatus) {
             try {
-                $bookingService->updateStatus($trip->booking, $newStatus, "Trip tracking updated status to {$newStatus}.", Auth::user());
-            } catch (ValidationException $e) {
+                $bookingService->updateStatus($trip->booking, $canonicalStatus, "Trip tracking updated status to {$canonicalStatus}.", Auth::user());
+            } catch (\Throwable $e) {
                 $oldStatus = $trip->booking->booking_status;
-                $trip->booking->update(['booking_status' => $newStatus]);
+                $trip->booking->update(['booking_status' => $canonicalStatus]);
 
                 BookingStatusHistory::create([
                     'booking_id' => $trip->booking_id,
                     'changed_by' => Auth::id(),
                     'old_status' => $oldStatus,
-                    'new_status' => $newStatus,
-                    'remarks' => "Trip console updated status to {$newStatus}.",
-                    'comment' => "Trip console updated status to {$newStatus}.",
+                    'new_status' => $canonicalStatus,
+                    'remarks' => "Trip console updated status to {$canonicalStatus}.",
+                    'comment' => "Trip console updated status to {$canonicalStatus}.",
                     'created_at' => now(),
                 ]);
 
-                if ($newStatus === 'Completed') {
-                    if ($trip->vehicle && $trip->vehicle->status === 'On Trip') {
+                if ($canonicalStatus === 'Completed') {
+                    if ($trip->vehicle && in_array($trip->vehicle->status, ['On Trip', 'Assigned'])) {
                         $trip->vehicle->update(['status' => 'Available']);
                     }
                     if ($trip->driver && in_array($trip->driver->status, ['Assigned', 'On Trip'])) {
@@ -142,45 +144,49 @@ class AdminTripController extends Controller
 
         // Automatic final fare recalculation based on actual odometer distance
         if (($newStatus === 'Completed' || $newStatus === 'Journey Completed') && $data['start_odometer'] !== null && $data['end_odometer'] !== null && $trip->booking) {
-            $startOdo = (int) $data['start_odometer'];
-            $endOdo = (int) $data['end_odometer'];
-            if ($endOdo > $startOdo) {
-                $actualKm = $endOdo - $startOdo;
-                $booking = $trip->booking->fresh();
-                $details = $booking->pricing_details ?? [];
-                $includedKm = (float) ($details['included_km'] ?? $details['distance_km'] ?? 0);
-                $extraRate = isset($details['extra_km_rate']) && $details['extra_km_rate'] !== null && $details['extra_km_rate'] !== ''
-                    ? (float) $details['extra_km_rate']
-                    : null;
+            try {
+                $startOdo = (int) $data['start_odometer'];
+                $endOdo = (int) $data['end_odometer'];
+                if ($endOdo > $startOdo) {
+                    $actualKm = $endOdo - $startOdo;
+                    $booking = $trip->booking->fresh();
+                    $details = is_array($booking->pricing_details) ? $booking->pricing_details : [];
+                    $includedKm = (float) ($details['included_km'] ?? $details['distance_km'] ?? 0);
+                    $extraRate = isset($details['extra_km_rate']) && $details['extra_km_rate'] !== null && $details['extra_km_rate'] !== ''
+                        ? (float) $details['extra_km_rate']
+                        : null;
 
-                if ($includedKm > 0 && $actualKm > $includedKm && empty($details['extra_km_charged'])) {
-                    $extraKm = $actualKm - $includedKm;
-                    if ($extraRate !== null && $extraRate > 0) {
-                        $extraFare = round($extraKm * $extraRate, 2);
+                    if ($includedKm > 0 && $actualKm > $includedKm && empty($details['extra_km_charged'])) {
+                        $extraKm = $actualKm - $includedKm;
+                        if ($extraRate !== null && $extraRate > 0) {
+                            $extraFare = round($extraKm * $extraRate, 2);
 
-                        $details['actual_km'] = $actualKm;
-                        $details['extra_km'] = $extraKm;
-                        $details['extra_km_charge'] = $extraFare;
-                        $details['extra_km_charged'] = true;
+                            $details['actual_km'] = $actualKm;
+                            $details['extra_km'] = $extraKm;
+                            $details['extra_km_charge'] = $extraFare;
+                            $details['extra_km_charged'] = true;
 
-                        $newTotal = round((float) $booking->total_amount + $extraFare, 2);
-                        $newBalance = round($newTotal - (float) $booking->paid_amount, 2);
+                            $newTotal = round((float) $booking->total_amount + $extraFare, 2);
+                            $newBalance = round($newTotal - (float) $booking->paid_amount, 2);
 
-                        $booking->update([
-                            'total_amount' => $newTotal,
-                            'balance_amount' => $newBalance,
-                            'pricing_details' => $details,
-                        ]);
+                            $booking->update([
+                                'total_amount' => $newTotal,
+                                'balance_amount' => $newBalance,
+                                'pricing_details' => $details,
+                            ]);
+                        } else {
+                            $details['actual_km'] = $actualKm;
+                            $details['extra_km'] = $extraKm;
+                            $details['extra_km_unconfigured'] = true;
+                            $booking->update(['pricing_details' => $details]);
+                        }
                     } else {
                         $details['actual_km'] = $actualKm;
-                        $details['extra_km'] = $extraKm;
-                        $details['extra_km_unconfigured'] = true;
                         $booking->update(['pricing_details' => $details]);
                     }
-                } else {
-                    $details['actual_km'] = $actualKm;
-                    $booking->update(['pricing_details' => $details]);
                 }
+            } catch (\Throwable $odoErr) {
+                Log::warning("Odometer calculation skipped for Trip #{$trip->id}: ".$odoErr->getMessage());
             }
         }
 
@@ -192,6 +198,19 @@ class AdminTripController extends Controller
         $booking = $trip->booking;
         $balance = (float) ($booking?->balance_amount ?? 0);
 
+        // If payment collected was provided with the trip close submission, record it
+        if ($booking && $request->filled('payment_collected') && (float) $request->input('payment_collected') > 0) {
+            $collected = (float) $request->input('payment_collected');
+            $newPaid = (float) $booking->paid_amount + $collected;
+            $newBalance = max(0, (float) $booking->total_amount - $newPaid);
+            $booking->update([
+                'paid_amount' => $newPaid,
+                'balance_amount' => $newBalance,
+                'payment_status' => $newBalance <= 0 ? 'Paid' : 'Partial',
+            ]);
+            $balance = $newBalance;
+        }
+
         if ($balance > 0 && ! $request->boolean('credit_exception')) {
             return back()->with('error', 'Trip cannot be closed: Pending balance of ₹'.number_format($balance, 2).' remains unpaid. Please collect payment or provide an authorized credit exception reason.');
         }
@@ -202,16 +221,32 @@ class AdminTripController extends Controller
 
         $trip->update([
             'trip_status' => 'Closed',
+            'status' => 'Completed',
+            'journey_status' => 'Journey Completed',
+            'completed_at' => $trip->completed_at ?: now(),
             'closed_at' => now(),
             'closed_by' => Auth::id(),
             'closure_reason' => $reason,
         ]);
 
+        if ($trip->vehicle && in_array($trip->vehicle->status, ['On Trip', 'Assigned'])) {
+            $trip->vehicle->update(['status' => 'Available']);
+        }
+        if ($trip->driver && in_array($trip->driver->status, ['Assigned', 'On Trip'])) {
+            $trip->driver->update(['status' => 'Available']);
+        }
+
         if ($booking) {
+            $oldStatus = $booking->booking_status;
+            $booking->update([
+                'booking_status' => 'Completed',
+                'payment_status' => $balance <= 0 ? 'Paid' : $booking->payment_status,
+            ]);
+
             BookingStatusHistory::create([
                 'booking_id' => $booking->id,
                 'changed_by' => Auth::id(),
-                'old_status' => $booking->booking_status,
+                'old_status' => $oldStatus,
                 'new_status' => 'Completed',
                 'remarks' => "Trip officially closed: {$reason}",
                 'comment' => "Trip officially closed: {$reason}",
@@ -219,6 +254,6 @@ class AdminTripController extends Controller
             ]);
         }
 
-        return back()->with('success', "Trip #{$trip->id} has been formally closed.");
+        return back()->with('success', "Trip #{$trip->id} has been formally closed and marked Completed.");
     }
 }

@@ -25,25 +25,40 @@
     <form action="{{ route('admin.tour-packages.store') }}" method="POST">
         @csrf
 
-        <div class="grid grid-2 gap-2 mb-3">
-            <div>
+        <div class="grid grid-3 gap-2 mb-3">
+            <div style="grid-column: span 2;">
                 <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Package Name *</label>
-                <input type="text" name="name" class="form-control form-control-sm" placeholder="e.g. Amarkantak Narmada Darshan Tour" required>
+                <input type="text" name="name" class="form-control form-control-sm" placeholder="e.g. Amarkantak Narmada Darshan Tour" value="{{ old('name') }}" required>
             </div>
             <div>
                 <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Duration (Days) *</label>
-                <input type="number" name="duration_days" class="form-control form-control-sm" min="1" value="2" required>
+                <input type="number" name="duration_days" id="durationDaysInput" class="form-control form-control-sm" min="1" value="{{ old('duration_days', 2) }}" required>
             </div>
         </div>
 
         <div class="grid grid-2 gap-2 mb-3">
             <div>
-                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Route Summary</label>
-                <input type="text" name="route_summary" class="form-control form-control-sm" placeholder="e.g. Bilaspur ➔ Ratanpur ➔ Amarkantak ➔ Bilaspur">
+                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Duration Label (e.g. 2 Days / 1 Night)</label>
+                <input type="text" name="duration" id="durationTextInput" class="form-control form-control-sm" placeholder="e.g. 2 Days / 1 Night" value="{{ old('duration', '2 Days / 1 Night') }}">
             </div>
             <div>
-                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Base Starting Price (₹) (Optional)</label>
-                <input type="number" step="0.01" name="base_price" class="form-control form-control-sm" placeholder="0.00">
+                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Route Summary</label>
+                <input type="text" name="route" class="form-control form-control-sm" placeholder="e.g. Bilaspur ➔ Ratanpur ➔ Amarkantak ➔ Bilaspur" value="{{ old('route', old('route_summary')) }}">
+            </div>
+        </div>
+
+        <div class="grid grid-3 gap-2 mb-3">
+            <div>
+                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Sedan / Base Price (₹)</label>
+                <input type="number" step="0.01" name="sedan_price" class="form-control form-control-sm" placeholder="e.g. 4500.00" value="{{ old('sedan_price', old('base_price')) }}">
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Ertiga (6+1) Price (₹)</label>
+                <input type="number" step="0.01" name="ertiga_price" class="form-control form-control-sm" placeholder="e.g. 6000.00" value="{{ old('ertiga_price') }}">
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Innova Crysta Price (₹)</label>
+                <input type="number" step="0.01" name="innova_price" class="form-control form-control-sm" placeholder="e.g. 7500.00" value="{{ old('innova_price') }}">
             </div>
         </div>
 
@@ -54,22 +69,22 @@
                     <x-icon name="map-pin" :size="11" /> Pick on Map
                 </button>
             </div>
-            <input type="text" name="destinations" id="tourDestInput" class="form-control form-control-sm" placeholder="e.g. Narmada Udgam, Kapildhara, Mai ki Bagiya, Sonmuda">
+            <input type="text" name="destinations" id="tourDestInput" class="form-control form-control-sm" placeholder="e.g. Narmada Udgam, Kapildhara, Mai ki Bagiya, Sonmuda" value="{{ old('destinations') }}">
         </div>
 
         <div class="mb-3">
             <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Description / Itinerary *</label>
-            <textarea name="description" class="form-control form-control-sm" rows="3" placeholder="Day-wise itinerary highlights and inclusions..." required></textarea>
+            <textarea name="description" class="form-control form-control-sm" rows="3" placeholder="Day-wise itinerary highlights and inclusions..." required>{{ old('description') }}</textarea>
         </div>
 
         <div class="mb-3">
             <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Package Terms & Exclusions</label>
-            <textarea name="terms" class="form-control form-control-sm" rows="2" placeholder="Driver night allowance, parking, entry tickets..."></textarea>
+            <textarea name="terms" class="form-control form-control-sm" rows="2" placeholder="Driver night allowance, parking, entry tickets...">{{ old('terms') }}</textarea>
         </div>
 
         <div class="mb-3">
             <label style="font-size: 12px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                <input type="checkbox" name="is_active" value="1" checked>
+                <input type="checkbox" name="is_active" value="1" {{ old('is_active', '1') ? 'checked' : '' }}>
                 <span style="font-weight: 600;">Active & visible on public tour packages page</span>
             </label>
         </div>

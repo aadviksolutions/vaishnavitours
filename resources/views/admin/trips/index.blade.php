@@ -106,16 +106,16 @@
                             @endif
                         </td>
                         <td style="font-weight: 600;">
-                            {{ $trip->booking->customer->name ?? 'Guest' }}
-                            <div style="font-size: 11px; color: var(--slate-500);">{{ $trip->booking->customer->phone ?? '' }}</div>
+                            {{ $trip->booking?->customer?->name ?? 'Guest' }}
+                            <div style="font-size: 11px; color: var(--slate-500);">{{ $trip->booking?->customer?->phone ?? '' }}</div>
                         </td>
                         <td>
                             <div style="max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                {{ $trip->booking->pickup_location ?? 'Bilaspur' }} 
+                                {{ $trip->booking?->pickup_location ?? 'Bilaspur' }} 
                                 @if($trip->booking?->via_location)
                                     <span style="color: var(--slate-400);">via {{ $trip->booking->via_location }}</span>
                                 @endif
-                                ➔ {{ $trip->booking->destination ?? 'Raipur' }}
+                                ➔ {{ $trip->booking?->destination ?? 'Raipur' }}
                             </div>
                         </td>
                         <td style="white-space: nowrap;">

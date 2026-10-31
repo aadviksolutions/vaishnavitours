@@ -53,6 +53,74 @@ class AdminVehicleCategoryController extends Controller
             ->with('success', "Vehicle category '{$data['name']}' created successfully!");
     }
 
+    public function storeQuick(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:100',
+            'default_seating_capacity' => 'nullable|integer|min:1|max:70',
+            'is_capacity_configurable' => 'nullable|boolean',
+            'min_seating_capacity' => 'nullable|integer|min:1|max:70',
+            'max_seating_capacity' => 'nullable|integer|min:1|max:70',
+        ]);
+
+        $name = trim($data['name']);
+        $existing = VehicleCategory::where('name', $name)->first();
+        if ($existing) {
+            return response()->json([
+                'success' => true,
+                'message' => "Vehicle category '{$existing->name}' already exists.",
+                'category' => $existing,
+            ]);
+        }
+
+        $code = Str::slug($name, '_');
+        $defaultCap = (int) ($data['default_seating_capacity'] ?? 4);
+
+        $category = VehicleCategory::create([
+            'name' => $name,
+            'code' => $code,
+            'display_name' => $name,
+            'default_seating_capacity' => $defaultCap,
+            'min_seating_capacity' => $data['min_seating_capacity'] ?? $defaultCap,
+            'max_seating_capacity' => $data['max_seating_capacity'] ?? $defaultCap,
+            'is_capacity_configurable' => $request->boolean('is_capacity_configurable'),
+            'is_active' => true,
+            'sort_order' => (VehicleCategory::max('sort_order') ?? 0) + 1,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Vehicle category '{$category->name}' added successfully!",
+            'category' => $category,
+        ]);
+    }
+
+    public function storeModelQuick(Request $request)
+    {
+        $data = $request->validate([
+            'vehicle_category_id' => 'required|exists:vehicle_categories,id',
+            'name' => 'required|string|max:100',
+            'brand' => 'nullable|string|max:60',
+            'default_seating_capacity' => 'nullable|integer|min:1|max:70',
+        ]);
+
+        $name = trim($data['name']);
+        $model = VehicleModel::create([
+            'vehicle_category_id' => $data['vehicle_category_id'],
+            'name' => $name,
+            'brand' => $data['brand'] ?? null,
+            'default_seating_capacity' => $data['default_seating_capacity'] ?? null,
+            'is_active' => true,
+            'sort_order' => (VehicleModel::where('vehicle_category_id', $data['vehicle_category_id'])->max('sort_order') ?? 0) + 1,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Vehicle model '{$model->name}' added successfully!",
+            'model' => $model,
+        ]);
+    }
+
     public function update(Request $request, VehicleCategory $vehicle_category)
     {
         $data = $request->validate([

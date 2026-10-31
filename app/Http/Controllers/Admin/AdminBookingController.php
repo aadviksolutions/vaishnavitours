@@ -132,8 +132,9 @@ class AdminBookingController extends Controller
         $pickupLocations = PickupLocation::where('is_active', true)->get();
         $tourPackages = TourPackage::where('is_active', true)->get();
         $bookingCategories = BookingCategory::where('is_active', true)->get();
+        $corporateClients = $this->getCorporateClients();
 
-        return view('admin.bookings.create', compact('customers', 'vehicles', 'drivers', 'locations', 'vehicleCategories', 'activeVehicleCategories', 'rateOptions', 'prefill', 'pickupLocations', 'tourPackages', 'bookingCategories'));
+        return view('admin.bookings.create', compact('customers', 'vehicles', 'drivers', 'locations', 'vehicleCategories', 'activeVehicleCategories', 'rateOptions', 'prefill', 'pickupLocations', 'tourPackages', 'bookingCategories', 'corporateClients'));
     }
 
     public function store(Request $request, BookingService $bookingService)
@@ -154,6 +155,7 @@ class AdminBookingController extends Controller
                 'tour_package' => 'Tour Package',
                 'ambulance', 'emergency' => 'Ambulance',
                 'local_8h_80km', 'local_4h_40km' => 'Local Hourly',
+                'oneway', 'outstation' => 'One-Way',
                 default => 'One-Way',
             },
         ]);
@@ -164,7 +166,7 @@ class AdminBookingController extends Controller
             'pickup_location' => 'required|string|max:255',
             'via_location' => 'nullable|string|max:255',
             'destination' => 'required|string|max:255',
-            'rate_category' => 'required|in:outstation,round_trip,tour_package,ambulance,emergency,airport,local_8h_80km,local_4h_40km',
+            'rate_category' => 'required|in:outstation,oneway,round_trip,tour_package,ambulance,emergency,airport,local_8h_80km,local_4h_40km',
             'vehicle_category' => 'required|string|max:80',
             'vehicle_model' => 'nullable|string|max:80',
             'vehicle_category_id' => 'nullable|exists:vehicle_categories,id',
@@ -250,6 +252,8 @@ class AdminBookingController extends Controller
         $data['is_admin_booking'] = true;
         $data['is_custom_fare'] = $request->boolean('is_custom_fare');
         $data['corporate_company_name'] = $request->input('company_name') ?: $request->input('corporate_company_name');
+        $data['corporate_contact_person'] = $request->input('corporate_contact_person');
+        $data['corporate_gstin'] = $request->input('corporate_gstin');
         $data['corporate_billing_address'] = $request->input('billing_address') ?: $request->input('corporate_billing_address');
         $data['travel_partner_name'] = $request->input('travel_partner_name');
         $data['travel_partner_phone'] = $request->input('travel_partner_phone');
@@ -307,6 +311,26 @@ class AdminBookingController extends Controller
             }
         } else {
             $user = User::findOrFail($data['customer_id']);
+        }
+
+        // Sync or create corporate customer profile for future selection
+        if ($data['booking_category'] === 'CORP' && ! empty($data['corporate_company_name'])) {
+            $custRec = Customer::where('user_id', $user->id)->first();
+            if (! $custRec) {
+                $custRec = new Customer(['user_id' => $user->id]);
+            }
+            $custRec->customer_type = 'corporate';
+            $custRec->company_name = $data['corporate_company_name'];
+            if (! empty($data['corporate_contact_person'])) {
+                $custRec->contact_person = $data['corporate_contact_person'];
+            }
+            if (! empty($data['corporate_gstin'])) {
+                $custRec->gstin = $data['corporate_gstin'];
+            }
+            if (! empty($data['corporate_billing_address'])) {
+                $custRec->billing_address = $data['corporate_billing_address'];
+            }
+            $custRec->save();
         }
 
         // Handle Vehicle Assignment: Own vs Third-Party Travel Partner
@@ -440,8 +464,9 @@ class AdminBookingController extends Controller
         $vehicles = Vehicle::where('status', '!=', 'Inactive')->get();
         $drivers = Driver::where('status', '!=', 'Inactive')->get();
         $activeVehicleCategories = VehicleCategory::where('is_active', true)->with('activeModels')->orderBy('sort_order')->get();
+        $corporateClients = $this->getCorporateClients();
 
-        return view('admin.bookings.edit', compact('booking', 'customers', 'vehicles', 'drivers', 'activeVehicleCategories'));
+        return view('admin.bookings.edit', compact('booking', 'customers', 'vehicles', 'drivers', 'activeVehicleCategories', 'corporateClients'));
     }
 
     public function update(Request $request, Booking $booking, PaymentService $paymentService)
@@ -584,7 +609,43 @@ class AdminBookingController extends Controller
             $updateFields['routed_at'] = now();
         }
 
+        if ($request->filled('company_name') || $request->filled('corporate_company_name')) {
+            $updateFields['corporate_company_name'] = $request->input('company_name') ?: $request->input('corporate_company_name');
+        }
+        if ($request->filled('corporate_contact_person')) {
+            $updateFields['corporate_contact_person'] = $request->input('corporate_contact_person');
+        }
+        if ($request->filled('corporate_gstin')) {
+            $updateFields['corporate_gstin'] = $request->input('corporate_gstin');
+        }
+        if ($request->filled('billing_address') || $request->filled('corporate_billing_address')) {
+            $updateFields['corporate_billing_address'] = $request->input('billing_address') ?: $request->input('corporate_billing_address');
+        }
+
         $booking->update($updateFields);
+
+        // Sync or create corporate customer profile for future selection
+        if (($booking->booking_category === 'CORP' || $request->input('booking_category') === 'CORP') && ! empty($updateFields['corporate_company_name'])) {
+            $userId = $booking->customer_id;
+            if ($userId) {
+                $custRec = Customer::where('user_id', $userId)->first();
+                if (! $custRec) {
+                    $custRec = new Customer(['user_id' => $userId]);
+                }
+                $custRec->customer_type = 'corporate';
+                $custRec->company_name = $updateFields['corporate_company_name'];
+                if (! empty($updateFields['corporate_contact_person'])) {
+                    $custRec->contact_person = $updateFields['corporate_contact_person'];
+                }
+                if (! empty($updateFields['corporate_gstin'])) {
+                    $custRec->gstin = $updateFields['corporate_gstin'];
+                }
+                if (! empty($updateFields['corporate_billing_address'])) {
+                    $custRec->billing_address = $updateFields['corporate_billing_address'];
+                }
+                $custRec->save();
+            }
+        }
 
         // Sync Trip
         if ($booking->trip) {
@@ -773,6 +834,7 @@ class AdminBookingController extends Controller
         if ($total > 0 && $paid >= $total) {
             $paymentStatus = 'Paid';
         } elseif ($paid > 0) {
+
             $paymentStatus = 'Partial';
         }
 
@@ -902,5 +964,51 @@ class AdminBookingController extends Controller
 
         return redirect()->route('admin.bookings.index')
             ->with('success', "Booking #{$id} has been deleted.");
+    }
+
+    protected function getCorporateClients()
+    {
+        $corporateClients = Customer::where('customer_type', 'corporate')
+            ->orWhereNotNull('company_name')
+            ->with('user')
+            ->get()
+            ->map(function ($cust) {
+                return [
+                    'id' => $cust->id,
+                    'user_id' => $cust->user_id,
+                    'company_name' => $cust->company_name,
+                    'contact_person' => $cust->contact_person ?: ($cust->user?->name ?? ''),
+                    'phone' => $cust->user?->phone ?? $cust->alternate_phone ?? '',
+                    'email' => $cust->user?->email ?? '',
+                    'gstin' => $cust->gstin ?? '',
+                    'billing_address' => $cust->billing_address ?: $cust->address ?: '',
+                    'city' => $cust->city ?? '',
+                ];
+            })
+            ->filter(fn ($c) => ! empty($c['company_name']))
+            ->unique('company_name')
+            ->values();
+
+        $existingCorpBookings = Booking::whereNotNull('corporate_company_name')
+            ->where('corporate_company_name', '!=', '')
+            ->with('customer')
+            ->get();
+        foreach ($existingCorpBookings as $b) {
+            if (! $corporateClients->contains('company_name', $b->corporate_company_name)) {
+                $corporateClients->push([
+                    'id' => null,
+                    'user_id' => $b->customer_id,
+                    'company_name' => $b->corporate_company_name,
+                    'contact_person' => $b->corporate_contact_person ?: ($b->customer?->name ?? ''),
+                    'phone' => $b->corporate_phone ?: ($b->customer?->phone ?? ''),
+                    'email' => $b->corporate_email ?: ($b->customer?->email ?? ''),
+                    'gstin' => $b->corporate_gstin ?? '',
+                    'billing_address' => $b->corporate_billing_address ?? '',
+                    'city' => '',
+                ]);
+            }
+        }
+
+        return $corporateClients;
     }
 }

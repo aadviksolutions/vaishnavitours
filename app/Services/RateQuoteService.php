@@ -83,7 +83,7 @@ class RateQuoteService
         }
 
         $routes = RateRoute::query()
-            ->where('category', $category)
+            ->whereIn('category', $category === 'oneway' ? ['oneway', 'outstation'] : ($category === 'outstation' ? ['outstation', 'oneway'] : [$category]))
             ->where('active', true)
             ->with('vehiclePrices')
             ->get();

@@ -136,35 +136,35 @@
             <div class="grid grid-3 gap-2 mb-3">
                 <div style="background: var(--slate-50); padding: 0.75rem; border-radius: 6px; border-left: 3px solid #2563EB;">
                     <div style="font-size: 11px; text-transform: uppercase; color: var(--slate-500); font-weight: 600;">Pickup Location</div>
-                    <div style="font-weight: 700; font-size: 14px; margin-top: 2px;">{{ $trip->booking->pickup_location ?? 'Bilaspur' }}</div>
+                    <div style="font-weight: 700; font-size: 14px; margin-top: 2px;">{{ $trip->booking?->pickup_location ?? 'Bilaspur' }}</div>
                 </div>
                 <div style="background: var(--slate-50); padding: 0.75rem; border-radius: 6px; border-left: 3px solid #D97706;">
                     <div style="font-size: 11px; text-transform: uppercase; color: var(--slate-500); font-weight: 600;">Via Location</div>
-                    <div style="font-weight: 700; font-size: 14px; margin-top: 2px;">{{ $trip->booking->via_location ?: 'Direct (No via)' }}</div>
+                    <div style="font-weight: 700; font-size: 14px; margin-top: 2px;">{{ $trip->booking?->via_location ?: 'Direct (No via)' }}</div>
                 </div>
                 <div style="background: var(--slate-50); padding: 0.75rem; border-radius: 6px; border-left: 3px solid #059669;">
                     <div style="font-size: 11px; text-transform: uppercase; color: var(--slate-500); font-weight: 600;">Final Drop Destination</div>
-                    <div style="font-weight: 700; font-size: 14px; margin-top: 2px;">{{ $trip->booking->destination ?? 'Raipur' }}</div>
+                    <div style="font-weight: 700; font-size: 14px; margin-top: 2px;">{{ $trip->booking?->destination ?? 'Raipur' }}</div>
                 </div>
             </div>
             <div class="grid grid-3 gap-2" style="font-size: 12.5px;">
                 <div>
                     <span style="color: var(--slate-500); font-size: 11px; text-transform: uppercase; font-weight: 600;">Customer</span>
-                    <div style="font-weight: 700; margin-top: 2px;">{{ $trip->booking->customer->name ?? 'Guest User' }}</div>
-                    <div style="font-size: 11px; color: var(--slate-600);">📞 {{ $trip->booking->customer->phone ?? '' }}</div>
+                    <div style="font-weight: 700; margin-top: 2px;">{{ $trip->booking?->customer?->name ?? 'Guest User' }}</div>
+                    <div style="font-size: 11px; color: var(--slate-600);">📞 {{ $trip->booking?->customer?->phone ?? '' }}</div>
                 </div>
                 <div>
                     <span style="color: var(--slate-500); font-size: 11px; text-transform: uppercase; font-weight: 600;">Travel Schedule</span>
                     <div style="font-weight: 700; margin-top: 2px;">
                         {{ $trip->booking && $trip->booking->travel_date ? $trip->booking->travel_date->format('d M, Y') : '' }}
                     </div>
-                    <div style="font-size: 11px; color: var(--slate-600);">{{ $trip->booking ? date('h:i A', strtotime($trip->booking->travel_time)) : '' }}</div>
+                    <div style="font-size: 11px; color: var(--slate-600);">{{ $trip->booking && $trip->booking->travel_time ? (is_numeric(strtotime($trip->booking->travel_time)) ? date('h:i A', strtotime($trip->booking->travel_time)) : $trip->booking->travel_time) : '' }}</div>
                 </div>
                 <div>
                     <span style="color: var(--slate-500); font-size: 11px; text-transform: uppercase; font-weight: 600;">Category & Prefix</span>
                     <div style="font-weight: 700; margin-top: 2px;">
-                        <span class="badge badge-primary">{{ $trip->booking->booking_category ?? 'WEB' }}</span>
-                        {{ $trip->booking->trip_type ?? 'One-Way' }}
+                        <span class="badge badge-primary">{{ $trip->booking?->booking_category ?? 'WEB' }}</span>
+                        {{ $trip->booking?->trip_type ?? 'One-Way' }}
                     </div>
                 </div>
             </div>

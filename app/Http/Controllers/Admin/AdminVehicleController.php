@@ -129,6 +129,58 @@ class AdminVehicleController extends Controller
             ->with('success', 'Vehicle registered successfully with verified mandatory document records!');
     }
 
+    public function storeQuick(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'registration_number' => 'required|string|max:50|unique:vehicles,registration_number',
+            'vehicle_category_id' => 'nullable|exists:vehicle_categories,id',
+            'vehicle_type' => 'nullable|string|max:100',
+            'seating_capacity' => 'nullable|integer|min:1|max:70',
+            'ac_non_ac' => 'nullable|string|in:AC,Non-AC',
+            'ownership_type' => 'nullable|string|in:owned,third_party,attached',
+        ]);
+
+        $categoryName = $data['vehicle_type'] ?? null;
+        if (! empty($data['vehicle_category_id'])) {
+            $cat = VehicleCategory::find($data['vehicle_category_id']);
+            if ($cat) {
+                $categoryName = $cat->name;
+            }
+        }
+        if (! $categoryName) {
+            $categoryName = 'Sedan';
+        }
+
+        $isThirdParty = ($data['ownership_type'] ?? 'owned') === 'third_party';
+
+        $vehicle = Vehicle::create([
+            'name' => trim($data['name']),
+            'registration_number' => strtoupper(trim($data['registration_number'])),
+            'vehicle_category_id' => $data['vehicle_category_id'] ?? null,
+            'vehicle_type' => $categoryName,
+            'seating_capacity' => (int) ($data['seating_capacity'] ?? 4),
+            'ac_non_ac' => $data['ac_non_ac'] ?? 'AC',
+            'ownership_type' => $data['ownership_type'] ?? 'owned',
+            'is_third_party' => $isThirdParty,
+            'status' => 'Available',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Vehicle '{$vehicle->name} ({$vehicle->registration_number})' registered successfully!",
+            'vehicle' => [
+                'id' => $vehicle->id,
+                'name' => $vehicle->name,
+                'registration_number' => $vehicle->registration_number,
+                'vehicle_type' => $vehicle->vehicle_type,
+                'seating_capacity' => $vehicle->seating_capacity,
+                'status' => $vehicle->status,
+                'is_third_party' => $vehicle->is_third_party,
+            ],
+        ]);
+    }
+
     public function show(Vehicle $vehicle)
     {
         $vehicle->load([

@@ -84,14 +84,27 @@ class Enquiry extends Model
         'destination_longitude' => 'decimal:7',
     ];
 
+    public static function generateEnquiryId(?string $source = null): string
+    {
+        $prefix = match (strtolower((string) $source)) {
+            'corporate', 'corp' => 'ENQ-CORP',
+            'third_party', 'third-party', 'tp' => 'ENQ-TP',
+            'manual', 'man' => 'ENQ-MAN',
+            default => 'ENQ',
+        };
+        $date = date('ymd');
+        $count = static::count() + 1;
+
+        return sprintf('%s-%s-%04d', $prefix, $date, $count);
+    }
+
     protected static function boot()
     {
         parent::boot();
 
         static::creating(function ($enquiry) {
             if (empty($enquiry->enquiry_id)) {
-                $count = static::count() + 1;
-                $enquiry->enquiry_id = sprintf('ENQ-%s-%04d', date('ymd'), $count);
+                $enquiry->enquiry_id = static::generateEnquiryId($enquiry->source);
             }
             if (empty($enquiry->source)) {
                 $enquiry->source = self::SOURCE_WEBSITE;
@@ -103,6 +116,11 @@ class Enquiry extends Model
     }
 
     public function assignedStaff(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    public function assignedUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to');
     }

@@ -17,6 +17,7 @@ use App\Models\VehicleModel;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class BookingService
@@ -525,7 +526,8 @@ class BookingService
                 return $booking;
             }
 
-            if (! $booking->canTransitionTo($newStatus)) {
+            $isAdmin = $changedBy && in_array($changedBy->role, ['admin', 'manager', 'dispatcher', 'staff'], true);
+            if (! $booking->canTransitionTo($newStatus) && ! ($isAdmin && in_array($newStatus, ['Completed', 'Cancelled', 'Trip Started', 'Driver Assigned'], true))) {
                 throw ValidationException::withMessages([
                     'booking_status' => ["Invalid status transition from '{$oldStatus}' to '{$newStatus}'."],
                 ]);
@@ -556,15 +558,25 @@ class BookingService
                 ];
                 if ($newStatus === 'Trip Started' && ! $booking->trip->started_at) {
                     $tripUpdate['started_at'] = now();
-                } elseif ($newStatus === 'Completed' && ! $booking->trip->completed_at) {
-                    $tripUpdate['completed_at'] = now();
+                    $tripUpdate['journey_status'] = 'Ongoing';
+                } elseif ($newStatus === 'Completed') {
+                    if (! $booking->trip->completed_at) {
+                        $tripUpdate['completed_at'] = now();
+                    }
+                    $tripUpdate['journey_status'] = 'Journey Completed';
+                    $tripUpdate['trip_status'] = ((float) $booking->balance_amount <= 0) ? 'Closed' : 'Open';
+                    if ((float) $booking->balance_amount <= 0) {
+                        $tripUpdate['closed_at'] = now();
+                        $tripUpdate['closed_by'] = $changedBy?->id;
+                        $tripUpdate['closure_reason'] = 'Completed and settled.';
+                    }
                 }
                 $booking->trip->update($tripUpdate);
             }
 
             // Release resources on completion or cancellation
             if ($newStatus === 'Completed' || $newStatus === 'Cancelled') {
-                if ($booking->vehicle && $booking->vehicle->status === 'On Trip') {
+                if ($booking->vehicle && in_array($booking->vehicle->status, ['On Trip', 'Assigned'])) {
                     $booking->vehicle->update(['status' => 'Available']);
                 }
                 if ($booking->driver && in_array($booking->driver->status, ['Assigned', 'On Trip'])) {
@@ -594,40 +606,46 @@ class BookingService
                 'created_at' => now(),
             ]);
 
-            // Customer notification messages tailored to prompt requirement 14
-            $customerMessage = match ($newStatus) {
-                'Confirmed' => "Your booking {$booking->booking_id} has been confirmed.",
-                'Vehicle Assigned' => "Vehicle has been assigned to booking {$booking->booking_id}.",
-                'Driver Assigned' => 'Driver has been assigned.',
-                'Trip Started' => 'Your trip has started.',
-                'On The Way' => "Your cab is on the way for booking {$booking->booking_id}.",
-                'Completed' => 'Your trip has been completed.',
-                'Cancelled' => "Your booking {$booking->booking_id} has been cancelled.",
-                default => "Your booking {$booking->booking_id} is now {$newStatus}.",
-            };
+            try {
+                // Customer notification messages tailored to prompt requirement 14
+                $customerMessage = match ($newStatus) {
+                    'Confirmed' => "Your booking {$booking->booking_id} has been confirmed.",
+                    'Vehicle Assigned' => "Vehicle has been assigned to booking {$booking->booking_id}.",
+                    'Driver Assigned' => 'Driver has been assigned.',
+                    'Trip Started' => 'Your trip has started.',
+                    'On The Way' => "Your cab is on the way for booking {$booking->booking_id}.",
+                    'Completed' => 'Your trip has been completed.',
+                    'Cancelled' => "Your booking {$booking->booking_id} has been cancelled.",
+                    default => "Your booking {$booking->booking_id} is now {$newStatus}.",
+                };
 
-            Notification::create([
-                'user_id' => $booking->customer_id,
-                'title' => "Booking #{$booking->booking_id} {$newStatus}",
-                'message' => $customerMessage,
-                'type' => 'trip',
-                'action_url' => '/customer/bookings/'.$booking->id,
-            ]);
+                if ($booking->customer_id) {
+                    Notification::create([
+                        'user_id' => $booking->customer_id,
+                        'title' => "Booking #{$booking->booking_id} {$newStatus}",
+                        'message' => $customerMessage,
+                        'type' => 'trip',
+                        'action_url' => '/customer/bookings/'.$booking->id,
+                    ]);
+                }
 
-            // WhatsApp notifications based on new status
-            $waVars = $this->whatsapp->bookingVariables($booking);
-            $customerPhone = $this->whatsapp->getCustomerPhone($booking);
+                // WhatsApp notifications based on new status
+                $waVars = $this->whatsapp->bookingVariables($booking);
+                $customerPhone = $this->whatsapp->getCustomerPhone($booking);
 
-            $waEvent = match ($newStatus) {
-                'Confirmed' => 'booking_confirmed',
-                'Trip Started', 'On The Way' => 'trip_started',
-                'Completed' => 'trip_completed',
-                'Cancelled' => 'booking_cancelled',
-                default => null,
-            };
+                $waEvent = match ($newStatus) {
+                    'Confirmed' => 'booking_confirmed',
+                    'Trip Started', 'On The Way' => 'trip_started',
+                    'Completed' => 'trip_completed',
+                    'Cancelled' => 'booking_cancelled',
+                    default => null,
+                };
 
-            if ($waEvent) {
-                $this->whatsapp->sendEvent($waEvent, $waVars, $customerPhone, $booking);
+                if ($waEvent) {
+                    $this->whatsapp->sendEvent($waEvent, $waVars, $customerPhone, $booking);
+                }
+            } catch (\Throwable $ne) {
+                Log::warning("Notification dispatch failed for booking {$booking->booking_id}: ".$ne->getMessage());
             }
 
             return $booking;
