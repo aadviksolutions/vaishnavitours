@@ -29,3 +29,5 @@ Thumbs.db
 .env*
 /scratch/
 /database/backups/
+
+/.whatsapp_auth/

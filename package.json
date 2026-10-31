@@ -5,7 +5,7 @@
     "scripts": {
         "start": "node server/index.js",
         "server": "node server/index.js",
-        "whatsapp": "node server/openwa-simulator.cjs",
+        "whatsapp": "node server/whatsapp-gateway.js",
         "build": "vite build",
         "dev": "vite"
     },
@@ -20,6 +20,7 @@
         "@laravel/multiplex": "^0.4.1"
     },
     "dependencies": {
+        "@whiskeysockets/baileys": "^7.0.0-rc14",
         "bcryptjs": "^3.0.3",
         "better-sqlite3": "^13.0.3",
         "cookie-parser": "^1.4.7",
@@ -30,6 +31,8 @@
         "express-session": "^1.19.0",
         "lucide": "^1.16.0",
         "method-override": "^3.0.0",
-        "multer": "^2.5.0"
+        "multer": "^2.5.0",
+        "pino": "^10.4.0",
+        "qrcode": "^1.5.4"
     }
 }

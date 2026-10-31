@@ -301,3 +301,4 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log(`[OpenWA Gateway] Running at http://localhost:${PORT}`);
     console.log(`[OpenWA Gateway] Dashboard available at http://localhost:${PORT}/`);
 });
+
