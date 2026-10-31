@@ -1,7 +1,7 @@
 -- -------------------------------------------------------------
 -- Vaishnavi Tours & Travels MySQL Database Dump
 -- Database: vaishnavi
--- Generated: 2026-10-31 14:57:09
+-- Generated: 2026-10-31 15:18:13
 -- 100% Compatible with MySQL 5.7+, MySQL 8.0+, MariaDB & phpMyAdmin
 -- -------------------------------------------------------------
 
@@ -244,7 +244,7 @@ INSERT INTO `booking_status_histories` (`id`, `booking_id`, `changed_by`, `old_s
 DROP TABLE IF EXISTS `bookings`;
 CREATE TABLE `bookings` (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `booking_id` bigint(20) UNSIGNED NOT NULL,
+  `booking_id` varchar(255) NOT NULL,
   `customer_id` bigint(20) UNSIGNED NOT NULL,
   `trip_type` varchar(255) NOT NULL DEFAULT 'One-Way',
   `pickup_location` varchar(255) NOT NULL,
@@ -302,13 +302,13 @@ CREATE TABLE `bookings` (
   `travel_partner_notes` longtext NULL DEFAULT NULL,
   `pickup_latitude` decimal(12,2) NULL DEFAULT NULL,
   `pickup_longitude` decimal(12,2) NULL DEFAULT NULL,
-  `pickup_place_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `pickup_place_id` varchar(255) NULL DEFAULT NULL,
   `via_latitude` decimal(12,2) NULL DEFAULT NULL,
   `via_longitude` decimal(12,2) NULL DEFAULT NULL,
-  `via_place_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `via_place_id` varchar(255) NULL DEFAULT NULL,
   `destination_latitude` decimal(12,2) NULL DEFAULT NULL,
   `destination_longitude` decimal(12,2) NULL DEFAULT NULL,
-  `destination_place_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `destination_place_id` varchar(255) NULL DEFAULT NULL,
   `route_distance_km` decimal(12,2) NULL DEFAULT NULL,
   `route_duration_text` varchar(255) NULL DEFAULT NULL,
   `route_duration_minutes` int(11) NULL DEFAULT NULL,
@@ -319,7 +319,7 @@ CREATE TABLE `bookings` (
   `vehicle_model` varchar(255) NULL DEFAULT NULL,
   `vehicle_category_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
   `vehicle_model_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
-  `razorpay_order_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `razorpay_order_id` varchar(255) NULL DEFAULT NULL,
   `confirmed_at` datetime NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -454,7 +454,7 @@ INSERT INTO `bookings` (`id`, `booking_id`, `customer_id`, `trip_type`, `pickup_
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `cache`;
 CREATE TABLE `cache` (
-  `key` varchar(255) NOT NULL,
+  `key` varchar(255) NOT NULL PRIMARY KEY,
   `value` longtext NOT NULL,
   `expiration` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -464,7 +464,7 @@ CREATE TABLE `cache` (
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `cache_locks`;
 CREATE TABLE `cache_locks` (
-  `key` varchar(255) NOT NULL,
+  `key` varchar(255) NOT NULL PRIMARY KEY,
   `owner` varchar(255) NOT NULL,
   `expiration` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -600,7 +600,7 @@ CREATE TABLE `enquiries` (
   `status` varchar(255) NOT NULL DEFAULT 'New',
   `created_at` datetime NULL DEFAULT NULL,
   `updated_at` datetime NULL DEFAULT NULL,
-  `enquiry_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `enquiry_id` varchar(255) NULL DEFAULT NULL,
   `source` varchar(255) NOT NULL DEFAULT 'Website',
   `booking_type` varchar(255) NULL DEFAULT NULL,
   `pickup_location` varchar(255) NULL DEFAULT NULL,
@@ -616,13 +616,13 @@ CREATE TABLE `enquiries` (
   `converted_booking_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
   `pickup_latitude` decimal(12,2) NULL DEFAULT NULL,
   `pickup_longitude` decimal(12,2) NULL DEFAULT NULL,
-  `pickup_place_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `pickup_place_id` varchar(255) NULL DEFAULT NULL,
   `via_latitude` decimal(12,2) NULL DEFAULT NULL,
   `via_longitude` decimal(12,2) NULL DEFAULT NULL,
-  `via_place_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `via_place_id` varchar(255) NULL DEFAULT NULL,
   `destination_latitude` decimal(12,2) NULL DEFAULT NULL,
   `destination_longitude` decimal(12,2) NULL DEFAULT NULL,
-  `destination_place_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `destination_place_id` varchar(255) NULL DEFAULT NULL,
   `route_distance_km` decimal(12,2) NULL DEFAULT NULL,
   `route_duration_text` varchar(255) NULL DEFAULT NULL,
   `route_duration_minutes` int(11) NULL DEFAULT NULL,
@@ -761,7 +761,7 @@ INSERT INTO `invoices` (`id`, `invoice_number`, `booking_id`, `customer_id`, `to
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `job_batches`;
 CREATE TABLE `job_batches` (
-  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `id` varchar(255) NOT NULL PRIMARY KEY,
   `name` varchar(255) NOT NULL,
   `total_jobs` int(11) NOT NULL,
   `pending_jobs` int(11) NOT NULL,
@@ -1110,7 +1110,7 @@ INSERT INTO `notifications` (`id`, `user_id`, `title`, `message`, `type`, `is_re
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `password_reset_tokens`;
 CREATE TABLE `password_reset_tokens` (
-  `email` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL PRIMARY KEY,
   `token` varchar(255) NOT NULL,
   `created_at` datetime NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1121,11 +1121,11 @@ CREATE TABLE `password_reset_tokens` (
 DROP TABLE IF EXISTS `payments`;
 CREATE TABLE `payments` (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `payment_id` bigint(20) UNSIGNED NOT NULL,
+  `payment_id` varchar(255) NOT NULL,
   `booking_id` bigint(20) UNSIGNED NOT NULL,
   `customer_id` bigint(20) UNSIGNED NOT NULL,
   `gateway` varchar(255) NOT NULL DEFAULT 'Manual / Direct',
-  `transaction_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `transaction_id` varchar(255) NULL DEFAULT NULL,
   `amount` decimal(12,2) NOT NULL,
   `currency` varchar(255) NOT NULL DEFAULT 'INR',
   `payment_method` varchar(255) NOT NULL DEFAULT 'Cash',
@@ -1135,8 +1135,8 @@ CREATE TABLE `payments` (
   `notes` varchar(255) NULL DEFAULT NULL,
   `created_at` datetime NULL DEFAULT NULL,
   `updated_at` datetime NULL DEFAULT NULL,
-  `razorpay_order_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
-  `razorpay_payment_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `razorpay_order_id` varchar(255) NULL DEFAULT NULL,
+  `razorpay_payment_id` varchar(255) NULL DEFAULT NULL,
   `razorpay_signature` varchar(255) NULL DEFAULT NULL,
   `signature_verified` int(11) NULL DEFAULT 0,
   `booking_category` varchar(255) NULL DEFAULT NULL,
@@ -1146,7 +1146,7 @@ CREATE TABLE `payments` (
   `tax` decimal(12,2) NULL DEFAULT 0,
   `error_code` varchar(255) NULL DEFAULT NULL,
   `error_description` longtext NULL DEFAULT NULL,
-  `refund_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
+  `refund_id` varchar(255) NULL DEFAULT NULL,
   `refund_amount` decimal(12,2) NULL DEFAULT 0,
   `refund_status` varchar(255) NULL DEFAULT NULL,
   `authorized_at` datetime NULL DEFAULT NULL,
@@ -1356,7 +1356,7 @@ INSERT INTO `rate_vehicle_prices` (`id`, `rate_route_id`, `vehicle_category`, `b
 DROP TABLE IF EXISTS `razorpay_webhook_events`;
 CREATE TABLE `razorpay_webhook_events` (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `event_id` bigint(20) UNSIGNED NOT NULL,
+  `event_id` varchar(255) NOT NULL,
   `event_type` varchar(255) NOT NULL,
   `payload` longtext NOT NULL,
   `status` varchar(255) NOT NULL DEFAULT 'Processed',
@@ -1386,21 +1386,13 @@ INSERT INTO `razorpay_webhook_events` (`id`, `event_id`, `event_type`, `payload`
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS `sessions`;
 CREATE TABLE `sessions` (
-  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `id` varchar(255) NOT NULL PRIMARY KEY,
   `user_id` bigint(20) UNSIGNED NULL DEFAULT NULL,
   `ip_address` varchar(255) NULL DEFAULT NULL,
   `user_agent` longtext NULL DEFAULT NULL,
   `payload` longtext NOT NULL,
   `last_activity` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Dumping data for table `sessions`
-INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('Y55i4wldXIGJB7xk6XRBJTbJTxjPVuqWxxHdAQ7k', NULL, '127.0.0.1', 'curl/8.13.0', 'eyJfdG9rZW4iOiJBMERjWFVqdEg0b3VMR3J0dDNtdXhNaW1oUENqNnpNWXNkUFkzUktDIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwIiwicm91dGUiOiJob21lIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfX0=', 1793452153),
-('XWy4wtkavqslitLK1478tPAxHKgVZyIC7VI8ZTPE', NULL, '127.0.0.1', 'curl/8.13.0', 'eyJfdG9rZW4iOiJpS2FBTGwyMjc1VzN1UnVaVXFDZWhwRzh5RUpBS2tVWkNiNXRLWWFhIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==', 1793452177),
-('UMW9OQU1tbSUShFDqq1rQvjvKSt1QLtvp4AOHTNK', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJqSE8wMzU1bnVIQUc4WmtKaURmbDBvVkNxWUk1VVUzTEl1SmpveFhPIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDAwXC9hZG1pblwvd2hhdHNhcHBcL3FyLXN0YXR1cyIsInJvdXRlIjoiYWRtaW4ud2hhdHNhcHAucXItc3RhdHVzIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjF9', 1793458619),
-('zWXtt4RX2Qv3mDgUMOdPcAuDsFfjpfLC8dq9yNs7', NULL, '127.0.0.1', 'curl/8.13.0', 'eyJfdG9rZW4iOiIzMWFNZ204UzVaVTN2MnJ5MjZCaHhMOVE3SnBzMkNScW02TU5TZUY1IiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==', 1793453725),
-('S6pfVUmN5Zz7Befvec4IidDE3BlvDh6NjGBILd4W', NULL, '127.0.0.1', 'curl/8.13.0', 'eyJfdG9rZW4iOiJtRVlUQ3oyYzNxQlNlbkNJWExhNXZBUGRmU25xcXRrU294Y2czcGtOIiwidXJsIjp7ImludGVuZGVkIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL2FkbWluXC93aGF0c2FwcFwvcXItc3RhdHVzIn0sIl9wcmV2aW91cyI6eyJ1cmwiOiJodHRwOlwvXC8xMjcuMC4wLjE6ODAwMFwvYWRtaW5cL3doYXRzYXBwXC9xci1zdGF0dXMiLCJyb3V0ZSI6ImFkbWluLndoYXRzYXBwLnFyLXN0YXR1cyJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19', 1793455092);
 
 -- -------------------------------------------------------------
 -- Table structure for `settings`
