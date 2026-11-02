@@ -195,4 +195,23 @@ class AdminWhatsappController extends Controller
 
         return redirect()->route('admin.whatsapp.scan')->with('success', 'WhatsApp session disconnected. You can now scan a new QR code.');
     }
+
+    /**
+     * Update OpenWA gateway connection settings directly from scan page.
+     */
+    public function updateGateway(Request $request)
+    {
+        $data = $request->validate([
+            'openwa_base_url' => ['required', 'string', 'max:255'],
+            'openwa_api_key' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $cleanUrl = rtrim(trim($data['openwa_base_url']), '/');
+        Setting::set('openwa_base_url', $cleanUrl, 'string', 'whatsapp');
+        if (array_key_exists('openwa_api_key', $data)) {
+            Setting::set('openwa_api_key', trim((string) $data['openwa_api_key']), 'string', 'whatsapp');
+        }
+
+        return back()->with('success', "WhatsApp Gateway URL updated to {$cleanUrl}!");
+    }
 }

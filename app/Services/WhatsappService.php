@@ -371,10 +371,22 @@ class WhatsappService
                 'sessionId' => $sessionId,
             ];
         } catch (\Throwable $e) {
+            $msg = $e->getMessage();
+            $isLocalHost = in_array(request()->getHost(), ['127.0.0.1', 'localhost', '::1'], true);
+            $isGatewayLocal = str_contains($this->baseUrl, 'localhost') || str_contains($this->baseUrl, '127.0.0.1');
+
+            if ($isGatewayLocal && ! $isLocalHost) {
+                $userMsg = "Live website cannot connect to '{$this->baseUrl}'. Cloud hosting cannot access your local PC directly. Please set your public Gateway URL (via ngrok tunnel or deployed gateway) in the settings below.";
+            } elseif (str_contains($msg, 'Connection refused') || str_contains($msg, 'Failed to connect')) {
+                $userMsg = "Gateway service is offline at {$this->baseUrl}. Please start the gateway service (`node server/whatsapp-gateway.js`) or update your Gateway URL.";
+            } else {
+                $userMsg = 'Unable to connect to WhatsApp gateway: '.substr($msg, 0, 180);
+            }
+
             return [
                 'online' => false,
                 'status' => 'offline',
-                'message' => 'Unable to connect to OpenWA gateway: '.$e->getMessage(),
+                'message' => $userMsg,
                 'phone' => null,
                 'pushName' => null,
                 'qr' => null,

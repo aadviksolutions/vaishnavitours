@@ -255,6 +255,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::prefix('whatsapp')->name('whatsapp.')->group(function () {
         Route::get('/scan', [AdminWhatsappController::class, 'scan'])->name('scan');
         Route::get('/qr-status', [AdminWhatsappController::class, 'qrStatus'])->name('qr-status');
+        Route::post('/gateway-settings', [AdminWhatsappController::class, 'updateGateway'])->name('update-gateway');
         Route::post('/save-phone', [AdminWhatsappController::class, 'savePhone'])->name('save-phone');
         Route::post('/logout', [AdminWhatsappController::class, 'logout'])->name('logout');
         Route::get('/templates', [AdminWhatsappController::class, 'templates'])->name('templates');

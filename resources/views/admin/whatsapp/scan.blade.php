@@ -149,17 +149,54 @@
         </div>
 
         <div class="card p-4" style="border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0;">
-            <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem;">
-                ⚙️ Current Gateway Status
-            </h4>
-            <div style="font-size: 0.85rem; line-height: 1.6; color: #475569;">
-                <div><strong>Gateway URL:</strong> <code>{{ \App\Models\Setting::get('openwa_base_url') ?: config('services.openwa.base_url', 'http://localhost:2785') }}</code></div>
-                <div><strong>Admin Phone:</strong> {{ $adminPhone ? '+91 ' . $adminPhone : 'Not configured yet' }}</div>
-                <div class="mt-3">
-                    <a href="{{ route('admin.settings.index') }}" class="btn btn-link p-0 text-primary" style="font-size: 0.85rem;">
-                        Edit Gateway URL in Settings →
-                    </a>
+            <div class="d-flex justify-content-between align-center mb-2">
+                <h4 style="font-size: 0.95rem; font-weight: 700; margin: 0;">
+                    ⚙️ Gateway URL Configuration
+                </h4>
+                @php
+                    $currentGw = \App\Models\Setting::get('openwa_base_url') ?: config('services.openwa.base_url', 'http://localhost:2785');
+                    $isLocalWeb = in_array(request()->getHost(), ['127.0.0.1', 'localhost', '::1'], true);
+                    $isGwLocal = str_contains($currentGw, 'localhost') || str_contains($currentGw, '127.0.0.1');
+                @endphp
+                @if(!$isLocalWeb && $isGwLocal)
+                    <span class="badge" style="background: #FEE2E2; color: #991B1B; font-size: 10px; font-weight: 800;">Action Needed on Live</span>
+                @else
+                    <span class="badge" style="background: #ECFDF5; color: #065F46; font-size: 10px; font-weight: 700;">Active</span>
+                @endif
+            </div>
+
+            @if(!$isLocalWeb && $isGwLocal)
+                <div class="alert alert-warning p-2 mb-3" style="font-size: 12px; background: #FFFBEB; border: 1px solid #FCD34D; color: #92400E; border-radius: 6px;">
+                    <strong>⚠️ Live Website Alert:</strong> Aapki website live cloud server par chal rahi hai, isliye live server aapke computer ke <code>http://localhost:2785</code> ko direct access nahi kar sakta. Agar WhatsApp gateway aapke computer par chal raha hai, toh <strong>ngrok</strong> ya <strong>localtunnel</strong> se public URL banayein aur neeche paste karke save karein.
                 </div>
+            @endif
+
+            <form action="{{ route('admin.whatsapp.update-gateway') }}" method="POST">
+                @csrf
+                <div class="mb-2">
+                    <label class="form-label mb-1" style="font-size: 11.5px; font-weight: 700;">Gateway Base URL *</label>
+                    <input type="text" name="openwa_base_url" class="form-control form-control-sm" value="{{ $currentGw }}" placeholder="http://localhost:2785 or https://xxxx.ngrok-free.app" required style="font-family: monospace; font-size: 12px;">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label mb-1" style="font-size: 11.5px; font-weight: 700;">API Key (Optional)</label>
+                    <input type="text" name="openwa_api_key" class="form-control form-control-sm" value="{{ \App\Models\Setting::get('openwa_api_key', '') }}" placeholder="Optional token" style="font-family: monospace; font-size: 12px;">
+                </div>
+                <div class="d-flex justify-content-between align-center">
+                    <button type="submit" class="btn btn-primary btn-sm" style="font-size: 12px; font-weight: 700;">
+                        💾 Save &amp; Connect Gateway
+                    </button>
+                    <a href="{{ route('admin.settings.index') }}" class="text-secondary" style="font-size: 11.5px;">All Settings →</a>
+                </div>
+            </form>
+
+            <hr style="margin: 1rem 0; border-color: #E2E8F0;">
+
+            <div style="font-size: 11.5px; color: #64748B; line-height: 1.5;">
+                <strong>💡 2 Ways to Run WhatsApp on Live Website:</strong>
+                <ol style="padding-left: 1rem; margin: 4px 0 0 0;">
+                    <li><strong>Run from Local Computer via Tunnel (2 mins):</strong> Terminal me run karein <code>npx ngrok http 2785</code> ya <code>npx localtunnel --port 2785</code>. Jo <code>https://...</code> link mile, usko upar save karein.</li>
+                    <li><strong>24/7 Cloud Host (Recommended):</strong> Gateway code ko Render / Railway / VPS par deploy karein taaki laptop band hone par bhi WhatsApp chalta rahe.</li>
+                </ol>
             </div>
         </div>
     </div>
