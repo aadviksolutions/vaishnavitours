@@ -19,7 +19,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const PORT = parseInt(process.env.PORT || '2785', 10);
-const AUTH_DIR = path.resolve(__dirname, '..', '.whatsapp_auth');
+const AUTH_DIR = process.env.WHATSAPP_AUTH_DIR || path.resolve(__dirname, '..', '.whatsapp_auth');
 
 // In-memory gateway state
 const state = {
@@ -383,7 +383,7 @@ const server = http.createServer(async (req, res) => {
                             <li>Tap <strong>Link a Device</strong> and point your camera at the QR code.</li>
                         </ol>
                         <p style="margin:12px 0 0 0; font-size:12.5px; color:#16a34a; font-weight:600;">
-                            ✨ You can also scan on the Laravel Admin: <a href="http://localhost:8000/admin/whatsapp/scan" target="_blank" style="color:#0284c7;">/admin/whatsapp/scan</a>
+                            ✨ You can also scan on the Admin Dashboard: <a href="${process.env.APP_URL || 'https://vaishnavitours.vercel.app'}/admin/whatsapp/scan" target="_blank" style="color:#0284c7;">/admin/whatsapp/scan</a>
                         </p>
                     </div>
                 </div>
