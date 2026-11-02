@@ -133,8 +133,9 @@ class AdminBookingController extends Controller
         $tourPackages = TourPackage::where('is_active', true)->get();
         $bookingCategories = BookingCategory::where('is_active', true)->get();
         $corporateClients = $this->getCorporateClients();
+        $travelPartners = $this->getTravelPartners();
 
-        return view('admin.bookings.create', compact('customers', 'vehicles', 'drivers', 'locations', 'vehicleCategories', 'activeVehicleCategories', 'rateOptions', 'prefill', 'pickupLocations', 'tourPackages', 'bookingCategories', 'corporateClients'));
+        return view('admin.bookings.create', compact('customers', 'vehicles', 'drivers', 'locations', 'vehicleCategories', 'activeVehicleCategories', 'rateOptions', 'prefill', 'pickupLocations', 'tourPackages', 'bookingCategories', 'corporateClients', 'travelPartners'));
     }
 
     public function store(Request $request, BookingService $bookingService)
@@ -142,6 +143,9 @@ class AdminBookingController extends Controller
         $customerMode = $request->input('customer_mode', 'existing');
         if ($request->input('customer_id') === 'new' || ! empty($request->input('new_customer_name'))) {
             $customerMode = 'new';
+        }
+        if ($customerMode === 'partner' || ($request->input('booking_category') === 'TP' && empty($request->input('customer_id')) && empty($request->input('new_customer_name')))) {
+            $customerMode = 'partner';
         }
 
         if (! $request->filled('booking_category')) {
@@ -218,7 +222,11 @@ class AdminBookingController extends Controller
             'route_geometry' => 'nullable|string',
         ];
 
-        if ($customerMode === 'new') {
+        if ($customerMode === 'partner') {
+            $rules['travel_partner_name'] = 'required|string|max:255';
+            $rules['travel_partner_phone'] = 'required|string|max:50';
+            $rules['partner_passenger_name'] = 'nullable|string|max:255';
+        } elseif ($customerMode === 'new') {
             $rules['new_customer_name'] = 'required|string|max:255';
             $rules['new_customer_phone'] = 'required|string|max:20';
             $rules['new_customer_email'] = 'nullable|email|max:255';
@@ -268,7 +276,32 @@ class AdminBookingController extends Controller
             ]);
         }
 
-        if ($customerMode === 'new') {
+        if ($customerMode === 'partner') {
+            $partnerName = trim((string) $request->input('travel_partner_name'));
+            $partnerPhone = trim((string) $request->input('travel_partner_phone'));
+            $partnerEmail = trim((string) $request->input('travel_partner_email'));
+            $partnerAddress = trim((string) $request->input('travel_partner_address'));
+            $partnerCommission = $request->filled('travel_partner_commission') ? (float) $request->input('travel_partner_commission') : null;
+            $partnerNotes = $request->input('travel_partner_notes');
+
+            $custProfile = $this->syncTravelPartnerProfile(
+                $partnerName,
+                $partnerPhone,
+                $partnerEmail,
+                $partnerAddress,
+                $partnerCommission,
+                $partnerNotes
+            );
+
+            $user = $custProfile->user;
+
+            $guestName = trim((string) $request->input('partner_passenger_name'));
+            if (! empty($guestName)) {
+                $guestNote = "Passenger / Guest Name: {$guestName}";
+                $currentNotes = $data['notes'] ?? '';
+                $data['notes'] = $currentNotes ? "{$currentNotes}\n{$guestNote}" : $guestNote;
+            }
+        } elseif ($customerMode === 'new') {
             $rawPhone = trim($request->input('new_customer_phone'));
             $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
             $phone = ! empty($cleanPhone) ? $cleanPhone : $rawPhone;
@@ -415,7 +448,20 @@ class AdminBookingController extends Controller
             'travel_partner_address' => $data['travel_partner_address'] ?? null,
             'travel_partner_commission' => $data['travel_partner_commission'] ?? null,
             'travel_partner_notes' => $data['travel_partner_notes'] ?? null,
+            'notes' => $data['notes'] ?? $booking->notes,
         ]);
+
+        // Permanently persist/update Travel Partner record for future bookings
+        if ($data['booking_category'] === 'TP' || ! empty($data['travel_partner_name'])) {
+            $this->syncTravelPartnerProfile(
+                $data['travel_partner_name'] ?? null,
+                $data['travel_partner_phone'] ?? null,
+                $data['travel_partner_email'] ?? null,
+                $data['travel_partner_address'] ?? null,
+                $data['travel_partner_commission'] ?? null,
+                $data['travel_partner_notes'] ?? null
+            );
+        }
 
         if (! empty($data['vehicle_id'])) {
             Vehicle::where('id', $data['vehicle_id'])->update(['status' => 'On Trip']);
@@ -465,8 +511,9 @@ class AdminBookingController extends Controller
         $drivers = Driver::where('status', '!=', 'Inactive')->get();
         $activeVehicleCategories = VehicleCategory::where('is_active', true)->with('activeModels')->orderBy('sort_order')->get();
         $corporateClients = $this->getCorporateClients();
+        $travelPartners = $this->getTravelPartners();
 
-        return view('admin.bookings.edit', compact('booking', 'customers', 'vehicles', 'drivers', 'activeVehicleCategories', 'corporateClients'));
+        return view('admin.bookings.edit', compact('booking', 'customers', 'vehicles', 'drivers', 'activeVehicleCategories', 'corporateClients', 'travelPartners'));
     }
 
     public function update(Request $request, Booking $booking, PaymentService $paymentService)
@@ -645,6 +692,18 @@ class AdminBookingController extends Controller
                 }
                 $custRec->save();
             }
+        }
+
+        // Sync or create travel partner profile for future selection
+        if ($booking->booking_category === 'TP' || $request->input('booking_category') === 'TP' || ! empty($updateFields['travel_partner_name'])) {
+            $this->syncTravelPartnerProfile(
+                $updateFields['travel_partner_name'] ?? null,
+                $updateFields['travel_partner_phone'] ?? null,
+                $updateFields['travel_partner_email'] ?? null,
+                $updateFields['travel_partner_address'] ?? null,
+                $updateFields['travel_partner_commission'] ?? null,
+                $updateFields['travel_partner_notes'] ?? null
+            );
         }
 
         // Sync Trip
@@ -1010,5 +1069,160 @@ class AdminBookingController extends Controller
         }
 
         return $corporateClients;
+    }
+
+    protected function getTravelPartners()
+    {
+        $travelPartners = Customer::where('customer_type', 'travel_partner')
+            ->orWhereNotNull('partner_name')
+            ->with('user')
+            ->get()
+            ->map(function ($cust) {
+                $name = $cust->partner_name ?: ($cust->company_name ?: ($cust->user?->name ?? ''));
+
+                return [
+                    'id' => $cust->id,
+                    'user_id' => $cust->user_id,
+                    'name' => $name,
+                    'contact_person' => $cust->contact_person ?? '',
+                    'phone' => $cust->user?->phone ?? $cust->alternate_phone ?? '',
+                    'email' => $cust->user?->email ?? '',
+                    'address' => $cust->billing_address ?: $cust->address ?: '',
+                    'commission' => $cust->partner_commission ?? '',
+                    'notes' => $cust->notes ?? '',
+                ];
+            })
+            ->filter(fn ($p) => ! empty($p['name']))
+            ->unique('name')
+            ->values();
+
+        $existingTpBookings = Booking::whereNotNull('travel_partner_name')
+            ->where('travel_partner_name', '!=', '')
+            ->get();
+
+        foreach ($existingTpBookings as $b) {
+            $partnerName = trim($b->travel_partner_name);
+            if (! $travelPartners->contains(fn ($p) => strcasecmp($p['name'], $partnerName) === 0)) {
+                $travelPartners->push([
+                    'id' => null,
+                    'user_id' => null,
+                    'name' => $partnerName,
+                    'contact_person' => '',
+                    'phone' => $b->travel_partner_phone ?? '',
+                    'email' => $b->travel_partner_email ?? '',
+                    'address' => $b->travel_partner_address ?? '',
+                    'commission' => $b->travel_partner_commission ?? '',
+                    'notes' => $b->travel_partner_notes ?? '',
+                ]);
+            }
+        }
+
+        return $travelPartners->sortBy('name')->values();
+    }
+
+    protected function syncTravelPartnerProfile(?string $name, ?string $phone, ?string $email, ?string $address, $commission = null, ?string $notes = null)
+    {
+        $name = trim((string) $name);
+        if (empty($name)) {
+            return null;
+        }
+
+        $rawPhone = trim((string) $phone);
+        $cleanPhone = substr(preg_replace('/[^0-9]/', '', $rawPhone), -10);
+        $finalPhone = ! empty($cleanPhone) ? $cleanPhone : null;
+        $finalEmail = trim((string) $email);
+
+        // 1. Try to find existing Customer record by partner_name or user name
+        $existingCustomer = Customer::where('partner_name', $name)
+            ->orWhere(function ($q) use ($name) {
+                $q->where('customer_type', 'travel_partner')
+                    ->whereHas('user', fn ($uq) => $uq->where('name', $name));
+            })
+            ->first();
+
+        if (! $existingCustomer && $finalPhone) {
+            $existingCustomer = Customer::where('customer_type', 'travel_partner')
+                ->whereHas('user', fn ($uq) => $uq->where('phone', $finalPhone))
+                ->first();
+        }
+
+        if ($existingCustomer) {
+            $user = $existingCustomer->user;
+            if ($user) {
+                $userUpdates = [];
+                if ($finalPhone && (empty($user->phone) || $user->phone !== $finalPhone)) {
+                    if (! User::where('phone', $finalPhone)->where('id', '!=', $user->id)->exists()) {
+                        $userUpdates['phone'] = $finalPhone;
+                    }
+                }
+                if ($finalEmail && (empty($user->email) || str_contains($user->email, '@vaishnavitours.in'))) {
+                    if (! User::where('email', $finalEmail)->where('id', '!=', $user->id)->exists()) {
+                        $userUpdates['email'] = $finalEmail;
+                    }
+                }
+                if (! empty($userUpdates)) {
+                    $user->update($userUpdates);
+                }
+            }
+
+            $custUpdates = [
+                'customer_type' => 'travel_partner',
+                'partner_name' => $name,
+            ];
+            if (! empty($address)) {
+                $custUpdates['address'] = $address;
+                $custUpdates['billing_address'] = $address;
+            }
+            if ($commission !== null && $commission !== '') {
+                $custUpdates['partner_commission'] = (string) $commission;
+            }
+            if (! empty($notes)) {
+                $custUpdates['notes'] = $notes;
+            }
+            $existingCustomer->update($custUpdates);
+
+            return $existingCustomer;
+        }
+
+        // 2. Find or create user
+        $user = null;
+        if ($finalPhone) {
+            $user = User::where('phone', $finalPhone)->first();
+        }
+        if (! $user && $finalEmail) {
+            $user = User::where('email', $finalEmail)->first();
+        }
+
+        if (! $user) {
+            $userEmail = $finalEmail ?: ($finalPhone ? "{$finalPhone}@vaishnavitours.in" : 'tp_'.uniqid().'@vaishnavitours.in');
+            while (User::where('email', $userEmail)->exists()) {
+                $userEmail = 'tp_'.uniqid().'@vaishnavitours.in';
+            }
+
+            $user = User::create([
+                'name' => $name,
+                'phone' => $finalPhone,
+                'email' => $userEmail,
+                'role' => 'customer',
+                'is_active' => true,
+                'password' => bcrypt('Password@123'),
+            ]);
+        }
+
+        return Customer::updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'customer_type' => 'travel_partner',
+                'partner_name' => $name,
+                'contact_person' => $name,
+                'partner_commission' => ($commission !== null && $commission !== '') ? (string) $commission : null,
+                'address' => $address ?: null,
+                'billing_address' => $address ?: null,
+                'city' => 'Bilaspur',
+                'state' => 'Chhattisgarh',
+                'pincode' => '495001',
+                'notes' => $notes ?: null,
+            ]
+        );
     }
 }

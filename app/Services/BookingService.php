@@ -629,6 +629,15 @@ class BookingService
                     ]);
                 }
 
+                // Broadcast status transition to all admin devices
+                Notification::create([
+                    'user_id' => null,
+                    'title' => "⚡ Booking #{$booking->booking_id} Status: {$newStatus}",
+                    'message' => "Booking #{$booking->booking_id} updated to '{$newStatus}'".($remarks ? " ({$remarks})" : '').'.',
+                    'type' => 'booking',
+                    'action_url' => '/admin/bookings/'.$booking->id,
+                ]);
+
                 // WhatsApp notifications based on new status
                 $waVars = $this->whatsapp->bookingVariables($booking);
                 $customerPhone = $this->whatsapp->getCustomerPhone($booking);
@@ -746,6 +755,15 @@ class BookingService
                 'action_url' => '/customer/bookings/'.$booking->id,
             ]);
 
+            // Broadcast to admin
+            Notification::create([
+                'user_id' => null,
+                'title' => "🚖 Fleet Allocated: #{$booking->booking_id}",
+                'message' => "Vehicle {$vehicle->name} ({$vehicle->registration_number}) allocated to Booking #{$booking->booking_id}.",
+                'type' => 'trip',
+                'action_url' => '/admin/bookings/'.$booking->id,
+            ]);
+
             // WhatsApp: vehicle assigned
             $this->whatsapp->sendEvent(
                 'vehicle_assigned',
@@ -856,6 +874,15 @@ class BookingService
                 'message' => 'Driver has been assigned.',
                 'type' => 'trip',
                 'action_url' => '/customer/bookings/'.$booking->id,
+            ]);
+
+            // Broadcast to admin
+            Notification::create([
+                'user_id' => null,
+                'title' => "👤 Driver Assigned: #{$booking->booking_id}",
+                'message' => "Driver {$driver->name} (📞 {$driver->mobile}) assigned to Booking #{$booking->booking_id}.",
+                'type' => 'trip',
+                'action_url' => '/admin/bookings/'.$booking->id,
             ]);
 
             // WhatsApp: driver assigned

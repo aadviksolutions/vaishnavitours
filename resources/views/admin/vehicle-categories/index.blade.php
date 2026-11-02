@@ -16,7 +16,7 @@
     </div>
     <div class="d-flex align-center gap-2">
         <button type="button" onclick="openAddCategoryModal()" class="btn btn-primary btn-sm" style="display: flex; align-items: center; gap: 5px;">
-            <x-icon name="plus" size="14" /> Add Vehicle Category
+            Add Vehicle Category
         </button>
     </div>
 </div>
@@ -115,7 +115,7 @@
                 <!-- Category Actions -->
                 <div style="display: flex; align-items: center; gap: 6px;">
                     <button type="button" onclick="openAddModelModal({{ $category->id }}, '{{ addslashes($category->name) }}', {{ $category->default_seating_capacity }})" class="btn btn-outline btn-xs" style="font-size: 11px; padding: 3px 8px; color: #059669; border-color: #A7F3D0; background: #ECFDF5;">
-                        <x-icon name="plus" size="12" /> Add Model
+                        Add Model
                     </button>
 
                     <button type="button" onclick="openEditCategoryModal({{ json_encode($category) }})" class="btn btn-outline btn-xs" style="font-size: 11px; padding: 3px 8px; color: #2563EB; border-color: #BFDBFE; background: #EFF6FF;">

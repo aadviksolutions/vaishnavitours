@@ -138,7 +138,7 @@
             {{ $nextDate->format('M Y') }} <x-icon name="chevron-right" :size="14" />
         </a>
         <a href="{{ route('admin.bookings.create') }}" class="btn btn-primary btn-sm d-inline-flex align-center gap-1 ml-2">
-            <x-icon name="plus" :size="14" /> + New Booking
+            Create Booking
         </a>
     </div>
 </div>

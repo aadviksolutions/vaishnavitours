@@ -192,7 +192,7 @@
                                     @foreach($locations as $location)
                                         <option value="{{ $location }}" {{ old('pickup_location', request('pickup_location')) === $location ? 'selected' : '' }}>{{ $location }}</option>
                                     @endforeach
-                                    <option value="Other" {{ old('pickup_location') === 'Other' || old('pickup_other') ? 'selected' : '' }}>➕ Other Location (Specify below)</option>
+                                    <option value="Other" {{ old('pickup_location') === 'Other' || old('pickup_other') ? 'selected' : '' }}>+ Other Location (Specify below)</option>
                                 </select>
                                 <div id="pickupOtherGroup" style="display: {{ old('pickup_other') || old('pickup_location') === 'Other' ? 'block' : 'none' }}; margin-top: 0.35rem;">
                                     <div class="d-flex gap-1">
@@ -232,7 +232,7 @@
                                     @foreach($locations as $location)
                                         <option value="{{ $location }}" {{ old('destination', request('destination')) === $location ? 'selected' : '' }}>{{ $location }}</option>
                                     @endforeach
-                                    <option value="Other" {{ old('destination') === 'Other' || old('destination_other') ? 'selected' : '' }}>➕ Other Location (Specify below)</option>
+                                    <option value="Other" {{ old('destination') === 'Other' || old('destination_other') ? 'selected' : '' }}>+ Other Location (Specify below)</option>
                                 </select>
                                 <div id="destinationOtherGroup" style="display: {{ old('destination_other') || old('destination') === 'Other' ? 'block' : 'none' }}; margin-top: 0.35rem;">
                                     <div class="d-flex gap-1">

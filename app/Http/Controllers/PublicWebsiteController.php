@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Enquiry;
 use App\Models\Feedback;
+use App\Models\Notification;
 use App\Models\PickupLocation;
 use App\Models\RateRoute;
 use App\Models\RateVehiclePrice;
@@ -643,6 +644,14 @@ class PublicWebsiteController extends Controller
 
         try {
             $enquiry = Enquiry::create($data);
+
+            Notification::create([
+                'user_id' => null, // Broadcast to admin devices
+                'title' => '📩 New Customer Enquiry: '.($enquiry->name ?? 'Guest'),
+                'message' => 'New enquiry #'.($enquiry->enquiry_id ?? $enquiry->id).' from '.($enquiry->name ?? 'Customer').' (📞 '.($enquiry->phone ?? 'N/A').'): '.substr($enquiry->message ?? 'New message', 0, 100),
+                'type' => 'enquiry',
+                'action_url' => route('admin.enquiries.show', $enquiry->id),
+            ]);
 
             // WhatsApp notification for website enquiry
             $whatsapp = app(WhatsappService::class);

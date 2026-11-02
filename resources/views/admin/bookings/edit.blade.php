@@ -32,8 +32,23 @@
             <!-- Customer -->
             <div class="card mb-4">
                 <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px;">
-                    <x-icon name="user" :size="16" /> Customer & Passenger
+                    <x-icon name="user" :size="16" /> Passenger &amp; Customer Details / Travel Partner Details
                 </h3>
+
+                @if($booking->booking_category === 'TP' || $booking->travel_partner_name)
+                    <div style="background: #FFFBEB; border: 1.5px solid #FCD34D; border-radius: 8px; padding: 10px 14px; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <div class="d-flex align-center gap-2">
+                            <span style="font-size: 16px;">🤝</span>
+                            <div>
+                                <strong style="color: #92400E; font-size: 13px;">Travel Partner Reservation: {{ $booking->travel_partner_name ?: 'Partner Reserved' }}</strong>
+                                <p style="color: #B45309; font-size: 11.5px; margin: 0;">Reservation provided by Travel Partner / Agent. The partner is linked as the primary billing contact.</p>
+                            </div>
+                        </div>
+                        <span class="badge" style="background: #FEF3C7; color: #92400E; font-size: 11px; font-weight: 700; border: 1px solid #FDE68A; padding: 4px 10px; border-radius: 9999px;">
+                            TP Booking
+                        </span>
+                    </div>
+                @endif
 
                 <div class="form-group mb-3">
                     <div class="d-flex justify-between align-center mb-1">
@@ -158,7 +173,7 @@
                         <div class="d-flex align-center gap-2">
                             <select id="corporate_client_select" class="form-select form-select-sm" onchange="onCorporateDropdownChange(this)" style="font-size: 12px; border: 1.5px solid #DDD6FE; border-radius: 6px;">
                                 <option value="">-- Choose Existing Saved Corporate Client --</option>
-                                <option value="new" style="font-weight: 800; color: #6D28D9; background: #F5F3FF;">➕ + Add New Corporate Client</option>
+                                <option value="new" style="font-weight: 700; color: #6D28D9; background: #F5F3FF;">+ Add New Corporate Client</option>
                                 @foreach($corporateClients as $index => $cc)
                                     <option value="{{ $index }}"
                                             data-company="{{ $cc['company_name'] }}"
@@ -210,36 +225,110 @@
             @if($booking->booking_category === 'TP' || $booking->travel_partner_name)
                 <!-- Travel Partner Dedicated Workflow Fields -->
                 <div class="card mb-4" style="background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px;">
-                    <h3 style="font-size: 1.15rem; font-weight: 800; color: #92400E; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
-                        <x-icon name="users" :size="16" /> Travel Partner / Agent Referral Details
-                    </h3>
+                    <div class="d-flex justify-between align-center mb-2">
+                        <h3 style="font-size: 1.15rem; font-weight: 800; color: #92400E; margin: 0; display: flex; align-items: center; gap: 8px;">
+                            <x-icon name="users" :size="16" /> Travel Partner / Agent Referral Details
+                        </h3>
+                        <span class="badge" style="background: #FEF3C7; color: #92400E; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 9999px;">
+                            {{ count($travelPartners ?? []) }} Saved Travel Partners
+                        </span>
+                    </div>
+
+                    <!-- Travel Partner Search & Dropdown Picker -->
+                    <div style="background: #ffffff; border: 1.5px solid #FCD34D; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px;">
+                        <div class="d-flex justify-between align-center mb-1">
+                            <label style="font-size: 11.5px; font-weight: 700; color: #92400E; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                                Select Saved Travel Partner or Edit
+                            </label>
+                            <button type="button" onclick="setNewTravelPartnerMode()" style="background: none; border: none; font-size: 11.5px; color: #B45309; font-weight: 700; cursor: pointer; text-decoration: underline; padding: 0;">
+                                + Clear & Add New Partner
+                            </button>
+                        </div>
+
+                        <!-- Live Search Box with Icon -->
+                        <div style="position: relative;" class="mb-2">
+                            <div style="position: relative; display: flex; align-items: center;">
+                                <span style="position: absolute; left: 10px; color: #D97706; pointer-events: none; display: flex; align-items: center;">
+                                    <x-icon name="search" :size="14" />
+                                </span>
+                                <input type="text" 
+                                       id="travel_partner_search_input" 
+                                       class="form-control form-control-sm" 
+                                       placeholder="🔍 Search saved partner by Agency Name, Mobile, Email..." 
+                                       autocomplete="off"
+                                       style="padding-left: 32px; padding-right: 30px; border: 1.5px solid #FDE68A; border-radius: 6px; font-size: 12.5px;"
+                                       onkeyup="handleTravelPartnerSearch(this.value)">
+                                <button type="button" 
+                                        id="btn_clear_tp_search" 
+                                        onclick="clearTravelPartnerSearch()" 
+                                        style="display: none; position: absolute; right: 8px; background: transparent; border: none; color: #D97706; cursor: pointer; font-size: 14px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;"
+                                        title="Clear search">✕</button>
+                            </div>
+
+                            <!-- Live floating search results dropdown -->
+                            <div id="travel_partner_search_dropdown" 
+                                 style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #ffffff; border: 1.5px solid #D97706; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2); max-height: 220px; overflow-y: auto; z-index: 1060;">
+                            </div>
+                        </div>
+
+                        <!-- Dropdown Select directly -->
+                        <div class="d-flex align-center gap-2">
+                            <select id="travel_partner_select" class="form-select form-select-sm" onchange="onTravelPartnerDropdownChange(this)" style="font-size: 12px; border: 1.5px solid #FDE68A; border-radius: 6px;">
+                                <option value="">-- Choose Existing Saved Travel Partner --</option>
+                                <option value="new" style="font-weight: 700; color: #B45309; background: #FFFBEB;">+ Add New Travel Partner</option>
+                                @foreach($travelPartners ?? [] as $index => $tp)
+                                    <option value="{{ $index }}"
+                                            data-name="{{ $tp['name'] }}"
+                                            data-phone="{{ $tp['phone'] }}"
+                                            data-email="{{ $tp['email'] }}"
+                                            data-address="{{ $tp['address'] }}"
+                                            data-commission="{{ $tp['commission'] }}"
+                                            data-notes="{{ $tp['notes'] }}"
+                                            {{ old('travel_partner_name', $booking->travel_partner_name) === $tp['name'] ? 'selected' : '' }}>
+                                        {{ $tp['name'] }} ({{ $tp['phone'] ? '📞 ' . $tp['phone'] : 'Saved' }}{{ $tp['commission'] ? ' • Comm: ₹' . $tp['commission'] : '' }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Selected Travel Partner Badge -->
+                        <div id="travel_partner_selected_card" style="display: {{ old('travel_partner_name', $booking->travel_partner_name) ? 'block' : 'none' }}; margin-top: 8px; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 6px; padding: 6px 10px; font-size: 12px; color: #065F46;">
+                            <div class="d-flex justify-between align-center">
+                                <span id="travel_partner_selected_text" style="font-weight: 700;">
+                                    ✓ Travel Partner: {{ old('travel_partner_name', $booking->travel_partner_name) }}
+                                </span>
+                                <button type="button" onclick="setNewTravelPartnerMode()" style="background: none; border: none; color: #047857; text-decoration: underline; font-size: 11px; cursor: pointer; padding: 0;">Change / Clear</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="grid grid-3 gap-3 mb-3">
                         <div>
                             <label class="form-label" style="font-weight: 700; color: #78350F;">Partner / Agency Name</label>
-                            <input type="text" name="travel_partner_name" class="form-control" value="{{ old('travel_partner_name', $booking->travel_partner_name) }}" placeholder="e.g. MakeMyTrip, Agency">
+                            <input type="text" name="travel_partner_name" id="tp_agency_name" class="form-control" value="{{ old('travel_partner_name', $booking->travel_partner_name) }}" placeholder="e.g. MakeMyTrip, Agency">
                         </div>
                         <div>
                             <label class="form-label" style="font-weight: 700; color: #78350F;">Partner Mobile / Phone</label>
-                            <input type="text" name="travel_partner_phone" class="form-control" value="{{ old('travel_partner_phone', $booking->travel_partner_phone) }}" placeholder="e.g. 9876543210">
+                            <input type="text" name="travel_partner_phone" id="tp_phone" class="form-control" value="{{ old('travel_partner_phone', $booking->travel_partner_phone) }}" placeholder="e.g. 9876543210">
                         </div>
                         <div>
                             <label class="form-label" style="font-weight: 700; color: #78350F;">Partner Email</label>
-                            <input type="email" name="travel_partner_email" class="form-control" value="{{ old('travel_partner_email', $booking->travel_partner_email) }}" placeholder="e.g. partner@agency.com">
+                            <input type="email" name="travel_partner_email" id="tp_email" class="form-control" value="{{ old('travel_partner_email', $booking->travel_partner_email) }}" placeholder="e.g. partner@agency.com">
                         </div>
                     </div>
                     <div class="grid grid-2 gap-3 mb-3">
                         <div>
                             <label class="form-label" style="font-weight: 700; color: #78350F;">Partner Office Address</label>
-                            <input type="text" name="travel_partner_address" class="form-control" value="{{ old('travel_partner_address', $booking->travel_partner_address) }}" placeholder="Office / Shop Address">
+                            <input type="text" name="travel_partner_address" id="tp_address" class="form-control" value="{{ old('travel_partner_address', $booking->travel_partner_address) }}" placeholder="Office / Shop Address">
                         </div>
                         <div>
                             <label class="form-label" style="font-weight: 700; color: #78350F;">Partner Commission / Payout (₹)</label>
-                            <input type="number" step="0.01" name="travel_partner_commission" class="form-control" value="{{ old('travel_partner_commission', $booking->travel_partner_commission) }}" placeholder="500.00">
+                            <input type="number" step="0.01" name="travel_partner_commission" id="tp_commission" class="form-control" value="{{ old('travel_partner_commission', $booking->travel_partner_commission) }}" placeholder="500.00">
                         </div>
                     </div>
                     <div>
                         <label class="form-label" style="font-weight: 700; color: #78350F;">Partner Notes / Reference</label>
-                        <textarea name="travel_partner_notes" class="form-control" rows="2" placeholder="Special partner instructions...">{{ old('travel_partner_notes', $booking->travel_partner_notes) }}</textarea>
+                        <textarea name="travel_partner_notes" id="tp_notes" class="form-control" rows="2" placeholder="Special partner instructions...">{{ old('travel_partner_notes', $booking->travel_partner_notes) }}</textarea>
                     </div>
                 </div>
             @endif
@@ -419,7 +508,7 @@
                         </div>
                         <select name="vehicle_id" id="vehicle_id" class="form-select" onchange="onAdminVehicleSelectChange(this)">
                             <option value="">-- No Vehicle Assigned --</option>
-                            <option value="new_vehicle" style="font-weight: 800; color: #2563EB; background: #EFF6FF;">➕ + Add New Vehicle</option>
+                            <option value="new_vehicle" style="font-weight: 700; color: #2563EB; background: #EFF6FF;">+ Add New Vehicle</option>
                             <optgroup label="🏢 Own Company Fleet">
                                 @foreach($vehicles->where('is_third_party', false) as $veh)
                                     <option value="{{ $veh->id }}" {{ old('vehicle_id', $booking->vehicle_id) == $veh->id ? 'selected' : '' }}>
@@ -438,9 +527,15 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="driver_id" class="form-label">Chauffeur / Driver</label>
-                        <select name="driver_id" id="driver_id" class="form-select">
+                        <div class="d-flex justify-between align-center mb-1">
+                            <label for="driver_id" class="form-label mb-0">Chauffeur / Driver</label>
+                            <button type="button" onclick="openQuickDriverModal()" style="background: none; border: none; color: #059669; font-weight: 700; font-size: 11px; cursor: pointer; text-decoration: underline; padding: 0;">
+                                + Add New Driver
+                            </button>
+                        </div>
+                        <select name="driver_id" id="driver_id" class="form-select" onchange="onAdminDriverSelectChange(this)">
                             <option value="">-- No Driver Assigned --</option>
+                            <option value="new_driver" style="font-weight: 700; color: #059669; background: #ECFDF5;">+ Add New Driver</option>
                             @foreach($drivers as $drv)
                                 <option value="{{ $drv->id }}" {{ old('driver_id', $booking->driver_id) == $drv->id ? 'selected' : '' }}>
                                     {{ $drv->name }} ({{ $drv->mobile }})
@@ -504,7 +599,7 @@
 <div id="quickVehicleModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10000; align-items: center; justify-content: center; padding: 1rem;">
     <div style="background: #fff; border-radius: 8px; width: 100%; max-width: 500px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto;">
         <div class="d-flex justify-between align-center mb-3">
-            <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--dark-900);">➕ Quick Add Fleet Vehicle</h3>
+            <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--dark-900);">Quick Add Fleet Vehicle</h3>
             <button type="button" onclick="closeQuickVehicleModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
         </div>
         <form id="quickVehicleForm" onsubmit="submitQuickVehicle(event)">
@@ -555,8 +650,48 @@
     </div>
 </div>
 
+<!-- Quick Add Driver Modal -->
+<div id="quickDriverModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10000; align-items: center; justify-content: center; padding: 1rem;">
+    <div style="background: #fff; border-radius: 8px; width: 100%; max-width: 460px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.25);">
+        <div class="d-flex justify-between align-center mb-3">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: #065F46; display: flex; align-items: center; gap: 8px;">
+                <x-icon name="user-check" :size="18" /> Add &amp; Assign New Driver
+            </h3>
+            <button type="button" onclick="closeQuickDriverModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
+        </div>
+        <form id="quickDriverForm" onsubmit="submitQuickDriver(event)">
+            <div class="mb-3">
+                <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 2px;">Driver Full Name *</label>
+                <input type="text" id="qd_name" class="form-control form-control-sm" placeholder="e.g. Ramesh Kumar Patel" required>
+            </div>
+            <div class="mb-3">
+                <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 2px;">Mobile / Phone (10 digits) *</label>
+                <input type="tel" id="qd_mobile" class="form-control form-control-sm" placeholder="e.g. 9876543210" maxlength="10" required>
+            </div>
+            <div class="mb-3">
+                <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 2px;">License Number (Optional - Auto-generated if blank)</label>
+                <input type="text" id="qd_license" class="form-control form-control-sm" placeholder="e.g. CG10-20230001234">
+            </div>
+            <div class="mb-3">
+                <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 2px;">Initial Status</label>
+                <select id="qd_status" class="form-select form-select-sm">
+                    <option value="Available" selected>Available (Ready for Dispatch)</option>
+                    <option value="Assigned">Assigned</option>
+                    <option value="On Trip">On Trip</option>
+                </select>
+            </div>
+            <div id="qd_error" style="display: none; color: #dc2626; font-size: 12px; margin-bottom: 10px;"></div>
+            <div class="d-flex justify-end gap-2">
+                <button type="button" onclick="closeQuickDriverModal()" class="btn btn-outline btn-sm">Cancel</button>
+                <button type="submit" id="qd_submit_btn" class="btn btn-sm" style="background: #059669; color: #fff; font-weight: 700;">Save &amp; Assign Driver</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     const corporateClientsData = @json($corporateClients ?? []);
+    const travelPartnersData = @json($travelPartners ?? []);
     let lastValidVehicle = @json(old('vehicle_id', $booking->vehicle_id));
 
     function handleCorporateSearch(q) {
@@ -582,7 +717,7 @@
 
         let html = '';
         html += `<div onclick="setNewCorporateClientMode('${q.replace(/'/g, "\\'")}')" style="padding: 9px 12px; border-bottom: 1.5px solid #DDD6FE; background: #F5F3FF; cursor: pointer; font-weight: 700; color: #6D28D9; font-size: 12px; display: flex; align-items: center; gap: 6px;">
-            <span>➕</span> <span>+ Add New Corporate Client: <strong>"${q}"</strong></span>
+            <span>+ Add New Corporate Client: <strong>"${q}"</strong></span>
         </div>`;
 
         if (filtered.length === 0) {
@@ -660,7 +795,7 @@
         const card = document.getElementById('corporate_selected_card');
         const text = document.getElementById('corporate_selected_text');
         if (card && text) {
-            text.textContent = `➕ New Corporate Client (Details will be updated upon saving)`;
+            text.textContent = `New Corporate Client (Details will be updated upon saving)`;
             card.style.display = 'block';
             card.style.background = '#EFF6FF';
             card.style.borderColor = '#BFDBFE';
@@ -669,6 +804,127 @@
 
         clearCorporateSearch();
         document.getElementById('corp_company_name').focus();
+    }
+
+    // Travel Partner Search & Selection Functions
+    function handleTravelPartnerSearch(q) {
+        q = (q || '').trim().toLowerCase();
+        const dropdown = document.getElementById('travel_partner_search_dropdown');
+        const clearBtn = document.getElementById('btn_clear_tp_search');
+        if (!dropdown) return;
+
+        if (!q) {
+            dropdown.style.display = 'none';
+            if (clearBtn) clearBtn.style.display = 'none';
+            return;
+        }
+
+        if (clearBtn) clearBtn.style.display = 'flex';
+
+        const filtered = travelPartnersData.filter(p => {
+            return (p.name && p.name.toLowerCase().includes(q)) ||
+                   (p.phone && p.phone.includes(q)) ||
+                   (p.email && p.email.toLowerCase().includes(q)) ||
+                   (p.address && p.address.toLowerCase().includes(q));
+        });
+
+        let html = '';
+        html += `<div onclick="setNewTravelPartnerMode('${q.replace(/'/g, "\\'")}')" style="padding: 9px 12px; border-bottom: 1.5px solid #FDE68A; background: #FFFBEB; cursor: pointer; font-weight: 700; color: #92400E; font-size: 12px; display: flex; align-items: center; gap: 6px;">
+            <span>+ Add New Travel Partner: <strong>"${q}"</strong></span>
+        </div>`;
+
+        if (filtered.length === 0) {
+            html += `<div style="padding: 10px 12px; font-size: 12px; color: var(--slate-500);">No saved partners matching "${q}". Click above to add as new partner.</div>`;
+        } else {
+            filtered.forEach(p => {
+                const origIdx = travelPartnersData.indexOf(p);
+                html += `<div onclick="selectTravelPartner(${origIdx})" style="padding: 8px 12px; border-bottom: 1px solid var(--slate-100); cursor: pointer; font-size: 12px; transition: background 0.15s;" onmouseover="this.style.background='#FFFBEB'" onmouseout="this.style.background='transparent'">
+                    <div style="font-weight: 700; color: #1E293B;">${p.name}</div>
+                    <div style="font-size: 11px; color: var(--slate-500); display: flex; gap: 8px; flex-wrap: wrap;">
+                        ${p.phone ? `<span>📞 ${p.phone}</span>` : ''}
+                        ${p.email ? `<span>✉️ ${p.email}</span>` : ''}
+                        ${p.commission ? `<span>💵 Comm: ₹${p.commission}</span>` : ''}
+                    </div>
+                </div>`;
+            });
+        }
+
+        dropdown.innerHTML = html;
+        dropdown.style.display = 'block';
+    }
+
+    function clearTravelPartnerSearch() {
+        const inp = document.getElementById('travel_partner_search_input');
+        if (inp) inp.value = '';
+        const dropdown = document.getElementById('travel_partner_search_dropdown');
+        if (dropdown) dropdown.style.display = 'none';
+        const clearBtn = document.getElementById('btn_clear_tp_search');
+        if (clearBtn) clearBtn.style.display = 'none';
+    }
+
+    function onTravelPartnerDropdownChange(sel) {
+        if (sel.value === 'new') {
+            setNewTravelPartnerMode();
+        } else if (sel.value !== '') {
+            selectTravelPartner(parseInt(sel.value));
+        }
+    }
+
+    function selectTravelPartner(idx) {
+        const p = travelPartnersData[idx];
+        if (!p) return;
+
+        document.getElementById('tp_agency_name').value = p.name || '';
+        document.getElementById('tp_phone').value = p.phone || '';
+        document.getElementById('tp_email').value = p.email || '';
+        document.getElementById('tp_address').value = p.address || '';
+        if (p.commission !== null && p.commission !== undefined && p.commission !== '') {
+            document.getElementById('tp_commission').value = p.commission;
+        }
+        if (p.notes) {
+            document.getElementById('tp_notes').value = p.notes;
+        }
+
+        const sel = document.getElementById('travel_partner_select');
+        if (sel) sel.value = idx;
+
+        const card = document.getElementById('travel_partner_selected_card');
+        const text = document.getElementById('travel_partner_selected_text');
+        if (card && text) {
+            text.textContent = `✓ Selected Partner: ${p.name} (${p.phone ? '📞 ' + p.phone : 'Saved Partner'})`;
+            card.style.display = 'block';
+            card.style.background = '#ECFDF5';
+            card.style.borderColor = '#A7F3D0';
+            card.style.color = '#065F46';
+        }
+
+        const dropdown = document.getElementById('travel_partner_search_dropdown');
+        if (dropdown) dropdown.style.display = 'none';
+    }
+
+    function setNewTravelPartnerMode(prefillName = '') {
+        document.getElementById('tp_agency_name').value = prefillName;
+        document.getElementById('tp_phone').value = '';
+        document.getElementById('tp_email').value = '';
+        document.getElementById('tp_address').value = '';
+        document.getElementById('tp_commission').value = '';
+        document.getElementById('tp_notes').value = '';
+
+        const sel = document.getElementById('travel_partner_select');
+        if (sel) sel.value = 'new';
+
+        const card = document.getElementById('travel_partner_selected_card');
+        const text = document.getElementById('travel_partner_selected_text');
+        if (card && text) {
+            text.textContent = `New Travel Partner (Details will be saved permanently upon update)`;
+            card.style.display = 'block';
+            card.style.background = '#FFFBEB';
+            card.style.borderColor = '#FDE68A';
+            card.style.color = '#92400E';
+        }
+
+        clearTravelPartnerSearch();
+        document.getElementById('tp_agency_name').focus();
     }
 
     // Quick Add Vehicle functions
@@ -754,6 +1010,86 @@
         } finally {
             btn.disabled = false;
             btn.textContent = 'Register & Assign Vehicle';
+        }
+    }
+
+    // Quick Add Driver functions
+    let lastValidDriver = @json(old('driver_id', $booking->driver_id));
+    function openQuickDriverModal() {
+        const m = document.getElementById('quickDriverModal');
+        if (m) {
+            m.style.display = 'flex';
+            document.getElementById('qd_name').focus();
+        }
+    }
+
+    function closeQuickDriverModal() {
+        const m = document.getElementById('quickDriverModal');
+        if (m) m.style.display = 'none';
+        const dSel = document.getElementById('driver_id');
+        if (dSel && dSel.value === 'new_driver') {
+            dSel.value = lastValidDriver;
+        }
+    }
+
+    function onAdminDriverSelectChange(sel) {
+        if (sel.value === 'new_driver') {
+            openQuickDriverModal();
+        } else {
+            lastValidDriver = sel.value;
+        }
+    }
+
+    async function submitQuickDriver(e) {
+        e.preventDefault();
+        const btn = document.getElementById('qd_submit_btn');
+        const err = document.getElementById('qd_error');
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+        err.style.display = 'none';
+
+        const name = document.getElementById('qd_name').value.trim();
+        const mobile = document.getElementById('qd_mobile').value.trim();
+        const license = document.getElementById('qd_license').value.trim();
+        const status = document.getElementById('qd_status').value;
+
+        try {
+            const resp = await fetch('{{ route('admin.drivers.quick') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: name,
+                    mobile: mobile,
+                    license_number: license,
+                    status: status
+                })
+            });
+            const data = await resp.json();
+            if (data.success && data.driver) {
+                const drv = data.driver;
+                const dSel = document.getElementById('driver_id');
+                const opt = document.createElement('option');
+                opt.value = drv.id;
+                opt.textContent = `${drv.name} (${drv.mobile})`;
+                dSel.appendChild(opt);
+                dSel.value = drv.id;
+                lastValidDriver = drv.id;
+                closeQuickDriverModal();
+                alert(`✓ Chauffeur '${drv.name}' registered and assigned!`);
+            } else {
+                err.textContent = data.message || 'Error saving driver.';
+                err.style.display = 'block';
+            }
+        } catch (ex) {
+            err.textContent = 'Server error: ' + ex.message;
+            err.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Save & Assign Driver';
         }
     }
     const activeVehicleCategoriesData = @json($activeVehicleCategories ?? []);

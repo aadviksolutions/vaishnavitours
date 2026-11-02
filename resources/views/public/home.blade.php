@@ -327,14 +327,14 @@
                                                 </li>
                                             @endforeach
                                             <li class="searchable-select-item is-other-item" data-value="Other" role="option" tabindex="0" style="border-top: 1px dashed var(--slate-300); color: var(--primary); font-weight: 700; background: #F8FAFC;">
-                                                <span>➕ Other Location (Specify below)</span>
+                                                <span>+ Other Location (Specify below)</span>
                                                 <span style="font-size: 10px; color: var(--accent); font-weight: 700; background: #EFF6FF; padding: 2px 5px; border-radius: 3px;">Custom</span>
                                             </li>
                                         </ul>
                                         <div class="searchable-select-empty" id="pickupSelectEmpty" style="display: none;">
                                             <div>No matching location in quick list.</div>
                                             <button type="button" id="btnPickupCustomFallback" style="margin-top: 4px; background: none; border: none; color: var(--primary); font-weight: 700; text-decoration: underline; font-size: 11px; cursor: pointer; padding: 0;">
-                                                ➕ Specify custom location
+                                                + Specify custom location
                                             </button>
                                         </div>
                                     </div>
@@ -387,14 +387,14 @@
                                                 </li>
                                             @endforeach
                                             <li class="searchable-select-item is-other-item" data-value="Other" role="option" tabindex="0" style="border-top: 1px dashed var(--slate-300); color: var(--primary); font-weight: 700; background: #F8FAFC;">
-                                                <span>➕ Other Location (Specify below)</span>
+                                                <span>+ Other Location (Specify below)</span>
                                                 <span style="font-size: 10px; color: var(--accent); font-weight: 700; background: #EFF6FF; padding: 2px 5px; border-radius: 3px;">Custom</span>
                                             </li>
                                         </ul>
                                         <div class="searchable-select-empty" id="destinationSelectEmpty" style="display: none;">
                                             <div>No matching destination in quick list.</div>
                                             <button type="button" id="btnDestinationCustomFallback" style="margin-top: 4px; background: none; border: none; color: var(--primary); font-weight: 700; text-decoration: underline; font-size: 11px; cursor: pointer; padding: 0;">
-                                                ➕ Specify custom destination
+                                                + Specify custom destination
                                             </button>
                                         </div>
                                     </div>

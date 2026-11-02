@@ -124,7 +124,7 @@
                 <div class="d-flex align-center gap-2">
                     <select id="corporate_client_select" class="form-select form-select-sm" onchange="onCorporateDropdownChange(this)" style="font-size: 12px; border: 1.5px solid #DDD6FE; border-radius: 6px;">
                         <option value="">-- Choose Existing Saved Corporate Client --</option>
-                        <option value="new" style="font-weight: 800; color: #6D28D9; background: #F5F3FF;">➕ + Add New Corporate Client</option>
+                        <option value="new" style="font-weight: 700; color: #6D28D9; background: #F5F3FF;">+ Add New Corporate Client</option>
                         @foreach($corporateClients as $index => $cc)
                             <option value="{{ $index }}"
                                     data-company="{{ $cc['company_name'] }}"
@@ -171,36 +171,107 @@
 
         <!-- Travel Partner Dedicated Workflow Fields -->
         <div id="travelPartnerFieldsCard" style="display: {{ old('booking_category', isset($prefill) && $prefill->source === 'third_party' ? 'TP' : 'MAN') === 'TP' ? 'block' : 'none' }}; margin-top: 1rem; padding: 1.15rem; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px;">
-            <div style="font-weight: 800; font-size: 13.5px; color: #92400E; margin-bottom: 0.65rem; display: flex; align-items: center; gap: 6px;">
-                <x-icon name="users" :size="15" /> Travel Partner / Agent Referral Details
+            <div class="d-flex justify-between align-center mb-2">
+                <div style="font-weight: 800; font-size: 13.5px; color: #92400E; display: flex; align-items: center; gap: 6px;">
+                    <x-icon name="users" :size="15" /> Travel Partner / Agent Referral Details
+                </div>
+                <span class="badge" style="background: #FEF3C7; color: #92400E; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 9999px;">
+                    {{ count($travelPartners ?? []) }} Saved Travel Partners
+                </span>
             </div>
+
+            <!-- Travel Partner Search & Dropdown Picker -->
+            <div style="background: #ffffff; border: 1.5px solid #FCD34D; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px;">
+                <div class="d-flex justify-between align-center mb-1">
+                    <label style="font-size: 11.5px; font-weight: 700; color: #92400E; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Select Saved Travel Partner or Add New
+                    </label>
+                    <button type="button" onclick="setNewTravelPartnerMode()" style="background: none; border: none; font-size: 11.5px; color: #B45309; font-weight: 700; cursor: pointer; text-decoration: underline; padding: 0;">
+                        + Clear & Add New Travel Partner
+                    </button>
+                </div>
+
+                <!-- Live Search Box with Icon -->
+                <div style="position: relative;" class="mb-2">
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <span style="position: absolute; left: 10px; color: #D97706; pointer-events: none; display: flex; align-items: center;">
+                            <x-icon name="search" :size="14" />
+                        </span>
+                        <input type="text" 
+                               id="travel_partner_search_input" 
+                               class="form-control form-control-sm" 
+                               placeholder="🔍 Search saved partner by Agency Name, Mobile, Email..." 
+                               autocomplete="off"
+                               style="padding-left: 32px; padding-right: 30px; border: 1.5px solid #FDE68A; border-radius: 6px; font-size: 12.5px;"
+                               onkeyup="handleTravelPartnerSearch(this.value)">
+                        <button type="button" 
+                                id="btn_clear_tp_search" 
+                                onclick="clearTravelPartnerSearch()" 
+                                style="display: none; position: absolute; right: 8px; background: transparent; border: none; color: #D97706; cursor: pointer; font-size: 14px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;"
+                                title="Clear search">✕</button>
+                    </div>
+
+                    <!-- Live floating search results dropdown -->
+                    <div id="travel_partner_search_dropdown" 
+                         style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #ffffff; border: 1.5px solid #D97706; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2); max-height: 220px; overflow-y: auto; z-index: 1060;">
+                    </div>
+                </div>
+
+                <!-- Dropdown Select directly -->
+                <div class="d-flex align-center gap-2">
+                    <select id="travel_partner_select" class="form-select form-select-sm" onchange="onTravelPartnerDropdownChange(this)" style="font-size: 12px; border: 1.5px solid #FDE68A; border-radius: 6px;">
+                        <option value="">-- Choose Existing Saved Travel Partner --</option>
+                        <option value="new" style="font-weight: 700; color: #B45309; background: #FFFBEB;">+ Add New Travel Partner</option>
+                        @foreach($travelPartners ?? [] as $index => $tp)
+                            <option value="{{ $index }}"
+                                    data-name="{{ $tp['name'] }}"
+                                    data-phone="{{ $tp['phone'] }}"
+                                    data-email="{{ $tp['email'] }}"
+                                    data-address="{{ $tp['address'] }}"
+                                    data-commission="{{ $tp['commission'] }}"
+                                    data-notes="{{ $tp['notes'] }}">
+                                {{ $tp['name'] }} ({{ $tp['phone'] ? '📞 ' . $tp['phone'] : 'Saved' }}{{ $tp['commission'] ? ' • Comm: ₹' . $tp['commission'] : '' }})
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Selected Travel Partner Badge -->
+                <div id="travel_partner_selected_card" style="display: none; margin-top: 8px; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 6px; padding: 6px 10px; font-size: 12px; color: #065F46;">
+                    <div class="d-flex justify-between align-center">
+                        <span id="travel_partner_selected_text" style="font-weight: 700;">✓ Saved Travel Partner Details Loaded</span>
+                        <button type="button" onclick="setNewTravelPartnerMode()" style="background: none; border: none; color: #047857; text-decoration: underline; font-size: 11px; cursor: pointer; padding: 0;">Change / Clear</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="grid grid-3 gap-3 mb-2">
                 <div>
                     <label style="font-size: 11px; font-weight: 700; color: #78350F; display: block; margin-bottom: 3px;">Travel Partner / Agency Name *</label>
-                    <input type="text" name="travel_partner_name" class="form-control form-control-sm" placeholder="e.g. MakeMyTrip, Sharma Tour & Travels" value="{{ old('travel_partner_name', isset($prefill) && $prefill->source === 'third_party' ? $prefill->name : '') }}">
+                    <input type="text" name="travel_partner_name" id="tp_agency_name" class="form-control form-control-sm" placeholder="e.g. MakeMyTrip, Sharma Tour & Travels" value="{{ old('travel_partner_name', isset($prefill) && $prefill->source === 'third_party' ? $prefill->name : '') }}">
                 </div>
                 <div>
                     <label style="font-size: 11px; font-weight: 700; color: #78350F; display: block; margin-bottom: 3px;">Partner Mobile / Phone *</label>
-                    <input type="text" name="travel_partner_phone" class="form-control form-control-sm" placeholder="e.g. 9876543210" value="{{ old('travel_partner_phone', isset($prefill) && $prefill->source === 'third_party' ? $prefill->phone : '') }}">
+                    <input type="text" name="travel_partner_phone" id="tp_phone" class="form-control form-control-sm" placeholder="e.g. 9876543210" value="{{ old('travel_partner_phone', isset($prefill) && $prefill->source === 'third_party' ? $prefill->phone : '') }}">
                 </div>
                 <div>
                     <label style="font-size: 11px; font-weight: 700; color: #78350F; display: block; margin-bottom: 3px;">Partner Email</label>
-                    <input type="email" name="travel_partner_email" class="form-control form-control-sm" placeholder="e.g. partner@travelagency.com" value="{{ old('travel_partner_email', isset($prefill) && $prefill->source === 'third_party' ? $prefill->email : '') }}">
+                    <input type="email" name="travel_partner_email" id="tp_email" class="form-control form-control-sm" placeholder="e.g. partner@travelagency.com" value="{{ old('travel_partner_email', isset($prefill) && $prefill->source === 'third_party' ? $prefill->email : '') }}">
                 </div>
             </div>
             <div class="grid grid-2 gap-3 mb-2">
                 <div>
                     <label style="font-size: 11px; font-weight: 700; color: #78350F; display: block; margin-bottom: 3px;">Partner Office Address</label>
-                    <input type="text" name="travel_partner_address" class="form-control form-control-sm" placeholder="Shop / Office address, City, Pin..." value="{{ old('travel_partner_address') }}">
+                    <input type="text" name="travel_partner_address" id="tp_address" class="form-control form-control-sm" placeholder="Shop / Office address, City, Pin..." value="{{ old('travel_partner_address') }}">
                 </div>
                 <div>
                     <label style="font-size: 11px; font-weight: 700; color: #78350F; display: block; margin-bottom: 3px;">Partner Commission / Payout (₹)</label>
-                    <input type="number" step="0.01" name="travel_partner_commission" class="form-control form-control-sm" placeholder="e.g. 500.00" value="{{ old('travel_partner_commission') }}">
+                    <input type="number" step="0.01" name="travel_partner_commission" id="tp_commission" class="form-control form-control-sm" placeholder="e.g. 500.00" value="{{ old('travel_partner_commission') }}">
                 </div>
             </div>
             <div>
                 <label style="font-size: 11px; font-weight: 700; color: #78350F; display: block; margin-bottom: 3px;">Partner Reference Notes / Special Agreement</label>
-                <input type="text" name="travel_partner_notes" class="form-control form-control-sm" placeholder="e.g. Reference Voucher #MMT-8921, Payout after trip completion" value="{{ old('travel_partner_notes') }}">
+                <input type="text" name="travel_partner_notes" id="tp_notes" class="form-control form-control-sm" placeholder="e.g. Reference Voucher #MMT-8921, Payout after trip completion" value="{{ old('travel_partner_notes') }}">
             </div>
         </div>
     </div>
@@ -212,10 +283,13 @@
             <div class="card mb-4">
                 <div class="d-flex justify-between align-center flex-wrap gap-2 mb-3">
                     <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
-                        <x-icon name="user" :size="16" /> 2. Passenger & Customer Details
+                        <x-icon name="user" :size="16" /> <span id="customerSectionTitle">2. Passenger &amp; Customer Details / Travel Partner Details</span>
                     </h3>
                     <!-- Mode Switch Buttons -->
                     <div class="d-flex gap-1" style="background: var(--slate-100); padding: 4px; border-radius: 8px;">
+                        <button type="button" id="modePartnerBtn" class="btn btn-sm" onclick="setCustomerMode('partner')" style="border-radius: 6px; font-weight: 700; font-size: 0.8rem; padding: 5px 14px; transition: all 0.2s; display: none;">
+                            🤝 Travel Partner Details
+                        </button>
                         <button type="button" id="modeExistingBtn" class="btn btn-sm" onclick="setCustomerMode('existing')" style="border-radius: 6px; font-weight: 700; font-size: 0.8rem; padding: 5px 14px; transition: all 0.2s;">
                             Existing Customer
                         </button>
@@ -225,7 +299,74 @@
                     </div>
                 </div>
 
-                <input type="hidden" name="customer_mode" id="customer_mode" value="{{ old('customer_mode', (isset($prefill) || old('new_customer_name') || old('new_customer_phone')) ? 'new' : 'existing') }}">
+                <input type="hidden" name="customer_mode" id="customer_mode" value="{{ old('customer_mode', old('booking_category', isset($prefill) && $prefill->source === 'third_party' ? 'TP' : 'MAN') === 'TP' ? 'partner' : ((isset($prefill) || old('new_customer_name') || old('new_customer_phone')) ? 'new' : 'existing')) }}">
+
+                <!-- Travel Partner as Customer Mode -->
+                <div id="partnerCustomerSection" style="display: none; background: #FFFBEB; border: 1.5px solid #FCD34D; border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem;">
+                    <div class="d-flex justify-between align-center flex-wrap gap-2 mb-3">
+                        <div class="d-flex align-center gap-2">
+                            <span style="background: #D97706; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">🤝</span>
+                            <div>
+                                <strong style="color: #92400E; font-size: 0.95rem;">Using Travel Partner as Booking Client / Customer</strong>
+                                <p style="font-size: 0.8rem; color: #B45309; margin: 0;">
+                                    Travel Partner will be billed and registered as the primary client for this booking.
+                                </p>
+                            </div>
+                        </div>
+                        <span class="badge" style="background: #FEF3C7; color: #92400E; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; border: 1px solid #FDE68A;">
+                            Default for Travel Partner Bookings
+                        </span>
+                    </div>
+
+                    <!-- Live Synced Travel Partner Summary Card -->
+                    <div style="background: #FFFFFF; border: 1px solid #FDE68A; border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;">
+                        <div class="d-flex justify-between align-start mb-2">
+                            <div>
+                                <div style="font-size: 11px; font-weight: 700; color: #78350F; text-transform: uppercase; letter-spacing: 0.5px;">Active Travel Partner:</div>
+                                <div id="partner_display_name" style="font-size: 1.05rem; font-weight: 800; color: #172033; margin-top: 2px;">
+                                    -- No Travel Partner Selected Yet --
+                                </div>
+                            </div>
+                            <a href="#travelPartnerFieldsCard" onclick="document.getElementById('travel_partner_search_input')?.focus();" style="font-size: 11.5px; color: #B45309; font-weight: 700; text-decoration: underline;">
+                                Edit / Change Partner in Section 1 ↑
+                            </a>
+                        </div>
+
+                        <div class="grid grid-3 gap-2" style="font-size: 12.5px; border-top: 1px dashed #FDE68A; padding-top: 8px;">
+                            <div>
+                                <span style="color: #64748B; font-size: 11px; display: block;">Mobile / WhatsApp:</span>
+                                <span id="partner_display_phone" style="font-weight: 700; color: #1E293B;">--</span>
+                            </div>
+                            <div>
+                                <span style="color: #64748B; font-size: 11px; display: block;">Email:</span>
+                                <span id="partner_display_email" style="font-weight: 600; color: #1E293B;">--</span>
+                            </div>
+                            <div>
+                                <span style="color: #64748B; font-size: 11px; display: block;">Office Address:</span>
+                                <span id="partner_display_address" style="font-weight: 600; color: #1E293B;">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Optional Passenger / Guest Info -->
+                    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px 14px;">
+                        <label for="partner_passenger_name" style="font-size: 12px; font-weight: 700; color: #1E293B; display: block; margin-bottom: 3px;">
+                            Passenger / Guest Name <span style="font-weight: normal; color: #64748B;">(Optional - if travel partner provided guest name)</span>
+                        </label>
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <span style="position: absolute; left: 10px; color: #94A3B8; pointer-events: none;">
+                                <x-icon name="user" :size="14" />
+                            </span>
+                            <input type="text" 
+                                   name="partner_passenger_name" 
+                                   id="partner_passenger_name" 
+                                   class="form-control form-control-sm" 
+                                   placeholder="e.g. Mr. Alok Verma (or leave blank if unknown)" 
+                                   value="{{ old('partner_passenger_name') }}"
+                                   style="padding-left: 32px; font-size: 12.5px;">
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Existing Customer Mode -->
                 <div id="existingCustomerSection">
@@ -493,7 +634,7 @@
                         </div>
                         <select name="vehicle_category" id="vehicle_category" class="form-select" onchange="onAdminBookingCategoryChange()" required>
                             <option value="">Select vehicle category</option>
-                            <option value="new_category" style="font-weight: 800; color: #2563EB; background: #EFF6FF;">➕ + Add New Category</option>
+                            <option value="new_category" style="font-weight: 700; color: #2563EB; background: #EFF6FF;">+ Add New Category</option>
                             @php
                                 $ambNames = ['Ambulance with Body Freezer', 'Ambulance with Ventilator', 'ICU Ambulance', 'Dead Body Transfer'];
                             @endphp
@@ -594,7 +735,7 @@
                             </div>
                             <select name="vehicle_id" id="vehicle_id" class="form-select" onchange="onAdminVehicleSelectChange(this)">
                                 <option value="">-- Assign Later --</option>
-                                <option value="new_vehicle" style="font-weight: 800; color: #2563EB; background: #EFF6FF;">➕ + Add New Vehicle</option>
+                                <option value="new_vehicle" style="font-weight: 700; color: #2563EB; background: #EFF6FF;">+ Add New Vehicle</option>
                                 @foreach($vehicles->where('is_third_party', false) as $veh)
                                     <option value="{{ $veh->id }}" {{ old('vehicle_id') == $veh->id ? 'selected' : '' }}>
                                         {{ $veh->name }} - {{ $veh->registration_number }} ({{ $veh->vehicle_type }} • {{ $veh->status }})
@@ -604,9 +745,15 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="driver_id" class="form-label">Assign Chauffeur / Driver</label>
-                            <select name="driver_id" id="driver_id" class="form-select">
+                            <div class="d-flex justify-between align-center mb-1">
+                                <label for="driver_id" class="form-label mb-0">Assign Chauffeur / Driver</label>
+                                <button type="button" onclick="openQuickDriverModal()" style="background: none; border: none; color: #059669; font-weight: 700; font-size: 11px; cursor: pointer; text-decoration: underline; padding: 0;">
+                                    + Add New Driver
+                                </button>
+                            </div>
+                            <select name="driver_id" id="driver_id" class="form-select" onchange="onAdminDriverSelectChange(this)">
                                 <option value="">-- Assign Later --</option>
+                                <option value="new_driver" style="font-weight: 700; color: #059669; background: #ECFDF5;">+ Add New Driver</option>
                                 @foreach($drivers as $drv)
                                     <option value="{{ $drv->id }}" {{ old('driver_id') == $drv->id ? 'selected' : '' }}>
                                         {{ $drv->name }} ({{ $drv->mobile }} • {{ $drv->status }})
@@ -758,7 +905,7 @@
 <div id="quickVehicleModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10000; align-items: center; justify-content: center; padding: 1rem;">
     <div style="background: #fff; border-radius: 8px; width: 100%; max-width: 500px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto;">
         <div class="d-flex justify-between align-center mb-3">
-            <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--dark-900);">➕ Quick Add Fleet Vehicle</h3>
+            <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--dark-900);">Quick Add Fleet Vehicle</h3>
             <button type="button" onclick="closeQuickVehicleModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
         </div>
         <form id="quickVehicleForm" onsubmit="submitQuickVehicle(event)">
@@ -813,7 +960,7 @@
 <div id="quickCategoryModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10000; align-items: center; justify-content: center; padding: 1rem;">
     <div style="background: #fff; border-radius: 8px; width: 100%; max-width: 480px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.25);">
         <div class="d-flex justify-between align-center mb-3">
-            <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--dark-900);">➕ Add New Vehicle Category</h3>
+            <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--dark-900);">Add New Vehicle Category</h3>
             <button type="button" onclick="closeQuickCategoryModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
         </div>
         <form id="quickCategoryForm" onsubmit="submitQuickCategory(event)">
@@ -846,10 +993,50 @@
     </div>
 </div>
 
+<!-- Quick Add Driver Modal -->
+<div id="quickDriverModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10000; align-items: center; justify-content: center; padding: 1rem;">
+    <div style="background: #fff; border-radius: 8px; width: 100%; max-width: 460px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.25);">
+        <div class="d-flex justify-between align-center mb-3">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: #065F46; display: flex; align-items: center; gap: 8px;">
+                <x-icon name="user-check" :size="18" /> Add &amp; Assign New Driver
+            </h3>
+            <button type="button" onclick="closeQuickDriverModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
+        </div>
+        <form id="quickDriverForm" onsubmit="submitQuickDriver(event)">
+            <div class="mb-3">
+                <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 2px;">Driver Full Name *</label>
+                <input type="text" id="qd_name" class="form-control form-control-sm" placeholder="e.g. Ramesh Kumar Patel" required>
+            </div>
+            <div class="mb-3">
+                <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 2px;">Mobile / Phone (10 digits) *</label>
+                <input type="tel" id="qd_mobile" class="form-control form-control-sm" placeholder="e.g. 9876543210" maxlength="10" required>
+            </div>
+            <div class="mb-3">
+                <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 2px;">License Number (Optional - Auto-generated if blank)</label>
+                <input type="text" id="qd_license" class="form-control form-control-sm" placeholder="e.g. CG10-20230001234">
+            </div>
+            <div class="mb-3">
+                <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 2px;">Initial Status</label>
+                <select id="qd_status" class="form-select form-select-sm">
+                    <option value="Available" selected>Available (Ready for Dispatch)</option>
+                    <option value="Assigned">Assigned</option>
+                    <option value="On Trip">On Trip</option>
+                </select>
+            </div>
+            <div id="qd_error" style="display: none; color: #dc2626; font-size: 12px; margin-bottom: 10px;"></div>
+            <div class="d-flex justify-end gap-2">
+                <button type="button" onclick="closeQuickDriverModal()" class="btn btn-outline btn-sm">Cancel</button>
+                <button type="submit" id="qd_submit_btn" class="btn btn-sm" style="background: #059669; color: #fff; font-weight: 700;">Save &amp; Assign Driver</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     const rateOptions = @json($rateOptions);
     const activeVehicleCategoriesData = @json($activeVehicleCategories ?? []);
     const corporateClientsData = @json($corporateClients ?? []);
+    const travelPartnersData = @json($travelPartners ?? []);
     let lastValidVehCategory = '';
     let lastValidVehicle = '';
 
@@ -876,7 +1063,7 @@
 
         let html = '';
         html += `<div onclick="setNewCorporateClientMode('${q.replace(/'/g, "\\'")}')" style="padding: 9px 12px; border-bottom: 1.5px solid #DDD6FE; background: #F5F3FF; cursor: pointer; font-weight: 700; color: #6D28D9; font-size: 12px; display: flex; align-items: center; gap: 6px;">
-            <span>➕</span> <span>+ Add New Corporate Client: <strong>"${q}"</strong></span>
+            <span>+ Add New Corporate Client: <strong>"${q}"</strong></span>
         </div>`;
 
         if (filtered.length === 0) {
@@ -964,7 +1151,7 @@
         const card = document.getElementById('corporate_selected_card');
         const text = document.getElementById('corporate_selected_text');
         if (card && text) {
-            text.textContent = `➕ New Corporate Client (Details will be saved upon booking confirmation)`;
+            text.textContent = `New Corporate Client (Details will be saved upon booking confirmation)`;
             card.style.display = 'block';
             card.style.background = '#EFF6FF';
             card.style.borderColor = '#BFDBFE';
@@ -973,6 +1160,140 @@
 
         clearCorporateSearch();
         document.getElementById('corp_company_name').focus();
+    }
+
+    // Travel Partner Search & Selection Functions
+    function handleTravelPartnerSearch(q) {
+        q = (q || '').trim().toLowerCase();
+        const dropdown = document.getElementById('travel_partner_search_dropdown');
+        const clearBtn = document.getElementById('btn_clear_tp_search');
+        if (!dropdown) return;
+
+        if (!q) {
+            dropdown.style.display = 'none';
+            if (clearBtn) clearBtn.style.display = 'none';
+            return;
+        }
+
+        if (clearBtn) clearBtn.style.display = 'flex';
+
+        const filtered = travelPartnersData.filter(p => {
+            return (p.name && p.name.toLowerCase().includes(q)) ||
+                   (p.phone && p.phone.includes(q)) ||
+                   (p.email && p.email.toLowerCase().includes(q)) ||
+                   (p.address && p.address.toLowerCase().includes(q));
+        });
+
+        let html = '';
+        html += `<div onclick="setNewTravelPartnerMode('${q.replace(/'/g, "\\'")}')" style="padding: 9px 12px; border-bottom: 1.5px solid #FDE68A; background: #FFFBEB; cursor: pointer; font-weight: 700; color: #92400E; font-size: 12px; display: flex; align-items: center; gap: 6px;">
+            <span>+ Add New Travel Partner: <strong>"${q}"</strong></span>
+        </div>`;
+
+        if (filtered.length === 0) {
+            html += `<div style="padding: 10px 12px; font-size: 12px; color: var(--slate-500);">No saved partners matching "${q}". Click above to add as new partner.</div>`;
+        } else {
+            filtered.forEach(p => {
+                const origIdx = travelPartnersData.indexOf(p);
+                html += `<div onclick="selectTravelPartner(${origIdx})" style="padding: 8px 12px; border-bottom: 1px solid var(--slate-100); cursor: pointer; font-size: 12px; transition: background 0.15s;" onmouseover="this.style.background='#FFFBEB'" onmouseout="this.style.background='transparent'">
+                    <div style="font-weight: 700; color: #1E293B;">${p.name}</div>
+                    <div style="font-size: 11px; color: var(--slate-500); display: flex; gap: 8px; flex-wrap: wrap;">
+                        ${p.phone ? `<span>📞 ${p.phone}</span>` : ''}
+                        ${p.email ? `<span>✉️ ${p.email}</span>` : ''}
+                        ${p.commission ? `<span>💵 Comm: ₹${p.commission}</span>` : ''}
+                    </div>
+                </div>`;
+            });
+        }
+
+        dropdown.innerHTML = html;
+        dropdown.style.display = 'block';
+    }
+
+    function clearTravelPartnerSearch() {
+        const inp = document.getElementById('travel_partner_search_input');
+        if (inp) inp.value = '';
+        const dropdown = document.getElementById('travel_partner_search_dropdown');
+        if (dropdown) dropdown.style.display = 'none';
+        const clearBtn = document.getElementById('btn_clear_tp_search');
+        if (clearBtn) clearBtn.style.display = 'none';
+    }
+
+    function onTravelPartnerDropdownChange(sel) {
+        if (sel.value === 'new') {
+            setNewTravelPartnerMode();
+        } else if (sel.value !== '') {
+            selectTravelPartner(parseInt(sel.value));
+        }
+    }
+
+    function selectTravelPartner(idx) {
+        const p = travelPartnersData[idx];
+        if (!p) return;
+
+        document.getElementById('tp_agency_name').value = p.name || '';
+        document.getElementById('tp_phone').value = p.phone || '';
+        document.getElementById('tp_email').value = p.email || '';
+        document.getElementById('tp_address').value = p.address || '';
+        if (p.commission !== null && p.commission !== undefined && p.commission !== '') {
+            document.getElementById('tp_commission').value = p.commission;
+        }
+        if (p.notes) {
+            document.getElementById('tp_notes').value = p.notes;
+        }
+
+        const sel = document.getElementById('travel_partner_select');
+        if (sel) sel.value = idx;
+
+        const card = document.getElementById('travel_partner_selected_card');
+        const text = document.getElementById('travel_partner_selected_text');
+        if (card && text) {
+            text.textContent = `✓ Selected Partner: ${p.name} (${p.phone ? '📞 ' + p.phone : 'Saved Partner'})`;
+            card.style.display = 'block';
+            card.style.background = '#ECFDF5';
+            card.style.borderColor = '#A7F3D0';
+            card.style.color = '#065F46';
+        }
+
+        const dropdown = document.getElementById('travel_partner_search_dropdown');
+        if (dropdown) dropdown.style.display = 'none';
+
+        // Pre-fill third-party vehicle vendor name/phone if third_party vehicle is toggled
+        const tpVendorInput = document.getElementById('third_party_vendor_name');
+        if (tpVendorInput && !tpVendorInput.value) {
+            tpVendorInput.value = p.name;
+        }
+        const tpDriverPhone = document.getElementById('third_party_driver_phone');
+        if (tpDriverPhone && !tpDriverPhone.value && p.phone) {
+            tpDriverPhone.value = p.phone;
+        }
+
+        updatePartnerCustomerPreview();
+    }
+
+    function setNewTravelPartnerMode(prefillName = '') {
+        document.getElementById('tp_agency_name').value = prefillName;
+        document.getElementById('tp_phone').value = '';
+        document.getElementById('tp_email').value = '';
+        document.getElementById('tp_address').value = '';
+        document.getElementById('tp_commission').value = '';
+        document.getElementById('tp_notes').value = '';
+
+        const sel = document.getElementById('travel_partner_select');
+        if (sel) sel.value = 'new';
+
+        const card = document.getElementById('travel_partner_selected_card');
+        const text = document.getElementById('travel_partner_selected_text');
+        if (card && text) {
+            text.textContent = `New Travel Partner (Details will be saved permanently upon booking confirmation)`;
+            card.style.display = 'block';
+            card.style.background = '#FFFBEB';
+            card.style.borderColor = '#FDE68A';
+            card.style.color = '#92400E';
+        }
+
+        clearTravelPartnerSearch();
+        updatePartnerCustomerPreview();
+        document.getElementById('tp_agency_name').focus();
     }
 
     // Quick Add Vehicle functions
@@ -1058,6 +1379,86 @@
         } finally {
             btn.disabled = false;
             btn.textContent = 'Register & Assign Vehicle';
+        }
+    }
+
+    // Quick Add Driver functions
+    let lastValidDriver = '';
+    function openQuickDriverModal() {
+        const m = document.getElementById('quickDriverModal');
+        if (m) {
+            m.style.display = 'flex';
+            document.getElementById('qd_name').focus();
+        }
+    }
+
+    function closeQuickDriverModal() {
+        const m = document.getElementById('quickDriverModal');
+        if (m) m.style.display = 'none';
+        const dSel = document.getElementById('driver_id');
+        if (dSel && dSel.value === 'new_driver') {
+            dSel.value = lastValidDriver;
+        }
+    }
+
+    function onAdminDriverSelectChange(sel) {
+        if (sel.value === 'new_driver') {
+            openQuickDriverModal();
+        } else {
+            lastValidDriver = sel.value;
+        }
+    }
+
+    async function submitQuickDriver(e) {
+        e.preventDefault();
+        const btn = document.getElementById('qd_submit_btn');
+        const err = document.getElementById('qd_error');
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+        err.style.display = 'none';
+
+        const name = document.getElementById('qd_name').value.trim();
+        const mobile = document.getElementById('qd_mobile').value.trim();
+        const license = document.getElementById('qd_license').value.trim();
+        const status = document.getElementById('qd_status').value;
+
+        try {
+            const resp = await fetch('{{ route('admin.drivers.quick') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: name,
+                    mobile: mobile,
+                    license_number: license,
+                    status: status
+                })
+            });
+            const data = await resp.json();
+            if (data.success && data.driver) {
+                const drv = data.driver;
+                const dSel = document.getElementById('driver_id');
+                const opt = document.createElement('option');
+                opt.value = drv.id;
+                opt.textContent = `${drv.name} (${drv.mobile} • ${drv.status})`;
+                dSel.appendChild(opt);
+                dSel.value = drv.id;
+                lastValidDriver = drv.id;
+                closeQuickDriverModal();
+                alert(`✓ Chauffeur '${drv.name}' registered and assigned!`);
+            } else {
+                err.textContent = data.message || 'Error saving driver.';
+                err.style.display = 'block';
+            }
+        } catch (ex) {
+            err.textContent = 'Server error: ' + ex.message;
+            err.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Save & Assign Driver';
         }
     }
 
@@ -1199,7 +1600,7 @@
 
             const newCatOpt = document.createElement('option');
             newCatOpt.value = 'new_category';
-            newCatOpt.textContent = '➕ + Add New Category';
+            newCatOpt.textContent = '+ Add New Category';
             newCatOpt.style.fontWeight = '800';
             newCatOpt.style.color = '#2563EB';
             newCatOpt.style.background = '#EFF6FF';
@@ -1442,40 +1843,125 @@
         }
     }
 
+    function escapePartnerHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function updatePartnerCustomerPreview() {
+        const tpName = document.getElementById('tp_agency_name')?.value?.trim() || '';
+        const tpPhone = document.getElementById('tp_phone')?.value?.trim() || '';
+        const tpEmail = document.getElementById('tp_email')?.value?.trim() || '';
+        const tpAddress = document.getElementById('tp_address')?.value?.trim() || '';
+
+        const dName = document.getElementById('partner_display_name');
+        const dPhone = document.getElementById('partner_display_phone');
+        const dEmail = document.getElementById('partner_display_email');
+        const dAddress = document.getElementById('partner_display_address');
+
+        if (dName) {
+            dName.innerHTML = tpName 
+                ? `🏢 ${escapePartnerHtml(tpName)}` 
+                : '<span style="color: #DC2626; font-size: 0.95rem;">⚠️ No Travel Partner selected yet in Section 1 above</span>';
+        }
+        if (dPhone) dPhone.textContent = tpPhone ? `📞 ${tpPhone}` : '--';
+        if (dEmail) dEmail.textContent = tpEmail ? `✉️ ${tpEmail}` : '--';
+        if (dAddress) dAddress.textContent = tpAddress ? `📍 ${tpAddress}` : '--';
+    }
+
     function setCustomerMode(mode) {
         const modeInput = document.getElementById('customer_mode');
+        const partnerSection = document.getElementById('partnerCustomerSection');
         const existingSection = document.getElementById('existingCustomerSection');
         const newSection = document.getElementById('newCustomerSection');
+        const partnerBtn = document.getElementById('modePartnerBtn');
         const existingBtn = document.getElementById('modeExistingBtn');
         const newBtn = document.getElementById('modeNewBtn');
         const customerSelect = document.getElementById('customer_id');
         const newName = document.getElementById('new_customer_name');
         const newPhone = document.getElementById('new_customer_phone');
+        const tpName = document.getElementById('tp_agency_name');
+        const tpPhone = document.getElementById('tp_phone');
 
         if (!modeInput) return;
         modeInput.value = mode;
 
-        if (mode === 'new') {
-            existingSection.style.display = 'none';
-            newSection.style.display = 'block';
+        if (mode === 'partner') {
+            if (partnerSection) partnerSection.style.display = 'block';
+            if (existingSection) existingSection.style.display = 'none';
+            if (newSection) newSection.style.display = 'none';
+
+            if (customerSelect) customerSelect.required = false;
+            if (newName) newName.required = false;
+            if (newPhone) newPhone.required = false;
+            if (tpName) tpName.required = true;
+            if (tpPhone) tpPhone.required = true;
+
+            if (partnerBtn) {
+                partnerBtn.style.background = '#D97706';
+                partnerBtn.style.color = '#fff';
+            }
+            if (existingBtn) {
+                existingBtn.style.background = 'transparent';
+                existingBtn.style.color = 'var(--slate-700)';
+            }
+            if (newBtn) {
+                newBtn.style.background = 'transparent';
+                newBtn.style.color = 'var(--slate-700)';
+            }
+            updatePartnerCustomerPreview();
+        } else if (mode === 'new') {
+            if (partnerSection) partnerSection.style.display = 'none';
+            if (existingSection) existingSection.style.display = 'none';
+            if (newSection) newSection.style.display = 'block';
+
             if (customerSelect) customerSelect.required = false;
             if (newName) newName.required = true;
             if (newPhone) newPhone.required = true;
-            newBtn.style.background = 'var(--primary)';
-            newBtn.style.color = '#fff';
-            existingBtn.style.background = 'transparent';
-            existingBtn.style.color = 'var(--slate-700)';
+            if (tpName) tpName.required = false;
+            if (tpPhone) tpPhone.required = false;
+
+            if (newBtn) {
+                newBtn.style.background = 'var(--primary)';
+                newBtn.style.color = '#fff';
+            }
+            if (existingBtn) {
+                existingBtn.style.background = 'transparent';
+                existingBtn.style.color = 'var(--slate-700)';
+            }
+            if (partnerBtn) {
+                partnerBtn.style.background = 'transparent';
+                partnerBtn.style.color = 'var(--slate-700)';
+            }
             setTimeout(() => { if (newName) newName.focus(); }, 50);
         } else {
-            newSection.style.display = 'none';
-            existingSection.style.display = 'block';
+            if (partnerSection) partnerSection.style.display = 'none';
+            if (newSection) newSection.style.display = 'none';
+            if (existingSection) existingSection.style.display = 'block';
+
             if (customerSelect) customerSelect.required = true;
             if (newName) newName.required = false;
             if (newPhone) newPhone.required = false;
-            existingBtn.style.background = 'var(--primary)';
-            existingBtn.style.color = '#fff';
-            newBtn.style.background = 'transparent';
-            newBtn.style.color = 'var(--slate-700)';
+            if (tpName) tpName.required = false;
+            if (tpPhone) tpPhone.required = false;
+
+            if (existingBtn) {
+                existingBtn.style.background = 'var(--primary)';
+                existingBtn.style.color = '#fff';
+            }
+            if (newBtn) {
+                newBtn.style.background = 'transparent';
+                newBtn.style.color = 'var(--slate-700)';
+            }
+            if (partnerBtn) {
+                partnerBtn.style.background = 'transparent';
+                partnerBtn.style.color = 'var(--slate-700)';
+            }
         }
     }
 
@@ -1489,7 +1975,16 @@
         });
     }
 
-    const initialCustomerMode = "{{ old('customer_mode', (old('new_customer_name') || old('new_customer_phone')) ? 'new' : 'existing') }}";
+    // Attach real-time sync listeners for Travel Partner inputs
+    ['tp_agency_name', 'tp_phone', 'tp_email', 'tp_address'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', updatePartnerCustomerPreview);
+            el.addEventListener('change', updatePartnerCustomerPreview);
+        }
+    });
+
+    const initialCustomerMode = "{{ old('customer_mode', old('booking_category', isset($prefill) && $prefill->source === 'third_party' ? 'TP' : 'MAN') === 'TP' ? 'partner' : ((old('new_customer_name') || old('new_customer_phone')) ? 'new' : 'existing')) }}";
     setCustomerMode(initialCustomerMode);
 
     // Searchable Customer Dropdown & Autocomplete Handler
@@ -1852,12 +2347,32 @@
         const selected = document.querySelector('input[name="booking_category"]:checked')?.value || 'MAN';
         const corpCard = document.getElementById('corporateFieldsCard');
         const tpCard = document.getElementById('travelPartnerFieldsCard');
+        const partnerBtn = document.getElementById('modePartnerBtn');
+        const currentCustMode = document.getElementById('customer_mode')?.value;
+
         if (corpCard) {
             corpCard.style.display = (selected === 'CORP') ? 'block' : 'none';
         }
         if (tpCard) {
             tpCard.style.display = (selected === 'TP') ? 'block' : 'none';
         }
+
+        if (partnerBtn) {
+            partnerBtn.style.display = (selected === 'TP') ? 'inline-flex' : 'none';
+        }
+
+        // When Category is TP, by default select Travel Partner details as requested by user
+        if (selected === 'TP') {
+            if (!currentCustMode || currentCustMode === 'existing') {
+                setCustomerMode('partner');
+            }
+            updatePartnerCustomerPreview();
+        } else {
+            if (currentCustMode === 'partner') {
+                setCustomerMode('existing');
+            }
+        }
+
         const lblMan = document.getElementById('lblCatMan');
         const lblCorp = document.getElementById('lblCatCorp');
         const lblTp = document.getElementById('lblCatTp');

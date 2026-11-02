@@ -163,6 +163,49 @@ class AdminDriverController extends Controller
             ->with('success', 'Driver details updated successfully!');
     }
 
+    public function storeQuick(Request $request)
+    {
+        if ($request->filled('mobile')) {
+            $raw = (string) $request->input('mobile');
+            $clean = preg_replace('/[^0-9]/', '', $raw);
+            if (strlen($clean) === 12 && str_starts_with($clean, '91')) {
+                $clean = substr($clean, 2);
+            } elseif (strlen($clean) === 11 && str_starts_with($clean, '0')) {
+                $clean = substr($clean, 1);
+            }
+            $request->merge(['mobile' => $clean]);
+        }
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'mobile' => ['required', 'string', 'regex:/^[0-9]{10}$/', 'unique:drivers,mobile'],
+            'license_number' => 'nullable|string|max:50|unique:drivers,license_number',
+            'status' => 'nullable|string|in:Available,Assigned,On Trip,Inactive',
+        ], [
+            'mobile.regex' => 'Please enter a valid 10-digit mobile number.',
+            'mobile.unique' => 'A driver with this mobile number already exists.',
+            'license_number.unique' => 'This license number is already registered to another driver.',
+        ]);
+
+        if (empty($data['license_number'])) {
+            $data['license_number'] = 'DL-'.strtoupper(substr(md5(uniqid((string) mt_rand(), true)), 0, 8));
+        }
+
+        $driver = Driver::create([
+            'name' => trim($data['name']),
+            'mobile' => $data['mobile'],
+            'license_number' => strtoupper(trim($data['license_number'])),
+            'status' => $data['status'] ?? 'Available',
+            'rating' => 5.00,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'driver' => $driver,
+            'message' => "Chauffeur '{$driver->name}' registered successfully!",
+        ]);
+    }
+
     public function destroy(Driver $driver)
     {
         $driver->delete();

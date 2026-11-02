@@ -166,8 +166,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Advance Booking Calendar
     Route::get('/calendar', [AdminCalendarController::class, 'index'])->name('calendar.index');
 
-    // Quick Add AJAX endpoints for Vehicles and Categories
+    // Quick Add AJAX endpoints for Vehicles, Categories, and Drivers
     Route::post('/vehicles/quick', [AdminVehicleController::class, 'storeQuick'])->name('vehicles.quick');
+    Route::post('/drivers/quick', [AdminDriverController::class, 'storeQuick'])->name('drivers.quick');
     Route::post('/vehicle-categories/quick', [AdminVehicleCategoryController::class, 'storeQuick'])->name('vehicle-categories.quick');
     Route::post('/vehicle-models/quick', [AdminVehicleCategoryController::class, 'storeModelQuick'])->name('vehicle-categories.models.quick');
 
@@ -235,6 +236,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Notifications
     Route::get('/notifications', [AdminNotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/poll', [AdminNotificationController::class, 'poll'])->name('notifications.poll');
     Route::post('/notifications/{notification}/read', [AdminNotificationController::class, 'markRead'])->name('notifications.read');
     Route::post('/notifications/mark-read', [AdminNotificationController::class, 'markAllRead'])->name('notifications.mark-read');
 

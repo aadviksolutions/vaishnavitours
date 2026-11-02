@@ -302,9 +302,9 @@
     <span class="action-toolbar-label">
         <x-icon name="zap" :size="13" style="color: #2563EB;" /> Quick Actions:
     </span>
-    <!-- Primary Action: + Create Booking -->
+    <!-- Primary Action: Create Booking -->
     <a href="{{ route('admin.bookings.create') }}" class="action-btn-primary">
-        <x-icon name="plus" :size="14" /> Create Booking
+        Create Booking
     </a>
     <!-- Neutral Secondary Actions -->
     <a href="{{ route('admin.bookings.index', ['filter' => 'unassigned_driver']) }}" class="action-btn-neutral">
@@ -335,7 +335,7 @@
         <x-icon name="user" :size="14" /> Add Driver
     </a>
     <a href="{{ route('admin.vehicles.create') }}" class="action-btn-neutral">
-        <x-icon name="plus" :size="14" /> Add Vehicle
+        <x-icon name="truck" :size="14" /> Add Vehicle
     </a>
 </div>
 
@@ -634,7 +634,7 @@
                                 <div style="font-size: 11px; color: #64748B;">{{ $b->vehicle->registration_number }}</div>
                             @else
                                 <a href="{{ route('admin.bookings.show', $b) }}" style="color: #B91C1C; font-size: 11.5px; font-weight: 600; text-decoration: none;">
-                                    + Assign Vehicle
+                                    Assign Vehicle
                                 </a>
                             @endif
                         </td>
@@ -644,7 +644,7 @@
                                 <div style="font-size: 11px; color: #64748B;">{{ $b->driver->mobile }}</div>
                             @else
                                 <a href="{{ route('admin.bookings.show', $b) }}" style="color: #B91C1C; font-size: 11.5px; font-weight: 600; text-decoration: none;">
-                                    + Assign Driver
+                                    Assign Driver
                                 </a>
                             @endif
                         </td>
@@ -679,7 +679,7 @@
                 @empty
                     <tr>
                         <td colspan="10" style="text-align: center; padding: 2.5rem; color: #94A3B8;">
-                            No reservations recorded yet. Click <strong>+ Create Booking</strong> above to create one.
+                            No reservations recorded yet. Click <strong>Create Booking</strong> above to create one.
                         </td>
                     </tr>
                 @endforelse

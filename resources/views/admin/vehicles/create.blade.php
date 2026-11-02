@@ -55,7 +55,7 @@
                         </div>
                         <select name="vehicle_category_id" id="vehicle_category_id" class="form-select" onchange="onAdminCategoryChange()" required>
                             <option value="">-- Select Category --</option>
-                            <option value="new_category" style="font-weight: 800; color: #2563EB; background: #EFF6FF;">➕ + Add New Category</option>
+                            <option value="new_category" style="font-weight: 800; color: #2563EB; background: #EFF6FF;">+ Add New Category</option>
                             @foreach($categories as $cat)
                                 <option value="{{ $cat->id }}" 
                                         data-name="{{ $cat->name }}" 
@@ -80,7 +80,7 @@
                         </div>
                         <select name="vehicle_model_id" id="vehicle_model_id" class="form-select" onchange="onAdminModelChange()">
                             <option value="">-- Optional / Other Model --</option>
-                            <option value="new_model" style="font-weight: 800; color: #2563EB; background: #EFF6FF;">➕ + Add New Model</option>
+                            <option value="new_model" style="font-weight: 800; color: #2563EB; background: #EFF6FF;">+ Add New Model</option>
                         </select>
                     </div>
                 </div>
@@ -251,7 +251,7 @@
 <div id="quickCategoryModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10000; align-items: center; justify-content: center; padding: 1rem;">
     <div style="background: #fff; border-radius: 8px; width: 100%; max-width: 480px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.25);">
         <div class="d-flex justify-between align-center mb-3">
-            <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--dark-900);">➕ Add New Vehicle Category</h3>
+            <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--dark-900);">Add New Vehicle Category</h3>
             <button type="button" onclick="closeQuickCategoryModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
         </div>
         <form id="quickCategoryForm" onsubmit="submitQuickCategory(event)">
@@ -288,7 +288,7 @@
 <div id="quickModelModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10000; align-items: center; justify-content: center; padding: 1rem;">
     <div style="background: #fff; border-radius: 8px; width: 100%; max-width: 450px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.25);">
         <div class="d-flex justify-between align-center mb-3">
-            <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--dark-900);">➕ Add New Vehicle Model</h3>
+            <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--dark-900);">Add New Vehicle Model</h3>
             <button type="button" onclick="closeQuickModelModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
         </div>
         <form id="quickModelForm" onsubmit="submitQuickModel(event)">
@@ -521,7 +521,7 @@
         // Populate models
         const catObj = vehicleCategoriesData.find(c => c.id === catId);
         const currentModelVal = modelSelect.value;
-        modelSelect.innerHTML = '<option value="">-- Optional / Other Model --</option><option value="new_model" style="font-weight: 800; color: #2563EB; background: #EFF6FF;">➕ + Add New Model</option>';
+        modelSelect.innerHTML = '<option value="">-- Optional / Other Model --</option><option value="new_model" style="font-weight: 800; color: #2563EB; background: #EFF6FF;">+ Add New Model</option>';
         if (catObj && catObj.active_models && catObj.active_models.length > 0) {
             catObj.active_models.forEach(m => {
                 const opt = document.createElement('option');
