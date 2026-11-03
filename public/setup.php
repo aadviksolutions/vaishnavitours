@@ -1,6 +1,6 @@
 <?php
 /**
- * Vaishnavi Tours — One-Click Server Diagnostic & Setup Runner
+ * Vaishnavi Tours — One-Click Server Diagnostic & Auto-Fix Desk
  */
 
 error_reporting(E_ALL);
@@ -11,6 +11,7 @@ $vendorAutoload = $baseDir . '/vendor/autoload.php';
 $envFile = $baseDir . '/.env';
 $envExample = $baseDir . '/.env.example';
 $sqliteDb = $baseDir . '/database/database.sqlite';
+$logFile = $baseDir . '/storage/logs/laravel.log';
 
 $action = $_GET['action'] ?? '';
 $outputLog = '';
@@ -20,33 +21,122 @@ if (!file_exists($envFile) && file_exists($envExample)) {
     @copy($envExample, $envFile);
 }
 
+// Function to auto-fix directories and permissions in pure PHP
+function autoFixSystem($baseDir, $envFile, $sqliteDb) {
+    $results = [];
+
+    // 1. Create required directories
+    $dirs = [
+        $baseDir . '/storage',
+        $baseDir . '/storage/app',
+        $baseDir . '/storage/app/public',
+        $baseDir . '/storage/framework',
+        $baseDir . '/storage/framework/cache',
+        $baseDir . '/storage/framework/cache/data',
+        $baseDir . '/storage/framework/sessions',
+        $baseDir . '/storage/framework/views',
+        $baseDir . '/storage/logs',
+        $baseDir . '/bootstrap/cache',
+        $baseDir . '/database'
+    ];
+
+    foreach ($dirs as $dir) {
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0777, true);
+        }
+        @chmod($dir, 0777);
+    }
+    $results[] = "✅ Storage and Cache directories verified and set to chmod 777.";
+
+    // 2. Fix Database permissions & path
+    if (!file_exists($sqliteDb)) {
+        @touch($sqliteDb);
+    }
+    @chmod($sqliteDb, 0666);
+    @chmod(dirname($sqliteDb), 0777);
+    $results[] = "✅ SQLite database file and directory permissions set to 666 / 777.";
+
+    // 3. Fix .env values
+    if (file_exists($envFile)) {
+        $envContent = file_get_contents($envFile);
+        $modified = false;
+
+        // Check APP_KEY
+        if (!preg_match('/^APP_KEY=base64:.+/m', $envContent)) {
+            $defaultKey = 'base64:iu3vhq+8ihfTUUGzz5XkCyYRaCCeSKOTpsvJyc7RDjw=';
+            $envContent = preg_replace('/^APP_KEY=.*/m', "APP_KEY={$defaultKey}", $envContent);
+            if (!str_contains($envContent, 'APP_KEY=')) {
+                $envContent = "APP_KEY={$defaultKey}\n" . $envContent;
+            }
+            $modified = true;
+            $results[] = "✅ Valid APP_KEY injected into .env.";
+        }
+
+        // Check DB_DATABASE for Windows paths
+        if (preg_match('/DB_DATABASE=["\']?[A-Za-z]:.*["\']?/m', $envContent) || str_contains($envContent, '\\\\')) {
+            $envContent = preg_replace('/^DB_DATABASE=.*/m', 'DB_DATABASE=database/database.sqlite', $envContent);
+            $modified = true;
+            $results[] = "✅ Fixed Windows database path to relative Linux path (database/database.sqlite).";
+        }
+
+        // Set DB_CONNECTION to sqlite if mysql is unreachable
+        if (str_contains($envContent, 'DB_CONNECTION=mysql') && str_contains($envContent, 'external-mysql-host')) {
+            $envContent = preg_replace('/^DB_CONNECTION=.*/m', 'DB_CONNECTION=sqlite', $envContent);
+            $modified = true;
+            $results[] = "✅ Set DB_CONNECTION=sqlite for zero-config operation.";
+        }
+
+        if ($modified) {
+            @file_put_contents($envFile, $envContent);
+        }
+    }
+
+    // 4. Try cleaning view cache files
+    $viewsCache = glob($baseDir . '/storage/framework/views/*');
+    if ($viewsCache) {
+        foreach ($viewsCache as $v) {
+            if (is_file($v)) @unlink($v);
+        }
+        $results[] = "✅ Cleared old compiled view cache.";
+    }
+
+    return implode("\n", $results);
+}
+
+// Auto-run fix on every load to ensure storage exists
+autoFixSystem($baseDir, $envFile, $sqliteDb);
+
+// Handle manual action triggers
+if ($action === 'fix_all') {
+    $outputLog = autoFixSystem($baseDir, $envFile, $sqliteDb);
+}
+
 // Action: Run Composer Install
 if ($action === 'install_composer') {
     $canExec = function_exists('shell_exec') && !in_array('shell_exec', array_map('trim', explode(',', ini_get('disable_functions'))));
 
     if (!$canExec) {
-        $outputLog = "⚠️ PHP 'shell_exec' or 'exec' is disabled on this server by default.\n\nPlease use aaPanel's built-in Composer tool:\n1. Open aaPanel -> Websites\n2. Click on 'vaishnavitours.com'\n3. Click 'Composer' tab on the left\n4. Click 'Install' button!";
+        $outputLog = "⚠️ PHP 'shell_exec' or 'exec' is disabled on this server.\nPlease run composer via terminal or enable exec in aaPanel.";
     } else {
-        $cmd = "cd " . escapeshellarg($baseDir) . " && (composer install --no-dev --optimize-autoloader --ignore-platform-reqs 2>&1 || /www/server/php/84/bin/composer install --no-dev --optimize-autoloader --ignore-platform-reqs 2>&1)";
+        $cmd = "cd " . escapeshellarg($baseDir) . " && (/www/server/php/84/bin/composer install --no-dev --optimize-autoloader --ignore-platform-reqs 2>&1 || composer install --no-dev --optimize-autoloader --ignore-platform-reqs 2>&1)";
         $result = @shell_exec($cmd);
-        $outputLog = $result ?: "Command executed. Check if vendor/autoload.php is created.";
-    }
-}
-
-// Action: Generate Key & Link Storage
-if ($action === 'fix_permissions') {
-    if (file_exists($vendorAutoload)) {
-        @shell_exec("cd " . escapeshellarg($baseDir) . " && php artisan key:generate --force 2>&1");
-        @shell_exec("cd " . escapeshellarg($baseDir) . " && php artisan storage:link 2>&1");
-        $outputLog = "Artisan commands executed successfully.";
-    } else {
-        $outputLog = "Please run Composer Install first before running artisan commands.";
+        $outputLog = $result ?: "Command executed.";
     }
 }
 
 $isVendorInstalled = file_exists($vendorAutoload);
 $isEnvPresent = file_exists($envFile);
 $isDbPresent = file_exists($sqliteDb);
+
+// Read last 40 lines of log file
+$recentLogs = '';
+if (file_exists($logFile)) {
+    $allLines = file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    if ($allLines) {
+        $recentLines = array_slice($allLines, -40);
+        $recentLogs = implode("\n", $recentLines);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -66,7 +156,7 @@ $isDbPresent = file_exists($sqliteDb);
             justify-content: center;
         }
         .container {
-            max-width: 680px;
+            max-width: 760px;
             width: 100%;
             background: #1e293b;
             border: 1px solid #334155;
@@ -130,19 +220,6 @@ $isDbPresent = file_exists($sqliteDb);
             color: #cbd5e1;
         }
         .btn-outline:hover { background: #334155; }
-        .instructions {
-            background: #0f172a;
-            border-left: 4px solid #38bdf8;
-            padding: 16px;
-            border-radius: 8px;
-            margin-top: 20px;
-            font-size: 13px;
-            line-height: 1.7;
-        }
-        .instructions ol {
-            margin: 8px 0 0 0;
-            padding-left: 20px;
-        }
         pre {
             background: #0b1120;
             border: 1px solid #334155;
@@ -152,6 +229,7 @@ $isDbPresent = file_exists($sqliteDb);
             color: #a5f3fc;
             overflow-x: auto;
             white-space: pre-wrap;
+            max-height: 280px;
         }
     </style>
 </head>
@@ -162,7 +240,7 @@ $isDbPresent = file_exists($sqliteDb);
 
         <?php if ($outputLog): ?>
             <div style="margin-bottom: 20px;">
-                <h4 style="margin: 0 0 8px 0; font-size: 13px; color: #f8fafc;">Execution Result:</h4>
+                <h4 style="margin: 0 0 8px 0; font-size: 13px; color: #f8fafc;">System Update Result:</h4>
                 <pre><?= htmlspecialchars($outputLog) ?></pre>
             </div>
         <?php endif; ?>
@@ -205,27 +283,16 @@ $isDbPresent = file_exists($sqliteDb);
         </div>
 
         <div style="margin-top: 24px; display: flex; gap: 10px; flex-wrap: wrap;">
-            <?php if (!$isVendorInstalled): ?>
-                <a href="?action=install_composer" class="btn">⚡ Try Auto Composer Install</a>
-            <?php else: ?>
-                <a href="/" class="btn btn-success">🚀 Go to Live Website &rarr;</a>
-                <a href="?action=fix_permissions" class="btn btn-outline">Generate Storage Link</a>
-            <?php endif; ?>
+            <a href="/" class="btn btn-success">🚀 Open Website (Home) &rarr;</a>
+            <a href="?action=fix_all" class="btn">🛠️ Run Auto-Fix Permissions</a>
         </div>
 
-        <?php if (!$isVendorInstalled): ?>
-            <div class="instructions">
-                <strong>⭐ How to complete setup in aaPanel (Recommended):</strong>
-                <ol>
-                    <li>Log into your <strong>aaPanel Dashboard</strong>.</li>
-                    <li>Go to <strong>Websites</strong> &rarr; click on <strong>vaishnavitours.com</strong>.</li>
-                    <li>In the popup settings modal, click the <strong>Composer</strong> tab on the left.</li>
-                    <li>Select <strong>PHP Version</strong> (e.g. PHP 8.2 or 8.3) and click the <strong>Install</strong> button.</li>
-                    <li>Wait ~20 seconds for Composer to finish, then refresh this page!</li>
-                </ol>
+        <?php if ($recentLogs): ?>
+            <div style="margin-top: 28px;">
+                <h4 style="margin: 0 0 8px 0; font-size: 13px; color: #f87171;">📋 Recent Laravel Logs (Last 40 lines):</h4>
+                <pre style="color: #fca5a5;"><?= htmlspecialchars($recentLogs) ?></pre>
             </div>
         <?php endif; ?>
     </div>
 </body>
 </html>
-

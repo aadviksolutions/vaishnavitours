@@ -51,8 +51,25 @@ if (! file_exists(__DIR__.'/../vendor/autoload.php')) {
 
 require __DIR__.'/../vendor/autoload.php';
 
-// Bootstrap Laravel and handle the request...
-/** @var Application $app */
-$app = require_once __DIR__.'/../bootstrap/app.php';
+try {
+    // Bootstrap Laravel and handle the request...
+    /** @var Application $app */
+    $app = require_once __DIR__.'/../bootstrap/app.php';
 
-$app->handleRequest(Request::capture());
+    $app->handleRequest(Request::capture());
+} catch (\Throwable $e) {
+    http_response_code(500);
+    echo '<!DOCTYPE html><html lang="en"><head><title>500 Application Error — Vaishnavi Tours</title>';
+    echo '<meta name="viewport" content="width=device-width, initial-scale=1">';
+    echo '<style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0f172a;color:#f8fafc;padding:30px 16px;margin:0;display:flex;justify-content:center}';
+    echo '.card{max-width:820px;width:100%;background:#1e293b;border:1px solid #ef4444;border-radius:12px;padding:24px;box-shadow:0 10px 25px rgba(0,0,0,0.5)}';
+    echo 'h1{color:#f87171;font-size:1.25rem;margin:0 0 12px 0}p{font-size:13.5px;color:#cbd5e1;line-height:1.6}';
+    echo 'pre{background:#0b1120;border:1px solid #334155;padding:14px;border-radius:8px;overflow-x:auto;font-size:12px;color:#e2e8f0;white-space:pre-wrap}';
+    echo '.btn{display:inline-block;background:#0284c7;color:#fff;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;margin-top:10px}';
+    echo '</style></head><body><div class="card">';
+    echo '<h1>🚨 Laravel Error 500: '.htmlspecialchars($e->getMessage()).'</h1>';
+    echo '<p><strong>File:</strong> <code>'.htmlspecialchars($e->getFile()).'</code> on line <strong>'.htmlspecialchars($e->getLine()).'</strong></p>';
+    echo '<p><a href="/setup.php" class="btn">🛠️ Open Setup &amp; Auto-Fix Desk &rarr;</a></p>';
+    echo '<pre>'.htmlspecialchars($e->getTraceAsString()).'</pre>';
+    echo '</div></body></html>';
+}
