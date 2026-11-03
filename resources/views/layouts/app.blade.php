@@ -317,16 +317,16 @@
                         </a>
                     </div>
                     <div style="display: flex; gap: 0.5rem; align-items: center;">
-                        <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" class="social-link-btn social-wa" aria-label="WhatsApp" title="WhatsApp">
+                        <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" rel="noopener noreferrer" class="social-link-btn social-wa" aria-label="WhatsApp" title="WhatsApp">
                             <x-icon.whatsapp size="15" />
                         </a>
-                        <a href="https://instagram.com" target="_blank" class="social-link-btn" aria-label="Instagram" title="Instagram">
+                        <a href="{{ \App\Models\Setting::get('instagram_url', config('vaishnavi.instagram_url', 'https://www.instagram.com/vaishnavitours.bilaspur/')) }}" target="_blank" rel="noopener noreferrer" class="social-link-btn" aria-label="Instagram" title="Instagram">
                             <x-icon.instagram size="15" />
                         </a>
-                        <a href="https://facebook.com" target="_blank" class="social-link-btn" aria-label="Facebook" title="Facebook">
+                        <a href="{{ \App\Models\Setting::get('facebook_url', config('vaishnavi.facebook_url', 'https://www.facebook.com/vaishnavitours.bilaspur/')) }}" target="_blank" rel="noopener noreferrer" class="social-link-btn" aria-label="Facebook" title="Facebook">
                             <x-icon.facebook size="15" />
                         </a>
-                        <a href="https://youtube.com" target="_blank" class="social-link-btn" aria-label="YouTube" title="YouTube">
+                        <a href="{{ \App\Models\Setting::get('youtube_url', config('vaishnavi.youtube_url', 'https://www.youtube.com/@vaishnavitours')) }}" target="_blank" rel="noopener noreferrer" class="social-link-btn" aria-label="YouTube" title="YouTube">
                             <x-icon.youtube size="15" />
                         </a>
                     </div>

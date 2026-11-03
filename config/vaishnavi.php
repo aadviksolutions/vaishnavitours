@@ -20,6 +20,11 @@ return [
     'whatsapp' => '9244784443',
     'whatsapp_link' => 'https://wa.me/919244784443',
 
+    // Social Media Links
+    'facebook_url' => env('FACEBOOK_URL', 'https://www.facebook.com/vaishnavitours.bilaspur/'),
+    'instagram_url' => env('INSTAGRAM_URL', 'https://www.instagram.com/vaishnavitours.bilaspur/'),
+    'youtube_url' => env('YOUTUBE_URL', 'https://www.youtube.com/@vaishnavitours'),
+
     // Official Address
     'address' => 'Mangal Chowk, Bilaspur',
     'city' => 'Bilaspur',

@@ -78,6 +78,28 @@
                 </div>
             </div>
 
+            <!-- Social Media Profiles -->
+            <div class="card mb-4">
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">🌐 Official Social Media Profiles</h3>
+
+                <div class="grid grid-3 gap-3">
+                    <div class="form-group">
+                        <label for="facebook_url" class="form-label">Facebook Page URL</label>
+                        <input type="url" name="facebook_url" id="facebook_url" class="form-control" value="{{ old('facebook_url', $settings['facebook_url']->value ?? config('vaishnavi.facebook_url', 'https://www.facebook.com/vaishnavitours.bilaspur/')) }}" placeholder="https://www.facebook.com/...">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="instagram_url" class="form-label">Instagram Profile URL</label>
+                        <input type="url" name="instagram_url" id="instagram_url" class="form-control" value="{{ old('instagram_url', $settings['instagram_url']->value ?? config('vaishnavi.instagram_url', 'https://www.instagram.com/vaishnavitours.bilaspur/')) }}" placeholder="https://www.instagram.com/...">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="youtube_url" class="form-label">YouTube Channel URL</label>
+                        <input type="url" name="youtube_url" id="youtube_url" class="form-control" value="{{ old('youtube_url', $settings['youtube_url']->value ?? config('vaishnavi.youtube_url', 'https://www.youtube.com/@vaishnavitours')) }}" placeholder="https://www.youtube.com/...">
+                    </div>
+                </div>
+            </div>
+
             <!-- Head Office Address & GST -->
             <div class="card mb-4">
                 <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">📍 Bilaspur Head Office Address</h3>

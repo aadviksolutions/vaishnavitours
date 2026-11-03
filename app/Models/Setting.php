@@ -46,6 +46,9 @@ class Setting extends Model
             'google_review_count' => 'vaishnavi.google_review_count',
             'google_maps_client_api_key' => 'vaishnavi.google_maps_client_api_key',
             'google_maps_server_api_key' => 'vaishnavi.google_maps_server_api_key',
+            'facebook_url' => 'vaishnavi.facebook_url',
+            'instagram_url' => 'vaishnavi.instagram_url',
+            'youtube_url' => 'vaishnavi.youtube_url',
         ];
 
         if (isset($configMap[$key])) {

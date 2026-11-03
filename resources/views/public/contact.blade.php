@@ -72,6 +72,24 @@
                                 <a href="mailto:info@vaishnavitours.com" style="color: var(--primary); font-weight: 500;">info@vaishnavitours.com</a>
                             </div>
                         </div>
+
+                        <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+                            <div class="icon-box icon-box-sm icon-box-primary" style="margin-top: 2px;"><x-icon name="share-2" size="16" /></div>
+                            <div>
+                                <strong style="display: block; margin-bottom: 0.35rem; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-500);">Follow Us Online:</strong>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <a href="{{ \App\Models\Setting::get('facebook_url', config('vaishnavi.facebook_url', 'https://www.facebook.com/vaishnavitours.bilaspur/')) }}" target="_blank" rel="noopener noreferrer" class="social-link-btn" aria-label="Facebook" title="Facebook" style="background:#1877F2; color:#fff; width:30px; height:30px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; text-decoration:none;">
+                                        <x-icon.facebook size="14" />
+                                    </a>
+                                    <a href="{{ \App\Models\Setting::get('instagram_url', config('vaishnavi.instagram_url', 'https://www.instagram.com/vaishnavitours.bilaspur/')) }}" target="_blank" rel="noopener noreferrer" class="social-link-btn" aria-label="Instagram" title="Instagram" style="background:linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); color:#fff; width:30px; height:30px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; text-decoration:none;">
+                                        <x-icon.instagram size="14" />
+                                    </a>
+                                    <a href="{{ \App\Models\Setting::get('youtube_url', config('vaishnavi.youtube_url', 'https://www.youtube.com/@vaishnavitours')) }}" target="_blank" rel="noopener noreferrer" class="social-link-btn" aria-label="YouTube" title="YouTube" style="background:#FF0000; color:#fff; width:30px; height:30px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; text-decoration:none;">
+                                        <x-icon.youtube size="14" />
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
