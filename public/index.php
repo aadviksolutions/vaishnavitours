@@ -20,7 +20,7 @@ if (file_exists($maintenance = $baseDir.'/storage/framework/maintenance.php')) {
 if (! file_exists(__DIR__.'/../vendor/autoload.php')) {
     // Attempt automatic composer recovery if shell exec is enabled
     if (function_exists('exec')) {
-        @exec("cd {$baseDir} && composer install --no-dev --optimize-autoloader 2>&1");
+        @exec("cd {$baseDir} && composer install --no-dev --optimize-autoloader --ignore-platform-reqs 2>&1");
     }
 }
 

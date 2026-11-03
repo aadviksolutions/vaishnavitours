@@ -27,7 +27,7 @@ if ($action === 'install_composer') {
     if (!$canExec) {
         $outputLog = "⚠️ PHP 'shell_exec' or 'exec' is disabled on this server by default.\n\nPlease use aaPanel's built-in Composer tool:\n1. Open aaPanel -> Websites\n2. Click on 'vaishnavitours.com'\n3. Click 'Composer' tab on the left\n4. Click 'Install' button!";
     } else {
-        $cmd = "cd " . escapeshellarg($baseDir) . " && composer install --no-dev --optimize-autoloader 2>&1";
+        $cmd = "cd " . escapeshellarg($baseDir) . " && (composer install --no-dev --optimize-autoloader --ignore-platform-reqs 2>&1 || /www/server/php/84/bin/composer install --no-dev --optimize-autoloader --ignore-platform-reqs 2>&1)";
         $result = @shell_exec($cmd);
         $outputLog = $result ?: "Command executed. Check if vendor/autoload.php is created.";
     }
@@ -228,3 +228,4 @@ $isDbPresent = file_exists($sqliteDb);
     </div>
 </body>
 </html>
+

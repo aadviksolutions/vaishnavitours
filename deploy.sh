@@ -24,7 +24,7 @@ fi
 
 # 3. Install composer dependencies
 echo "📦 Installing PHP dependencies..."
-composer install --no-dev --optimize-autoloader --no-interaction
+composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs || /www/server/php/84/bin/composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
 
 # 4. Storage permissions & links
 echo "🔐 Setting permissions..."
@@ -46,3 +46,4 @@ php artisan route:cache
 php artisan view:cache
 
 echo "✅ Vaishnavi Tours successfully deployed & online!"
+
