@@ -55,9 +55,16 @@
                         <label for="customer_search_input" class="form-label mb-0" style="font-weight: 700;">
                             Customer *
                         </label>
-                        <span id="customerCountBadge" class="badge" style="background: #E2E8F0; color: #475569; font-size: 0.75rem; font-weight: 600; padding: 3px 8px; border-radius: 9999px;">
-                            {{ count($customers) }} Registered
-                        </span>
+                        <div class="d-flex align-center gap-2">
+                            @if($booking->customer)
+                                <a href="{{ route('admin.customers.edit', $booking->customer->id) }}" target="_blank" class="btn btn-outline btn-sm" style="font-size: 0.725rem; padding: 2px 8px; font-weight: 700; color: #2563EB; border-color: #BFDBFE;">
+                                    ✏️ Edit This Customer Profile & Number
+                                </a>
+                            @endif
+                            <span id="customerCountBadge" class="badge" style="background: #E2E8F0; color: #475569; font-size: 0.75rem; font-weight: 600; padding: 3px 8px; border-radius: 9999px;">
+                                {{ count($customers) }} Registered
+                            </span>
+                        </div>
                     </div>
 
                     <!-- Search Input with Icon and Clear Button -->

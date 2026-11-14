@@ -12,6 +12,11 @@
         <h1 style="font-size: 1.65rem; font-weight: 800; margin: 4px 0 0 0;">{{ $user->name }}</h1>
         <p style="color: var(--slate-500); font-size: 0.875rem; margin: 2px 0 0 0;">Passenger account profile, lifetime value, and booking history.</p>
     </div>
+    <div class="d-flex gap-2">
+        <a href="{{ route('admin.customers.edit', $user->id) }}" class="btn btn-primary" style="font-weight: 700;">
+            ✏️ Edit Profile
+        </a>
+    </div>
 </div>
 
 <!-- Customer Metrics -->

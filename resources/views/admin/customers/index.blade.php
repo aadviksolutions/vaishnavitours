@@ -167,7 +167,10 @@
                                 {{ $c->bookings->count() }} {{ $c->bookings->count() === 1 ? 'trip' : 'trips' }}
                             </span>
                         </td>
-                        <td style="text-align: right;">
+                        <td style="text-align: right; white-space: nowrap;">
+                            <a href="{{ route('admin.customers.edit', $c->id) }}" class="btn btn-outline btn-sm me-1" style="padding: 0.25rem 0.65rem; font-size: 0.775rem;">
+                                ✏️ Edit
+                            </a>
                             <a href="{{ route('admin.customers.show', $c->id) }}" class="btn btn-outline btn-sm" style="padding: 0.25rem 0.65rem; font-size: 0.775rem;">
                                 View Profile →
                             </a>

@@ -91,7 +91,53 @@
     $supportPhone = \App\Models\Setting::get('phone_primary', config('vaishnavi.phone_primary', '9244784443'));
     $cleanPhone = preg_replace('/[^0-9]/', '', $supportPhone);
     $supportTel = (strlen($cleanPhone) === 10) ? '+91' . $cleanPhone : (str_starts_with($cleanPhone, '91') ? '+' . $cleanPhone : '+91' . $cleanPhone);
+
+    $offerEnabled = \App\Models\Setting::get('special_offer_enabled', '0') === '1';
+    $offerTitle = \App\Models\Setting::get('special_offer_title', 'Special Travel Discount on Round-Trip Bookings');
+    $offerBadge = \App\Models\Setting::get('special_offer_badge', 'SPECIAL OFFER');
+    $offerText = \App\Models\Setting::get('special_offer_text', 'Book your outstation or airport cab today and enjoy instant discount with clean AC cars & experienced drivers.');
+    $offerCoupon = \App\Models\Setting::get('special_offer_coupon', '');
+    $offerBtnText = \App\Models\Setting::get('special_offer_btn_text', 'Book Taxi with Offer');
+    $offerBtnUrl = \App\Models\Setting::get('special_offer_btn_url', '#booking-card-section');
+    $offerValidity = \App\Models\Setting::get('special_offer_valid_until', 'Limited Time Offer');
 @endphp
+
+@if($offerEnabled)
+    <!-- Special Promotional Offer Banner (Admin Controlled) -->
+    <div id="vaishnaviSpecialOfferBanner" style="background: linear-gradient(135deg, #7C2D12 0%, #B45309 50%, #D97706 100%); color: #FFFFFF; padding: 0.85rem 1rem; border-bottom: 3px solid #F59E0B; box-shadow: 0 4px 15px rgba(180, 83, 9, 0.25); position: relative; z-index: 50;">
+        <div class="container d-flex justify-between align-center flex-wrap gap-2">
+            <div class="d-flex align-center gap-3 flex-wrap" style="flex: 1; min-width: 260px;">
+                <span style="background: #FEF3C7; color: #92400E; font-weight: 800; font-size: 0.725rem; letter-spacing: 0.5px; padding: 4px 10px; border-radius: 9999px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
+                    🔥 {{ $offerBadge }}
+                </span>
+                <div>
+                    <div style="font-weight: 800; font-size: 1rem; line-height: 1.25; color: #FFFFFF; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                        {{ $offerTitle }}
+                        @if($offerCoupon)
+                            <span style="background: rgba(0,0,0,0.3); border: 1px dashed #FDE68A; color: #FEF08A; font-family: monospace; font-size: 0.85rem; padding: 2px 8px; border-radius: 4px; font-weight: 800; cursor: pointer;" onclick="navigator.clipboard.writeText('{{ $offerCoupon }}'); alert('Coupon code {{ $offerCoupon }} copied!');" title="Click to copy coupon code">
+                                CODE: {{ $offerCoupon }}
+                            </span>
+                        @endif
+                    </div>
+                    @if($offerText)
+                        <div style="font-size: 0.8rem; color: #FEF3C7; margin-top: 2px; opacity: 0.95;">
+                            {{ $offerText }} · <em style="color: #FDE68A;">{{ $offerValidity }}</em>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <div class="d-flex align-center gap-2">
+                <a href="{{ $offerBtnUrl }}" class="btn btn-sm" style="background: #FFFFFF; color: #92400E; font-weight: 800; font-size: 0.825rem; padding: 0.45rem 1.1rem; border-radius: 6px; text-decoration: none; box-shadow: 0 2px 8px rgba(0,0,0,0.2); white-space: nowrap;">
+                    {{ $offerBtnText }} ➔
+                </a>
+                <button type="button" onclick="document.getElementById('vaishnaviSpecialOfferBanner').style.display='none';" style="background: transparent; border: none; color: #FEF3C7; font-size: 1.1rem; cursor: pointer; padding: 4px; line-height: 1;" title="Dismiss banner">
+                    ✕
+                </button>
+            </div>
+        </div>
+    </div>
+@endif
 
     <!-- 1. Hero Section -->
     <section class="hero-section">

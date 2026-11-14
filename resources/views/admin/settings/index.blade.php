@@ -20,6 +20,79 @@
 
     <div class="grid grid-3 gap-4">
         <div style="grid-column: span 2;">
+            <!-- Special Promotional Offer & Website Announcement Banner -->
+            <div class="card mb-4" style="border: 2px solid #F59E0B; background: #FFFDF5;">
+                <div class="d-flex justify-between align-center mb-3">
+                    <div>
+                        <h3 style="font-size: 1.15rem; font-weight: 800; color: #92400E; margin: 0; display: flex; align-items: center; gap: 8px;">
+                            🎉 Special Promotional Offer & Website Front-Page Banner
+                        </h3>
+                        <p style="font-size: 0.8rem; color: #B45309; margin: 4px 0 0 0;">
+                            Change, remove, or update promotional discounts & festive offers anytime. Automatically appears on the website front page when active.
+                        </p>
+                    </div>
+                    @php
+                        $isOfferActive = ($settings['special_offer_enabled']->value ?? '0') === '1';
+                    @endphp
+                    <span class="badge" style="background: {{ $isOfferActive ? '#DCFCE7' : '#F1F5F9' }}; color: {{ $isOfferActive ? '#166534' : '#64748B' }}; font-weight: 800; padding: 6px 12px; font-size: 0.8rem;">
+                        {{ $isOfferActive ? '● LIVE ON WEBSITE' : '○ CURRENTLY DISABLED' }}
+                    </span>
+                </div>
+
+                <div class="grid grid-2 gap-3 mb-3">
+                    <div class="form-group">
+                        <label for="special_offer_enabled" class="form-label" style="font-weight: 700; color: #78350F;">Offer Status on Website *</label>
+                        <select name="special_offer_enabled" id="special_offer_enabled" class="form-select" style="font-weight: 700; border-color: #FCD34D;">
+                            <option value="1" {{ ($settings['special_offer_enabled']->value ?? '0') === '1' ? 'selected' : '' }}>
+                                ✅ Active (Show Promotional Banner on Website Front Page)
+                            </option>
+                            <option value="0" {{ ($settings['special_offer_enabled']->value ?? '0') === '0' ? 'selected' : '' }}>
+                                🚫 Inactive (Hide Offer Banner from Website)
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="special_offer_badge" class="form-label" style="font-weight: 700; color: #78350F;">Offer Badge / Tag</label>
+                        <input type="text" name="special_offer_badge" id="special_offer_badge" class="form-control" placeholder="e.g. LIMITED TIME OFFER / FESTIVE DEAL / 10% OFF" value="{{ old('special_offer_badge', $settings['special_offer_badge']->value ?? 'SPECIAL OFFER') }}">
+                    </div>
+                </div>
+
+                <div class="grid grid-2 gap-3 mb-3">
+                    <div class="form-group">
+                        <label for="special_offer_title" class="form-label" style="font-weight: 700; color: #78350F;">Offer Title / Headline *</label>
+                        <input type="text" name="special_offer_title" id="special_offer_title" class="form-control" placeholder="e.g. Flat ₹500 OFF on Raipur Airport & Outstation Cabs" value="{{ old('special_offer_title', $settings['special_offer_title']->value ?? 'Special Travel Discount on Round-Trip Bookings') }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="special_offer_coupon" class="form-label" style="font-weight: 700; color: #78350F;">Promo / Coupon Code (Optional)</label>
+                        <input type="text" name="special_offer_coupon" id="special_offer_coupon" class="form-control" placeholder="e.g. VAISHNAVI10 or FESTIVE500" value="{{ old('special_offer_coupon', $settings['special_offer_coupon']->value ?? 'VAISHNAVI10') }}" style="text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="special_offer_text" class="form-label" style="font-weight: 700; color: #78350F;">Offer Details / Description</label>
+                    <textarea name="special_offer_text" id="special_offer_text" class="form-control" rows="2" placeholder="Describe the offer benefits, applicable routes or terms...">{{ old('special_offer_text', $settings['special_offer_text']->value ?? 'Book your outstation or airport cab today and enjoy instant discount with clean AC cars & experienced drivers.') }}</textarea>
+                </div>
+
+                <div class="grid grid-3 gap-3 mb-2">
+                    <div class="form-group">
+                        <label for="special_offer_btn_text" class="form-label" style="font-size: 0.8rem; font-weight: 700; color: #78350F;">Button Text</label>
+                        <input type="text" name="special_offer_btn_text" id="special_offer_btn_text" class="form-control" placeholder="e.g. Claim Offer / Book Now" value="{{ old('special_offer_btn_text', $settings['special_offer_btn_text']->value ?? 'Book Taxi with Offer') }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="special_offer_btn_url" class="form-label" style="font-size: 0.8rem; font-weight: 700; color: #78350F;">Button Link / URL</label>
+                        <input type="text" name="special_offer_btn_url" id="special_offer_btn_url" class="form-control" placeholder="e.g. /#booking-card-section or https://wa.me/919244784443" value="{{ old('special_offer_btn_url', $settings['special_offer_btn_url']->value ?? '#booking-card-section') }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="special_offer_valid_until" class="form-label" style="font-size: 0.8rem; font-weight: 700; color: #78350F;">Validity / Expiry Text</label>
+                        <input type="text" name="special_offer_valid_until" id="special_offer_valid_until" class="form-control" placeholder="e.g. Valid till 30 Nov / Limited seats" value="{{ old('special_offer_valid_until', $settings['special_offer_valid_until']->value ?? 'Limited Time Offer') }}">
+                    </div>
+                </div>
+            </div>
+
             <!-- Brand & Contact -->
             <div class="card mb-4">
                 <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">🏢 Brand & Company Profile</h3>

@@ -213,6 +213,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/customers/create', [AdminCustomerController::class, 'create'])->name('customers.create');
     Route::post('/customers', [AdminCustomerController::class, 'store'])->name('customers.store');
     Route::get('/customers/{user}', [AdminCustomerController::class, 'show'])->name('customers.show');
+    Route::get('/customers/{user}/edit', [AdminCustomerController::class, 'edit'])->name('customers.edit');
+    Route::put('/customers/{user}', [AdminCustomerController::class, 'update'])->name('customers.update');
 
     // Payments & Refunds
     Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');

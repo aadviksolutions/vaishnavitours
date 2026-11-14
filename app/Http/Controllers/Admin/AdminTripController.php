@@ -130,14 +130,32 @@ class AdminTripController extends Controller
                     'comment' => "Trip console updated status to {$canonicalStatus}.",
                     'created_at' => now(),
                 ]);
+            }
+        }
 
-                if ($canonicalStatus === 'Completed') {
-                    if ($trip->vehicle && in_array($trip->vehicle->status, ['On Trip', 'Assigned'])) {
-                        $trip->vehicle->update(['status' => 'Available']);
-                    }
-                    if ($trip->driver && in_array($trip->driver->status, ['Assigned', 'On Trip'])) {
-                        $trip->driver->update(['status' => 'Available']);
-                    }
+        if ($canonicalStatus === 'Completed') {
+            if ($trip->vehicle_id) {
+                $veh = \App\Models\Vehicle::find($trip->vehicle_id);
+                if ($veh && ! in_array($veh->status, ['Maintenance', 'Inactive'], true)) {
+                    $veh->update(['status' => 'Available']);
+                }
+            }
+            if ($trip->booking && $trip->booking->vehicle_id) {
+                $bVeh = \App\Models\Vehicle::find($trip->booking->vehicle_id);
+                if ($bVeh && ! in_array($bVeh->status, ['Maintenance', 'Inactive'], true)) {
+                    $bVeh->update(['status' => 'Available']);
+                }
+            }
+            if ($trip->driver_id) {
+                $drv = \App\Models\Driver::find($trip->driver_id);
+                if ($drv && $drv->status !== 'Inactive') {
+                    $drv->update(['status' => 'Available']);
+                }
+            }
+            if ($trip->booking && $trip->booking->driver_id) {
+                $bDrv = \App\Models\Driver::find($trip->booking->driver_id);
+                if ($bDrv && $bDrv->status !== 'Inactive') {
+                    $bDrv->update(['status' => 'Available']);
                 }
             }
         }
@@ -229,11 +247,29 @@ class AdminTripController extends Controller
             'closure_reason' => $reason,
         ]);
 
-        if ($trip->vehicle && in_array($trip->vehicle->status, ['On Trip', 'Assigned'])) {
-            $trip->vehicle->update(['status' => 'Available']);
+        if ($trip->vehicle_id) {
+            $veh = \App\Models\Vehicle::find($trip->vehicle_id);
+            if ($veh && ! in_array($veh->status, ['Maintenance', 'Inactive'], true)) {
+                $veh->update(['status' => 'Available']);
+            }
         }
-        if ($trip->driver && in_array($trip->driver->status, ['Assigned', 'On Trip'])) {
-            $trip->driver->update(['status' => 'Available']);
+        if ($booking && $booking->vehicle_id) {
+            $bVeh = \App\Models\Vehicle::find($booking->vehicle_id);
+            if ($bVeh && ! in_array($bVeh->status, ['Maintenance', 'Inactive'], true)) {
+                $bVeh->update(['status' => 'Available']);
+            }
+        }
+        if ($trip->driver_id) {
+            $drv = \App\Models\Driver::find($trip->driver_id);
+            if ($drv && $drv->status !== 'Inactive') {
+                $drv->update(['status' => 'Available']);
+            }
+        }
+        if ($booking && $booking->driver_id) {
+            $bDrv = \App\Models\Driver::find($booking->driver_id);
+            if ($bDrv && $bDrv->status !== 'Inactive') {
+                $bDrv->update(['status' => 'Available']);
+            }
         }
 
         if ($booking) {

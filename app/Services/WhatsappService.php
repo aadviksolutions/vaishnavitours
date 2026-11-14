@@ -240,7 +240,7 @@ class WhatsappService
                 'text' => $message,
             ];
 
-            $request = Http::timeout(15);
+            $request = Http::connectTimeout(2)->timeout(3);
 
             if ($this->apiKey) {
                 $request = $request->withToken($this->apiKey);

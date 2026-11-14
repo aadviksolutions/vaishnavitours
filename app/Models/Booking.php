@@ -228,6 +228,16 @@ class Booking extends Model
         }
     }
 
+    public function isCancelled(): bool
+    {
+        return $this->booking_status === 'Cancelled';
+    }
+
+    public function isCompleted(): bool
+    {
+        return $this->booking_status === 'Completed';
+    }
+
     public function canTransitionTo(string $targetStatus): bool
     {
         if ($this->booking_status === $targetStatus) {

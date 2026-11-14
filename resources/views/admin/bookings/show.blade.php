@@ -156,7 +156,13 @@ Regarding your booking *{{ $booking->booking_id }}* from {{ $booking->pickup_loc
                     <h3 style="font-size: 1rem; font-weight: 800; color: var(--dark-950); margin: 0;">
                         <x-icon name="user" size="20" class="text-primary" style="margin-right: 6px;" /> Customer Information
                     </h3>
-                    <span class="badge badge-outline" style="font-size: 0.75rem;">Account</span>
+                    <div class="d-flex align-center gap-1">
+                        @if($booking->customer)
+                            <a href="{{ route('admin.customers.edit', $booking->customer->id) }}" class="btn btn-outline btn-sm" style="font-size: 0.725rem; padding: 2px 7px; font-weight: 700;" title="Edit customer mobile, name, corporate GST or partner details">
+                                ✏️ Edit Customer
+                            </a>
+                        @endif
+                    </div>
                 </div>
                 <div style="font-size: 0.925rem; line-height: 1.6;">
                     <div><span style="color: var(--slate-500); font-size: 0.8rem; text-transform: uppercase; font-weight: 700;">Name:</span></div>
@@ -398,19 +404,58 @@ Regarding your booking *{{ $booking->booking_id }}* from {{ $booking->pickup_loc
                                 </button>
                             </div>
 
-                            <div id="showAssignTpBox" style="display: none; background: #FFFBEB; border: 1px solid #FCD34D; padding: 0.75rem; border-radius: 6px;">
-                                <div style="font-size: 11px; font-weight: 700; color: #92400E; margin-bottom: 6px;">
-                                    Travel Partner Vehicle (No documents required · Only vehicle number mandatory)
+                            <div id="showAssignTpBox" style="display: none; background: #FFFBEB; border: 1.5px solid #FCD34D; padding: 0.85rem; border-radius: 8px;">
+                                <div style="font-size: 11px; font-weight: 800; color: #92400E; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    🤝 Travel Partner / Outsourced Vehicle Allocation
                                 </div>
-                                <div class="mb-2">
-                                    <input type="text" name="third_party_vehicle_number" class="form-control form-control-sm" placeholder="Enter Vehicle Number * (e.g. CG 04 HA 4521)" style="text-transform: uppercase; font-weight: 700;">
+
+                                @if(!empty($existingTpVehicles) && $existingTpVehicles->count() > 0)
+                                    <div class="mb-2">
+                                        <label style="font-size: 11px; font-weight: 700; color: #78350F; display: block; margin-bottom: 2px;">
+                                            Select Previously Saved Partner Vehicle:
+                                        </label>
+                                        <select name="existing_tp_vehicle_id" id="show_existing_tp_vehicle_id" class="form-select form-select-sm" style="font-size: 12px; font-weight: 600; background: #fff;" onchange="if(this.value){ document.getElementById('show_tp_manual_inputs').style.display='none'; }else{ document.getElementById('show_tp_manual_inputs').style.display='block'; }">
+                                            <option value="">-- Or Choose Existing Saved Partner Cab --</option>
+                                            @foreach($existingTpVehicles as $tpV)
+                                                <option value="{{ $tpV->id }}">
+                                                    {{ $tpV->registration_number }} — {{ $tpV->name }} ({{ $tpV->vendor_name ?: 'Partner' }})
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div style="font-size: 11px; color: #B45309; text-align: center; margin: 4px 0 6px 0; font-weight: 600;">— OR ENTER NEW PARTNER CAB BELOW —</div>
+                                @endif
+
+                                <div id="show_tp_manual_inputs">
+                                    <div class="mb-2">
+                                        <label style="font-size: 11px; font-weight: 700; color: #78350F; display: block; margin-bottom: 2px;">
+                                            Vehicle Number * (Mandatory)
+                                        </label>
+                                        <input type="text" name="third_party_vehicle_number" class="form-control form-control-sm" placeholder="e.g. CG 04 HA 4521" style="text-transform: uppercase; font-weight: 700; background: #fff;">
+                                    </div>
+                                    <div class="grid grid-2 gap-2 mb-2">
+                                        <div>
+                                            <label style="font-size: 11px; font-weight: 700; color: #78350F; display: block; margin-bottom: 2px;">Vehicle Model</label>
+                                            <input type="text" name="third_party_vehicle_name" class="form-control form-control-sm" placeholder="e.g. Maruti Dzire White / Ertiga" style="background: #fff;">
+                                        </div>
+                                        <div>
+                                            <label style="font-size: 11px; font-weight: 700; color: #78350F; display: block; margin-bottom: 2px;">Partner / Agency Name</label>
+                                            <input type="text" name="third_party_vendor_name" list="savedPartnersListShow" class="form-control form-control-sm" placeholder="Agency or Vendor Name" value="{{ $booking->travel_partner_name }}" style="background: #fff;">
+                                            <datalist id="savedPartnersListShow">
+                                                @foreach($travelPartners ?? [] as $tp)
+                                                    <option value="{{ $tp['name'] }}">{{ $tp['phone'] ? ' - ' . $tp['phone'] : '' }}</option>
+                                                @endforeach
+                                            </datalist>
+                                        </div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label style="font-size: 11px; font-weight: 700; color: #78350F; display: block; margin-bottom: 2px;">Partner / Vendor Phone (Optional)</label>
+                                        <input type="tel" name="third_party_vendor_phone" class="form-control form-control-sm" placeholder="e.g. 9876543210" value="{{ $booking->travel_partner_phone }}" style="background: #fff;">
+                                    </div>
                                 </div>
-                                <div class="grid grid-2 gap-2 mb-2">
-                                    <input type="text" name="third_party_vehicle_name" class="form-control form-control-sm" placeholder="Model (e.g. Dzire / Ertiga)">
-                                    <input type="text" name="third_party_vendor_name" class="form-control form-control-sm" placeholder="Partner / Agency Name" value="{{ $booking->travel_partner_name }}">
-                                </div>
-                                <button type="submit" class="btn btn-warning btn-sm" style="font-weight: 800; color: #78350F;">
-                                    Assign Partner Vehicle
+
+                                <button type="submit" class="btn btn-warning btn-sm w-100" style="font-weight: 800; color: #78350F; margin-top: 4px;">
+                                    Allocate Partner Vehicle
                                 </button>
                             </div>
                         </form>
@@ -446,6 +491,52 @@ Regarding your booking *{{ $booking->booking_id }}* from {{ $booking->pickup_loc
                         <div><span style="color: var(--slate-500); font-size: 0.8rem; text-transform: uppercase; font-weight: 700;">License / Rating:</span></div>
                         <div style="font-weight: 600; color: var(--slate-700);">
                             Lic: {{ $booking->driver->license_number }} (⭐ {{ $booking->driver->rating }})
+                        </div>
+
+                        @php
+                            $cleanDriverPhone = preg_replace('/[^0-9]/', '', $booking->driver->mobile ?? '');
+                            if (strlen($cleanDriverPhone) === 10) {
+                                $cleanDriverPhone = '91' . $cleanDriverPhone;
+                            }
+                            $passengerName = $booking->customer->name ?? 'Guest Passenger';
+                            $passengerPhone = $booking->customer->phone ?? 'N/A';
+                            $vehInfo = $booking->vehicle ? ($booking->vehicle->name . ' [' . $booking->vehicle->registration_number . ']') : 'Vehicle Allocated';
+                            $tripDateStr = $booking->travel_date ? $booking->travel_date->format('d M Y') : 'Today';
+
+                            $dutySlipText = "🚖 *VAISHNAVI TOURS - DUTY ALLOCATION* 🚖\n"
+                                . "Namaste *{$booking->driver->name}* ji,\n"
+                                . "Aapko nayi duty assign hui hai:\n\n"
+                                . "📋 *Booking ID:* #{$booking->booking_id}\n"
+                                . "👤 *Passenger:* {$passengerName}\n"
+                                . "📞 *Passenger Mobile:* {$passengerPhone}\n"
+                                . "📍 *Pickup:* {$booking->pickup_location}\n"
+                                . "🏁 *Drop:* {$booking->destination}\n"
+                                . "📅 *Date:* {$tripDateStr}\n"
+                                . "⏰ *Reporting Time:* {$booking->travel_time}\n"
+                                . "🚗 *Vehicle:* {$vehInfo}\n"
+                                . "💰 *Collect from Customer:* ₹" . number_format($booking->balance_amount, 2) . "\n"
+                                . ($booking->notes ? ("📝 *Notes:* " . $booking->notes . "\n") : "")
+                                . "\nKripya pickup time se 15 minute pehle pahuchein.\n"
+                                . "Dispatch Helpline: +91 92447 84443 / +91 91794 84443\n"
+                                . "*Vaishnavi Tours & Travels Bilaspur*";
+                        @endphp
+
+                        <div class="mt-3 pt-3" style="border-top: 1px dashed var(--slate-200); display: flex; flex-direction: column; gap: 8px;">
+                            <a href="https://wa.me/{{ $cleanDriverPhone }}?text={{ urlencode($dutySlipText) }}" target="_blank" class="btn btn-sm" style="background: #25D366; color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; border-radius: 6px; padding: 0.5rem 0.75rem;">
+                                <x-icon name="message-circle" :size="15" /> Send Booking Details to Driver via WhatsApp
+                            </a>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline btn-sm" onclick="copyDriverDutySlip()" style="flex: 1; font-weight: 700; font-size: 0.775rem; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                    <x-icon name="copy" :size="13" /> Copy Duty Slip
+                                </button>
+                                <a href="tel:{{ $booking->driver->mobile }}" class="btn btn-outline btn-sm" style="font-weight: 700; font-size: 0.775rem; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                    <x-icon name="phone" :size="13" /> Call Driver
+                                </a>
+                            </div>
+                            <div id="duty_copy_toast" style="display: none; font-size: 0.75rem; color: #166534; background: #DCFCE7; padding: 4px 8px; border-radius: 4px; text-align: center; font-weight: 600;">
+                                ✓ Driver duty slip copied to clipboard!
+                            </div>
+                            <textarea id="rawDriverDutySlip" style="display: none;">{{ $dutySlipText }}</textarea>
                         </div>
                     </div>
                 @else
@@ -493,7 +584,7 @@ Regarding your booking *{{ $booking->booking_id }}* from {{ $booking->pickup_loc
             @if(in_array($booking->booking_status, ['Completed', 'Cancelled']))
                 <div class="alert alert-info" style="margin: 0;">
                     This booking has reached its final state: <strong>{{ $booking->booking_status }}</strong>. No further status changes are permitted.
-                    @if($booking->isCancelled() && $booking->cancelled_at)
+                    @if(($booking->booking_status === 'Cancelled' || $booking->isCancelled()) && $booking->cancelled_at)
                         <div style="font-size: 0.85rem; margin-top: 0.35rem;">
                             Cancelled on {{ $booking->cancelled_at->format('d M, Y h:i A') }} by {{ $booking->cancelledBy->name ?? 'Administrator' }}. Reason: {{ $booking->cancellation_reason }}
                         </div>
@@ -792,7 +883,14 @@ Regarding your booking *{{ $booking->booking_id }}* from {{ $booking->pickup_loc
 
                 @if($booking->driver)
                     <a href="https://wa.me/{{ $cleanPhone }}?text={{ urlencode($driverMsg) }}" target="_blank" class="btn btn-outline btn-sm d-flex align-center justify-between" style="border-color: #3B82F6; color: #1D4ED8; font-weight: 700; font-size: 0.8rem;">
-                        <span style="display: flex; align-items: center; gap: 6px;"><x-icon name="car" :size="13" /> Send Driver & Vehicle Details</span>
+                        <span style="display: flex; align-items: center; gap: 6px;"><x-icon name="car" :size="13" /> Send Driver Details to Passenger</span>
+                        <span>➔</span>
+                    </a>
+                @endif
+
+                @if($booking->driver && !empty($cleanDriverPhone))
+                    <a href="https://wa.me/{{ $cleanDriverPhone }}?text={{ urlencode($dutySlipText) }}" target="_blank" class="btn btn-outline btn-sm d-flex align-center justify-between" style="border-color: #059669; color: #065F46; font-weight: 700; font-size: 0.8rem; background: #ECFDF5;">
+                        <span style="display: flex; align-items: center; gap: 6px;"><x-icon name="message-circle" :size="13" /> 📲 Send Duty Slip to Driver ({{ $booking->driver->name }})</span>
                         <span>➔</span>
                     </a>
                 @endif
@@ -835,4 +933,41 @@ Regarding your booking *{{ $booking->booking_id }}* from {{ $booking->pickup_loc
         @endif
     </div>
 </div>
+@push('scripts')
+<script>
+function copyDriverDutySlip() {
+    const el = document.getElementById('rawDriverDutySlip');
+    if (!el) return;
+    const text = el.value;
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(showToast).catch(() => fallbackCopy(text));
+    } else {
+        fallbackCopy(text);
+    }
+}
+function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+        document.execCommand('copy');
+        showToast();
+    } catch (e) {
+        alert('Duty slip text:\n\n' + text);
+    }
+    document.body.removeChild(ta);
+}
+function showToast() {
+    const toast = document.getElementById('duty_copy_toast');
+    if (toast) {
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 3500);
+    }
+}
+</script>
+@endpush
 @endsection

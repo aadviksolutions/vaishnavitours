@@ -502,12 +502,16 @@ class BookingService
                 ]);
 
                 // WhatsApp notification: new booking
-                $this->whatsapp->sendEvent(
-                    'new_booking',
-                    $this->whatsapp->bookingVariables($booking),
-                    $user->phone ?? null,
-                    $booking
-                );
+                try {
+                    $this->whatsapp->sendEvent(
+                        'new_booking',
+                        $this->whatsapp->bookingVariables($booking),
+                        $user->phone ?? null,
+                        $booking
+                    );
+                } catch (\Throwable $we) {
+                    Log::warning("WhatsApp dispatch failed for new_booking {$booking->booking_id}: ".$we->getMessage());
+                }
             }
 
             return $booking;
@@ -576,11 +580,31 @@ class BookingService
 
             // Release resources on completion or cancellation
             if ($newStatus === 'Completed' || $newStatus === 'Cancelled') {
-                if ($booking->vehicle && in_array($booking->vehicle->status, ['On Trip', 'Assigned'])) {
-                    $booking->vehicle->update(['status' => 'Available']);
+                if ($booking->vehicle_id) {
+                    $veh = Vehicle::find($booking->vehicle_id);
+                    if ($veh && ! in_array($veh->status, ['Maintenance', 'Inactive'], true)) {
+                        $veh->update(['status' => 'Available']);
+                    }
                 }
-                if ($booking->driver && in_array($booking->driver->status, ['Assigned', 'On Trip'])) {
-                    $booking->driver->update(['status' => 'Available']);
+                if ($booking->driver_id) {
+                    $drv = Driver::find($booking->driver_id);
+                    if ($drv && $drv->status !== 'Inactive') {
+                        $drv->update(['status' => 'Available']);
+                    }
+                }
+                if ($booking->trip) {
+                    if ($booking->trip->vehicle_id && $booking->trip->vehicle_id !== $booking->vehicle_id) {
+                        $tVeh = Vehicle::find($booking->trip->vehicle_id);
+                        if ($tVeh && ! in_array($tVeh->status, ['Maintenance', 'Inactive'], true)) {
+                            $tVeh->update(['status' => 'Available']);
+                        }
+                    }
+                    if ($booking->trip->driver_id && $booking->trip->driver_id !== $booking->driver_id) {
+                        $tDrv = Driver::find($booking->trip->driver_id);
+                        if ($tDrv && $tDrv->status !== 'Inactive') {
+                            $tDrv->update(['status' => 'Available']);
+                        }
+                    }
                 }
             }
 
@@ -886,12 +910,16 @@ class BookingService
             ]);
 
             // WhatsApp: driver assigned
-            $this->whatsapp->sendEvent(
-                'driver_assigned',
-                $this->whatsapp->bookingVariables($booking->fresh()),
-                $this->whatsapp->getCustomerPhone($booking),
-                $booking
-            );
+            try {
+                $this->whatsapp->sendEvent(
+                    'driver_assigned',
+                    $this->whatsapp->bookingVariables($booking->fresh()),
+                    $this->whatsapp->getCustomerPhone($booking),
+                    $booking
+                );
+            } catch (\Throwable $we) {
+                Log::warning("WhatsApp dispatch failed for driver_assigned {$booking->booking_id}: ".$we->getMessage());
+            }
 
             return $booking;
         });
@@ -906,14 +934,31 @@ class BookingService
             $oldStatus = $booking->booking_status;
 
             // Release vehicle and driver if assigned
-            if ($booking->vehicle && $booking->vehicle->status === 'On Trip') {
-                $booking->vehicle->update(['status' => 'Available']);
+            if ($booking->vehicle_id) {
+                $veh = Vehicle::find($booking->vehicle_id);
+                if ($veh && ! in_array($veh->status, ['Maintenance', 'Inactive'], true)) {
+                    $veh->update(['status' => 'Available']);
+                }
             }
-            if ($booking->driver && in_array($booking->driver->status, ['Assigned', 'On Trip'])) {
-                $booking->driver->update(['status' => 'Available']);
+            if ($booking->driver_id) {
+                $drv = Driver::find($booking->driver_id);
+                if ($drv && $drv->status !== 'Inactive') {
+                    $drv->update(['status' => 'Available']);
+                }
             }
-
             if ($booking->trip) {
+                if ($booking->trip->vehicle_id && $booking->trip->vehicle_id !== $booking->vehicle_id) {
+                    $tVeh = Vehicle::find($booking->trip->vehicle_id);
+                    if ($tVeh && ! in_array($tVeh->status, ['Maintenance', 'Inactive'], true)) {
+                        $tVeh->update(['status' => 'Available']);
+                    }
+                }
+                if ($booking->trip->driver_id && $booking->trip->driver_id !== $booking->driver_id) {
+                    $tDrv = Driver::find($booking->trip->driver_id);
+                    if ($tDrv && $tDrv->status !== 'Inactive') {
+                        $tDrv->update(['status' => 'Available']);
+                    }
+                }
                 $booking->trip->update([
                     'status' => 'Cancelled',
                     'trip_status' => 'Cancelled',
@@ -949,12 +994,16 @@ class BookingService
             ]);
 
             // WhatsApp: booking cancelled
-            $this->whatsapp->sendEvent(
-                'booking_cancelled',
-                $this->whatsapp->bookingVariables($booking->fresh()),
-                $this->whatsapp->getCustomerPhone($booking),
-                $booking
-            );
+            try {
+                $this->whatsapp->sendEvent(
+                    'booking_cancelled',
+                    $this->whatsapp->bookingVariables($booking->fresh()),
+                    $this->whatsapp->getCustomerPhone($booking),
+                    $booking
+                );
+            } catch (\Throwable $we) {
+                Log::warning("WhatsApp dispatch failed for booking_cancelled {$booking->booking_id}: ".$we->getMessage());
+            }
 
             return $booking;
         });

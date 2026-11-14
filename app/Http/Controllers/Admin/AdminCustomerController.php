@@ -318,4 +318,108 @@ class AdminCustomerController extends Controller
 
         return view('admin.customers.show', compact('user', 'totalSpent', 'totalBookings', 'completedTrips'));
     }
+
+    public function edit(User $user)
+    {
+        if ($user->role !== 'customer') {
+            abort(404);
+        }
+
+        $user->load('customer');
+
+        return view('admin.customers.edit', compact('user'));
+    }
+
+    public function update(Request $request, User $user)
+    {
+        if ($user->role !== 'customer') {
+            abort(404);
+        }
+
+        $customerType = $request->input('customer_type', $user->customer->customer_type ?? 'individual');
+
+        $finalName = '';
+        $finalPhone = '';
+        $finalEmail = '';
+
+        if ($customerType === 'corporate') {
+            $finalName = trim($request->input('company_name') ?: $request->input('corporate_contact_person') ?: $user->name);
+            $finalPhone = substr(preg_replace('/\D/', '', (string) ($request->input('corporate_phone') ?: $request->input('phone') ?: $user->phone)), -10);
+            $finalEmail = trim((string) ($request->input('corporate_email') ?: $request->input('email') ?: $user->email));
+        } elseif ($customerType === 'travel_partner') {
+            $finalName = trim($request->input('partner_name') ?: $request->input('partner_contact_person') ?: $user->name);
+            $finalPhone = substr(preg_replace('/\D/', '', (string) ($request->input('partner_phone') ?: $request->input('phone') ?: $user->phone)), -10);
+            $finalEmail = trim((string) ($request->input('partner_email') ?: $request->input('email') ?: $user->email));
+        } else {
+            $finalName = trim((string) $request->input('name', $user->name));
+            $finalPhone = substr(preg_replace('/\D/', '', (string) $request->input('phone', $user->phone)), -10);
+            $finalEmail = trim((string) $request->input('email', $user->email));
+        }
+
+        if (empty($finalName)) {
+            $msg = $customerType === 'corporate' ? 'Company name is required.' : ($customerType === 'travel_partner' ? 'Agency name is required.' : 'Customer name is required.');
+
+            return back()->withInput()->with('error', $msg);
+        }
+
+        if (empty($finalPhone) || strlen($finalPhone) < 10) {
+            return back()->withInput()->with('error', 'A valid 10-digit mobile number is required.');
+        }
+
+        if (empty($finalEmail)) {
+            $finalEmail = "{$finalPhone}@vaishnavitours.in";
+        }
+
+        // Validate unique phone / email across other users
+        $phoneConflict = User::where('phone', $finalPhone)->where('id', '!=', $user->id)->first();
+        if ($phoneConflict) {
+            return back()->withInput()->with('error', "Another account is already using phone number {$finalPhone}.");
+        }
+
+        $emailConflict = User::where('email', $finalEmail)->where('id', '!=', $user->id)->first();
+        if ($emailConflict) {
+            return back()->withInput()->with('error', "Another account is already using email address {$finalEmail}.");
+        }
+
+        $effectiveGstin = $customerType === 'corporate' ? trim((string) $request->input('corporate_gstin')) : trim((string) $request->input('partner_gstin'));
+        $effectiveAddress = $customerType === 'corporate' ? trim((string) ($request->input('corporate_billing_address') ?: $request->input('address'))) : ($customerType === 'travel_partner' ? trim((string) ($request->input('partner_address') ?: $request->input('address'))) : trim((string) $request->input('address')));
+        $effectiveContactPerson = $customerType === 'corporate' ? trim((string) ($request->input('corporate_contact_person') ?: $request->input('name'))) : ($customerType === 'travel_partner' ? trim((string) ($request->input('partner_contact_person') ?: $request->input('name'))) : trim((string) $request->input('name')));
+
+        DB::beginTransaction();
+        try {
+            $user->update([
+                'name' => $finalName,
+                'email' => $finalEmail,
+                'phone' => $finalPhone,
+                'is_active' => $request->has('is_active') ? (bool) $request->input('is_active') : true,
+            ]);
+
+            Customer::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'customer_type' => $customerType,
+                    'company_name' => $customerType === 'corporate' ? ($request->input('company_name') ?: $finalName) : null,
+                    'contact_person' => $effectiveContactPerson,
+                    'gstin' => $effectiveGstin ?: null,
+                    'billing_address' => $effectiveAddress ?: null,
+                    'partner_name' => $customerType === 'travel_partner' ? ($request->input('partner_name') ?: $finalName) : null,
+                    'partner_commission' => $customerType === 'travel_partner' ? $request->input('partner_commission') : null,
+                    'alternate_phone' => $request->input('alternate_phone'),
+                    'address' => $effectiveAddress ?: null,
+                    'city' => $request->input('city', 'Bilaspur') ?: 'Bilaspur',
+                    'state' => $request->input('state', 'Chhattisgarh') ?: 'Chhattisgarh',
+                    'pincode' => $request->input('pincode', '495001') ?: '495001',
+                    'notes' => $request->input('notes'),
+                ]
+            );
+
+            DB::commit();
+
+            return redirect()->route('admin.customers.show', $user->id)->with('success', 'Customer profile updated successfully.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return back()->withInput()->with('error', 'Error updating customer: '.$e->getMessage());
+        }
+    }
 }

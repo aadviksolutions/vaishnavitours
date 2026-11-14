@@ -157,6 +157,20 @@ class ReportService
                 'description' => 'Official GST tax invoices, invoice totals, tax rates and balance reconciliations.',
                 'orientation' => 'landscape',
             ],
+            'travel_partners' => [
+                'title' => 'Travel Partner / Agent Reports',
+                'icon' => '🤝',
+                'badge' => 'B2B & Partners',
+                'description' => 'Bookings referred by travel partners and agents, commissions payable, customer details and settlement status.',
+                'orientation' => 'landscape',
+            ],
+            'third_party_assignments' => [
+                'title' => 'Third-Party Vehicle Assignment Reports',
+                'icon' => '🚛',
+                'badge' => 'Outsourced Fleet',
+                'description' => 'Bookings and trips dispatched to third-party vendor vehicles, vendor agreed rates, paid sums, and pending dues.',
+                'orientation' => 'landscape',
+            ],
         ];
     }
 
@@ -1601,6 +1615,211 @@ class ReportService
                 'paid_amount' => number_format((float) $inv->paid_amount, 2, '.', ''),
                 'balance_amount' => number_format((float) $inv->balance_amount, 2, '.', ''),
                 'status' => $inv->status,
+            ];
+        };
+
+        return $this->formatResult($query, $fromDate, $toDate, $preset, $categoryMeta, $columns, $kpis, $transform, $forExport, $request);
+    }
+
+    /**
+     * Category 19: Travel Partner / Agent Reports
+     */
+    private function getTravelPartnersData(Request $request, string $fromDate, string $toDate, string $preset, array $categoryMeta, bool $forExport): array
+    {
+        $query = Booking::with(['customer.customer', 'vehicle', 'driver', 'trip'])
+            ->where(function ($q) {
+                $q->whereNotNull('travel_partner_name')
+                    ->orWhere('booking_category', 'TP')
+                    ->orWhere('booking_id', 'like', 'TP-%')
+                    ->orWhereHas('customer.customer', fn ($cq) => $cq->where('customer_type', 'travel_partner'));
+            })
+            ->whereBetween('travel_date', [$fromDate, $toDate]);
+
+        if ($request->filled('partner')) {
+            $p = trim($request->partner);
+            $query->where(function ($q) use ($p) {
+                $q->where('travel_partner_name', 'like', "%{$p}%")
+                    ->orWhereHas('customer.customer', fn ($cq) => $cq->where('partner_name', 'like', "%{$p}%"));
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('booking_status', $request->status);
+        }
+
+        if ($request->filled('payment_status')) {
+            $query->where('payment_status', $request->payment_status);
+        }
+
+        if ($request->filled('search')) {
+            $s = trim($request->search);
+            $query->where(function ($q) use ($s) {
+                $q->where('booking_id', 'like', "%{$s}%")
+                    ->orWhere('travel_partner_name', 'like', "%{$s}%")
+                    ->orWhere('travel_partner_phone', 'like', "%{$s}%")
+                    ->orWhere('pickup_location', 'like', "%{$s}%")
+                    ->orWhere('destination', 'like', "%{$s}%")
+                    ->orWhereHas('customer', fn ($c) => $c->where('name', 'like', "%{$s}%")->orWhere('phone', 'like', "%{$s}%"));
+            });
+        }
+
+        // Summary metrics
+        $allBookings = (clone $query)->get();
+        $totalPartnerBookings = $allBookings->count();
+        $totalGrossFare = $allBookings->where('booking_status', '!=', 'Cancelled')->sum('total_amount');
+        $totalCommission = $allBookings->where('booking_status', '!=', 'Cancelled')->sum(function ($b) {
+            return (float) ($b->travel_partner_commission ?: 0);
+        });
+        $netVaishnaviRevenue = $totalGrossFare - $totalCommission;
+        $uniquePartnersCount = $allBookings->pluck('travel_partner_name')->filter()->unique()->count();
+
+        $kpis = [
+            ['label' => 'Total Partner Bookings', 'value' => number_format($totalPartnerBookings), 'icon' => '🤝', 'color' => '#2563EB'],
+            ['label' => 'Active Partners', 'value' => number_format($uniquePartnersCount), 'icon' => '🏢', 'color' => '#8B5CF6'],
+            ['label' => 'Gross Billed (₹)', 'value' => '₹'.number_format($totalGrossFare, 2), 'icon' => '💰', 'color' => '#0D9488'],
+            ['label' => 'Partner Commission (₹)', 'value' => '₹'.number_format($totalCommission, 2), 'icon' => '🏷️', 'color' => '#D97706'],
+            ['label' => 'Net Fare (₹)', 'value' => '₹'.number_format($netVaishnaviRevenue, 2), 'icon' => '📈', 'color' => '#059669'],
+        ];
+
+        $columns = [
+            'booking_id' => 'Booking ID',
+            'travel_date' => 'Travel Date',
+            'partner_name' => 'Travel Partner / Agency',
+            'partner_phone' => 'Partner Phone',
+            'passenger_name' => 'Passenger Name',
+            'passenger_phone' => 'Passenger Phone',
+            'route' => 'Route',
+            'vehicle' => 'Assigned Vehicle',
+            'driver' => 'Assigned Driver',
+            'total_amount' => 'Gross Fare (₹)',
+            'commission' => 'Commission (₹)',
+            'payment_status' => 'Payment Status',
+            'booking_status' => 'Booking Status',
+            'partner_notes' => 'Partner Notes',
+        ];
+
+        $transform = function (Booking $b) {
+            $partnerName = $b->travel_partner_name ?: ($b->customer?->customer?->partner_name ?: $b->customer?->name ?: 'Partner');
+            $partnerPhone = $b->travel_partner_phone ?: ($b->customer?->phone ?: 'N/A');
+            $commission = (float) ($b->travel_partner_commission ?: 0);
+
+            return [
+                'booking_id' => $b->booking_id,
+                'travel_date' => $b->travel_date?->format('d M Y') ?? 'N/A',
+                'partner_name' => $partnerName,
+                'partner_phone' => $partnerPhone,
+                'passenger_name' => $b->customer?->name ?? 'Guest Passenger',
+                'passenger_phone' => $b->customer?->phone ?? 'N/A',
+                'route' => "{$b->pickup_location} ➔ {$b->destination}",
+                'vehicle' => $b->vehicle ? "{$b->vehicle->name} ({$b->vehicle->registration_number})" : 'Unassigned',
+                'driver' => $b->driver?->name ?? 'Unassigned',
+                'total_amount' => number_format((float) $b->total_amount, 2, '.', ''),
+                'commission' => number_format($commission, 2, '.', ''),
+                'payment_status' => $b->payment_status,
+                'booking_status' => $b->booking_status,
+                'partner_notes' => $b->travel_partner_notes ?: '—',
+            ];
+        };
+
+        return $this->formatResult($query, $fromDate, $toDate, $preset, $categoryMeta, $columns, $kpis, $transform, $forExport, $request);
+    }
+
+    /**
+     * Category 20: Third-Party Vehicle Assignment Reports
+     */
+    private function getThirdPartyAssignmentsData(Request $request, string $fromDate, string $toDate, string $preset, array $categoryMeta, bool $forExport): array
+    {
+        $query = Booking::with(['customer', 'vehicle', 'driver', 'trip'])
+            ->whereHas('vehicle', function ($vq) {
+                $vq->where('is_third_party', true)->orWhere('ownership_type', 'third_party');
+            })
+            ->whereBetween('travel_date', [$fromDate, $toDate]);
+
+        if ($request->filled('vendor')) {
+            $v = trim($request->vendor);
+            $query->whereHas('vehicle', function ($vq) use ($v) {
+                $vq->where('vendor_name', 'like', "%{$v}%")
+                    ->orWhere('vendor_phone', 'like', "%{$v}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('booking_status', $request->status);
+        }
+
+        if ($request->filled('vendor_payment_status')) {
+            $vps = $request->vendor_payment_status;
+            $query->whereHas('vehicle', function ($vq) use ($vps) {
+                $vq->where('vendor_payment_status', $vps);
+            });
+        }
+
+        if ($request->filled('search')) {
+            $s = trim($request->search);
+            $query->where(function ($q) use ($s) {
+                $q->where('booking_id', 'like', "%{$s}%")
+                    ->orWhere('pickup_location', 'like', "%{$s}%")
+                    ->orWhere('destination', 'like', "%{$s}%")
+                    ->orWhereHas('vehicle', fn ($vq) => $vq->where('name', 'like', "%{$s}%")->orWhere('registration_number', 'like', "%{$s}%")->orWhere('vendor_name', 'like', "%{$s}%"))
+                    ->orWhereHas('customer', fn ($c) => $c->where('name', 'like', "%{$s}%")->orWhere('phone', 'like', "%{$s}%"));
+            });
+        }
+
+        // Summary metrics
+        $allBookings = (clone $query)->get();
+        $totalAssignments = $allBookings->count();
+        $totalCustomerFare = $allBookings->where('booking_status', '!=', 'Cancelled')->sum('total_amount');
+        $totalVendorAgreed = $allBookings->where('booking_status', '!=', 'Cancelled')->sum(fn ($b) => (float) ($b->vehicle?->vendor_agreed_amount ?? 0));
+        $totalVendorPaid = $allBookings->where('booking_status', '!=', 'Cancelled')->sum(fn ($b) => (float) ($b->vehicle?->vendor_paid_amount ?? 0));
+        $totalVendorBalance = $allBookings->where('booking_status', '!=', 'Cancelled')->sum(fn ($b) => (float) ($b->vehicle?->vendor_balance_amount ?? 0));
+        $grossMargin = $totalCustomerFare - $totalVendorAgreed;
+
+        $kpis = [
+            ['label' => 'Third-Party Trips', 'value' => number_format($totalAssignments), 'icon' => '🚛', 'color' => '#2563EB'],
+            ['label' => 'Customer Billed (₹)', 'value' => '₹'.number_format($totalCustomerFare, 2), 'icon' => '💵', 'color' => '#0D9488'],
+            ['label' => 'Vendor Cost (₹)', 'value' => '₹'.number_format($totalVendorAgreed, 2), 'icon' => '🏷️', 'color' => '#DC2626'],
+            ['label' => 'Vendor Paid (₹)', 'value' => '₹'.number_format($totalVendorPaid, 2), 'icon' => '✅', 'color' => '#16A34A'],
+            ['label' => 'Vendor Due (₹)', 'value' => '₹'.number_format($totalVendorBalance, 2), 'icon' => '⚠️', 'color' => '#EA580C'],
+            ['label' => 'Gross Margin (₹)', 'value' => '₹'.number_format($grossMargin, 2), 'icon' => '📈', 'color' => '#059669'],
+        ];
+
+        $columns = [
+            'booking_id' => 'Booking ID',
+            'travel_date' => 'Travel Date',
+            'vendor_name' => 'Vendor / Supplier',
+            'vendor_phone' => 'Vendor Mobile',
+            'vehicle_name' => 'Vehicle Name',
+            'vehicle_reg' => 'Reg Number',
+            'driver_name' => 'Assigned Chauffeur',
+            'passenger' => 'Passenger / Client',
+            'route' => 'Route',
+            'customer_fare' => 'Customer Fare (₹)',
+            'vendor_agreed' => 'Vendor Rate (₹)',
+            'vendor_paid' => 'Vendor Paid (₹)',
+            'vendor_balance' => 'Vendor Due (₹)',
+            'vendor_status' => 'Vendor Pay Status',
+            'booking_status' => 'Trip Status',
+        ];
+
+        $transform = function (Booking $b) {
+            $veh = $b->vehicle;
+
+            return [
+                'booking_id' => $b->booking_id,
+                'travel_date' => $b->travel_date?->format('d M Y') ?? 'N/A',
+                'vendor_name' => $veh?->vendor_name ?: 'Third-Party Vendor',
+                'vendor_phone' => $veh?->vendor_phone ?: '—',
+                'vehicle_name' => $veh?->name ?? 'Outsourced Cab',
+                'vehicle_reg' => $veh?->registration_number ?? '—',
+                'driver_name' => $b->driver?->name ?? 'Vendor Driver',
+                'passenger' => $b->customer?->name ?? 'Guest',
+                'route' => "{$b->pickup_location} ➔ {$b->destination}",
+                'customer_fare' => number_format((float) $b->total_amount, 2, '.', ''),
+                'vendor_agreed' => number_format((float) ($veh?->vendor_agreed_amount ?? 0), 2, '.', ''),
+                'vendor_paid' => number_format((float) ($veh?->vendor_paid_amount ?? 0), 2, '.', ''),
+                'vendor_balance' => number_format((float) ($veh?->vendor_balance_amount ?? 0), 2, '.', ''),
+                'vendor_status' => $veh?->vendor_payment_status ?? 'Pending',
+                'booking_status' => $b->booking_status,
             ];
         };
 

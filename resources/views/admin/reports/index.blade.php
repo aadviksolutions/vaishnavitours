@@ -30,7 +30,7 @@
 <div class="card mb-4" style="padding: 1rem 1.25rem;">
     <div class="d-flex justify-between align-center mb-2">
         <span style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: var(--slate-500); letter-spacing: 0.5px;">
-            Select Report Category (18 Categories Supported)
+            Select Report Category (20 Categories Supported)
         </span>
         <span class="badge badge-primary">
             Active: {{ $categoryMeta['title'] }}
@@ -256,6 +256,52 @@
                         <option value="Unpaid" {{ request('status') === 'Unpaid' ? 'selected' : '' }}>Unpaid</option>
                     </select>
                 </div>
+            @elseif($currentCategory === 'travel_partners')
+                <div style="min-width: 140px;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 2px;">Booking Status</label>
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">All Statuses</option>
+                        @foreach(['Confirmed', 'Vehicle Assigned', 'Driver Assigned', 'Trip Started', 'Completed', 'Cancelled'] as $st)
+                            <option value="{{ $st }}" {{ request('status') === $st ? 'selected' : '' }}>{{ $st }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div style="min-width: 140px;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 2px;">Payment Status</label>
+                    <select name="payment_status" class="form-select form-select-sm">
+                        <option value="">All Payment Statuses</option>
+                        <option value="Paid" {{ request('payment_status') === 'Paid' ? 'selected' : '' }}>Paid</option>
+                        <option value="Partial" {{ request('payment_status') === 'Partial' ? 'selected' : '' }}>Partial</option>
+                        <option value="Pending" {{ request('payment_status') === 'Pending' ? 'selected' : '' }}>Pending</option>
+                    </select>
+                </div>
+                <div style="min-width: 160px;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 2px;">Travel Partner Filter</label>
+                    <input type="text" name="partner" class="form-control form-control-sm" placeholder="Partner name..." value="{{ request('partner') }}">
+                </div>
+            @elseif($currentCategory === 'third_party_assignments')
+                <div style="min-width: 140px;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 2px;">Trip Status</label>
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">All Trip Statuses</option>
+                        @foreach(['Confirmed', 'Vehicle Assigned', 'Driver Assigned', 'Trip Started', 'Completed', 'Cancelled'] as $st)
+                            <option value="{{ $st }}" {{ request('status') === $st ? 'selected' : '' }}>{{ $st }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div style="min-width: 160px;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 2px;">Vendor Pay Status</label>
+                    <select name="vendor_payment_status" class="form-select form-select-sm">
+                        <option value="">All Vendor Statuses</option>
+                        <option value="Pending" {{ request('vendor_payment_status') === 'Pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="Partial" {{ request('vendor_payment_status') === 'Partial' ? 'selected' : '' }}>Partial</option>
+                        <option value="Settled" {{ request('vendor_payment_status') === 'Settled' ? 'selected' : '' }}>Settled</option>
+                    </select>
+                </div>
+                <div style="min-width: 160px;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 2px;">Vendor Name Filter</label>
+                    <input type="text" name="vendor" class="form-control form-control-sm" placeholder="Vendor name..." value="{{ request('vendor') }}">
+                </div>
             @endif
 
             <div style="margin-left: auto; display: flex; gap: 8px;">
@@ -347,7 +393,7 @@
                                         };
                                     @endphp
                                     <span class="badge {{ $badgeClass }}">{{ $val }}</span>
-                                @elseif(str_contains(strtolower($colKey), 'amount') || str_contains(strtolower($colKey), 'fare') || str_contains(strtolower($colKey), 'billed') || str_contains(strtolower($colKey), 'paid') || str_contains(strtolower($colKey), 'balance') || str_contains(strtolower($colKey), 'subtotal') || str_contains(strtolower($colKey), 'realized'))
+                                @elseif(str_contains(strtolower($colKey), 'amount') || str_contains(strtolower($colKey), 'fare') || str_contains(strtolower($colKey), 'billed') || str_contains(strtolower($colKey), 'paid') || str_contains(strtolower($colKey), 'balance') || str_contains(strtolower($colKey), 'subtotal') || str_contains(strtolower($colKey), 'realized') || str_contains(strtolower($colKey), 'commission') || str_contains(strtolower($colKey), 'agreed'))
                                     <strong style="color: var(--slate-800);">
                                         {{ is_numeric($val) ? ('₹' . number_format((float) $val, 2)) : $val }}
                                     </strong>
