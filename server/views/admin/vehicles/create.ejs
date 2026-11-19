@@ -95,9 +95,14 @@
                 </div>
 
                 <div class="card mb-4" style="background: var(--slate-50); border: 1px solid var(--slate-200);">
-                    <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 0.75rem;"><%- icon('file-check', { size: 16, class: 'me-1 inline' }) %> Compliance & Document Records (Mandatory Expiry Dates)</h3>
-                    <p style="font-size: 0.8rem; color: var(--slate-500); margin-top: -0.5rem; margin-bottom: 1rem;">
-                        Insurance and Pollution Under Control (PUC) expiry dates are mandatory to prevent assigning vehicles with lapsed compliance.
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 style="font-size: 1.05rem; font-weight: 800; margin: 0;"><%- icon('file-check', { size: 16, class: 'me-1 inline' }) %> Compliance & Document Records</h3>
+                        <span class="badge" style="background: #E0E7FF; color: #3730A3; font-size: 11px; padding: 3px 8px; border-radius: 4px;">
+                            Optional Documents (Not Mandatory)
+                        </span>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--slate-500); margin-top: -0.25rem; margin-bottom: 1rem;">
+                        Insurance, PUC, Fitness, and Commercial Permit records are completely optional. Vehicles can be added and dispatched without mandatory documents.
                     </p>
 
                     <div class="grid grid-2 gap-3 mb-3">
@@ -107,24 +112,24 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="insurance_expiry" class="form-label">Insurance Expiry Date * (Mandatory)</label>
-                            <input type="date" name="insurance_expiry" id="insurance_expiry" class="form-control" value="<%= old('insurance_expiry') %>" required>
+                            <label for="insurance_expiry" class="form-label">Insurance Expiry Date <span style="font-size: 11px; color: var(--slate-400); font-weight: normal;">(Optional)</span></label>
+                            <input type="date" name="insurance_expiry" id="insurance_expiry" class="form-control" value="<%= old('insurance_expiry') %>">
                         </div>
                     </div>
 
                     <div class="grid grid-3 gap-3 mb-2">
                         <div class="form-group">
-                            <label for="puc_expiry" class="form-label">PUC Expiry Date * (Mandatory)</label>
-                            <input type="date" name="puc_expiry" id="puc_expiry" class="form-control" value="<%= old('puc_expiry') %>" required>
+                            <label for="puc_expiry" class="form-label">PUC Expiry Date <span style="font-size: 11px; color: var(--slate-400); font-weight: normal;">(Optional)</span></label>
+                            <input type="date" name="puc_expiry" id="puc_expiry" class="form-control" value="<%= old('puc_expiry') %>">
                         </div>
 
                         <div class="form-group">
-                            <label for="fitness_expiry" class="form-label">Fitness Expiry</label>
+                            <label for="fitness_expiry" class="form-label">Fitness Expiry <span style="font-size: 11px; color: var(--slate-400); font-weight: normal;">(Optional)</span></label>
                             <input type="date" name="fitness_expiry" id="fitness_expiry" class="form-control" value="<%= old('fitness_expiry') %>">
                         </div>
 
                         <div class="form-group">
-                            <label for="permit_expiry" class="form-label">Commercial Permit Expiry</label>
+                            <label for="permit_expiry" class="form-label">Commercial Permit Expiry <span style="font-size: 11px; color: var(--slate-400); font-weight: normal;">(Optional)</span></label>
                             <input type="date" name="permit_expiry" id="permit_expiry" class="form-control" value="<%= old('permit_expiry') %>">
                         </div>
                     </div>

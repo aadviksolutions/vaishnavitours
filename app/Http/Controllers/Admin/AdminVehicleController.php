@@ -90,10 +90,10 @@ class AdminVehicleController extends Controller
             'seating_capacity' => 'required|integer|min:1|max:70',
             'ac_non_ac' => 'required|string',
             'insurance_number' => 'nullable|string|max:100',
-            'insurance_expiry' => $isThirdParty ? 'nullable|date' : 'required|date',
+            'insurance_expiry' => 'nullable|date',
             'fitness_expiry' => 'nullable|date',
             'permit_expiry' => 'nullable|date',
-            'puc_expiry' => $isThirdParty ? 'nullable|date' : 'required|date',
+            'puc_expiry' => 'nullable|date',
             'per_km_rate' => 'nullable|numeric|min:0',
             'per_hour_rate' => 'nullable|numeric|min:0',
             'status' => 'required|string',
@@ -126,7 +126,7 @@ class AdminVehicleController extends Controller
         Vehicle::create($data);
 
         return redirect()->route('admin.vehicles.index')
-            ->with('success', 'Vehicle registered successfully with verified mandatory document records!');
+            ->with('success', 'Vehicle registered successfully!');
     }
 
     public function storeQuick(Request $request)
@@ -216,10 +216,10 @@ class AdminVehicleController extends Controller
             'seating_capacity' => 'required|integer|min:1|max:70',
             'ac_non_ac' => 'required|string',
             'insurance_number' => 'nullable|string|max:100',
-            'insurance_expiry' => $isThirdParty ? 'nullable|date' : 'required|date',
+            'insurance_expiry' => 'nullable|date',
             'fitness_expiry' => 'nullable|date',
             'permit_expiry' => 'nullable|date',
-            'puc_expiry' => $isThirdParty ? 'nullable|date' : 'required|date',
+            'puc_expiry' => 'nullable|date',
             'per_km_rate' => 'nullable|numeric|min:0',
             'per_hour_rate' => 'nullable|numeric|min:0',
             'status' => 'required|string',

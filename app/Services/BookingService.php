@@ -713,14 +713,6 @@ class BookingService
                 ]);
             }
 
-            // Validation: Prevent assignment of company vehicles with expired mandatory compliance documents (Section 3)
-            // Note: Third-Party vehicles from travel partners do NOT require documents
-            if (! $vehicle->is_third_party && $vehicle->hasExpiredMandatoryDocuments()) {
-                throw ValidationException::withMessages([
-                    'vehicle_id' => ["Vehicle {$vehicle->registration_number} cannot be assigned because its mandatory documents (Insurance/PUC) have expired. Please renew the documents before dispatch."],
-                ]);
-            }
-
             // Overlap check: Prevent same vehicle being assigned to two active trips at overlapping travel times across date spans
             $startDate = $booking->travel_date->format('Y-m-d');
             $endDate = ($booking->return_date ?? $booking->travel_date)->format('Y-m-d');

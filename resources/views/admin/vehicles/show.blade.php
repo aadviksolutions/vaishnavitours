@@ -258,7 +258,7 @@
         <!-- Compliance & Mandatory Expiry Dates (Section 3 requirement) -->
         <div class="card mb-3" style="background: #fff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 1.25rem;">
             <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 0.75rem; color: var(--dark-900);">
-                📑 Mandatory Document Expiry Dates
+                📑 Document Records (Optional)
             </h3>
             @php
                 $docs = [

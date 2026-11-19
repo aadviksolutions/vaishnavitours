@@ -149,24 +149,10 @@ class Vehicle extends Model
 
     /**
      * Check if mandatory documents (Insurance, PUC) are expired.
-     * Note: Third-Party vehicles from travel partners do NOT require documents. Only vehicle number is mandatory.
+     * Note: Vehicle documents are never mandatory under any condition.
      */
     public function hasExpiredMandatoryDocuments(): bool
     {
-        if ($this->is_third_party || ($this->attributes['is_third_party'] ?? false)) {
-            return false;
-        }
-
-        $today = now()->startOfDay();
-
-        if ($this->insurance_expiry && $this->insurance_expiry->startOfDay()->isPast()) {
-            return true;
-        }
-
-        if ($this->puc_expiry && $this->puc_expiry->startOfDay()->isPast()) {
-            return true;
-        }
-
         return false;
     }
 
@@ -177,11 +163,7 @@ class Vehicle extends Model
     {
         $date = $this->{$field};
         if (! $date) {
-            if ($this->is_third_party || ($this->attributes['is_third_party'] ?? false)) {
-                return ['status' => 'not_required', 'label' => 'Not Required (Partner)', 'class' => 'bg-amber-50 text-amber-800 border-amber-200'];
-            }
-
-            return ['status' => 'missing', 'label' => 'Not Uploaded', 'class' => 'bg-gray-100 text-gray-700 border-gray-300'];
+            return ['status' => 'not_set', 'label' => 'Optional (Not Set)', 'class' => 'bg-gray-100 text-gray-700 border-gray-300'];
         }
 
         $today = now()->startOfDay();

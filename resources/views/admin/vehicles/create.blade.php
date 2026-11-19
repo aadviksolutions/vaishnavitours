@@ -109,43 +109,43 @@
                 <div class="card mb-4" id="complianceCard" style="background: var(--slate-50); border: 1px solid var(--slate-200);">
                     <div class="d-flex justify-between align-center mb-2 flex-wrap gap-2">
                         <h3 style="font-size: 1.05rem; font-weight: 800; margin: 0;">📑 Compliance & Document Records</h3>
-                        <span id="docNoticeBadge" class="badge" style="background: {{ old('ownership_type') === 'third_party' ? '#FEF3C7' : '#E0E7FF' }}; color: {{ old('ownership_type') === 'third_party' ? '#92400E' : '#3730A3' }}; font-size: 11px;">
-                            {{ old('ownership_type') === 'third_party' ? 'Optional for Third-Party Partner' : 'Mandatory for Owned Fleet' }}
+                        <span id="docNoticeBadge" class="badge" style="background: #E0E7FF; color: #3730A3; font-size: 11px;">
+                            Optional Documents (Not Mandatory)
                         </span>
                     </div>
                     <p id="complianceHelpText" style="font-size: 0.8rem; color: var(--slate-500); margin-top: -0.25rem; margin-bottom: 1rem;">
-                        {{ old('ownership_type') === 'third_party' ? 'Documents are not required for Travel Partner vehicles. Only vehicle number is mandatory.' : 'Insurance and Pollution Under Control (PUC) expiry dates are mandatory for company-owned fleet.' }}
+                        Insurance, PUC, Fitness, and Commercial Permit records are completely optional. Vehicles can be added, updated, and dispatched without any mandatory document requirements.
                     </p>
 
                     <div class="grid grid-2 gap-3 mb-3">
                         <div class="form-group">
                             <label for="insurance_number" class="form-label">Insurance Policy Number</label>
-                            <input type="text" name="insurance_number" id="insurance_number" class="form-control" value="{{ old('insurance_number') }}" placeholder="e.g. POL-98765432">
+                            <input type="text" name="insurance_number" id="insurance_number" class="form-control" value="{{ old('insurance_number') }}" placeholder="e.g. POL-98765432 (Optional)">
                         </div>
 
                         <div class="form-group">
                             <label for="insurance_expiry" class="form-label" id="lblInsuranceExpiry">
-                                Insurance Expiry Date <span id="insuranceReqMark" style="color: #DC2626; display: {{ old('ownership_type') === 'third_party' ? 'none' : 'inline' }};">*</span>
+                                Insurance Expiry Date <span style="font-size: 11px; color: var(--slate-400); font-weight: normal;">(Optional)</span>
                             </label>
-                            <input type="date" name="insurance_expiry" id="insurance_expiry" class="form-control" value="{{ old('insurance_expiry') }}" {{ old('ownership_type') === 'third_party' ? '' : 'required' }}>
+                            <input type="date" name="insurance_expiry" id="insurance_expiry" class="form-control" value="{{ old('insurance_expiry') }}">
                         </div>
                     </div>
 
                     <div class="grid grid-3 gap-3 mb-2">
                         <div class="form-group">
                             <label for="puc_expiry" class="form-label" id="lblPucExpiry">
-                                PUC Expiry Date <span id="pucReqMark" style="color: #DC2626; display: {{ old('ownership_type') === 'third_party' ? 'none' : 'inline' }};">*</span>
+                                PUC Expiry Date <span style="font-size: 11px; color: var(--slate-400); font-weight: normal;">(Optional)</span>
                             </label>
-                            <input type="date" name="puc_expiry" id="puc_expiry" class="form-control" value="{{ old('puc_expiry') }}" {{ old('ownership_type') === 'third_party' ? '' : 'required' }}>
+                            <input type="date" name="puc_expiry" id="puc_expiry" class="form-control" value="{{ old('puc_expiry') }}">
                         </div>
 
                         <div class="form-group">
-                            <label for="fitness_expiry" class="form-label">Fitness Expiry</label>
+                            <label for="fitness_expiry" class="form-label">Fitness Expiry <span style="font-size: 11px; color: var(--slate-400); font-weight: normal;">(Optional)</span></label>
                             <input type="date" name="fitness_expiry" id="fitness_expiry" class="form-control" value="{{ old('fitness_expiry') }}">
                         </div>
 
                         <div class="form-group">
-                            <label for="permit_expiry" class="form-label">Commercial Permit Expiry</label>
+                            <label for="permit_expiry" class="form-label">Commercial Permit Expiry <span style="font-size: 11px; color: var(--slate-400); font-weight: normal;">(Optional)</span></label>
                             <input type="date" name="permit_expiry" id="permit_expiry" class="form-control" value="{{ old('permit_expiry') }}">
                         </div>
                     </div>
@@ -188,32 +188,8 @@
                 <script>
                 function toggleVendorFields(val) {
                     const card = document.getElementById('vendorFieldsCard');
-                    const vName = document.getElementById('vendor_name');
                     const isTp = (val === 'third_party');
                     if (card) card.style.display = isTp ? 'block' : 'none';
-
-                    // Third-party vehicles do not require compliance documents (only vehicle number is mandatory)
-                    const ins = document.getElementById('insurance_expiry');
-                    const puc = document.getElementById('puc_expiry');
-                    const insMark = document.getElementById('insuranceReqMark');
-                    const pucMark = document.getElementById('pucReqMark');
-                    const badge = document.getElementById('docNoticeBadge');
-                    const helpText = document.getElementById('complianceHelpText');
-
-                    if (ins) ins.required = !isTp;
-                    if (puc) puc.required = !isTp;
-                    if (insMark) insMark.style.display = isTp ? 'none' : 'inline';
-                    if (pucMark) pucMark.style.display = isTp ? 'none' : 'inline';
-                    if (badge) {
-                        badge.textContent = isTp ? 'Optional for Third-Party Partner' : 'Mandatory for Owned Fleet';
-                        badge.style.background = isTp ? '#FEF3C7' : '#E0E7FF';
-                        badge.style.color = isTp ? '#92400E' : '#3730A3';
-                    }
-                    if (helpText) {
-                        helpText.textContent = isTp 
-                            ? 'Documents are not required for Travel Partner vehicles. Only vehicle number is mandatory.'
-                            : 'Insurance and Pollution Under Control (PUC) expiry dates are mandatory for company-owned fleet.';
-                    }
                 }
                 </script>
 
