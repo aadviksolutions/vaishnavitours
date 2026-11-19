@@ -154,6 +154,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/bookings/{booking}/amount', [AdminBookingController::class, 'updateAmount'])->name('bookings.amount');
     Route::post('/bookings/{booking}/payment', [AdminBookingController::class, 'updatePayment'])->name('bookings.payment');
     Route::post('/bookings/{booking}/status', [AdminBookingController::class, 'updateStatus'])->name('bookings.status');
+    Route::post('/bookings/{booking}/complete', [AdminBookingController::class, 'completeTrip'])->name('bookings.complete');
     Route::post('/bookings/{booking}/cancel', [AdminBookingController::class, 'cancel'])->name('bookings.cancel');
     Route::post('/bookings/{booking}/recalculate-route', [AdminBookingController::class, 'recalculateRoute'])->name('bookings.recalculate-route');
 
@@ -161,6 +162,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/trips', [AdminTripController::class, 'index'])->name('trips.index');
     Route::get('/trips/{trip}', [AdminTripController::class, 'show'])->name('trips.show');
     Route::put('/trips/{trip}', [AdminTripController::class, 'update'])->name('trips.update');
+    Route::post('/trips/{trip}/complete', [AdminTripController::class, 'completeTrip'])->name('trips.complete');
     Route::post('/trips/{trip}/close', [AdminTripController::class, 'closeTrip'])->name('trips.close');
 
     // Advance Booking Calendar

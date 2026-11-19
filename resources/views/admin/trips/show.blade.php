@@ -46,6 +46,45 @@
     </div>
 @endif
 
+<!-- 1-Click Complete Trip & Release Fleet Card -->
+@if($trip->status !== 'Completed' && $trip->journey_status !== 'Journey Completed' && $trip->status !== 'Cancelled')
+    <div class="card mb-3" style="background: linear-gradient(135deg, #ECFDF5 0%, #F0FDF4 100%); border: 2px solid #10B981; border-radius: 8px; padding: 1.25rem;">
+        <div class="d-flex justify-between align-center flex-wrap gap-2 mb-2">
+            <div>
+                <h3 style="margin: 0; font-size: 15px; font-weight: 800; color: #065F46; display: flex; align-items: center; gap: 8px;">
+                    <x-icon name="circle-check" size="20" class="text-emerald-600" />
+                    Complete This Trip & Release Vehicle & Driver
+                </h3>
+                <span style="font-size: 12px; color: #047857;">
+                    Mark this trip completed. Assigned vehicle <strong>({{ $trip->vehicle?->name ?? 'Vehicle' }} - {{ $trip->vehicle?->registration_number ?? '' }})</strong> and driver <strong>({{ $trip->driver?->name ?? 'Driver' }})</strong> will immediately become <span class="badge badge-success" style="font-size: 10px;">Available</span> for new bookings.
+                </span>
+            </div>
+        </div>
+
+        <form action="{{ route('admin.trips.complete', $trip->id) }}" method="POST" style="margin-top: 0.75rem;">
+            @csrf
+            <div class="grid grid-3 gap-2 align-end">
+                <div>
+                    <label class="form-label" style="font-size: 11px; font-weight: 700; color: #065F46;">Start Odometer (KM)</label>
+                    <input type="number" name="start_odometer" class="form-control form-control-sm" value="{{ $trip->start_odometer }}" placeholder="e.g. 45200">
+                </div>
+                <div>
+                    <label class="form-label" style="font-size: 11px; font-weight: 700; color: #065F46;">End Odometer (KM) <span style="font-weight: normal; color: #047857;">(Optional)</span></label>
+                    <input type="number" name="end_odometer" class="form-control form-control-sm" value="{{ $trip->end_odometer }}" placeholder="e.g. 45340">
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-sm w-100" style="background: #059669; border: 1px solid #059669; font-weight: 700; height: 38px; color: #fff; font-size: 12.5px; cursor: pointer;">
+                        ✓ Complete Trip & Free Fleet Now
+                    </button>
+                </div>
+            </div>
+            <div class="mt-2">
+                <input type="text" name="route_notes" class="form-control form-control-sm" value="{{ $trip->route_notes ?: $trip->notes }}" placeholder="Optional route remarks / customer dropped safely">
+            </div>
+        </form>
+    </div>
+@endif
+
 <!-- Trip Lifecycle & Financial Closure Card (Requirement: Section 8) -->
 <div class="card mb-3" style="background: #fff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 1.25rem;">
     <div class="d-flex justify-between align-center flex-wrap gap-2 mb-2">

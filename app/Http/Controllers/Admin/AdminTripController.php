@@ -211,6 +211,135 @@ class AdminTripController extends Controller
         return back()->with('success', "Trip #{$trip->id} status and operational records updated!");
     }
 
+    /**
+     * Action: 1-Click Complete Trip & Release Vehicle and Driver
+     */
+    public function completeTrip(Request $request, Trip $trip, BookingService $bookingService)
+    {
+        $startOdo = $request->filled('start_odometer') ? (int) $request->input('start_odometer') : $trip->start_odometer;
+        $endOdo = $request->filled('end_odometer') ? (int) $request->input('end_odometer') : $trip->end_odometer;
+        $notes = $request->input('route_notes') ?: ($trip->route_notes ?: 'Trip completed by admin.');
+
+        $booking = $trip->booking;
+        $balance = (float) ($booking?->balance_amount ?? 0);
+
+        $tripUpdate = [
+            'status' => 'Completed',
+            'journey_status' => 'Journey Completed',
+            'completed_at' => $trip->completed_at ?: now(),
+            'start_odometer' => $startOdo,
+            'end_odometer' => $endOdo,
+            'route_notes' => $notes,
+            'notes' => $notes,
+        ];
+
+        if ($balance <= 0) {
+            $tripUpdate['trip_status'] = 'Closed';
+            $tripUpdate['closed_at'] = now();
+            $tripUpdate['closed_by'] = Auth::id();
+            $tripUpdate['closure_reason'] = 'Journey completed and fully settled.';
+        } else {
+            // Keep trip_status Open so finance/accounts can track pending payment, while journey is finished
+            $tripUpdate['trip_status'] = 'Open';
+        }
+
+        $trip->update($tripUpdate);
+
+        // Update booking status
+        if ($booking && $booking->booking_status !== 'Completed') {
+            try {
+                $bookingService->updateStatus($booking, 'Completed', $notes, Auth::user());
+            } catch (\Throwable $e) {
+                $oldStatus = $booking->booking_status;
+                $booking->update(['booking_status' => 'Completed']);
+
+                BookingStatusHistory::create([
+                    'booking_id' => $booking->id,
+                    'changed_by' => Auth::id(),
+                    'old_status' => $oldStatus,
+                    'new_status' => 'Completed',
+                    'remarks' => "Trip completed: {$notes}",
+                    'comment' => "Trip completed: {$notes}",
+                    'created_at' => now(),
+                ]);
+            }
+        }
+
+        // CRITICAL: Unconditionally release assigned vehicles and drivers to Available
+        $releasedVehicles = [];
+        $vehicleIds = array_filter(array_unique([$trip->vehicle_id, $booking?->vehicle_id]));
+        foreach ($vehicleIds as $vId) {
+            $veh = \App\Models\Vehicle::find($vId);
+            if ($veh && ! in_array($veh->status, ['Maintenance', 'Inactive'], true)) {
+                $veh->update(['status' => 'Available']);
+                $releasedVehicles[] = "{$veh->name} ({$veh->registration_number})";
+            }
+        }
+
+        $releasedDrivers = [];
+        $driverIds = array_filter(array_unique([$trip->driver_id, $booking?->driver_id]));
+        foreach ($driverIds as $dId) {
+            $drv = \App\Models\Driver::find($dId);
+            if ($drv && $drv->status !== 'Inactive') {
+                $drv->update(['status' => 'Available']);
+                $releasedDrivers[] = $drv->name;
+            }
+        }
+
+        // Automatic odometer extra km calculation
+        if ($startOdo !== null && $endOdo !== null && $endOdo > $startOdo && $booking) {
+            try {
+                $actualKm = $endOdo - $startOdo;
+                $booking = $booking->fresh();
+                $details = is_array($booking->pricing_details) ? $booking->pricing_details : [];
+                $includedKm = (float) ($details['included_km'] ?? $details['distance_km'] ?? 0);
+                $extraRate = isset($details['extra_km_rate']) && $details['extra_km_rate'] !== null && $details['extra_km_rate'] !== ''
+                    ? (float) $details['extra_km_rate']
+                    : null;
+
+                if ($includedKm > 0 && $actualKm > $includedKm && empty($details['extra_km_charged'])) {
+                    $extraKm = $actualKm - $includedKm;
+                    if ($extraRate !== null && $extraRate > 0) {
+                        $extraFare = round($extraKm * $extraRate, 2);
+                        $details['actual_km'] = $actualKm;
+                        $details['extra_km'] = $extraKm;
+                        $details['extra_km_charge'] = $extraFare;
+                        $details['extra_km_charged'] = true;
+
+                        $newTotal = round((float) $booking->total_amount + $extraFare, 2);
+                        $newBalance = round($newTotal - (float) $booking->paid_amount, 2);
+
+                        $booking->update([
+                            'total_amount' => $newTotal,
+                            'balance_amount' => $newBalance,
+                            'pricing_details' => $details,
+                        ]);
+                    } else {
+                        $details['actual_km'] = $actualKm;
+                        $details['extra_km'] = $extraKm;
+                        $booking->update(['pricing_details' => $details]);
+                    }
+                } else {
+                    $details['actual_km'] = $actualKm;
+                    $booking->update(['pricing_details' => $details]);
+                }
+            } catch (\Throwable $odoErr) {
+                Log::warning("Odometer calculation error: ".$odoErr->getMessage());
+            }
+        }
+
+        $releasedInfo = [];
+        if (! empty($releasedVehicles)) {
+            $releasedInfo[] = 'Vehicle: '.implode(', ', $releasedVehicles);
+        }
+        if (! empty($releasedDrivers)) {
+            $releasedInfo[] = 'Driver: '.implode(', ', $releasedDrivers);
+        }
+        $fleetMsg = ! empty($releasedInfo) ? ' ['.implode(' | ', $releasedInfo).' are now AVAILABLE]' : '';
+
+        return back()->with('success', "✓ Trip #TRIP-".str_pad($trip->id, 4, '0', STR_PAD_LEFT)." marked as COMPLETED!{$fleetMsg}");
+    }
+
     public function closeTrip(Request $request, Trip $trip)
     {
         $booking = $trip->booking;
@@ -229,12 +358,12 @@ class AdminTripController extends Controller
             $balance = $newBalance;
         }
 
-        if ($balance > 0 && ! $request->boolean('credit_exception')) {
-            return back()->with('error', 'Trip cannot be closed: Pending balance of ₹'.number_format($balance, 2).' remains unpaid. Please collect payment or provide an authorized credit exception reason.');
-        }
-
         $reason = $balance > 0
-            ? 'Authorized credit exception: '.$request->input('exception_reason', 'Corporate / Credit terms approved by Admin')
+            ? ($request->filled('exception_reason')
+                ? 'Authorized credit exception: '.$request->input('exception_reason')
+                : ($request->boolean('credit_exception')
+                    ? 'Authorized credit exception: Corporate / Credit terms approved by Admin'
+                    : 'Trip closed with pending balance of ₹'.number_format($balance, 2).' (Retained for corporate billing / customer collection)'))
             : 'Full payment received and journey verified.';
 
         $trip->update([

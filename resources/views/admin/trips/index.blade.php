@@ -159,6 +159,11 @@
                             @endif
                         </td>
                         <td style="text-align: right; white-space: nowrap;">
+                            @if($trip->status !== 'Completed' && $trip->journey_status !== 'Journey Completed' && $trip->status !== 'Cancelled')
+                                <button type="button" class="btn btn-sm" style="padding: 2px 8px; font-size: 11px; font-weight: 700; background: #059669; border: 1px solid #059669; color: #fff;" onclick="openModal('completeTripModal{{ $trip->id }}')" title="Mark Trip Completed & Release Fleet">
+                                    ✓ Complete Trip
+                                </button>
+                            @endif
                             <a href="{{ route('admin.trips.show', $trip->id) }}" class="btn btn-primary btn-sm" style="padding: 2px 7px; font-size: 11px;">
                                 Manage
                             </a>
@@ -167,6 +172,58 @@
                             </button>
                         </td>
                     </tr>
+
+                    @if($trip->status !== 'Completed' && $trip->journey_status !== 'Journey Completed' && $trip->status !== 'Cancelled')
+                        <!-- Modal: 1-Click Complete Trip & Release Vehicle/Driver -->
+                        <div id="completeTripModal{{ $trip->id }}" class="custom-modal" style="display: none;">
+                            <div class="custom-modal-content">
+                                <div class="d-flex justify-between align-center mb-3">
+                                    <h3 style="font-size: 15px; font-weight: 700; margin: 0; color: #065F46;">
+                                        ✓ Complete Trip #TRIP-{{ str_pad($trip->id, 4, '0', STR_PAD_LEFT) }}
+                                    </h3>
+                                    <button type="button" onclick="closeModal('completeTripModal{{ $trip->id }}')" style="background: none; border: none; font-size: 18px; cursor: pointer;">✕</button>
+                                </div>
+                                <form action="{{ route('admin.trips.complete', $trip->id) }}" method="POST">
+                                    @csrf
+
+                                    <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 6px; padding: 0.75rem; margin-bottom: 0.75rem; font-size: 12px; color: #166534;">
+                                        <div style="font-weight: 700; margin-bottom: 4px;">🚀 Instant Fleet & Driver Release:</div>
+                                        <div>• Vehicle: <strong>{{ $trip->vehicle?->name ?? $trip->booking?->vehicle?->name ?? 'None' }} ({{ $trip->vehicle?->registration_number ?? $trip->booking?->vehicle?->registration_number ?? '-' }})</strong> ➔ Will become <span class="badge badge-success" style="font-size: 10px;">Available</span></div>
+                                        <div>• Driver: <strong>{{ $trip->driver?->name ?? $trip->booking?->driver?->name ?? 'None' }}</strong> ➔ Will become <span class="badge badge-success" style="font-size: 10px;">Available</span></div>
+                                    </div>
+
+                                    <div class="grid grid-2 gap-2 mb-2">
+                                        <div>
+                                            <label class="form-label" style="font-size: 11px; font-weight: 600;">Start Odometer (KM)</label>
+                                            <input type="number" name="start_odometer" class="form-control form-control-sm" value="{{ $trip->start_odometer }}" placeholder="e.g. 45200">
+                                        </div>
+                                        <div>
+                                            <label class="form-label" style="font-size: 11px; font-weight: 600;">End Odometer (KM) <span style="color: var(--slate-400);">(Optional)</span></label>
+                                            <input type="number" name="end_odometer" class="form-control form-control-sm" value="{{ $trip->end_odometer }}" placeholder="e.g. 45340">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group mb-2">
+                                        <label class="form-label" style="font-size: 11px; font-weight: 600;">Completion Notes <span style="color: var(--slate-400);">(Optional)</span></label>
+                                        <input type="text" name="route_notes" class="form-control form-control-sm" value="{{ $trip->route_notes ?: 'Trip completed successfully.' }}" placeholder="e.g. Customer dropped safely">
+                                    </div>
+
+                                    @if($balance > 0)
+                                        <div style="font-size: 11px; color: #92400E; background: #FEF3C7; border: 1px solid #FCD34D; padding: 6px 10px; border-radius: 4px; margin-bottom: 0.75rem;">
+                                            ℹ️ Remaining balance: <strong>₹{{ number_format($balance, 2) }}</strong>. Completing the trip will free the vehicle and driver immediately, while keeping the payment record open for billing.
+                                        </div>
+                                    @endif
+
+                                    <div class="d-flex justify-end gap-2">
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('completeTripModal{{ $trip->id }}')">Cancel</button>
+                                        <button type="submit" class="btn btn-sm" style="background: #059669; border-color: #059669; font-weight: 700; color: #fff;">
+                                            ✓ Confirm Complete & Free Fleet
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    @endif
 
                     <!-- Modal: Update Trip Status & Odometer -->
                     <div id="tripModal{{ $trip->id }}" class="custom-modal" style="display: none;">

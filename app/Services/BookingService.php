@@ -693,6 +693,19 @@ class BookingService
         return DB::transaction(function () use ($booking, $vehicleId, $admin) {
             $vehicle = Vehicle::findOrFail($vehicleId);
 
+            // Auto-heal: If vehicle is marked busy/on-trip but has no other active running booking, reset to Available
+            if ($vehicle->status !== 'Available' && ! in_array($vehicle->status, ['Maintenance', 'Inactive'], true)) {
+                $hasActiveBooking = Booking::where('vehicle_id', $vehicle->id)
+                    ->whereIn('booking_status', ['Vehicle Assigned', 'Driver Assigned', 'Trip Started', 'On The Way'])
+                    ->where('id', '!=', $booking->id)
+                    ->exists();
+
+                if (! $hasActiveBooking) {
+                    $vehicle->update(['status' => 'Available']);
+                    $vehicle->refresh();
+                }
+            }
+
             // Validation: Only Available vehicles allowed
             if ($vehicle->status !== 'Available') {
                 throw ValidationException::withMessages([
@@ -808,6 +821,19 @@ class BookingService
     {
         return DB::transaction(function () use ($booking, $driverId, $admin) {
             $driver = Driver::findOrFail($driverId);
+
+            // Auto-heal: If driver is marked assigned/on-trip but has no other active running booking, reset to Available
+            if ($driver->status !== 'Available' && $driver->status !== 'Inactive') {
+                $hasActiveBooking = Booking::where('driver_id', $driver->id)
+                    ->whereIn('booking_status', ['Driver Assigned', 'Trip Started', 'On The Way'])
+                    ->where('id', '!=', $booking->id)
+                    ->exists();
+
+                if (! $hasActiveBooking) {
+                    $driver->update(['status' => 'Available']);
+                    $driver->refresh();
+                }
+            }
 
             // Validation: Only Available drivers allowed
             if ($driver->status !== 'Available') {

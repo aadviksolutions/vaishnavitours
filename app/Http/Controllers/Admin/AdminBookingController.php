@@ -1029,6 +1029,74 @@ class AdminBookingController extends Controller
     }
 
     /**
+     * Action: 1-Click Complete Booking & Free Vehicle/Driver
+     */
+    public function completeTrip(Request $request, Booking $booking, BookingService $bookingService)
+    {
+        $remarks = $request->input('remarks') ?: 'Trip marked completed by admin.';
+
+        try {
+            $bookingService->updateStatus($booking, 'Completed', $remarks, Auth::user());
+        } catch (\Throwable $e) {
+            $oldStatus = $booking->booking_status;
+            $booking->update(['booking_status' => 'Completed']);
+
+            BookingStatusHistory::create([
+                'booking_id' => $booking->id,
+                'changed_by' => Auth::id(),
+                'old_status' => $oldStatus,
+                'new_status' => 'Completed',
+                'remarks' => $remarks,
+                'comment' => $remarks,
+                'created_at' => now(),
+            ]);
+        }
+
+        // Release vehicles unconditionally
+        $releasedVehicles = [];
+        $vehicleIds = array_filter(array_unique([$booking->vehicle_id, $booking->trip?->vehicle_id]));
+        foreach ($vehicleIds as $vId) {
+            $veh = Vehicle::find($vId);
+            if ($veh && ! in_array($veh->status, ['Maintenance', 'Inactive'], true)) {
+                $veh->update(['status' => 'Available']);
+                $releasedVehicles[] = "{$veh->name} ({$veh->registration_number})";
+            }
+        }
+
+        // Release drivers unconditionally
+        $releasedDrivers = [];
+        $driverIds = array_filter(array_unique([$booking->driver_id, $booking->trip?->driver_id]));
+        foreach ($driverIds as $dId) {
+            $drv = Driver::find($dId);
+            if ($drv && $drv->status !== 'Inactive') {
+                $drv->update(['status' => 'Available']);
+                $releasedDrivers[] = $drv->name;
+            }
+        }
+
+        // If trip exists, sync its status too
+        if ($booking->trip) {
+            $booking->trip->update([
+                'status' => 'Completed',
+                'journey_status' => 'Journey Completed',
+                'completed_at' => $booking->trip->completed_at ?: now(),
+                'trip_status' => ((float) $booking->balance_amount <= 0) ? 'Closed' : 'Open',
+            ]);
+        }
+
+        $releasedInfo = [];
+        if (! empty($releasedVehicles)) {
+            $releasedInfo[] = 'Vehicle: '.implode(', ', $releasedVehicles);
+        }
+        if (! empty($releasedDrivers)) {
+            $releasedInfo[] = 'Driver: '.implode(', ', $releasedDrivers);
+        }
+        $fleetMsg = ! empty($releasedInfo) ? ' ['.implode(' | ', $releasedInfo).' are now AVAILABLE]' : '';
+
+        return back()->with('success', "✓ Booking #{$booking->booking_id} marked as COMPLETED!{$fleetMsg}");
+    }
+
+    /**
      * Action: Cancel Booking (Admin direct cancel or customer cancellation approval)
      */
     public function cancel(Request $request, Booking $booking, BookingService $bookingService)

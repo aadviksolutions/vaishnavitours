@@ -36,6 +36,16 @@
             </form>
         @endif
 
+        <!-- Complete Trip & Free Fleet Button -->
+        @if(!in_array($booking->booking_status, ['Completed', 'Cancelled', 'Pending']))
+            <form action="{{ route('admin.bookings.complete', $booking->id) }}" method="POST" onsubmit="return confirm('Complete this trip now and release assigned vehicle & driver to Available?');">
+                @csrf
+                <button type="submit" class="btn btn-sm" style="background: #059669; border: 1px solid #059669; color: #fff; font-weight: 700;">
+                    <x-icon name="circle-check" size="16" style="margin-right: 4px;" /> Complete Trip & Free Fleet
+                </button>
+            </form>
+        @endif
+
         <!-- Invoice -->
         <a href="{{ route('invoice.show', $booking->id) }}" class="btn btn-outline btn-sm" target="_blank">
             <x-icon name="printer" size="16" style="margin-right: 6px;" /> Print / View Tax Invoice
@@ -613,6 +623,18 @@ Regarding your booking *{{ $booking->booking_id }}* from {{ $booking->pickup_loc
                         </button>
                     </div>
                 </form>
+
+                <div class="mt-3 pt-3" style="border-top: 1px dashed var(--slate-200); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                    <div style="font-size: 0.85rem; color: #065F46;">
+                        <strong>Quick Action:</strong> Finish journey immediately and set assigned vehicle & chauffeur to <strong>Available</strong>.
+                    </div>
+                    <form action="{{ route('admin.bookings.complete', $booking->id) }}" method="POST" onsubmit="return confirm('Complete this trip now and release assigned vehicle & driver to Available?');">
+                        @csrf
+                        <button type="submit" class="btn btn-sm" style="background: #059669; border: 1px solid #059669; color: #fff; font-weight: 700;">
+                            ✓ Complete Trip & Free Fleet
+                        </button>
+                    </form>
+                </div>
             @endif
         </div>
 
