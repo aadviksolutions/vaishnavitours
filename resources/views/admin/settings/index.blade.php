@@ -238,6 +238,56 @@
                 </div>
             </div>
 
+            <!-- Official PNB UPI Payment & QR Code Settings -->
+            <div class="card mb-4" style="border: 2px solid #FCD34D; background: #FFFDF5;">
+                <div class="d-flex justify-between align-center mb-3">
+                    <div>
+                        <h3 style="font-size: 1.15rem; font-weight: 800; color: #92400E; margin: 0; display: flex; align-items: center; gap: 8px;">
+                            📱 Official UPI ID &amp; QR Code (Punjab National Bank)
+                        </h3>
+                        <p style="font-size: 0.8rem; color: #B45309; margin: 4px 0 0 0;">
+                            This UPI ID and QR code are automatically shared on customer payment links, WhatsApp booking options, and the public checkout portal.
+                        </p>
+                    </div>
+                    <span class="badge" style="background: #DCFCE7; color: #166534; font-weight: 800; padding: 6px 12px; font-size: 0.8rem;">
+                        ● PNB QR ACTIVE
+                    </span>
+                </div>
+
+                <div class="grid grid-3 gap-3 mb-3 align-center">
+                    <div style="text-align: center; background: #ffffff; border: 1.5px solid #E2E8F0; border-radius: 8px; padding: 10px;">
+                        <img src="{{ asset($settings['upi_qr_image']->value ?? '/assets/images/upi_qr.jpg') }}" alt="PNB QR Preview" style="max-width: 140px; height: auto; border-radius: 4px; display: block; margin: 0 auto;">
+                        <small style="color: #64748B; font-size: 0.725rem; display: block; margin-top: 4px;">Active QR Code</small>
+                    </div>
+
+                    <div style="grid-column: span 2;">
+                        <div class="form-group mb-2">
+                            <label for="upi_id" class="form-label" style="font-weight: 700; color: #78350F;">Primary UPI ID / VPA *</label>
+                            <input type="text" name="upi_id" id="upi_id" class="form-control" value="{{ old('upi_id', $settings['upi_id']->value ?? config('vaishnavi.upi_id', '9179484443m@pnb')) }}" style="font-family: monospace; font-weight: 800; font-size: 1.05rem;" required>
+                            <small style="color: var(--slate-500); font-size: 0.75rem;">Default: <code>9179484443m@pnb</code></small>
+                        </div>
+
+                        <div class="grid grid-2 gap-2">
+                            <div class="form-group">
+                                <label for="upi_merchant_name" class="form-label" style="font-size: 0.8rem; font-weight: 700; color: #78350F;">Merchant Name</label>
+                                <input type="text" name="upi_merchant_name" id="upi_merchant_name" class="form-control" value="{{ old('upi_merchant_name', $settings['upi_merchant_name']->value ?? config('vaishnavi.upi_merchant_name', 'VAISHNAVI TOURS')) }}">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="upi_bank_name" class="form-label" style="font-size: 0.8rem; font-weight: 700; color: #78350F;">Bank Name</label>
+                                <input type="text" name="upi_bank_name" id="upi_bank_name" class="form-control" value="{{ old('upi_bank_name', $settings['upi_bank_name']->value ?? config('vaishnavi.upi_bank_name', 'Punjab National Bank (PNB)')) }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="upi_qr_image" class="form-label" style="font-size: 0.8rem; font-weight: 700; color: #78350F;">QR Code Image Path</label>
+                    <input type="text" name="upi_qr_image" id="upi_qr_image" class="form-control" value="{{ old('upi_qr_image', $settings['upi_qr_image']->value ?? '/assets/images/upi_qr.jpg') }}">
+                    <small style="color: var(--slate-500); font-size: 0.75rem;">Standard path: <code>/assets/images/upi_qr.jpg</code></small>
+                </div>
+            </div>
+
             <!-- Google Business Profile & Google Reviews Integration -->
             <div class="card mb-4" style="border: 2px solid #E0E7FF; background: #FFFFFF;">
                 <div class="d-flex justify-between align-center mb-3">

@@ -357,8 +357,13 @@ class PublicWebsiteController extends Controller
             : "Booking request received! Your Booking ID is #{$booking->booking_id}.";
 
         $pref = $request->input('payment_preference');
-        if (in_array($pref, ['full', 'advance'], true) && (float) $booking->total_amount > 0 && (float) $booking->balance_amount > 0) {
-            return redirect()->route('payment.pay', ['booking' => $booking->id, 'mode' => $pref])->with('success', $successMsg);
+
+        // If rate matrix confirmed an amount, open payment portal directly for customer to pay via UPI QR / UPI ID
+        if ((float) $booking->total_amount > 0 && (float) $booking->balance_amount > 0) {
+            $mode = in_array($pref, ['full', 'advance', 'later'], true) ? $pref : 'full';
+
+            return redirect()->route('payment.pay', ['booking' => $booking->id, 'mode' => $mode])
+                ->with('success', "Booking request received! Your Booking ID is #{$booking->booking_id}. Please complete your payment via UPI QR code or choose Pay Later below.");
         }
 
         return redirect()->route('booking.success', $booking->id)->with('success', $successMsg);

@@ -174,6 +174,10 @@ class WhatsappService
             'vehicle_number' => $vehicle?->registration_number ?? '',
             'company_phone' => Setting::get('phone_primary') ?? '',
             'feedback_url' => config('app.url').'/feedback',
+            'upi_id' => Setting::get('upi_id', config('vaishnavi.upi_id', '9179484443m@pnb')),
+            'upi_merchant' => Setting::get('upi_merchant_name', config('vaishnavi.upi_merchant_name', 'VAISHNAVI TOURS')),
+            'upi_qr_url' => asset('assets/images/upi_qr.jpg'),
+            'payment_url' => route('payment.pay', $booking->id),
         ];
     }
 

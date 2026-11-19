@@ -86,6 +86,12 @@ return [
     'bank_ifsc_code' => env('BANK_IFSC_CODE'),
     'bank_account_number' => env('BANK_ACCOUNT_NUMBER'),
     'bank_name' => env('BANK_NAME'),
+
+    // Official PNB UPI Payment Configuration
+    'upi_id' => env('UPI_ID', '9179484443m@pnb'),
+    'upi_merchant_name' => env('UPI_MERCHANT_NAME', 'VAISHNAVI TOURS'),
+    'upi_bank_name' => env('UPI_BANK_NAME', 'Punjab National Bank (PNB)'),
+    'upi_qr_image' => '/assets/images/upi_qr.jpg',
     // Google Business Profile & Reviews Integration (Verified)
     'google_business_name' => 'Vaishnavi Tours Taxi Cab Service Car Rental',
     'google_share_url' => 'https://share.google/0Z3hLSDusfgPwsJx0',

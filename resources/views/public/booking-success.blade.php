@@ -114,8 +114,21 @@
                             Flexible Payment Options for Your Trip
                         </h3>
                         <p style="color: var(--slate-600); font-size: 0.85rem; margin: 0;">
-                            Choose to pay fully online, lock your reservation with a small advance, or pay directly to the chauffeur on journey day.
+                            Pay directly via PNB UPI QR code, lock your reservation with a small advance, or pay to the chauffeur on journey day.
                         </p>
+                    </div>
+
+                    <!-- PNB UPI Quick Box -->
+                    <div style="background: #FFFDF5; border: 1.5px solid #FCD34D; border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <strong style="color: #92400E; font-size: 0.9rem;">📱 Instant UPI Payment Available (PNB QR Code):</strong>
+                            <div style="font-size: 0.8rem; color: #78350F; margin-top: 2px;">
+                                Merchant: <strong>VAISHNAVI TOURS</strong> • UPI ID: <strong style="font-family: monospace;">{{ \App\Models\Setting::get('upi_id', '9179484443m@pnb') }}</strong>
+                            </div>
+                        </div>
+                        <a href="{{ route('payment.pay', $booking->id) }}" class="btn btn-sm" style="background: #059669; border-color: #059669; color: #fff; font-weight: 800;">
+                            🖼️ Scan &amp; Pay via UPI QR →
+                        </a>
                     </div>
 
                     <div class="grid grid-3 gap-3">

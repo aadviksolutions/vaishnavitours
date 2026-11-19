@@ -32,13 +32,13 @@ class WhatsappTemplate extends Model
     public const EVENTS = [
         'new_booking' => [
             'label' => '🆕 New Booking Received',
-            'default' => "Hello *{{customer_name}}*! 🙏\n\nYour booking has been received successfully.\n\n📋 *Booking ID:* {{booking_id}}\n📍 *From:* {{pickup}}\n📍 *To:* {{destination}}\n📅 *Date:* {{travel_date}}\n🚗 *Vehicle:* {{vehicle_category}}\n💰 *Fare:* ₹{{total_amount}}\n\nWe'll confirm your booking shortly. For any queries, call us at {{company_phone}}.\n\n*Vaishnavi Tours* 🚖",
-            'variables' => ['customer_name', 'booking_id', 'pickup', 'destination', 'travel_date', 'vehicle_category', 'total_amount', 'company_phone'],
+            'default' => "Hello *{{customer_name}}*! 🙏\n\nYour booking has been received successfully.\n\n📋 *Booking ID:* {{booking_id}}\n📍 *From:* {{pickup}}\n📍 *To:* {{destination}}\n📅 *Date:* {{travel_date}}\n🚗 *Vehicle:* {{vehicle_category}}\n💰 *Fare:* ₹{{total_amount}}\n📱 *UPI ID:* {{upi_id}} (VAISHNAVI TOURS)\n🔗 *Pay / View QR Code:* {{payment_url}}\n\nWe'll confirm your booking shortly. For any queries, call us at {{company_phone}}.\n\n*Vaishnavi Tours* 🚖",
+            'variables' => ['customer_name', 'booking_id', 'pickup', 'destination', 'travel_date', 'vehicle_category', 'total_amount', 'upi_id', 'payment_url', 'company_phone'],
         ],
         'booking_confirmed' => [
             'label' => '✅ Booking Confirmed',
-            'default' => "Hello *{{customer_name}}*! ✅\n\nGreat news! Your booking is *CONFIRMED*.\n\n📋 *Booking ID:* {{booking_id}}\n📍 *From:* {{pickup}}\n📍 *To:* {{destination}}\n📅 *Date:* {{travel_date}} at {{travel_time}}\n🚗 *Vehicle:* {{vehicle_category}}\n💰 *Total Fare:* ₹{{total_amount}}\n\nPlease be ready at the pickup point. Call us at {{company_phone}} for any changes.\n\n*Vaishnavi Tours* ✈️",
-            'variables' => ['customer_name', 'booking_id', 'pickup', 'destination', 'travel_date', 'travel_time', 'vehicle_category', 'total_amount', 'company_phone'],
+            'default' => "Hello *{{customer_name}}*! ✅\n\nGreat news! Your booking is *CONFIRMED*.\n\n📋 *Booking ID:* {{booking_id}}\n📍 *From:* {{pickup}}\n📍 *To:* {{destination}}\n📅 *Date:* {{travel_date}} at {{travel_time}}\n🚗 *Vehicle:* {{vehicle_category}}\n💰 *Total Fare:* ₹{{total_amount}}\n📱 *UPI ID:* {{upi_id}}\n🔗 *Pay Online / QR Code:* {{payment_url}}\n\nPlease be ready at the pickup point. Call us at {{company_phone}} for any changes.\n\n*Vaishnavi Tours* ✈️",
+            'variables' => ['customer_name', 'booking_id', 'pickup', 'destination', 'travel_date', 'travel_time', 'vehicle_category', 'total_amount', 'upi_id', 'payment_url', 'company_phone'],
         ],
         'booking_cancelled' => [
             'label' => '❌ Booking Cancelled',

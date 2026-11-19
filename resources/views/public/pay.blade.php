@@ -177,29 +177,131 @@
                 </div>
 
                 <!-- Online Payment Container (for Full / Partial) -->
-                <div id="onlinePaymentContainer" style="text-align: center; margin-bottom: 2rem; {{ $defaultMode === 'later' ? 'display: none;' : '' }}">
-                    <div style="margin-bottom: 1.25rem;">
-                        <button id="payNowBtn" type="button" class="btn btn-primary btn-lg" style="padding: 1rem 2.5rem; font-size: 1.15rem; font-weight: 800; border-radius: var(--radius-md); box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4); display: inline-flex; align-items: center; gap: 10px;">
-                            <x-icon name="shield-check" size="20" />
-                            <span id="payNowText">Pay ₹{{ number_format($defaultMode === 'advance' ? $advance : $balance, 2) }} via Razorpay</span>
-                        </button>
+                <div id="onlinePaymentContainer" style="margin-bottom: 2rem; {{ $defaultMode === 'later' ? 'display: none;' : '' }}">
+
+                    <!-- Main Section: Official PNB UPI QR Code & Direct UPI Apps (Recommended) -->
+                    <div style="background: linear-gradient(180deg, #FFFFFF 0%, #FFFDF5 100%); border: 2.5px solid #F59E0B; border-radius: var(--radius-lg); padding: 1.75rem; box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.15); margin-bottom: 1.5rem;">
+                        <div style="text-align: center; border-bottom: 1px dashed var(--slate-200); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+                            <span class="badge" style="background: #FEF3C7; color: #92400E; font-size: 0.75rem; font-weight: 800; padding: 4px 12px; letter-spacing: 0.5px; text-transform: uppercase;">
+                                ⚡ FASTEST &amp; RECOMMENDED (0% EXTRA CHARGES)
+                            </span>
+                            <h3 style="font-size: 1.35rem; font-weight: 900; color: #78350F; margin: 0.4rem 0 0.25rem 0;">
+                                Scan &amp; Pay via Official Bank UPI QR Code
+                            </h3>
+                            <p style="font-size: 0.85rem; color: var(--slate-600); margin: 0;">
+                                Pay securely using <strong>Google Pay, PhonePe, Paytm, BHIM, Amazon Pay</strong> or any bank UPI app.
+                            </p>
+                        </div>
+
+                        <div class="grid grid-2 gap-4 align-center">
+                            <!-- Left: High-Resolution Verified PNB QR Code -->
+                            <div style="text-align: center;">
+                                <div style="display: inline-block; padding: 10px; background: #ffffff; border: 2px solid #E2E8F0; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
+                                    <img src="{{ asset($upiQrImage ?? 'assets/images/upi_qr.jpg') }}" alt="Vaishnavi Tours PNB UPI QR Code" style="max-width: 230px; width: 100%; height: auto; border-radius: 6px; display: block; margin: 0 auto;">
+                                </div>
+                                <div style="margin-top: 0.65rem; font-size: 0.8rem; color: #065F46; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                    <x-icon name="circle-check" size="14" style="color: #059669;" /> Verified Merchant: {{ $upiMerchantName ?? 'VAISHNAVI TOURS' }}
+                                </div>
+                            </div>
+
+                            <!-- Right: UPI ID & Direct Mobile Intent Payment -->
+                            <div>
+                                <div style="background: #F8FAFC; border: 1.5px solid var(--slate-200); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                                    <span style="font-size: 0.725rem; font-weight: 800; text-transform: uppercase; color: var(--slate-500); display: block; margin-bottom: 2px;">
+                                        OFFICIAL UPI ID
+                                    </span>
+                                    <div class="d-flex justify-between align-center gap-2">
+                                        <span id="upiIdText" style="font-family: monospace; font-size: 1.15rem; font-weight: 900; color: #0F172A; letter-spacing: 0.5px;">
+                                            {{ $upiId ?? '9179484443m@pnb' }}
+                                        </span>
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText('{{ $upiId ?? '9179484443m@pnb' }}'); alert('UPI ID copied to clipboard: {{ $upiId ?? '9179484443m@pnb' }}');" style="padding: 4px 10px; font-weight: 700; font-size: 0.775rem;">
+                                            📋 Copy UPI ID
+                                        </button>
+                                    </div>
+                                    <div style="font-size: 0.75rem; color: var(--slate-500); margin-top: 4px;">
+                                        Bank: <strong>{{ $upiBankName ?? 'Punjab National Bank (PNB)' }}</strong>
+                                    </div>
+                                </div>
+
+                                <!-- Mobile Direct 1-Click Pay Link -->
+                                <div style="margin-bottom: 1rem;">
+                                    <a id="mobileUpiBtn" href="upi://pay?pa={{ $upiId ?? '9179484443m@pnb' }}&pn={{ urlencode($upiMerchantName ?? 'VAISHNAVI TOURS') }}&am={{ $defaultMode === 'advance' ? $advance : $balance }}&cu=INR&tn={{ urlencode('Booking #' . $booking->booking_id) }}" class="btn btn-lg w-100" style="background: #059669; border-color: #059669; color: #fff; font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3); text-decoration: none;">
+                                        <span>⚡ Pay ₹<span class="upi-amount-display">{{ number_format($defaultMode === 'advance' ? $advance : $balance, 2) }}</span> in UPI App</span>
+                                    </a>
+                                    <small style="font-size: 0.725rem; color: var(--slate-500); display: block; text-align: center; margin-top: 4px;">
+                                        (Click on mobile to open PhonePe / GPay / Paytm directly)
+                                    </small>
+                                </div>
+
+                                <div style="font-size: 0.775rem; color: var(--slate-600); line-height: 1.4;">
+                                    ✓ <strong>Zero Convenience Fee</strong> • Direct bank transfer to Vaishnavi Tours PNB Account.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Instant Payment Confirmation Form -->
+                        <div style="background: #F0FDF4; border: 1.5px dashed #86EFAC; border-radius: 8px; padding: 1.25rem; margin-top: 1.25rem;">
+                            <h4 style="margin: 0 0 0.35rem 0; font-size: 0.95rem; font-weight: 800; color: #166534; display: flex; align-items: center; gap: 6px;">
+                                <x-icon name="circle-check" size="18" style="color: #16A34A;" />
+                                Step 2: Paid via UPI? Confirm Your Booking Here
+                            </h4>
+                            <p style="font-size: 0.8rem; color: #15803D; margin-bottom: 0.85rem;">
+                                Once paid in your UPI app, enter the <strong>12-digit UPI Reference / UTR Number</strong> from your payment receipt to instantly confirm your trip.
+                            </p>
+
+                            <form action="{{ route('payment.confirm-upi', $booking->id) }}" method="POST">
+                                @csrf
+                                <div class="grid grid-2 gap-2 mb-2">
+                                    <div>
+                                        <label class="form-label" style="font-size: 0.775rem; font-weight: 700; color: #166534;">Amount Paid (₹) *</label>
+                                        <input type="number" step="0.01" min="1" max="{{ $booking->balance_amount }}" name="amount" id="upiFormAmount" class="form-control form-control-sm" value="{{ $defaultMode === 'advance' ? $advance : $balance }}" required style="font-weight: 700;">
+                                    </div>
+                                    <div>
+                                        <label class="form-label" style="font-size: 0.775rem; font-weight: 700; color: #166534;">12-Digit UPI Ref / UTR No. *</label>
+                                        <input type="text" name="upi_ref_number" class="form-control form-control-sm" placeholder="e.g. 432109876543" required style="font-family: monospace; font-weight: 700;">
+                                    </div>
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label class="form-label" style="font-size: 0.775rem; font-weight: 700; color: #166534;">Payer / Sender Name (Optional)</label>
+                                    <input type="text" name="sender_name" class="form-control form-control-sm" value="{{ $booking->customer?->name }}" placeholder="Your name or UPI account name">
+                                </div>
+                                <button type="submit" class="btn btn-sm w-100" style="background: #16A34A; border-color: #16A34A; color: #fff; font-weight: 800; font-size: 0.95rem; padding: 0.65rem 1rem;">
+                                    ✓ Submit UPI Confirmation &amp; Lock Booking
+                                </button>
+                            </form>
+                        </div>
                     </div>
 
-                    <!-- Payment Trust Badges -->
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; color: var(--slate-500); font-size: 0.85rem;">
-                        <span style="display: inline-flex; align-items: center; gap: 4px;">
-                            <x-icon name="lock" size="14" style="color: #059669;" /> 256-Bit SSL Encrypted
+                    <!-- Alternative: Credit / Debit Cards & Netbanking via Razorpay -->
+                    <div style="background: #ffffff; border: 1.5px solid var(--slate-200); border-radius: var(--radius-md); padding: 1.25rem; text-align: center;">
+                        <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--slate-500); display: block; margin-bottom: 0.5rem;">
+                            ALTERNATIVE PAYMENT OPTION
                         </span>
-                        <span>•</span>
-                        <span>UPI (GPay / PhonePe / Paytm / BHIM)</span>
-                        <span>•</span>
-                        <span>Credit &amp; Debit Cards</span>
-                        <span>•</span>
-                        <span>Netbanking</span>
+                        <h4 style="font-size: 1rem; font-weight: 800; color: var(--dark-900); margin: 0 0 0.5rem 0;">
+                            Pay via Credit / Debit Card or Netbanking
+                        </h4>
+                        <div style="margin-bottom: 1rem;">
+                            <button id="payNowBtn" type="button" class="btn btn-primary btn-sm" style="padding: 0.65rem 1.75rem; font-size: 0.95rem; font-weight: 800; border-radius: var(--radius-md); display: inline-flex; align-items: center; gap: 8px;">
+                                <x-icon name="credit-card" size="16" />
+                                <span id="payNowText">Pay ₹{{ number_format($defaultMode === 'advance' ? $advance : $balance, 2) }} via Razorpay Cards/Netbanking</span>
+                            </button>
+                        </div>
+
+                        <!-- Payment Trust Badges -->
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 0.75rem; flex-wrap: wrap; color: var(--slate-500); font-size: 0.8rem;">
+                            <span style="display: inline-flex; align-items: center; gap: 4px;">
+                                <x-icon name="lock" size="14" style="color: #059669;" /> 256-Bit SSL Encrypted
+                            </span>
+                            <span>•</span>
+                            <span>Visa / MasterCard / RuPay</span>
+                            <span>•</span>
+                            <span>Netbanking (All Major Indian Banks)</span>
+                        </div>
+
+                        <!-- Status / Error message container -->
+                        <div id="paymentMessage" style="display: none; margin-top: 1rem; padding: 0.75rem; border-radius: var(--radius-md); font-size: 0.875rem; font-weight: 600;"></div>
                     </div>
 
-                    <!-- Status / Error message container -->
-                    <div id="paymentMessage" style="display: none; margin-top: 1.25rem; padding: 1rem; border-radius: var(--radius-md); font-size: 0.925rem; font-weight: 600;"></div>
                 </div>
 
                 <!-- Pay Later Action Container (when Pay Later is selected) -->
@@ -295,18 +397,34 @@ document.addEventListener('DOMContentLoaded', function () {
                 card.style.borderColor = '#F59E0B';
                 if (onlineContainer) onlineContainer.style.display = 'block';
                 if (laterContainer) laterContainer.style.display = 'none';
-                if (payText) payText.innerText = 'Pay ₹' + amt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' via Razorpay';
+                if (payText) payText.innerText = 'Pay ₹' + amt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' via Razorpay Cards/Netbanking';
             } else if (mode === 'advance') {
                 card.classList.add('ring-blue-500', 'bg-blue-50');
                 card.style.borderColor = '#3B82F6';
                 if (onlineContainer) onlineContainer.style.display = 'block';
                 if (laterContainer) laterContainer.style.display = 'none';
-                if (payText) payText.innerText = 'Pay ₹' + amt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' via Razorpay';
+                if (payText) payText.innerText = 'Pay ₹' + amt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' via Razorpay Cards/Netbanking';
             } else if (mode === 'later') {
                 card.classList.add('ring-emerald-500', 'bg-emerald-50');
                 card.style.borderColor = '#10B981';
                 if (onlineContainer) onlineContainer.style.display = 'none';
                 if (laterContainer) laterContainer.style.display = 'block';
+            }
+
+            // Sync UPI amounts & intent link
+            document.querySelectorAll('.upi-amount-display').forEach(function(el) {
+                el.innerText = amt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            });
+            const upiFormAmt = document.getElementById('upiFormAmount');
+            if (upiFormAmt) {
+                upiFormAmt.value = amt;
+            }
+            const mobileUpiBtn = document.getElementById('mobileUpiBtn');
+            if (mobileUpiBtn && amt > 0) {
+                mobileUpiBtn.href = "upi://pay?pa=" + encodeURIComponent("{{ $upiId ?? '9179484443m@pnb' }}")
+                    + "&pn=" + encodeURIComponent("{{ $upiMerchantName ?? 'VAISHNAVI TOURS' }}")
+                    + "&am=" + amt
+                    + "&cu=INR&tn=" + encodeURIComponent("Booking #{{ $booking->booking_id }}");
             }
         });
     });

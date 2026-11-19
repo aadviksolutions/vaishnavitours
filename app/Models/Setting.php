@@ -49,6 +49,10 @@ class Setting extends Model
             'facebook_url' => 'vaishnavi.facebook_url',
             'instagram_url' => 'vaishnavi.instagram_url',
             'youtube_url' => 'vaishnavi.youtube_url',
+            'upi_id' => 'vaishnavi.upi_id',
+            'upi_merchant_name' => 'vaishnavi.upi_merchant_name',
+            'upi_bank_name' => 'vaishnavi.upi_bank_name',
+            'upi_qr_image' => 'vaishnavi.upi_qr_image',
         ];
 
         if (isset($configMap[$key])) {

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\BookingStatusHistory;
+use App\Models\Payment;
+use App\Models\Setting;
 use App\Services\PaymentService;
 use App\Services\RazorpayService;
 use Illuminate\Http\JsonResponse;
@@ -20,8 +22,86 @@ class PublicPaymentController extends Controller
             ->firstOrFail();
 
         $keyId = RazorpayService::getKeyId();
+        $upiId = Setting::get('upi_id', config('vaishnavi.upi_id', '9179484443m@pnb'));
+        $upiMerchantName = Setting::get('upi_merchant_name', config('vaishnavi.upi_merchant_name', 'VAISHNAVI TOURS'));
+        $upiBankName = Setting::get('upi_bank_name', config('vaishnavi.upi_bank_name', 'Punjab National Bank (PNB)'));
+        $upiQrImage = Setting::get('upi_qr_image', config('vaishnavi.upi_qr_image', '/assets/images/upi_qr.jpg'));
 
-        return view('public.pay', compact('booking', 'keyId'));
+        return view('public.pay', compact('booking', 'keyId', 'upiId', 'upiMerchantName', 'upiBankName', 'upiQrImage'));
+    }
+
+    /**
+     * Submit direct UPI payment confirmation (PNB QR / UPI ID)
+     */
+    public function confirmUpiPayment(Request $request, string $bookingId, PaymentService $paymentService)
+    {
+        $booking = Booking::where('id', $bookingId)
+            ->orWhere('booking_id', $bookingId)
+            ->firstOrFail();
+
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:1',
+            'upi_ref_number' => 'required|string|min:4|max:80',
+            'sender_name' => 'nullable|string|max:150',
+            'notes' => 'nullable|string|max:500',
+        ], [
+            'amount.required' => 'Please enter the amount you paid.',
+            'amount.min' => 'Amount must be at least ₹1.',
+            'upi_ref_number.required' => 'Please enter your 12-digit UPI Reference / UTR Number from your payment app.',
+            'upi_ref_number.min' => 'Please enter a valid UPI Reference / UTR Number.',
+        ]);
+
+        $amount = (float) $validated['amount'];
+        $refNo = trim($validated['upi_ref_number']);
+        $upiId = Setting::get('upi_id', config('vaishnavi.upi_id', '9179484443m@pnb'));
+
+        // Record payment
+        Payment::create([
+            'payment_id' => 'UPI-' . strtoupper(uniqid()),
+            'booking_id' => $booking->id,
+            'customer_id' => $booking->customer_id,
+            'amount' => $amount,
+            'currency' => 'INR',
+            'payment_method' => 'UPI / QR',
+            'gateway' => "PNB UPI ({$upiId})",
+            'transaction_id' => $refNo,
+            'status' => 'Success',
+            'payment_type' => ($amount >= (float) $booking->balance_amount) ? 'full' : 'advance',
+            'notes' => "Direct UPI payment received via PNB QR ({$upiId}). Sender: " . ($validated['sender_name'] ?? ($booking->customer?->name ?? 'Customer')),
+            'paid_at' => now(),
+        ]);
+
+        // Update booking totals
+        $newPaid = round((float) $booking->paid_amount + $amount, 2);
+        $newBalance = max(0, round((float) $booking->total_amount - $newPaid, 2));
+        $newPaymentStatus = ($newBalance <= 0) ? 'Paid' : 'Partial';
+        $newBookingStatus = ($booking->booking_status === 'Pending') ? 'Confirmed' : $booking->booking_status;
+
+        $booking->update([
+            'paid_amount' => $newPaid,
+            'balance_amount' => $newBalance,
+            'payment_status' => $newPaymentStatus,
+            'booking_status' => $newBookingStatus,
+        ]);
+
+        BookingStatusHistory::create([
+            'booking_id' => $booking->id,
+            'changed_by' => Auth::id(),
+            'old_status' => $booking->booking_status,
+            'new_status' => $newBookingStatus,
+            'remarks' => "Customer paid ₹" . number_format($amount, 2) . " via PNB UPI (Ref/UTR: {$refNo}).",
+            'comment' => "Customer paid ₹" . number_format($amount, 2) . " via PNB UPI (Ref/UTR: {$refNo}).",
+            'created_at' => now(),
+        ]);
+
+        try {
+            $paymentService->syncInvoice($booking);
+        } catch (\Throwable $e) {
+            Log::warning('Invoice sync warning: ' . $e->getMessage());
+        }
+
+        return redirect()->route('booking.success', $booking->id)
+            ->with('success', "✓ Thank you! Your payment of ₹" . number_format($amount, 2) . " via UPI (Ref/UTR: {$refNo}) has been submitted and verified! Your booking #{$booking->booking_id} is confirmed.");
     }
 
     public function createOrder(Request $request, RazorpayService $razorpay): JsonResponse

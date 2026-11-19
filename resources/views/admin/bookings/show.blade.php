@@ -769,21 +769,65 @@ Regarding your booking *{{ $booking->booking_id }}* from {{ $booking->pickup_loc
                 </form>
             </div>
 
-            <!-- Customer Online Payment Links (Section 16 - Full / Advance / Pay Later) -->
+            <!-- Customer Online Payment Links & Official UPI QR -->
             @if($booking->total_amount > 0 && $booking->balance_amount > 0)
                 @php
                     $fullPayUrl = route('payment.pay', ['booking' => $booking->id, 'mode' => 'full']);
                     $advanceAmount = min((float) $booking->balance_amount, max(500, round((float) $booking->total_amount * 0.25)));
                     $advancePayUrl = route('payment.pay', ['booking' => $booking->id, 'mode' => 'advance']);
+                    $upiId = \App\Models\Setting::get('upi_id', config('vaishnavi.upi_id', '9179484443m@pnb'));
+                    $upiMerchant = \App\Models\Setting::get('upi_merchant_name', config('vaishnavi.upi_merchant_name', 'VAISHNAVI TOURS'));
+                    $qrImageUrl = asset('assets/images/upi_qr.jpg');
                     $custPhone = preg_replace('/[^0-9]/', '', $booking->customer->phone ?? '');
                     if (strlen($custPhone) === 10) { $custPhone = '91' . $custPhone; }
-                    $paymentShareMsg = "Namaste " . ($booking->customer->name ?? 'Customer') . ",\nYour booking #" . $booking->booking_id . " with Vaishnavi Tours is ready!\n\nTrip: " . $booking->pickup_location . " to " . $booking->destination . "\nTotal Fare: ₹" . number_format($booking->total_amount, 2) . "\nPending Balance: ₹" . number_format($booking->balance_amount, 2) . "\n\nChoose payment option:\n1. 💳 Full Payment (₹" . number_format($booking->balance_amount, 2) . "): " . $fullPayUrl . "\n2. ⚡ 25% Advance (₹" . number_format($advanceAmount, 0) . "): " . $advancePayUrl . "\n3. 💵 Pay Later (Cash / UPI to driver during trip)\n\nThank you, Vaishnavi Tours Bilaspur!";
+
+                    $paymentShareMsg = "Namaste " . ($booking->customer->name ?? 'Customer') . ",\n"
+                        . "Your booking #" . $booking->booking_id . " with *Vaishnavi Tours* is ready! 🚖\n\n"
+                        . "📍 *Route:* " . $booking->pickup_location . " to " . $booking->destination . "\n"
+                        . "📅 *Date:* " . ($booking->travel_date ? (is_string($booking->travel_date) ? date('d M Y', strtotime($booking->travel_date)) : $booking->travel_date->format('d M Y')) : '') . "\n"
+                        . "💰 *Total Fare:* ₹" . number_format($booking->total_amount, 2) . "\n"
+                        . "⏳ *Payable Amount:* ₹" . number_format($booking->balance_amount, 2) . "\n\n"
+                        . "📱 *DIRECT UPI PAYMENT DETAILS:*\n"
+                        . "• *Merchant:* " . $upiMerchant . "\n"
+                        . "• *UPI ID:* " . $upiId . "\n"
+                        . "• *Bank:* Punjab National Bank (PNB)\n"
+                        . "• *Pay using any UPI App:* Google Pay, PhonePe, Paytm, BHIM, Amazon Pay\n\n"
+                        . "🖼️ *Scan & Pay QR Code:*\n" . $qrImageUrl . "\n\n"
+                        . "🔗 *Payment Portal Link:*\n"
+                        . "1. 💳 Full Payment (₹" . number_format($booking->balance_amount, 2) . "): " . $fullPayUrl . "\n"
+                        . "2. ⚡ 25% Advance (₹" . number_format($advanceAmount, 0) . "): " . $advancePayUrl . "\n"
+                        . "3. 💵 Pay Later (Cash / UPI to driver during journey)\n\n"
+                        . "After paying via UPI, please share the 12-digit UTR/Ref or screenshot.\n"
+                        . "Thank you, Vaishnavi Tours Bilaspur!";
                 @endphp
                 <div style="margin-bottom: 1.5rem; padding: 1rem; border-radius: 8px; background: #f8fafc; border: 1px solid var(--slate-200);">
                     <h4 style="font-size: 0.9rem; font-weight: 800; color: var(--dark-900); margin-bottom: 0.6rem; display: flex; align-items: center; justify-content: space-between;">
-                        <span><x-icon name="credit-card" size="16" style="margin-right: 6px;" /> Customer Payment Links</span>
-                        <span class="badge badge-sm badge-success" style="background: #10B981; color: #fff;">Online Active</span>
+                        <span><x-icon name="credit-card" size="16" style="margin-right: 6px;" /> Customer Payment & UPI QR</span>
+                        <span class="badge badge-sm badge-success" style="background: #10B981; color: #fff;">PNB UPI Active</span>
                     </h4>
+
+                    <!-- PNB UPI Summary Box -->
+                    <div style="background: #FFFDF5; border: 1.5px solid #FCD34D; border-radius: 6px; padding: 0.75rem; margin-bottom: 0.75rem; font-size: 11.5px;">
+                        <div class="d-flex justify-between align-center mb-1">
+                            <strong style="color: #92400E;">🏦 Official PNB Merchant UPI:</strong>
+                            <span class="badge badge-warning" style="font-size: 10px;">{{ $upiMerchant }}</span>
+                        </div>
+                        <div class="d-flex justify-between align-center gap-2 mb-2">
+                            <span style="font-family: monospace; font-weight: 700; color: #1E293B; font-size: 12.5px;">{{ $upiId }}</span>
+                            <button type="button" class="btn btn-outline btn-sm" style="padding: 1px 6px; font-size: 10.5px;" onclick="navigator.clipboard.writeText('{{ $upiId }}'); alert('UPI ID copied to clipboard: {{ $upiId }}');">
+                                📋 Copy UPI ID
+                            </button>
+                        </div>
+                        <div class="d-flex align-center gap-2">
+                            <a href="{{ $qrImageUrl }}" target="_blank" class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 11px;">
+                                🖼️ View / Download QR Code
+                            </a>
+                            <button type="button" class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 11px;" onclick="navigator.clipboard.writeText('{{ $qrImageUrl }}'); alert('QR Code link copied!');">
+                                🔗 Copy QR Link
+                            </button>
+                        </div>
+                    </div>
+
                     <p style="font-size: 0.775rem; color: var(--slate-600); margin-bottom: 0.75rem;">
                         Share online payment link with customer for Full (₹{{ number_format($booking->balance_amount, 2) }}) or 25% Advance (₹{{ number_format($advanceAmount, 0) }}):
                     </p>
@@ -809,7 +853,7 @@ Regarding your booking *{{ $booking->booking_id }}* from {{ $booking->pickup_loc
                     </div>
                     @if($custPhone)
                         <a href="https://wa.me/{{ $custPhone }}?text={{ urlencode($paymentShareMsg) }}" target="_blank" class="btn btn-sm w-100" style="background: #25D366; color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none;">
-                            <x-icon name="send" size="14" /> Send Payment Options via WhatsApp
+                            <x-icon name="send" size="14" /> Send Payment & UPI QR via WhatsApp
                         </a>
                     @endif
                 </div>
