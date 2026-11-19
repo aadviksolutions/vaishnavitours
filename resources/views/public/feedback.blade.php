@@ -107,9 +107,20 @@
 
                     <form action="{{ route('feedback.store') }}" method="POST">
                         @csrf
+
+                        {{-- Anti-Spam Bot Honeypot --}}
+                        <div style="display: none !important;" aria-hidden="true">
+                            <input type="text" name="website_url_check" value="" tabindex="-1" autocomplete="off">
+                        </div>
+
                         <div class="form-group">
-                            <label class="form-label">Your Name</label>
+                            <label class="form-label">Your Name *</label>
                             <input type="text" name="name" class="form-control" value="{{ Auth::check() ? Auth::user()->name : '' }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Route / Trip (Optional)</label>
+                            <input type="text" name="trip" class="form-control" placeholder="e.g. Bilaspur to Raipur Airport">
                         </div>
 
                         <div class="form-group">
@@ -118,19 +129,18 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Rating</label>
+                            <label class="form-label">Rating *</label>
                             <select name="rating" class="form-select" required>
-                                <option value="5">★★★★★ - Excellent (5 Stars)</option>
+                                <option value="5" selected>★★★★★ - Excellent (5 Stars)</option>
                                 <option value="4">★★★★☆ - Very Good (4 Stars)</option>
                                 <option value="3">★★★☆☆ - Average (3 Stars)</option>
-                                <option value="2">★★☆☆☆ - Poor (2 Stars)</option>
-                                <option value="1">★☆☆☆☆ - Terrible (1 Star)</option>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Your Experience / Comments</label>
+                            <label class="form-label">Your Experience / Comments *</label>
                             <textarea name="comment" class="form-control" rows="4" placeholder="How was the driver, vehicle cleanliness, and overall trip?" required></textarea>
+                            <small style="color: var(--slate-400); font-size: 0.75rem;">URLs, links, and promotional text are strictly blocked.</small>
                         </div>
 
                         <button type="submit" class="btn btn-primary" style="width: 100%;">

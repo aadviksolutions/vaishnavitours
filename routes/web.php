@@ -234,8 +234,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/enquiries/manual', [AdminEnquiryController::class, 'storeManual'])->name('enquiries.store-manual');
     Route::resource('enquiries', AdminEnquiryController::class)->only(['index', 'show', 'update', 'destroy']);
 
-    // Customer Feedback Moderation
+    // Customer Feedback & Google Reviews Moderation
     Route::get('/feedback', [AdminFeedbackController::class, 'index'])->name('feedback.index');
+    Route::post('/feedback', [AdminFeedbackController::class, 'store'])->name('feedback.store');
+    Route::post('/feedback/clean-spam', [AdminFeedbackController::class, 'cleanSpam'])->name('feedback.clean-spam');
+    Route::post('/feedback/sync-google', [AdminFeedbackController::class, 'syncGoogleReviews'])->name('feedback.sync-google');
     Route::post('/feedback/{feedback}/toggle-status', [AdminFeedbackController::class, 'toggleStatus'])->name('feedback.toggle-status');
     Route::delete('/feedback/{feedback}', [AdminFeedbackController::class, 'destroy'])->name('feedback.destroy');
 

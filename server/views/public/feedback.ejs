@@ -109,6 +109,9 @@
 
                     <form action="<%= (globalThis.routeHelper || route)('feedback.store') %>" method="POST">
                         <%- csrfField() %>
+                        <div style="display: none !important;" aria-hidden="true">
+                            <input type="text" name="website_url_check" value="" tabindex="-1" autocomplete="off">
+                        </div>
                         <div class="form-group">
                             <label class="form-label">Your Name</label>
                             <input type="text" name="name" class="form-control" value="<%= Auth.check() ? Auth.user()?.name : '' %>" required>

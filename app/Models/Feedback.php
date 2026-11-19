@@ -18,6 +18,8 @@ class Feedback extends Model
         'email',
         'rating',
         'comment',
+        'trip',
+        'source',
         'is_public',
     ];
 
