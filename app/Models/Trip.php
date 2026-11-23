@@ -57,6 +57,11 @@ class Trip extends Model
         return $this->belongsTo(User::class, 'closed_by');
     }
 
+    public function closedByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'closed_by');
+    }
+
     public function expenses(): HasMany
     {
         return $this->hasMany(Expense::class);

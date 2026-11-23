@@ -164,7 +164,7 @@
     @endif
 </div>
 
-<div class="grid grid-3 gap-3">
+<div class="grid grid-3 gap-3 trip-details-grid">
     <!-- Left 2 Cols: Trip Operational Information -->
     <div style="grid-column: span 2;">
         <!-- Route & Schedule -->
@@ -292,4 +292,18 @@
         </div>
     </div>
 </div>
+
+<style>
+@media (max-width: 992px) {
+    .trip-details-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+    .trip-details-grid > div {
+        grid-column: span 1 !important;
+        width: 100% !important;
+    }
+}
+</style>
 @endsection

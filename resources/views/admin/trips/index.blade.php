@@ -160,110 +160,36 @@
                         </td>
                         <td style="text-align: right; white-space: nowrap;">
                             @if($trip->status !== 'Completed' && $trip->journey_status !== 'Journey Completed' && $trip->status !== 'Cancelled')
-                                <button type="button" class="btn btn-sm" style="padding: 2px 8px; font-size: 11px; font-weight: 700; background: #059669; border: 1px solid #059669; color: #fff;" onclick="openModal('completeTripModal{{ $trip->id }}')" title="Mark Trip Completed & Release Fleet">
+                                <button type="button" class="btn btn-sm" style="padding: 2px 8px; font-size: 11px; font-weight: 700; background: #059669; border: 1px solid #059669; color: #fff;" 
+                                    onclick="openCompleteTripModal(
+                                        '{{ route('admin.trips.complete', $trip->id) }}',
+                                        '#TRIP-{{ str_pad($trip->id, 4, '0', STR_PAD_LEFT) }}',
+                                        '{{ addslashes($trip->vehicle?->name ?? $trip->booking?->vehicle?->name ?? 'None') }} ({{ addslashes($trip->vehicle?->registration_number ?? $trip->booking?->vehicle?->registration_number ?? '-') }})',
+                                        '{{ addslashes($trip->driver?->name ?? $trip->booking?->driver?->name ?? 'None') }}',
+                                        '{{ $trip->start_odometer }}',
+                                        '{{ $trip->end_odometer }}',
+                                        '{{ addslashes($trip->route_notes ?: 'Trip completed successfully.') }}',
+                                        {{ $balance }}
+                                    )" title="Mark Trip Completed & Release Fleet">
                                     ✓ Complete Trip
                                 </button>
                             @endif
                             <a href="{{ route('admin.trips.show', $trip->id) }}" class="btn btn-primary btn-sm" style="padding: 2px 7px; font-size: 11px;">
                                 Manage
                             </a>
-                            <button type="button" class="btn btn-outline btn-sm" style="padding: 2px 7px; font-size: 11px;" onclick="openModal('tripModal{{ $trip->id }}')">
+                            <button type="button" class="btn btn-outline btn-sm" style="padding: 2px 7px; font-size: 11px;" 
+                                onclick="openOdometerTripModal(
+                                    '{{ route('admin.trips.update', $trip->id) }}',
+                                    '#TRIP-{{ str_pad($trip->id, 4, '0', STR_PAD_LEFT) }}',
+                                    '{{ $trip->status }}',
+                                    '{{ $trip->start_odometer }}',
+                                    '{{ $trip->end_odometer }}',
+                                    '{{ addslashes($trip->route_notes) }}'
+                                )">
                                 Odometer
                             </button>
                         </td>
                     </tr>
-
-                    @if($trip->status !== 'Completed' && $trip->journey_status !== 'Journey Completed' && $trip->status !== 'Cancelled')
-                        <!-- Modal: 1-Click Complete Trip & Release Vehicle/Driver -->
-                        <div id="completeTripModal{{ $trip->id }}" class="custom-modal" style="display: none;">
-                            <div class="custom-modal-content">
-                                <div class="d-flex justify-between align-center mb-3">
-                                    <h3 style="font-size: 15px; font-weight: 700; margin: 0; color: #065F46;">
-                                        ✓ Complete Trip #TRIP-{{ str_pad($trip->id, 4, '0', STR_PAD_LEFT) }}
-                                    </h3>
-                                    <button type="button" onclick="closeModal('completeTripModal{{ $trip->id }}')" style="background: none; border: none; font-size: 18px; cursor: pointer;">✕</button>
-                                </div>
-                                <form action="{{ route('admin.trips.complete', $trip->id) }}" method="POST">
-                                    @csrf
-
-                                    <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 6px; padding: 0.75rem; margin-bottom: 0.75rem; font-size: 12px; color: #166534;">
-                                        <div style="font-weight: 700; margin-bottom: 4px;">🚀 Instant Fleet & Driver Release:</div>
-                                        <div>• Vehicle: <strong>{{ $trip->vehicle?->name ?? $trip->booking?->vehicle?->name ?? 'None' }} ({{ $trip->vehicle?->registration_number ?? $trip->booking?->vehicle?->registration_number ?? '-' }})</strong> ➔ Will become <span class="badge badge-success" style="font-size: 10px;">Available</span></div>
-                                        <div>• Driver: <strong>{{ $trip->driver?->name ?? $trip->booking?->driver?->name ?? 'None' }}</strong> ➔ Will become <span class="badge badge-success" style="font-size: 10px;">Available</span></div>
-                                    </div>
-
-                                    <div class="grid grid-2 gap-2 mb-2">
-                                        <div>
-                                            <label class="form-label" style="font-size: 11px; font-weight: 600;">Start Odometer (KM)</label>
-                                            <input type="number" name="start_odometer" class="form-control form-control-sm" value="{{ $trip->start_odometer }}" placeholder="e.g. 45200">
-                                        </div>
-                                        <div>
-                                            <label class="form-label" style="font-size: 11px; font-weight: 600;">End Odometer (KM) <span style="color: var(--slate-400);">(Optional)</span></label>
-                                            <input type="number" name="end_odometer" class="form-control form-control-sm" value="{{ $trip->end_odometer }}" placeholder="e.g. 45340">
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group mb-2">
-                                        <label class="form-label" style="font-size: 11px; font-weight: 600;">Completion Notes <span style="color: var(--slate-400);">(Optional)</span></label>
-                                        <input type="text" name="route_notes" class="form-control form-control-sm" value="{{ $trip->route_notes ?: 'Trip completed successfully.' }}" placeholder="e.g. Customer dropped safely">
-                                    </div>
-
-                                    @if($balance > 0)
-                                        <div style="font-size: 11px; color: #92400E; background: #FEF3C7; border: 1px solid #FCD34D; padding: 6px 10px; border-radius: 4px; margin-bottom: 0.75rem;">
-                                            ℹ️ Remaining balance: <strong>₹{{ number_format($balance, 2) }}</strong>. Completing the trip will free the vehicle and driver immediately, while keeping the payment record open for billing.
-                                        </div>
-                                    @endif
-
-                                    <div class="d-flex justify-end gap-2">
-                                        <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('completeTripModal{{ $trip->id }}')">Cancel</button>
-                                        <button type="submit" class="btn btn-sm" style="background: #059669; border-color: #059669; font-weight: 700; color: #fff;">
-                                            ✓ Confirm Complete & Free Fleet
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    @endif
-
-                    <!-- Modal: Update Trip Status & Odometer -->
-                    <div id="tripModal{{ $trip->id }}" class="custom-modal" style="display: none;">
-                        <div class="custom-modal-content">
-                            <div class="d-flex justify-between align-center mb-3">
-                                <h3 style="font-size: 15px; font-weight: 700; margin: 0;">Update Trip #TRIP-{{ str_pad($trip->id, 4, '0', STR_PAD_LEFT) }}</h3>
-                                <button type="button" onclick="closeModal('tripModal{{ $trip->id }}')" style="background: none; border: none; font-size: 18px; cursor: pointer;">✕</button>
-                            </div>
-                            <form action="{{ route('admin.trips.update', $trip->id) }}" method="POST">
-                                @csrf
-                                @method('PUT')
-                                <div class="form-group mb-2">
-                                    <label class="form-label" style="font-size: 11.5px; font-weight: 600;">Journey Status</label>
-                                    <select name="status" class="form-select form-select-sm" required>
-                                        @foreach(['Driver Assigned', 'Trip Started', 'On The Way', 'Completed', 'Cancelled'] as $st)
-                                            <option value="{{ $st }}" {{ $trip->status === $st ? 'selected' : '' }}>{{ $st }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="grid grid-2 gap-2 mb-2">
-                                    <div>
-                                        <label class="form-label" style="font-size: 11px; font-weight: 600;">Start Odometer</label>
-                                        <input type="number" name="start_odometer" class="form-control form-control-sm" value="{{ $trip->start_odometer }}" placeholder="e.g. 45200">
-                                    </div>
-                                    <div>
-                                        <label class="form-label" style="font-size: 11px; font-weight: 600;">End Odometer</label>
-                                        <input type="number" name="end_odometer" class="form-control form-control-sm" value="{{ $trip->end_odometer }}" placeholder="e.g. 45340">
-                                    </div>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label class="form-label" style="font-size: 11px; font-weight: 600;">Route Notes / Checkpoint</label>
-                                    <input type="text" name="route_notes" class="form-control form-control-sm" value="{{ $trip->route_notes }}" placeholder="e.g. Mangla Bypass toll crossed">
-                                </div>
-                                <div class="d-flex justify-end gap-2">
-                                    <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('tripModal{{ $trip->id }}')">Cancel</button>
-                                    <button type="submit" class="btn btn-primary btn-sm">Update Trip</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
                 @empty
                     <tr>
                         <td colspan="9" style="text-align: center; padding: 2.5rem 1rem; color: var(--slate-500);">
@@ -282,7 +208,110 @@
     @endif
 </div>
 
+<!-- Modal 1: 1-Click Complete Trip & Release Vehicle/Driver (Global, Outside Table) -->
+<div id="globalCompleteTripModal" class="custom-modal" style="display: none;">
+    <div class="custom-modal-content">
+        <div class="d-flex justify-between align-center mb-3">
+            <h3 id="completeTripTitle" style="font-size: 15px; font-weight: 700; margin: 0; color: #065F46;">
+                ✓ Complete Trip
+            </h3>
+            <button type="button" onclick="closeAnyModal('globalCompleteTripModal')" style="background: none; border: none; font-size: 18px; cursor: pointer;">✕</button>
+        </div>
+        <form id="completeTripForm" action="" method="POST">
+            @csrf
+
+            <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 6px; padding: 0.75rem; margin-bottom: 0.75rem; font-size: 12px; color: #166534;">
+                <div style="font-weight: 700; margin-bottom: 4px;">🚀 Instant Fleet & Driver Release:</div>
+                <div>• Vehicle: <strong id="completeTripVehText">None</strong> ➔ Will become <span class="badge badge-success" style="font-size: 10px;">Available</span></div>
+                <div>• Driver: <strong id="completeTripDrvText">None</strong> ➔ Will become <span class="badge badge-success" style="font-size: 10px;">Available</span></div>
+            </div>
+
+            <div class="grid grid-2 gap-2 mb-2">
+                <div>
+                    <label class="form-label" style="font-size: 11px; font-weight: 600;">Start Odometer (KM)</label>
+                    <input type="number" id="completeTripStartOdo" name="start_odometer" class="form-control form-control-sm" placeholder="e.g. 45200">
+                </div>
+                <div>
+                    <label class="form-label" style="font-size: 11px; font-weight: 600;">End Odometer (KM) <span style="color: var(--slate-400);">(Optional)</span></label>
+                    <input type="number" id="completeTripEndOdo" name="end_odometer" class="form-control form-control-sm" placeholder="e.g. 45340">
+                </div>
+            </div>
+
+            <div class="form-group mb-2">
+                <label class="form-label" style="font-size: 11px; font-weight: 600;">Completion Notes <span style="color: var(--slate-400);">(Optional)</span></label>
+                <input type="text" id="completeTripNotes" name="route_notes" class="form-control form-control-sm" placeholder="e.g. Customer dropped safely">
+            </div>
+
+            <div id="completeTripBalanceBox" style="display: none; font-size: 11px; color: #92400E; background: #FEF3C7; border: 1px solid #FCD34D; padding: 6px 10px; border-radius: 4px; margin-bottom: 0.75rem;">
+                ℹ️ Remaining balance: <strong id="completeTripBalanceText">₹0.00</strong>. Completing the trip will free the vehicle and driver immediately, while keeping the payment record open for billing.
+            </div>
+
+            <div class="d-flex justify-end gap-2">
+                <button type="button" class="btn btn-outline btn-sm" onclick="closeAnyModal('globalCompleteTripModal')">Cancel</button>
+                <button type="submit" class="btn btn-sm" style="background: #059669; border-color: #059669; font-weight: 700; color: #fff;">
+                    ✓ Confirm Complete & Free Fleet
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal 2: Quick Update Trip Status & Odometer (Global, Outside Table) -->
+<div id="globalOdometerModal" class="custom-modal" style="display: none;">
+    <div class="custom-modal-content">
+        <div class="d-flex justify-between align-center mb-3">
+            <h3 id="odometerTripTitle" style="font-size: 15px; font-weight: 700; margin: 0;">Update Trip</h3>
+            <button type="button" onclick="closeAnyModal('globalOdometerModal')" style="background: none; border: none; font-size: 18px; cursor: pointer;">✕</button>
+        </div>
+        <form id="odometerForm" action="" method="POST">
+            @csrf
+            @method('PUT')
+            <div class="form-group mb-2">
+                <label class="form-label" style="font-size: 11.5px; font-weight: 600;">Journey Status</label>
+                <select id="odometerStatus" name="status" class="form-select form-select-sm" required>
+                    @foreach(['Driver Assigned', 'Trip Started', 'On The Way', 'Completed', 'Cancelled'] as $st)
+                        <option value="{{ $st }}">{{ $st }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="grid grid-2 gap-2 mb-2">
+                <div>
+                    <label class="form-label" style="font-size: 11px; font-weight: 600;">Start Odometer</label>
+                    <input type="number" id="odometerStartOdo" name="start_odometer" class="form-control form-control-sm" placeholder="e.g. 45200">
+                </div>
+                <div>
+                    <label class="form-label" style="font-size: 11px; font-weight: 600;">End Odometer</label>
+                    <input type="number" id="odometerEndOdo" name="end_odometer" class="form-control form-control-sm" placeholder="e.g. 45340">
+                </div>
+            </div>
+            <div class="form-group mb-3">
+                <label class="form-label" style="font-size: 11px; font-weight: 600;">Route Notes / Checkpoint</label>
+                <input type="text" id="odometerNotes" name="route_notes" class="form-control form-control-sm" placeholder="e.g. Mangla Bypass toll crossed">
+            </div>
+            <div class="d-flex justify-end gap-2">
+                <button type="button" class="btn btn-outline btn-sm" onclick="closeAnyModal('globalOdometerModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm">Update Trip</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <style>
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 950px;
+}
+.data-table th, .data-table td {
+    padding: 0.7rem 0.75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--slate-200);
+}
 .custom-modal {
     position: fixed;
     top: 0;
@@ -290,12 +319,15 @@
     right: 0;
     bottom: 0;
     background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(3px);
     z-index: 9999;
-    display: flex;
+    display: none !important;
     align-items: center;
     justify-content: center;
     padding: 1rem;
+}
+.custom-modal.is-active {
+    display: flex !important;
 }
 .custom-modal-content {
     background: #ffffff;
@@ -303,23 +335,59 @@
     max-width: 480px;
     width: 100%;
     padding: 1.5rem;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25);
 }
 </style>
 
 <script>
-function openModal(id) {
-    var m = document.getElementById(id);
-    if (m) m.style.display = 'flex';
+function openCompleteTripModal(actionUrl, tripCode, vehText, drvText, startOdo, endOdo, notes, balance) {
+    document.getElementById('completeTripForm').action = actionUrl;
+    document.getElementById('completeTripTitle').textContent = '✓ Complete Trip ' + tripCode;
+    document.getElementById('completeTripVehText').textContent = vehText;
+    document.getElementById('completeTripDrvText').textContent = drvText;
+    document.getElementById('completeTripStartOdo').value = startOdo || '';
+    document.getElementById('completeTripEndOdo').value = endOdo || '';
+    document.getElementById('completeTripNotes').value = notes || 'Trip completed successfully.';
+
+    const balBox = document.getElementById('completeTripBalanceBox');
+    if (balance && balance > 0) {
+        document.getElementById('completeTripBalanceText').textContent = '₹' + Number(balance).toLocaleString('en-IN', {minimumFractionDigits: 2});
+        balBox.style.display = 'block';
+    } else {
+        balBox.style.display = 'none';
+    }
+
+    const modal = document.getElementById('globalCompleteTripModal');
+    modal.style.display = 'flex';
+    modal.classList.add('is-active');
 }
-function closeModal(id) {
-    var m = document.getElementById(id);
-    if (m) m.style.display = 'none';
+
+function openOdometerTripModal(actionUrl, tripCode, status, startOdo, endOdo, notes) {
+    document.getElementById('odometerForm').action = actionUrl;
+    document.getElementById('odometerTripTitle').textContent = 'Update Trip ' + tripCode;
+    document.getElementById('odometerStatus').value = status;
+    document.getElementById('odometerStartOdo').value = startOdo || '';
+    document.getElementById('odometerEndOdo').value = endOdo || '';
+    document.getElementById('odometerNotes').value = notes || '';
+
+    const modal = document.getElementById('globalOdometerModal');
+    modal.style.display = 'flex';
+    modal.classList.add('is-active');
 }
-window.onclick = function(event) {
-    if (event.target.classList.contains('custom-modal')) {
-        event.target.style.display = 'none';
+
+function closeAnyModal(id) {
+    const m = document.getElementById(id);
+    if (m) {
+        m.style.display = 'none';
+        m.classList.remove('is-active');
     }
 }
+
+window.addEventListener('click', function(event) {
+    if (event.target && event.target.classList && event.target.classList.contains('custom-modal')) {
+        event.target.style.display = 'none';
+        event.target.classList.remove('is-active');
+    }
+});
 </script>
 @endsection
