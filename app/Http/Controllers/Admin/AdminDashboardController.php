@@ -38,6 +38,7 @@ class AdminDashboardController extends Controller
         $incompleteTrips = Trip::where('trip_status', 'Open')
             ->whereHas('booking', fn ($b) => $b->where('balance_amount', '>', 0))
             ->count();
+        $completedTrips = Booking::where('booking_status', 'Completed')->count();
         $pendingPayments = (float) Booking::where('booking_status', '!=', 'Cancelled')->sum('balance_amount');
         $outstandingExpenses = (float) Expense::sum('amount');
         $gstInvoicesCount = Invoice::count();
@@ -121,11 +122,20 @@ class AdminDashboardController extends Controller
                 'color' => 'cyan',
                 'route' => route('admin.invoices.index'),
             ],
+            'completed_trips' => [
+                'title' => 'Completed Trips',
+                'value' => $completedTrips,
+                'icon' => 'check-circle',
+                'color' => 'emerald',
+                'route' => route('admin.bookings.index', ['status' => 'Completed']),
+            ],
         ];
 
         // Quick-Action Buttons (Section 6 & 9)
         $quickActions = [
             ['title' => 'Create Booking', 'route' => route('admin.bookings.create'), 'icon' => 'plus-circle', 'bg' => 'bg-emerald-600 hover:bg-emerald-700 text-white'],
+            ['title' => 'Complete Trip', 'route' => '#quickCompleteModal', 'icon' => 'check-circle', 'bg' => 'bg-emerald-700 hover:bg-emerald-800 text-white', 'modal' => true],
+            ['title' => 'Completed Trips', 'route' => route('admin.bookings.index', ['status' => 'Completed']), 'icon' => 'list', 'bg' => 'bg-teal-600 hover:bg-teal-700 text-white'],
             ['title' => 'Assign Driver', 'route' => route('admin.bookings.index', ['filter' => 'unassigned_driver']), 'icon' => 'user-plus', 'bg' => 'bg-indigo-600 hover:bg-indigo-700 text-white'],
             ['title' => 'Assign Vehicle', 'route' => route('admin.bookings.index', ['filter' => 'unassigned_vehicle']), 'icon' => 'truck', 'bg' => 'bg-blue-600 hover:bg-blue-700 text-white'],
             ['title' => 'Add Customer', 'route' => route('admin.customers.create'), 'icon' => 'user-plus', 'bg' => 'bg-blue-600 hover:bg-blue-700 text-white'],
@@ -141,6 +151,12 @@ class AdminDashboardController extends Controller
         $recentBookings = Booking::with(['customer', 'vehicle', 'driver'])
             ->latest()
             ->take(8)
+            ->get();
+
+        $activeTripsToComplete = Booking::with(['customer', 'vehicle', 'driver'])
+            ->whereNotIn('booking_status', ['Completed', 'Cancelled'])
+            ->latest()
+            ->take(30)
             ->get();
 
         $recentPayments = Payment::with(['booking', 'customer'])
@@ -189,6 +205,8 @@ class AdminDashboardController extends Controller
             'availableDrivers',
             'ongoingTrips',
             'incompleteTrips',
+            'completedTrips',
+            'activeTripsToComplete',
             'pendingPayments',
             'outstandingExpenses',
             'gstInvoicesCount',

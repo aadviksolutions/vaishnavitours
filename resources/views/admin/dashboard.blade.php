@@ -306,6 +306,13 @@
     <a href="{{ route('admin.bookings.create') }}" class="action-btn-primary">
         Create Booking
     </a>
+    <!-- Complete Trip Quick Actions -->
+    <button type="button" onclick="openQuickCompleteModal()" class="action-btn-neutral" style="background: #ECFDF5; color: #065F46 !important; border-color: #6EE7B7; font-weight: 700; cursor: pointer;">
+        <x-icon name="check-circle" :size="14" style="color: #059669;" /> Complete Trip
+    </button>
+    <a href="{{ route('admin.bookings.index', ['status' => 'Completed']) }}" class="action-btn-neutral" style="background: #F0FDF4; color: #166534 !important; border-color: #BBF7D0; font-weight: 600;">
+        <x-icon name="list" :size="14" style="color: #16A34A;" /> Completed Trips ({{ number_format($completedTrips) }})
+    </a>
     <!-- Neutral Secondary Actions -->
     <a href="{{ route('admin.bookings.index', ['filter' => 'unassigned_driver']) }}" class="action-btn-neutral">
         <x-icon name="user-check" :size="14" /> Assign Driver
@@ -471,6 +478,18 @@
         </div>
         <div class="kpi-value">{{ number_format($gstInvoicesCount) }}</div>
         <div class="kpi-sub">Compliant tax bills</div>
+    </a>
+
+    <!-- 12. Completed Trips -->
+    <a href="{{ route('admin.bookings.index', ['status' => 'Completed']) }}" class="kpi-card" style="border-left: 3px solid #059669;">
+        <div class="kpi-top">
+            <span class="kpi-label" style="color: #065F46;">Completed Trips</span>
+            <div class="kpi-icon-box" style="background: #ECFDF5; color: #059669;">
+                <x-icon name="check-circle" :size="16" />
+            </div>
+        </div>
+        <div class="kpi-value" style="color: #059669;">{{ number_format($completedTrips) }}</div>
+        <div class="kpi-sub" style="color: #047857;">Successfully fulfilled &amp; released</div>
     </a>
 </div>
 
@@ -670,7 +689,15 @@
                                 {{ $b->booking_status }}
                             </span>
                         </td>
-                        <td style="text-align: right;">
+                        <td style="text-align: right; white-space: nowrap;">
+                            @if($b->booking_status !== 'Completed' && $b->booking_status !== 'Cancelled')
+                                <form action="{{ route('admin.bookings.complete', $b) }}" method="POST" style="display: inline-block; margin-right: 4px;" onsubmit="return confirm('Mark Trip #{{ $b->booking_id }} as COMPLETED and release assigned vehicle & driver to available?');">
+                                    @csrf
+                                    <button type="submit" class="action-btn-neutral" style="background: #ECFDF5; color: #047857 !important; border-color: #6EE7B7; font-size: 11px; padding: 2px 7px; font-weight: 700;" title="Complete Trip & Free Vehicle/Driver">
+                                        ✓ Complete
+                                    </button>
+                                </form>
+                            @endif
                             <a href="{{ route('admin.bookings.show', $b) }}" class="action-btn-neutral" style="font-size: 11.5px; padding: 3px 8px;">
                                 Manage
                             </a>
@@ -765,9 +792,117 @@
         </div>
     </div>
 </div>
+
+<!-- Quick Complete Trip Modal (Section 6 & Quick Action) -->
+<div id="quickCompleteModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10000; align-items: center; justify-content: center; padding: 1rem;">
+    <div style="background: #fff; border-radius: 12px; width: 100%; max-width: 540px; padding: 1.5rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.25);">
+        <div class="d-flex justify-between align-center mb-3">
+            <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0; color: #0F172A; display: flex; align-items: center; gap: 8px;">
+                <x-icon name="check-circle" :size="18" style="color: #059669;" />
+                1-Click Complete Trip
+            </h3>
+            <button type="button" class="btn btn-outline btn-sm" onclick="closeQuickCompleteModal()" style="border: none; font-size: 16px; cursor: pointer;">✕</button>
+        </div>
+
+        <p style="font-size: 12.5px; color: #64748B; margin-top: -0.25rem; margin-bottom: 1.25rem;">
+            Select an active booking to mark it <strong>Completed</strong>. The assigned vehicle and driver will be instantly released and made available for new dispatches.
+        </p>
+
+        @if($activeTripsToComplete->isEmpty())
+            <div style="background: #F8FAFC; border: 1px dashed #CBD5E1; border-radius: 8px; padding: 1.5rem; text-align: center; color: #64748B; font-size: 13px;">
+                🎉 No active or pending trips right now! All bookings are completed.
+            </div>
+            <div class="d-flex justify-end mt-3">
+                <button type="button" class="btn btn-outline" onclick="closeQuickCompleteModal()">Close</button>
+            </div>
+        @else
+            <form id="quickCompleteForm" method="POST" action="" onsubmit="return handleQuickCompleteSubmit(this);">
+                @csrf
+                <div class="form-group mb-3">
+                    <label class="form-label" style="font-weight: 700; font-size: 12.5px;">Select Active Trip / Booking *</label>
+                    <select id="quickCompleteSelect" class="form-select" required onchange="updateQuickCompleteAction(this.value)">
+                        <option value="">-- Choose Trip to Complete --</option>
+                        @foreach($activeTripsToComplete as $at)
+                            <option value="{{ $at->id }}" 
+                                    data-url="{{ route('admin.bookings.complete', $at->id) }}"
+                                    data-veh="{{ $at->vehicle ? $at->vehicle->name . ' (' . $at->vehicle->registration_number . ')' : 'No Vehicle' }}"
+                                    data-drv="{{ $at->driver ? $at->driver->name . ' (' . $at->driver->mobile . ')' : 'No Driver' }}">
+                                #{{ $at->booking_id }} — {{ $at->customer?->name ?? 'Guest' }} ({{ $at->pickup_location }} ➔ {{ $at->destination }}) [{{ $at->booking_status }}]
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div id="quickCompleteMeta" style="display: none; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 12px; color: #065F46;">
+                    <div><strong>Assigned Vehicle:</strong> <span id="qcVehName">—</span></div>
+                    <div style="margin-top: 2px;"><strong>Assigned Chauffeur:</strong> <span id="qcDrvName">—</span></div>
+                    <div style="font-size: 11px; color: #047857; margin-top: 4px;">✓ Both vehicle and chauffeur status will be automatically reset to <strong>Available</strong>.</div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label" style="font-weight: 700; font-size: 12.5px;">Completion Remarks (Optional)</label>
+                    <input type="text" name="remarks" class="form-control" placeholder="e.g. Passenger dropped safely. Payment settled.">
+                </div>
+
+                <div class="d-flex justify-between align-center mt-3">
+                    <button type="button" class="btn btn-outline" onclick="closeQuickCompleteModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="background: #059669; border-color: #059669; font-weight: 700;">
+                        ✓ Complete Trip &amp; Release
+                    </button>
+                </div>
+            </form>
+        @endif
+    </div>
+</div>
 @endsection
 
 @push('scripts')
+<script>
+    function openQuickCompleteModal() {
+        const modal = document.getElementById('quickCompleteModal');
+        if (modal) {
+            modal.style.display = 'flex';
+        }
+    }
+
+    function closeQuickCompleteModal() {
+        const modal = document.getElementById('quickCompleteModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    function updateQuickCompleteAction(bookingId) {
+        const sel = document.getElementById('quickCompleteSelect');
+        const form = document.getElementById('quickCompleteForm');
+        const meta = document.getElementById('quickCompleteMeta');
+        const vehSpan = document.getElementById('qcVehName');
+        const drvSpan = document.getElementById('qcDrvName');
+
+        if (!sel || !form) return;
+
+        const opt = sel.options[sel.selectedIndex];
+        if (bookingId && opt && opt.dataset.url) {
+            form.action = opt.dataset.url;
+            if (meta && vehSpan && drvSpan) {
+                vehSpan.textContent = opt.dataset.veh || 'None';
+                drvSpan.textContent = opt.dataset.drv || 'None';
+                meta.style.display = 'block';
+            }
+        } else {
+            form.action = '';
+            if (meta) meta.style.display = 'none';
+        }
+    }
+
+    function handleQuickCompleteSubmit(form) {
+        if (!form.action) {
+            alert('Please select a booking to complete.');
+            return false;
+        }
+        return confirm('Confirm completing this trip and releasing assigned vehicle & driver to available?');
+    }
+</script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const ctx = document.getElementById('revenueChart');
