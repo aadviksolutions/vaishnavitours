@@ -83,11 +83,11 @@ class AdminBookingController extends Controller
 
         $bookings = $query->latest()->paginate(15)->withQueryString();
 
-        // Pass only Available vehicles and drivers for assignments
-        $availableVehicles = Vehicle::where('status', 'Available')->get();
-        $availableDrivers = Driver::where('status', 'Available')->get();
-        $allVehicles = Vehicle::where('status', '!=', 'Inactive')->get();
-        $allDrivers = Driver::where('status', '!=', 'Inactive')->get();
+        // Allow assigning any active vehicle and driver (multiple trips supported)
+        $availableVehicles = Vehicle::where('status', '!=', 'Inactive')->orderBy('name')->get();
+        $availableDrivers = Driver::where('status', '!=', 'Inactive')->orderBy('name')->get();
+        $allVehicles = $availableVehicles;
+        $allDrivers = $availableDrivers;
 
         return view('admin.bookings.index', compact('bookings', 'availableVehicles', 'availableDrivers', 'allVehicles', 'allDrivers'));
     }
@@ -95,8 +95,8 @@ class AdminBookingController extends Controller
     public function create(Request $request)
     {
         $customers = User::where('role', 'customer')->orderBy('name')->get();
-        $vehicles = Vehicle::where('status', 'Available')->get();
-        $drivers = Driver::where('status', 'Available')->get();
+        $vehicles = Vehicle::where('status', '!=', 'Inactive')->orderBy('name')->get();
+        $drivers = Driver::where('status', '!=', 'Inactive')->orderBy('name')->get();
         $routes = RateRoute::query()->where('active', true)->with('vehiclePrices')->get();
         $locations = $routes->flatMap(fn (RateRoute $route): array => array_filter([$route->origin, $route->destination]))
             ->unique()->sort()->values();
@@ -495,15 +495,9 @@ class AdminBookingController extends Controller
             'cancelledBy',
         ]);
 
-        // Filter: Show only vehicles that are Available, plus current assigned vehicle
-        $availableVehicles = Vehicle::where('status', 'Available')
-            ->orWhere('id', $booking->vehicle_id)
-            ->get();
-
-        // Filter: Show only drivers that are Available, plus current assigned driver
-        $availableDrivers = Driver::where('status', 'Available')
-            ->orWhere('id', $booking->driver_id)
-            ->get();
+        // Allow assigning any active vehicle and driver (multiple trips supported)
+        $availableVehicles = Vehicle::where('status', '!=', 'Inactive')->orderBy('name')->get();
+        $availableDrivers = Driver::where('status', '!=', 'Inactive')->orderBy('name')->get();
 
         $existingTpVehicles = Vehicle::where(function ($q) {
             $q->where('is_third_party', true)->orWhere('ownership_type', 'third_party');
@@ -1052,24 +1046,36 @@ class AdminBookingController extends Controller
             ]);
         }
 
-        // Release vehicles unconditionally
+        // Release vehicles (only if not assigned to other active trips)
         $releasedVehicles = [];
         $vehicleIds = array_filter(array_unique([$booking->vehicle_id, $booking->trip?->vehicle_id]));
         foreach ($vehicleIds as $vId) {
             $veh = Vehicle::find($vId);
             if ($veh && ! in_array($veh->status, ['Maintenance', 'Inactive'], true)) {
-                $veh->update(['status' => 'Available']);
+                $hasOther = Booking::where('vehicle_id', $veh->id)
+                    ->where('id', '!=', $booking->id)
+                    ->whereNotIn('booking_status', ['Completed', 'Cancelled'])
+                    ->exists();
+                if (! $hasOther) {
+                    $veh->update(['status' => 'Available']);
+                }
                 $releasedVehicles[] = "{$veh->name} ({$veh->registration_number})";
             }
         }
 
-        // Release drivers unconditionally
+        // Release drivers (only if not assigned to other active trips)
         $releasedDrivers = [];
         $driverIds = array_filter(array_unique([$booking->driver_id, $booking->trip?->driver_id]));
         foreach ($driverIds as $dId) {
             $drv = Driver::find($dId);
             if ($drv && $drv->status !== 'Inactive') {
-                $drv->update(['status' => 'Available']);
+                $hasOther = Booking::where('driver_id', $drv->id)
+                    ->where('id', '!=', $booking->id)
+                    ->whereNotIn('booking_status', ['Completed', 'Cancelled'])
+                    ->exists();
+                if (! $hasOther) {
+                    $drv->update(['status' => 'Available']);
+                }
                 $releasedDrivers[] = $drv->name;
             }
         }

@@ -50,14 +50,14 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="license_number" class="form-label">Commercial Driving License (DL) *</label>
-                        <input type="text" name="license_number" id="license_number" class="form-control" value="{{ old('license_number') }}" placeholder="e.g. CG-10-2018-004523" required>
+                        <label for="license_number" class="form-label">Commercial Driving License (DL) <span style="font-size: 11px; color: var(--slate-400); font-weight: normal;">(Optional)</span></label>
+                        <input type="text" name="license_number" id="license_number" class="form-control" value="{{ old('license_number') }}" placeholder="e.g. CG-10-2018-004523 (Optional)">
                     </div>
                 </div>
 
                 <div class="grid grid-2 gap-3 mb-3">
                     <div class="form-group">
-                        <label for="license_expiry" class="form-label">License Expiry Date</label>
+                        <label for="license_expiry" class="form-label">License Expiry Date <span style="font-size: 11px; color: var(--slate-400); font-weight: normal;">(Optional)</span></label>
                         <input type="date" name="license_expiry" id="license_expiry" class="form-control" value="{{ old('license_expiry') }}">
                     </div>
 

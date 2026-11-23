@@ -578,31 +578,55 @@ class BookingService
                 $booking->trip->update($tripUpdate);
             }
 
-            // Release resources on completion or cancellation
+            // Release resources on completion or cancellation (only if not used in another active booking)
             if ($newStatus === 'Completed' || $newStatus === 'Cancelled') {
                 if ($booking->vehicle_id) {
                     $veh = Vehicle::find($booking->vehicle_id);
                     if ($veh && ! in_array($veh->status, ['Maintenance', 'Inactive'], true)) {
-                        $veh->update(['status' => 'Available']);
+                        $hasOther = Booking::where('vehicle_id', $veh->id)
+                            ->where('id', '!=', $booking->id)
+                            ->whereNotIn('booking_status', ['Completed', 'Cancelled'])
+                            ->exists();
+                        if (! $hasOther) {
+                            $veh->update(['status' => 'Available']);
+                        }
                     }
                 }
                 if ($booking->driver_id) {
                     $drv = Driver::find($booking->driver_id);
                     if ($drv && $drv->status !== 'Inactive') {
-                        $drv->update(['status' => 'Available']);
+                        $hasOther = Booking::where('driver_id', $drv->id)
+                            ->where('id', '!=', $booking->id)
+                            ->whereNotIn('booking_status', ['Completed', 'Cancelled'])
+                            ->exists();
+                        if (! $hasOther) {
+                            $drv->update(['status' => 'Available']);
+                        }
                     }
                 }
                 if ($booking->trip) {
                     if ($booking->trip->vehicle_id && $booking->trip->vehicle_id !== $booking->vehicle_id) {
                         $tVeh = Vehicle::find($booking->trip->vehicle_id);
                         if ($tVeh && ! in_array($tVeh->status, ['Maintenance', 'Inactive'], true)) {
-                            $tVeh->update(['status' => 'Available']);
+                            $hasOther = Booking::where('vehicle_id', $tVeh->id)
+                                ->where('id', '!=', $booking->id)
+                                ->whereNotIn('booking_status', ['Completed', 'Cancelled'])
+                                ->exists();
+                            if (! $hasOther) {
+                                $tVeh->update(['status' => 'Available']);
+                            }
                         }
                     }
                     if ($booking->trip->driver_id && $booking->trip->driver_id !== $booking->driver_id) {
                         $tDrv = Driver::find($booking->trip->driver_id);
                         if ($tDrv && $tDrv->status !== 'Inactive') {
-                            $tDrv->update(['status' => 'Available']);
+                            $hasOther = Booking::where('driver_id', $tDrv->id)
+                                ->where('id', '!=', $booking->id)
+                                ->whereNotIn('booking_status', ['Completed', 'Cancelled'])
+                                ->exists();
+                            if (! $hasOther) {
+                                $tDrv->update(['status' => 'Available']);
+                            }
                         }
                     }
                 }
@@ -693,64 +717,34 @@ class BookingService
         return DB::transaction(function () use ($booking, $vehicleId, $admin) {
             $vehicle = Vehicle::findOrFail($vehicleId);
 
-            // Auto-heal: If vehicle is marked busy/on-trip but has no other active running booking, reset to Available
-            if ($vehicle->status !== 'Available' && ! in_array($vehicle->status, ['Maintenance', 'Inactive'], true)) {
-                $hasActiveBooking = Booking::where('vehicle_id', $vehicle->id)
-                    ->whereIn('booking_status', ['Vehicle Assigned', 'Driver Assigned', 'Trip Started', 'On The Way'])
-                    ->where('id', '!=', $booking->id)
-                    ->exists();
-
-                if (! $hasActiveBooking) {
-                    $vehicle->update(['status' => 'Available']);
-                    $vehicle->refresh();
-                }
-            }
-
-            // Validation: Only Available vehicles allowed
-            if ($vehicle->status !== 'Available') {
+            // Validation: Inactive vehicles cannot be assigned
+            if ($vehicle->status === 'Inactive') {
                 throw ValidationException::withMessages([
-                    'vehicle_id' => ["Selected vehicle is currently {$vehicle->status}. Only Available vehicles can be assigned."],
+                    'vehicle_id' => ["Selected vehicle is currently {$vehicle->status}. Inactive vehicles cannot be assigned."],
                 ]);
             }
 
-            // Overlap check: Prevent same vehicle being assigned to two active trips at overlapping travel times across date spans
-            $startDate = $booking->travel_date->format('Y-m-d');
-            $endDate = ($booking->return_date ?? $booking->travel_date)->format('Y-m-d');
-
-            $overlapExists = Booking::where('vehicle_id', $vehicle->id)
-                ->where('id', '!=', $booking->id)
-                ->where(function ($q) use ($startDate, $endDate) {
-                    $q->where(function ($sub) use ($startDate, $endDate) {
-                        $sub->whereNotNull('return_date')
-                            ->where('travel_date', '<=', $endDate)
-                            ->where('return_date', '>=', $startDate);
-                    })->orWhere(function ($sub) use ($startDate, $endDate) {
-                        $sub->whereNull('return_date')
-                            ->whereBetween('travel_date', [$startDate, $endDate]);
-                    });
-                })
-                ->whereIn('booking_status', ['Vehicle Assigned', 'Driver Assigned', 'Trip Started', 'On The Way'])
-                ->exists();
-
-            if ($overlapExists) {
-                throw ValidationException::withMessages([
-                    'vehicle_id' => ["This vehicle is already assigned to another trip at this time (active trip between {$startDate} and {$endDate})."],
-                ]);
-            }
-
-            // Release previous vehicle if changing
+            // Release previous vehicle if changing, provided it has no other active bookings
             if ($booking->vehicle_id && $booking->vehicle_id !== $vehicle->id) {
                 $prev = Vehicle::find($booking->vehicle_id);
                 if ($prev && $prev->status === 'On Trip') {
-                    $prev->update(['status' => 'Available']);
+                    $hasOther = Booking::where('vehicle_id', $prev->id)
+                        ->where('id', '!=', $booking->id)
+                        ->whereIn('booking_status', ['Vehicle Assigned', 'Driver Assigned', 'Trip Started', 'On The Way'])
+                        ->exists();
+                    if (! $hasOther) {
+                        $prev->update(['status' => 'Available']);
+                    }
                 }
             }
 
             // Update booking vehicle
             $booking->update(['vehicle_id' => $vehicle->id]);
 
-            // Vehicle status: Available -> On Trip
-            $vehicle->update(['status' => 'On Trip']);
+            // Vehicle status: update to On Trip if currently Available
+            if ($vehicle->status === 'Available') {
+                $vehicle->update(['status' => 'On Trip']);
+            }
 
             // If trip exists, update vehicle_id
             if ($booking->trip) {
@@ -814,71 +808,34 @@ class BookingService
         return DB::transaction(function () use ($booking, $driverId, $admin) {
             $driver = Driver::findOrFail($driverId);
 
-            // Auto-heal: If driver is marked assigned/on-trip but has no other active running booking, reset to Available
-            if ($driver->status !== 'Available' && $driver->status !== 'Inactive') {
-                $hasActiveBooking = Booking::where('driver_id', $driver->id)
-                    ->whereIn('booking_status', ['Driver Assigned', 'Trip Started', 'On The Way'])
-                    ->where('id', '!=', $booking->id)
-                    ->exists();
-
-                if (! $hasActiveBooking) {
-                    $driver->update(['status' => 'Available']);
-                    $driver->refresh();
-                }
-            }
-
-            // Validation: Only Available drivers allowed
-            if ($driver->status !== 'Available') {
+            // Validation: Inactive drivers cannot be assigned
+            if ($driver->status === 'Inactive') {
                 throw ValidationException::withMessages([
-                    'driver_id' => ["Selected chauffeur is currently {$driver->status}. Only Available drivers can be assigned."],
+                    'driver_id' => ["Selected chauffeur is currently {$driver->status}. Inactive drivers cannot be assigned."],
                 ]);
             }
 
-            // Validation: Prevent assignment of drivers with expired driving licence (Section 3)
-            if ($driver->license_expiry && $driver->license_expiry->startOfDay()->isPast()) {
-                throw ValidationException::withMessages([
-                    'driver_id' => ["Chauffeur {$driver->name} cannot be assigned because their driving licence expired on ".$driver->license_expiry->format('d/m/Y').'.'],
-                ]);
-            }
-
-            // Overlap check: Prevent same driver being assigned to two active trips at overlapping travel times across date spans
-            $startDate = $booking->travel_date->format('Y-m-d');
-            $endDate = ($booking->return_date ?? $booking->travel_date)->format('Y-m-d');
-
-            $overlapExists = Booking::where('driver_id', $driver->id)
-                ->where('id', '!=', $booking->id)
-                ->where(function ($q) use ($startDate, $endDate) {
-                    $q->where(function ($sub) use ($startDate, $endDate) {
-                        $sub->whereNotNull('return_date')
-                            ->where('travel_date', '<=', $endDate)
-                            ->where('return_date', '>=', $startDate);
-                    })->orWhere(function ($sub) use ($startDate, $endDate) {
-                        $sub->whereNull('return_date')
-                            ->whereBetween('travel_date', [$startDate, $endDate]);
-                    });
-                })
-                ->whereIn('booking_status', ['Driver Assigned', 'Trip Started', 'On The Way'])
-                ->exists();
-
-            if ($overlapExists) {
-                throw ValidationException::withMessages([
-                    'driver_id' => ["This driver is already assigned to another trip at this time (active trip between {$startDate} and {$endDate})."],
-                ]);
-            }
-
-            // Release previous driver if changing
+            // Release previous driver if changing, provided it has no other active bookings
             if ($booking->driver_id && $booking->driver_id !== $driver->id) {
                 $prev = Driver::find($booking->driver_id);
-                if ($prev && $prev->status === 'Assigned') {
-                    $prev->update(['status' => 'Available']);
+                if ($prev && in_array($prev->status, ['Assigned', 'On Trip'], true)) {
+                    $hasOther = Booking::where('driver_id', $prev->id)
+                        ->where('id', '!=', $booking->id)
+                        ->whereIn('booking_status', ['Driver Assigned', 'Trip Started', 'On The Way'])
+                        ->exists();
+                    if (! $hasOther) {
+                        $prev->update(['status' => 'Available']);
+                    }
                 }
             }
 
             // Update booking driver
             $booking->update(['driver_id' => $driver->id]);
 
-            // Driver status: Available -> Assigned
-            $driver->update(['status' => 'Assigned']);
+            // Driver status: update to Assigned if currently Available
+            if ($driver->status === 'Available') {
+                $driver->update(['status' => 'Assigned']);
+            }
 
             // Booking status: Vehicle Assigned -> Driver Assigned
             $oldStatus = $booking->booking_status;
@@ -951,30 +908,54 @@ class BookingService
         return DB::transaction(function () use ($booking, $reason, $cancelledBy) {
             $oldStatus = $booking->booking_status;
 
-            // Release vehicle and driver if assigned
+            // Release vehicle and driver if assigned (only if not used in another active booking)
             if ($booking->vehicle_id) {
                 $veh = Vehicle::find($booking->vehicle_id);
                 if ($veh && ! in_array($veh->status, ['Maintenance', 'Inactive'], true)) {
-                    $veh->update(['status' => 'Available']);
+                    $hasOther = Booking::where('vehicle_id', $veh->id)
+                        ->where('id', '!=', $booking->id)
+                        ->whereNotIn('booking_status', ['Completed', 'Cancelled'])
+                        ->exists();
+                    if (! $hasOther) {
+                        $veh->update(['status' => 'Available']);
+                    }
                 }
             }
             if ($booking->driver_id) {
                 $drv = Driver::find($booking->driver_id);
                 if ($drv && $drv->status !== 'Inactive') {
-                    $drv->update(['status' => 'Available']);
+                    $hasOther = Booking::where('driver_id', $drv->id)
+                        ->where('id', '!=', $booking->id)
+                        ->whereNotIn('booking_status', ['Completed', 'Cancelled'])
+                        ->exists();
+                    if (! $hasOther) {
+                        $drv->update(['status' => 'Available']);
+                    }
                 }
             }
             if ($booking->trip) {
                 if ($booking->trip->vehicle_id && $booking->trip->vehicle_id !== $booking->vehicle_id) {
                     $tVeh = Vehicle::find($booking->trip->vehicle_id);
                     if ($tVeh && ! in_array($tVeh->status, ['Maintenance', 'Inactive'], true)) {
-                        $tVeh->update(['status' => 'Available']);
+                        $hasOther = Booking::where('vehicle_id', $tVeh->id)
+                            ->where('id', '!=', $booking->id)
+                            ->whereNotIn('booking_status', ['Completed', 'Cancelled'])
+                            ->exists();
+                        if (! $hasOther) {
+                            $tVeh->update(['status' => 'Available']);
+                        }
                     }
                 }
                 if ($booking->trip->driver_id && $booking->trip->driver_id !== $booking->driver_id) {
                     $tDrv = Driver::find($booking->trip->driver_id);
                     if ($tDrv && $tDrv->status !== 'Inactive') {
-                        $tDrv->update(['status' => 'Available']);
+                        $hasOther = Booking::where('driver_id', $tDrv->id)
+                            ->where('id', '!=', $booking->id)
+                            ->whereNotIn('booking_status', ['Completed', 'Cancelled'])
+                            ->exists();
+                        if (! $hasOther) {
+                            $tDrv->update(['status' => 'Available']);
+                        }
                     }
                 }
                 $booking->trip->update([

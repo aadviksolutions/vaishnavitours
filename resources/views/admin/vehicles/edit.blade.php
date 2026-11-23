@@ -160,6 +160,14 @@
             <div class="card mb-4">
                 <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">Fleet Status</h3>
 
+                <div class="form-group mb-3">
+                    <label for="ownership_type" class="form-label">Ownership Type <span style="font-size: 11px; color: var(--slate-400); font-weight: normal;">(Optional)</span></label>
+                    <select name="ownership_type" id="ownership_type" class="form-select">
+                        <option value="owned" {{ old('ownership_type', $vehicle->ownership_type ?: 'owned') === 'owned' ? 'selected' : '' }}>Company Owned Fleet</option>
+                        <option value="third_party" {{ old('ownership_type', $vehicle->ownership_type) === 'third_party' ? 'selected' : '' }}>Third-Party / Vendor Attached</option>
+                    </select>
+                </div>
+
                 <div class="form-group mb-4">
                     <label for="status" class="form-label">Operational Status *</label>
                     <select name="status" id="status" class="form-select" required>

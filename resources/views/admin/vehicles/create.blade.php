@@ -151,14 +151,14 @@
                     </div>
                 </div>
 
-                <!-- Third-Party Vehicle Vendor Profile (Requirement: Section 3) -->
+                <!-- Third-Party Vehicle Vendor Profile (Optional Ownership) -->
                 <div class="card mb-4" style="background: #fff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 1.25rem;">
                     <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 0.75rem;">🤝 Ownership & Vendor Tracking</h3>
                     <div class="grid grid-2 gap-3 mb-3">
                         <div class="form-group">
-                            <label class="form-label">Ownership Type *</label>
-                            <select name="ownership_type" id="ownership_type" class="form-select" onchange="toggleVendorFields(this.value)" required>
-                                <option value="owned" {{ old('ownership_type', 'owned') === 'owned' ? 'selected' : '' }}>Company Owned Fleet</option>
+                            <label class="form-label">Ownership Type <span style="font-size: 11px; color: var(--slate-400); font-weight: normal;">(Optional - Default: Fleet Owned)</span></label>
+                            <select name="ownership_type" id="ownership_type" class="form-select" onchange="toggleVendorFields(this.value)">
+                                <option value="owned" {{ old('ownership_type', 'owned') === 'owned' ? 'selected' : '' }}>Company Owned Fleet (Default)</option>
                                 <option value="third_party" {{ old('ownership_type') === 'third_party' ? 'selected' : '' }}>Third-Party / Vendor Attached Vehicle</option>
                             </select>
                         </div>

@@ -134,28 +134,31 @@ class AdminTripController extends Controller
         }
 
         if ($canonicalStatus === 'Completed') {
-            if ($trip->vehicle_id) {
-                $veh = \App\Models\Vehicle::find($trip->vehicle_id);
+            $vIds = array_filter(array_unique([$trip->vehicle_id, $trip->booking?->vehicle_id]));
+            foreach ($vIds as $vId) {
+                $veh = \App\Models\Vehicle::find($vId);
                 if ($veh && ! in_array($veh->status, ['Maintenance', 'Inactive'], true)) {
-                    $veh->update(['status' => 'Available']);
+                    $hasOther = \App\Models\Booking::where('vehicle_id', $veh->id)
+                        ->where('id', '!=', $trip->booking_id)
+                        ->whereNotIn('booking_status', ['Completed', 'Cancelled'])
+                        ->exists();
+                    if (! $hasOther) {
+                        $veh->update(['status' => 'Available']);
+                    }
                 }
             }
-            if ($trip->booking && $trip->booking->vehicle_id) {
-                $bVeh = \App\Models\Vehicle::find($trip->booking->vehicle_id);
-                if ($bVeh && ! in_array($bVeh->status, ['Maintenance', 'Inactive'], true)) {
-                    $bVeh->update(['status' => 'Available']);
-                }
-            }
-            if ($trip->driver_id) {
-                $drv = \App\Models\Driver::find($trip->driver_id);
+
+            $dIds = array_filter(array_unique([$trip->driver_id, $trip->booking?->driver_id]));
+            foreach ($dIds as $dId) {
+                $drv = \App\Models\Driver::find($dId);
                 if ($drv && $drv->status !== 'Inactive') {
-                    $drv->update(['status' => 'Available']);
-                }
-            }
-            if ($trip->booking && $trip->booking->driver_id) {
-                $bDrv = \App\Models\Driver::find($trip->booking->driver_id);
-                if ($bDrv && $bDrv->status !== 'Inactive') {
-                    $bDrv->update(['status' => 'Available']);
+                    $hasOther = \App\Models\Booking::where('driver_id', $drv->id)
+                        ->where('id', '!=', $trip->booking_id)
+                        ->whereNotIn('booking_status', ['Completed', 'Cancelled'])
+                        ->exists();
+                    if (! $hasOther) {
+                        $drv->update(['status' => 'Available']);
+                    }
                 }
             }
         }
@@ -265,13 +268,19 @@ class AdminTripController extends Controller
             }
         }
 
-        // CRITICAL: Unconditionally release assigned vehicles and drivers to Available
+        // Release assigned vehicles and drivers to Available if no other active trips
         $releasedVehicles = [];
         $vehicleIds = array_filter(array_unique([$trip->vehicle_id, $booking?->vehicle_id]));
         foreach ($vehicleIds as $vId) {
             $veh = \App\Models\Vehicle::find($vId);
             if ($veh && ! in_array($veh->status, ['Maintenance', 'Inactive'], true)) {
-                $veh->update(['status' => 'Available']);
+                $hasOther = \App\Models\Booking::where('vehicle_id', $veh->id)
+                    ->where('id', '!=', $trip->booking_id)
+                    ->whereNotIn('booking_status', ['Completed', 'Cancelled'])
+                    ->exists();
+                if (! $hasOther) {
+                    $veh->update(['status' => 'Available']);
+                }
                 $releasedVehicles[] = "{$veh->name} ({$veh->registration_number})";
             }
         }
@@ -281,7 +290,13 @@ class AdminTripController extends Controller
         foreach ($driverIds as $dId) {
             $drv = \App\Models\Driver::find($dId);
             if ($drv && $drv->status !== 'Inactive') {
-                $drv->update(['status' => 'Available']);
+                $hasOther = \App\Models\Booking::where('driver_id', $drv->id)
+                    ->where('id', '!=', $trip->booking_id)
+                    ->whereNotIn('booking_status', ['Completed', 'Cancelled'])
+                    ->exists();
+                if (! $hasOther) {
+                    $drv->update(['status' => 'Available']);
+                }
                 $releasedDrivers[] = $drv->name;
             }
         }
@@ -376,28 +391,31 @@ class AdminTripController extends Controller
             'closure_reason' => $reason,
         ]);
 
-        if ($trip->vehicle_id) {
-            $veh = \App\Models\Vehicle::find($trip->vehicle_id);
+        $closeVehicleIds = array_filter(array_unique([$trip->vehicle_id, $booking?->vehicle_id]));
+        foreach ($closeVehicleIds as $vId) {
+            $veh = \App\Models\Vehicle::find($vId);
             if ($veh && ! in_array($veh->status, ['Maintenance', 'Inactive'], true)) {
-                $veh->update(['status' => 'Available']);
+                $hasOther = \App\Models\Booking::where('vehicle_id', $veh->id)
+                    ->where('id', '!=', $trip->booking_id)
+                    ->whereNotIn('booking_status', ['Completed', 'Cancelled'])
+                    ->exists();
+                if (! $hasOther) {
+                    $veh->update(['status' => 'Available']);
+                }
             }
         }
-        if ($booking && $booking->vehicle_id) {
-            $bVeh = \App\Models\Vehicle::find($booking->vehicle_id);
-            if ($bVeh && ! in_array($bVeh->status, ['Maintenance', 'Inactive'], true)) {
-                $bVeh->update(['status' => 'Available']);
-            }
-        }
-        if ($trip->driver_id) {
-            $drv = \App\Models\Driver::find($trip->driver_id);
+
+        $closeDriverIds = array_filter(array_unique([$trip->driver_id, $booking?->driver_id]));
+        foreach ($closeDriverIds as $dId) {
+            $drv = \App\Models\Driver::find($dId);
             if ($drv && $drv->status !== 'Inactive') {
-                $drv->update(['status' => 'Available']);
-            }
-        }
-        if ($booking && $booking->driver_id) {
-            $bDrv = \App\Models\Driver::find($booking->driver_id);
-            if ($bDrv && $bDrv->status !== 'Inactive') {
-                $bDrv->update(['status' => 'Available']);
+                $hasOther = \App\Models\Booking::where('driver_id', $drv->id)
+                    ->where('id', '!=', $trip->booking_id)
+                    ->whereNotIn('booking_status', ['Completed', 'Cancelled'])
+                    ->exists();
+                if (! $hasOther) {
+                    $drv->update(['status' => 'Available']);
+                }
             }
         }
 

@@ -402,7 +402,7 @@ Regarding your booking *{{ $booking->booking_id }}* from {{ $booking->pickup_loc
 
                             <div id="showAssignOwnBox" class="d-flex gap-2">
                                 <select name="vehicle_id" class="form-select form-select-sm" style="font-size: 0.85rem;">
-                                    <option value="">-- Select Available Vehicle --</option>
+                                    <option value="">-- Select Fleet Vehicle (Multi-Trip Allowed) --</option>
                                     @foreach($availableVehicles as $v)
                                         <option value="{{ $v->id }}" {{ $booking->vehicle_id == $v->id ? 'selected' : '' }}>
                                             {{ $v->name }} ({{ $v->registration_number }}) - {{ $v->is_third_party ? 'Third-Party' : 'Own Fleet' }} [{{ $v->status }}]
@@ -560,10 +560,10 @@ Regarding your booking *{{ $booking->booking_id }}* from {{ $booking->pickup_loc
                     <div class="mt-3 pt-3" style="border-top: 1px solid var(--slate-200);">
                         <form action="{{ route('admin.bookings.assign-driver', $booking->id) }}" method="POST">
                             @csrf
-                            <label class="form-label" style="font-size: 0.8rem; font-weight: 700;">Assign Driver (Available Only)</label>
+                            <label class="form-label" style="font-size: 0.8rem; font-weight: 700;">Assign Chauffeur / Driver (Multi-Trip Allowed)</label>
                             <div class="d-flex gap-2">
                                 <select name="driver_id" class="form-select form-select-sm" required style="font-size: 0.85rem;">
-                                    <option value="">-- Select Available Driver --</option>
+                                    <option value="">-- Select Chauffeur / Driver --</option>
                                     @foreach($availableDrivers as $d)
                                         <option value="{{ $d->id }}" {{ $booking->driver_id == $d->id ? 'selected' : '' }}>
                                             {{ $d->name }} ({{ $d->mobile }}) - {{ $d->status }}

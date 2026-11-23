@@ -79,7 +79,8 @@ class AdminVehicleController extends Controller
 
     public function store(Request $request)
     {
-        $isThirdParty = ($request->input('ownership_type') === 'third_party');
+        $ownership = $request->input('ownership_type', 'owned') ?: 'owned';
+        $isThirdParty = ($ownership === 'third_party');
 
         $data = $request->validate([
             'name' => 'required|string|max:255',
@@ -98,13 +99,14 @@ class AdminVehicleController extends Controller
             'per_hour_rate' => 'nullable|numeric|min:0',
             'status' => 'required|string',
             'notes' => 'nullable|string',
-            'ownership_type' => 'required|in:owned,third_party',
+            'ownership_type' => 'nullable|string|in:owned,third_party',
             'vendor_name' => 'nullable|string|max:255',
             'vendor_phone' => 'nullable|string|max:20',
             'vendor_email' => 'nullable|email|max:255',
             'agreed_vendor_amount' => 'nullable|numeric|min:0',
         ]);
 
+        $data['ownership_type'] = $ownership;
         $data['is_third_party'] = $isThirdParty;
 
         if (! empty($data['vehicle_category_id'])) {
@@ -205,7 +207,8 @@ class AdminVehicleController extends Controller
 
     public function update(Request $request, Vehicle $vehicle)
     {
-        $isThirdParty = ($request->input('ownership_type') === 'third_party');
+        $ownership = $request->input('ownership_type', $vehicle->ownership_type ?: 'owned') ?: 'owned';
+        $isThirdParty = ($ownership === 'third_party');
 
         $data = $request->validate([
             'name' => 'required|string|max:255',
@@ -224,13 +227,14 @@ class AdminVehicleController extends Controller
             'per_hour_rate' => 'nullable|numeric|min:0',
             'status' => 'required|string',
             'notes' => 'nullable|string',
-            'ownership_type' => 'required|in:owned,third_party',
+            'ownership_type' => 'nullable|string|in:owned,third_party',
             'vendor_name' => 'nullable|string|max:255',
             'vendor_phone' => 'nullable|string|max:20',
             'vendor_email' => 'nullable|email|max:255',
             'agreed_vendor_amount' => 'nullable|numeric|min:0',
         ]);
 
+        $data['ownership_type'] = $ownership;
         $data['is_third_party'] = $isThirdParty;
 
         if (! empty($data['vehicle_category_id'])) {

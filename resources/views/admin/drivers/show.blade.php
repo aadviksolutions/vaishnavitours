@@ -48,8 +48,8 @@
 
                 <div style="background: var(--slate-50); padding: 1rem; border-radius: var(--radius-md);">
                     <div style="font-size: 0.75rem; color: var(--slate-500); text-transform: uppercase;">Commercial License</div>
-                    <div style="font-weight: 800; font-family: monospace; font-size: 1rem; margin-top: 4px;">{{ $driver->license_number }}</div>
-                    <small style="color: var(--slate-500);">Valid till: {{ $driver->license_expiry ? \Carbon\Carbon::parse($driver->license_expiry)->format('d M Y') : 'N/A' }}</small>
+                    <div style="font-weight: 800; font-family: monospace; font-size: 1rem; margin-top: 4px;">{{ $driver->license_number ?: 'Not Set (Optional)' }}</div>
+                    <small style="color: var(--slate-500);">Valid till: {{ $driver->license_expiry ? \Carbon\Carbon::parse($driver->license_expiry)->format('d M Y') : 'Optional / Not Set' }}</small>
                 </div>
 
                 <div style="background: var(--slate-50); padding: 1rem; border-radius: var(--radius-md);">

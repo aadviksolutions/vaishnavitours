@@ -84,7 +84,7 @@ class AdminDriverController extends Controller
             'name' => 'required|string|max:255',
             'mobile' => ['required', 'string', 'regex:/^[0-9]{10}$/', 'unique:drivers'],
             'alternate_mobile' => ['nullable', 'string', 'regex:/^[0-9]{10}$/'],
-            'license_number' => 'required|string|max:50|unique:drivers',
+            'license_number' => 'nullable|string|max:50|unique:drivers,license_number',
             'license_expiry' => 'nullable|date',
             'address' => 'nullable|string',
             'status' => 'required|string',
@@ -96,6 +96,10 @@ class AdminDriverController extends Controller
             'mobile.regex' => 'Please enter a valid 10-digit mobile number containing only numbers.',
             'alternate_mobile.regex' => 'Alternate mobile must be a valid 10-digit number containing only numbers.',
         ]);
+
+        if (empty($data['license_number'])) {
+            $data['license_number'] = null;
+        }
 
         Driver::create($data);
 
@@ -144,7 +148,7 @@ class AdminDriverController extends Controller
             'name' => 'required|string|max:255',
             'mobile' => ['required', 'string', 'regex:/^[0-9]{10}$/', 'unique:drivers,mobile,'.$driver->id],
             'alternate_mobile' => ['nullable', 'string', 'regex:/^[0-9]{10}$/'],
-            'license_number' => 'required|string|max:50|unique:drivers,license_number,'.$driver->id,
+            'license_number' => 'nullable|string|max:50|unique:drivers,license_number,'.$driver->id,
             'license_expiry' => 'nullable|date',
             'address' => 'nullable|string',
             'status' => 'required|string',
@@ -156,6 +160,10 @@ class AdminDriverController extends Controller
             'mobile.regex' => 'Please enter a valid 10-digit mobile number containing only numbers.',
             'alternate_mobile.regex' => 'Alternate mobile must be a valid 10-digit number containing only numbers.',
         ]);
+
+        if (empty($data['license_number'])) {
+            $data['license_number'] = null;
+        }
 
         $driver->update($data);
 
