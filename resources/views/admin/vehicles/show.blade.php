@@ -255,17 +255,25 @@
 
     <!-- Right 1 Col: Compliance Expiry & Assigned Driver -->
     <div>
-        <!-- Compliance & Mandatory Expiry Dates (Section 3 requirement) -->
+        <!-- Compliance & Document Records (Optional) -->
         <div class="card mb-3" style="background: #fff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 1.25rem;">
-            <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 0.75rem; color: var(--dark-900);">
-                📑 Document Records (Optional)
-            </h3>
+            <div class="d-flex justify-between align-center mb-2">
+                <h3 style="font-size: 14px; font-weight: 700; margin: 0; color: var(--dark-900);">
+                    📑 Document Records (Optional)
+                </h3>
+                <span class="badge" style="background: #E0E7FF; color: #3730A3; font-size: 11px; padding: 2px 8px; border-radius: 4px;">
+                    Not Mandatory
+                </span>
+            </div>
+            <p style="font-size: 11.5px; color: var(--slate-500); margin: 0 0 0.75rem 0;">
+                All vehicle compliance documents are completely optional.
+            </p>
             @php
                 $docs = [
-                    'Insurance' => ['date' => $vehicle->insurance_expiry, 'status' => $vehicle->getInsuranceStatusAttribute()],
-                    'PUC (Pollution)' => ['date' => $vehicle->puc_expiry, 'status' => $vehicle->getPucStatusAttribute()],
-                    'Fitness Certificate' => ['date' => $vehicle->fitness_expiry, 'status' => $vehicle->fitness_expiry ? ($vehicle->fitness_expiry->isPast() ? 'Expired' : 'Valid') : 'Missing'],
-                    'Commercial Permit' => ['date' => $vehicle->permit_expiry, 'status' => $vehicle->permit_expiry ? ($vehicle->permit_expiry->isPast() ? 'Expired' : 'Valid') : 'Missing'],
+                    'Insurance' => ['date' => $vehicle->insurance_expiry, 'status' => $vehicle->insurance_status],
+                    'PUC (Pollution)' => ['date' => $vehicle->puc_expiry, 'status' => $vehicle->puc_status],
+                    'Fitness Certificate' => ['date' => $vehicle->fitness_expiry, 'status' => $vehicle->fitness_status],
+                    'Commercial Permit' => ['date' => $vehicle->permit_expiry, 'status' => $vehicle->permit_status],
                 ];
             @endphp
             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
@@ -274,7 +282,7 @@
                         <div>
                             <div style="font-weight: 600; font-size: 12.5px;">{{ $label }}</div>
                             <div style="font-size: 11px; color: var(--slate-500);">
-                                {{ $d['date'] ? \Carbon\Carbon::parse($d['date'])->format('d M Y') : 'Not Set' }}
+                                {{ $d['date'] ? \Carbon\Carbon::parse($d['date'])->format('d M Y') : 'Optional (Not Set)' }}
                             </div>
                         </div>
                         <div>
@@ -283,7 +291,7 @@
                                     'Valid' => 'bg-emerald-100 text-emerald-800',
                                     'Expiring Soon' => 'bg-amber-100 text-amber-800',
                                     'Expired' => 'bg-rose-100 text-rose-800 font-bold',
-                                    default => 'bg-slate-100 text-slate-800',
+                                    default => 'bg-slate-100 text-slate-600',
                                 };
                             @endphp
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold {{ $badgeClass }}">

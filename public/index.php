@@ -11,6 +11,40 @@ if (! file_exists($baseDir.'/.env') && file_exists($baseDir.'/.env.example')) {
     @copy($baseDir.'/.env.example', $baseDir.'/.env');
 }
 
+// Auto-initialize sqlite database file if missing on deployment (self-healing)
+$sqliteDb = $baseDir.'/database/database.sqlite';
+if (! file_exists($sqliteDb)) {
+    if (file_exists($sqliteDb.'.bak')) {
+        @copy($sqliteDb.'.bak', $sqliteDb);
+    } elseif (file_exists($sqliteDb.'.backup')) {
+        @copy($sqliteDb.'.backup', $sqliteDb);
+    } else {
+        if (! is_dir(dirname($sqliteDb))) {
+            @mkdir(dirname($sqliteDb), 0777, true);
+        }
+        @touch($sqliteDb);
+    }
+}
+if (file_exists($sqliteDb)) {
+    @chmod($sqliteDb, 0666);
+    @chmod(dirname($sqliteDb), 0777);
+}
+
+// Ensure critical storage & cache directories exist with full write permissions
+$criticalDirs = [
+    $baseDir.'/storage/framework/views',
+    $baseDir.'/storage/framework/cache/data',
+    $baseDir.'/storage/framework/sessions',
+    $baseDir.'/storage/logs',
+    $baseDir.'/bootstrap/cache',
+];
+foreach ($criticalDirs as $cdir) {
+    if (! is_dir($cdir)) {
+        @mkdir($cdir, 0777, true);
+    }
+    @chmod($cdir, 0777);
+}
+
 // Determine if the application is in maintenance mode...
 if (file_exists($maintenance = $baseDir.'/storage/framework/maintenance.php')) {
     require $maintenance;

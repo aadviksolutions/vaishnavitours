@@ -439,7 +439,7 @@ Regarding your booking *{{ $booking->booking_id }}* from {{ $booking->pickup_loc
                                 <div id="show_tp_manual_inputs">
                                     <div class="mb-2">
                                         <label style="font-size: 11px; font-weight: 700; color: #78350F; display: block; margin-bottom: 2px;">
-                                            Vehicle Number * (Mandatory)
+                                            Vehicle Number *
                                         </label>
                                         <input type="text" name="third_party_vehicle_number" class="form-control form-control-sm" placeholder="e.g. CG 04 HA 4521" style="text-transform: uppercase; font-weight: 700; background: #fff;">
                                     </div>

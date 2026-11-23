@@ -775,7 +775,7 @@
                             </div>
                         </div>
                         <span class="badge" style="background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; font-size: 11px; font-weight: 700;">
-                            ✓ Only Vehicle Number Mandatory
+                            ✓ No Documents Required
                         </span>
                     </div>
 
@@ -803,10 +803,10 @@
                     <div class="grid grid-2 gap-3 mb-3">
                         <div class="form-group">
                             <label for="third_party_vehicle_number" class="form-label" style="font-size: 0.825rem; font-weight: 700; color: #78350F;">
-                                Third Party Vehicle Number * <span class="text-danger">(Mandatory)</span>
+                                Third Party Vehicle Number *
                             </label>
                             <input type="text" name="third_party_vehicle_number" id="third_party_vehicle_number" class="form-control form-control-sm" placeholder="e.g. CG 04 HA 4521" value="{{ old('third_party_vehicle_number') }}" style="font-weight: 700; text-transform: uppercase;">
-                            <small style="color: #92400E; font-size: 11px;">Vehicle number of partner's car. No documents required.</small>
+                            <small style="color: #92400E; font-size: 11px;">Vehicle number of partner's car. Documents are optional.</small>
                         </div>
 
                         <div class="form-group">

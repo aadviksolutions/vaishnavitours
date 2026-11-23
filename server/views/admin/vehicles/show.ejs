@@ -268,16 +268,21 @@
             </div>
         </div>
 
-        <!-- Compliance & Mandatory Expiry Dates (Section 3 requirement) -->
+        <!-- Compliance & Document Records (Optional) -->
         <div class="card mb-3" style="background: #fff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 1.25rem;">
-            <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 0.75rem; color: var(--dark-900);">
-                <%- icon('file-text', { size: 16, style: 'margin-right: 5px;' }) %> Document Records (Optional)
-            </h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <h3 style="font-size: 14px; font-weight: 700; margin: 0; color: var(--dark-900);">
+                    <%- icon('file-text', { size: 16, style: 'margin-right: 5px;' }) %> Document Records (Optional)
+                </h3>
+                <span class="badge" style="background: #E0E7FF; color: #3730A3; font-size: 11px; padding: 2px 8px; border-radius: 4px;">
+                    Not Mandatory
+                </span>
+            </div>
             <%  var docs = {
-                    'Insurance' : {'date' : vehicle?.insurance_expiry, 'status' : vehicle?.getInsuranceStatusAttribute()},
-                    'PUC (Pollution)' : {'date' : vehicle?.puc_expiry, 'status' : vehicle?.getPucStatusAttribute()},
-                    'Fitness Certificate' : {'date' : vehicle?.fitness_expiry, 'status' : vehicle?.fitness_expiry ? (vehicle?.fitness_expiry?.isPast() ? 'Expired' : 'Valid') : 'Missing'},
-                    'Commercial Permit' : {'date' : vehicle?.permit_expiry, 'status' : vehicle?.permit_expiry ? (vehicle?.permit_expiry?.isPast() ? 'Expired' : 'Valid') : 'Missing'},
+                    'Insurance' : {'date' : vehicle?.insurance_expiry, 'status' : vehicle?.insurance_expiry ? (vehicle?.insurance_expiry?.isPast() ? 'Expired' : 'Valid') : 'Optional (Not Set)'},
+                    'PUC (Pollution)' : {'date' : vehicle?.puc_expiry, 'status' : vehicle?.puc_expiry ? (vehicle?.puc_expiry?.isPast() ? 'Expired' : 'Valid') : 'Optional (Not Set)'},
+                    'Fitness Certificate' : {'date' : vehicle?.fitness_expiry, 'status' : vehicle?.fitness_expiry ? (vehicle?.fitness_expiry?.isPast() ? 'Expired' : 'Valid') : 'Optional (Not Set)'},
+                    'Commercial Permit' : {'date' : vehicle?.permit_expiry, 'status' : vehicle?.permit_expiry ? (vehicle?.permit_expiry?.isPast() ? 'Expired' : 'Valid') : 'Optional (Not Set)'},
                 }; %>
             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                 <% (Object.entries((docs) || {})).forEach(([label, d], _idx, _arr) => { const loop = { index: _idx, iteration: _idx + 1, first: _idx === 0, last: _idx === _arr.length - 1, count: _arr.length }; %>

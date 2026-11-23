@@ -156,8 +156,44 @@ class Vehicle extends Model
         return false;
     }
 
+    public function getInsuranceStatusAttribute(): string
+    {
+        if (! $this->insurance_expiry) {
+            return 'Optional (Not Set)';
+        }
+
+        return $this->insurance_expiry->isPast() ? 'Expired' : 'Valid';
+    }
+
+    public function getPucStatusAttribute(): string
+    {
+        if (! $this->puc_expiry) {
+            return 'Optional (Not Set)';
+        }
+
+        return $this->puc_expiry->isPast() ? 'Expired' : 'Valid';
+    }
+
+    public function getFitnessStatusAttribute(): string
+    {
+        if (! $this->fitness_expiry) {
+            return 'Optional (Not Set)';
+        }
+
+        return $this->fitness_expiry->isPast() ? 'Expired' : 'Valid';
+    }
+
+    public function getPermitStatusAttribute(): string
+    {
+        if (! $this->permit_expiry) {
+            return 'Optional (Not Set)';
+        }
+
+        return $this->permit_expiry->isPast() ? 'Expired' : 'Valid';
+    }
+
     /**
-     * Get detailed status of a specific document (Valid, Expiring Soon, Expired, Missing).
+     * Get detailed status of a specific document (Valid, Expiring Soon, Expired, Optional).
      */
     public function getDocumentStatus(string $field): array
     {
