@@ -229,7 +229,172 @@
                 display: none;
             }
         }
-    </style>
+    
+        /* -----------------------------------------------------------------
+           Searchable Select Component for Driver & Vehicle Allotment
+           ----------------------------------------------------------------- */
+        .ss-wrapper {
+            position: relative;
+            width: 100%;
+            display: block;
+            font-family: inherit;
+        }
+        .ss-input-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        .ss-search-input {
+            width: 100%;
+            height: 38px;
+            padding: 0.375rem 2.25rem 0.375rem 0.75rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            line-height: 1.5;
+            color: var(--slate-800, #1e293b);
+            background-color: #ffffff;
+            background-clip: padding-box;
+            border: 1.5px solid var(--slate-300, #cbd5e1);
+            border-radius: 6px;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            outline: none;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+        .ss-search-input:focus {
+            cursor: text;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+            background-color: #ffffff;
+        }
+        .ss-search-input::placeholder {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        .ss-sm .ss-search-input {
+            height: 32px;
+            padding: 0.25rem 2rem 0.25rem 0.65rem;
+            font-size: 0.8125rem;
+        }
+        .ss-icons {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            pointer-events: none;
+        }
+        .ss-clear-btn {
+            pointer-events: auto;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 2px 4px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 14px;
+            line-height: 1;
+            transition: all 0.15s;
+        }
+        .ss-clear-btn:hover {
+            color: #ef4444;
+            background: #fee2e2;
+        }
+        .ss-arrow {
+            color: #64748b;
+            transition: transform 0.2s ease;
+            display: flex;
+            align-items: center;
+        }
+        .ss-wrapper.open .ss-arrow {
+            transform: rotate(180deg);
+        }
+        .ss-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.18), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            max-height: 240px;
+            overflow-y: auto;
+            z-index: 10050;
+            display: none;
+            padding: 4px;
+        }
+        .ss-dropdown.ss-dropup {
+            top: auto;
+            bottom: calc(100% + 4px);
+            box-shadow: 0 -10px 25px -5px rgba(0, 0, 0, 0.18), 0 -8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        .ss-wrapper.open .ss-dropdown {
+            display: block;
+        }
+        .ss-group-label {
+            padding: 6px 10px 4px 10px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            background: #f8fafc;
+            border-radius: 4px;
+            margin-top: 4px;
+            margin-bottom: 2px;
+        }
+        .ss-item {
+            padding: 7px 10px;
+            font-size: 0.835rem;
+            color: #1e293b;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            user-select: none;
+        }
+        .ss-item:hover, .ss-item.highlighted {
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+        .ss-item.selected {
+            background: #dbeafe;
+            color: #1e40af;
+            font-weight: 700;
+        }
+        .ss-item.disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            background: none !important;
+            color: #94a3b8 !important;
+        }
+        .ss-item.special-new {
+            background: #ecfdf5;
+            color: #047857;
+            font-weight: 700;
+            border: 1px dashed #a7f3d0;
+            margin: 3px 0;
+        }
+        .ss-item.special-new:hover, .ss-item.special-new.highlighted {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .ss-no-results {
+            padding: 12px;
+            text-align: center;
+            font-size: 0.8125rem;
+            color: #94a3b8;
+        }
+</style>
 </head>
 <body>
 
@@ -248,7 +413,7 @@
                     <div class="brand-sub">Operations Management</div>
                 </div>
             </a>
-            <button id="sidebarCloseBtn" class="sidebar-close-btn" style="background: none; border: none; color: #94A3B8; cursor: pointer; font-size: 16px; padding: 4px 6px; border-radius: 4px;" aria-label="Close sidebar" title="Close Menu">✕</button>
+            <button id="sidebarCloseBtn" class="sidebar-close-btn" style="background: none; border: none; color: #94A3B8; cursor: pointer; font-size: 18px; padding: 4px 6px; border-radius: 4px;" aria-label="Close sidebar" title="Close Menu">&times;</button>
         </div>
 
         <!-- Navigation Menu Sections -->
@@ -371,7 +536,7 @@
 
                 <!-- Web Push Alerts Status / Enable Trigger -->
                 <button id="pushNotificationBtn" type="button" class="btn btn-outline btn-sm" title="Enable Real-Time Push Notifications on Mobile & Laptop" style="padding: 0 9px; height: 34px; font-size: 11px; font-weight: 600; color: #1D4ED8; border-color: #BFDBFE; background: #EFF6FF; display: inline-flex; align-items: center; gap: 4px;">
-                    <span id="pushBellIcon">🔔</span> <span id="pushStatusText" class="d-none d-md-inline">Live Alerts</span>
+                    <span id="pushBellIcon" style="display:inline-flex;align-items:center;"><x-icon name="bell" :size="13" /></span> <span id="pushStatusText" class="d-none d-md-inline">Live Alerts</span>
                 </button>
 
                 <!-- Single Prominent Primary Button -->
@@ -551,7 +716,7 @@
                 pushBtn.style.color = '#059669';
                 pushBtn.style.background = '#ECFDF5';
                 pushBtn.style.borderColor = '#A7F3D0';
-                if (pushBellIcon) pushBellIcon.textContent = '🟢';
+                if (pushBellIcon) pushBellIcon.innerHTML = '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#10B981;margin-right:2px;"></span>';
                 if (pushStatusText) pushStatusText.textContent = 'Push Active';
                 pushBtn.title = 'Real-time push notifications are active for bookings & enquiries';
             }
@@ -560,7 +725,7 @@
                 pushBtn.style.color = '#DC2626';
                 pushBtn.style.background = '#FEF2F2';
                 pushBtn.style.borderColor = '#FECACA';
-                if (pushBellIcon) pushBellIcon.textContent = '🔕';
+                if (pushBellIcon) pushBellIcon.innerHTML = '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#EF4444;margin-right:2px;"></span>';
                 if (pushStatusText) pushStatusText.textContent = 'Blocked';
                 pushBtn.title = 'Push notifications blocked in browser settings. Please enable to receive alerts.';
             }
@@ -569,7 +734,7 @@
                 pushBtn.style.color = '#1D4ED8';
                 pushBtn.style.background = '#EFF6FF';
                 pushBtn.style.borderColor = '#BFDBFE';
-                if (pushBellIcon) pushBellIcon.textContent = '🔔';
+                if (pushBellIcon) pushBellIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>';
                 if (pushStatusText) pushStatusText.textContent = 'Enable Push';
                 pushBtn.title = 'Click to enable instant notifications on mobile & laptop';
             }
@@ -588,7 +753,7 @@
                 if (permission === 'granted') {
                     playChimeSound();
                     displayInAppToast({
-                        title: 'Push Notifications Enabled! 🎉',
+                        title: 'Push Notifications Enabled!',
                         message: 'You will receive instant alerts for bookings, enquiries, and payments.'
                     });
                 }
@@ -612,7 +777,7 @@
         `;
 
         const closeX = document.createElement('button');
-        closeX.textContent = '✕';
+        closeX.innerHTML = '&times;';
         closeX.style.cssText = 'background: none; border: none; color: #94A3B8; font-size: 14px; cursor: pointer; padding: 0 4px;';
         closeX.onclick = () => card.remove();
 
@@ -744,6 +909,435 @@
             }
         }, true);
     })();
+
+    // -------------------------------------------------------------
+    // Searchable Select Engine for Fleet & Driver Allotment
+    // -------------------------------------------------------------
+    (function() {
+        function isAllotmentSelect(el) {
+            if (!el || el.tagName !== 'SELECT') return false;
+            if (el.dataset.ssInit === 'true') return false;
+            
+            // Explicit opt-in or opt-out
+            if (el.dataset.searchable === 'false') return false;
+            if (el.dataset.searchable === 'true' || el.classList.contains('searchable-select')) return true;
+
+            const name = (el.name || '').toLowerCase();
+            const id = (el.id || '').toLowerCase();
+
+            // Target all vehicle and driver allotment fields
+            return name === 'driver_id' ||
+                   name === 'vehicle_id' ||
+                   name === 'assigned_vehicle_id' ||
+                   name === 'assigned_driver_id' ||
+                   name === 'existing_tp_vehicle_id' ||
+                   id.startsWith('assigndriver') ||
+                   id.startsWith('assignvehicle') ||
+                   id.startsWith('driverselect') ||
+                   id.startsWith('vehicleselect') ||
+                   id === 'vehicle_id' ||
+                   id === 'driver_id';
+        }
+
+        function initSearchableSelect(select) {
+            if (!select || select.dataset.ssInit === 'true') return;
+            select.dataset.ssInit = 'true';
+
+            // Check if small size
+            const isSm = select.classList.contains('form-select-sm') || 
+                         (select.style.fontSize && (select.style.fontSize.includes('0.85') || select.style.fontSize.includes('12px')));
+
+            // Handle required validation safely
+            const wasRequired = select.hasAttribute('required');
+            if (wasRequired) {
+                select.removeAttribute('required');
+                select.dataset.ssRequired = 'true';
+            }
+
+            // Hide native select from tab order & pointer events, keep accessible for FormData
+            select.style.position = 'absolute';
+            select.style.opacity = '0';
+            select.style.pointerEvents = 'none';
+            select.style.height = '1px';
+            select.style.width = '1px';
+            select.style.margin = '-1px';
+            select.style.clip = 'rect(0,0,0,0)';
+            select.tabIndex = -1;
+
+            // Create wrapper
+            const wrapper = document.createElement('div');
+            wrapper.className = 'ss-wrapper' + (isSm ? ' ss-sm' : '');
+            if (select.parentElement && window.getComputedStyle(select.parentElement).display.includes('flex')) {
+                wrapper.style.flex = '1 1 auto';
+                wrapper.style.minWidth = '0';
+            }
+
+            // Input Box
+            const inputBox = document.createElement('div');
+            inputBox.className = 'ss-input-box';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'ss-search-input';
+            input.autocomplete = 'off';
+            input.spellcheck = false;
+
+            // Custom search placeholder
+            const selectName = (select.name || '').toLowerCase();
+            let defaultPlaceholder = 'Type to search...';
+            if (selectName.includes('driver')) {
+                defaultPlaceholder = 'Type to search driver or phone...';
+            } else if (selectName.includes('vehicle')) {
+                defaultPlaceholder = 'Type to search car or reg number...';
+            }
+            input.placeholder = defaultPlaceholder;
+
+            // Icons
+            const iconsDiv = document.createElement('div');
+            iconsDiv.className = 'ss-icons';
+
+            const clearBtn = document.createElement('button');
+            clearBtn.type = 'button';
+            clearBtn.className = 'ss-clear-btn';
+            clearBtn.title = 'Clear selection';
+            clearBtn.innerHTML = '&times;';
+
+            const arrowSpan = document.createElement('span');
+            arrowSpan.className = 'ss-arrow';
+            arrowSpan.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+
+            iconsDiv.appendChild(clearBtn);
+            iconsDiv.appendChild(arrowSpan);
+
+            inputBox.appendChild(input);
+            inputBox.appendChild(iconsDiv);
+            wrapper.appendChild(inputBox);
+
+            // Dropdown Panel
+            const dropdown = document.createElement('div');
+            dropdown.className = 'ss-dropdown';
+            wrapper.appendChild(dropdown);
+
+            // Insert wrapper before select and move select inside wrapper
+            select.parentNode.insertBefore(wrapper, select);
+            wrapper.appendChild(select);
+
+            // Forward select.focus() to custom input
+            select.focus = function() {
+                input.focus();
+            };
+
+            // State
+            let items = [];
+            let highlightedIndex = -1;
+
+            function extractItems() {
+                items = [];
+                const children = Array.from(select.children);
+                children.forEach(child => {
+                    if (child.tagName === 'OPTGROUP') {
+                        const groupLabel = child.label;
+                        Array.from(child.children).forEach(opt => {
+                            items.push({
+                                value: opt.value,
+                                text: opt.textContent.trim(),
+                                group: groupLabel,
+                                disabled: opt.disabled,
+                                isNewAction: opt.value.startsWith('new_')
+                            });
+                        });
+                    } else if (child.tagName === 'OPTION') {
+                        items.push({
+                            value: child.value,
+                            text: child.textContent.trim(),
+                            group: null,
+                            disabled: child.disabled,
+                            isNewAction: child.value.startsWith('new_')
+                        });
+                    }
+                });
+            }
+
+            function updateDisplayFromSelect() {
+                const currentVal = select.value;
+                const currentOpt = select.options[select.selectedIndex];
+                
+                if (currentVal && currentVal !== '' && currentVal !== 'new_driver' && currentVal !== 'new_vehicle') {
+                    input.value = currentOpt ? currentOpt.textContent.trim() : '';
+                    clearBtn.style.display = 'inline-flex';
+                } else {
+                    input.value = '';
+                    clearBtn.style.display = 'none';
+                    if (currentOpt && currentOpt.textContent && !currentOpt.textContent.startsWith('--')) {
+                        input.placeholder = currentOpt.textContent.trim();
+                    } else {
+                        input.placeholder = defaultPlaceholder;
+                    }
+                }
+
+                // Clear any required error styling
+                input.style.borderColor = '';
+                input.style.boxShadow = '';
+                const tip = wrapper.querySelector('.ss-required-tip');
+                if (tip) tip.remove();
+            }
+
+            function escapeHtml(str) {
+                return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            }
+
+            function renderDropdown(searchTerm) {
+                dropdown.innerHTML = '';
+                highlightedIndex = -1;
+                const term = (searchTerm || '').toLowerCase().trim();
+
+                let visibleCount = 0;
+                let currentGroup = null;
+
+                items.forEach((item, index) => {
+                    const isPlaceholder = (item.value === '' && item.text.startsWith('--'));
+                    if (isPlaceholder && term !== '') return;
+
+                    const textLower = item.text.toLowerCase();
+                    if (term !== '' && !textLower.includes(term) && !item.isNewAction) {
+                        return; // Doesn't match
+                    }
+
+                    // Group label
+                    if (item.group && item.group !== currentGroup) {
+                        currentGroup = item.group;
+                        const groupEl = document.createElement('div');
+                        groupEl.className = 'ss-group-label';
+                        groupEl.textContent = currentGroup;
+                        dropdown.appendChild(groupEl);
+                    }
+
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'ss-item' + 
+                        (item.disabled ? ' disabled' : '') + 
+                        (item.isNewAction ? ' special-new' : '') + 
+                        (item.value === select.value ? ' selected' : '');
+                    itemEl.dataset.index = index;
+
+                    // Highlighting
+                    if (term !== '' && !item.isNewAction) {
+                        const matchIdx = textLower.indexOf(term);
+                        if (matchIdx !== -1) {
+                            const before = item.text.substring(0, matchIdx);
+                            const match = item.text.substring(matchIdx, matchIdx + term.length);
+                            const after = item.text.substring(matchIdx + term.length);
+                            itemEl.innerHTML = `${escapeHtml(before)}<b style="color: #2563eb; background: #dbeafe; padding: 0 2px; border-radius: 2px;">${escapeHtml(match)}</b>${escapeHtml(after)}`;
+                        } else {
+                            itemEl.textContent = item.text;
+                        }
+                    } else {
+                        itemEl.textContent = item.text;
+                    }
+
+                    itemEl.addEventListener('mousedown', function(e) {
+                        e.preventDefault();
+                        if (item.disabled) return;
+                        selectItem(item);
+                    });
+
+                    dropdown.appendChild(itemEl);
+                    visibleCount++;
+                });
+
+                if (visibleCount === 0) {
+                    const noRes = document.createElement('div');
+                    noRes.className = 'ss-no-results';
+                    noRes.textContent = `No matches found for "${searchTerm}"`;
+                    dropdown.appendChild(noRes);
+                }
+            }
+
+            function selectItem(item) {
+                select.value = item.value;
+                updateDisplayFromSelect();
+                closeDropdown();
+
+                // Trigger events
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+                select.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+
+            function openDropdown() {
+                extractItems();
+
+                // Check space: if near bottom of viewport or modal, dropup
+                const rect = wrapper.getBoundingClientRect();
+                const modal = wrapper.closest('.custom-modal-content');
+                const containerBottom = modal ? modal.getBoundingClientRect().bottom : window.innerHeight;
+                const spaceBelow = containerBottom - rect.bottom;
+
+                if (spaceBelow < 220 && rect.top > 220) {
+                    dropdown.classList.add('ss-dropup');
+                } else {
+                    dropdown.classList.remove('ss-dropup');
+                }
+
+                renderDropdown('');
+                wrapper.classList.add('open');
+                input.select();
+            }
+
+            function closeDropdown() {
+                wrapper.classList.remove('open');
+                updateDisplayFromSelect();
+            }
+
+            // Input interactions
+            input.addEventListener('focus', function() {
+                openDropdown();
+            });
+
+            input.addEventListener('click', function() {
+                if (!wrapper.classList.contains('open')) {
+                    openDropdown();
+                } else {
+                    input.select();
+                }
+            });
+
+            input.addEventListener('input', function() {
+                if (!wrapper.classList.contains('open')) {
+                    wrapper.classList.add('open');
+                }
+                renderDropdown(input.value);
+            });
+
+            input.addEventListener('keydown', function(e) {
+                if (!wrapper.classList.contains('open')) {
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter') {
+                        openDropdown();
+                        e.preventDefault();
+                        return;
+                    }
+                }
+
+                const visibleItems = Array.from(dropdown.querySelectorAll('.ss-item:not(.disabled)'));
+                if (!visibleItems.length) return;
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    highlightedIndex = (highlightedIndex + 1) % visibleItems.length;
+                    updateHighlight(visibleItems);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    highlightedIndex = (highlightedIndex - 1 + visibleItems.length) % visibleItems.length;
+                    updateHighlight(visibleItems);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (highlightedIndex >= 0 && visibleItems[highlightedIndex]) {
+                        visibleItems[highlightedIndex].dispatchEvent(new MouseEvent('mousedown'));
+                    } else if (visibleItems.length > 0) {
+                        visibleItems[0].dispatchEvent(new MouseEvent('mousedown'));
+                    }
+                } else if (e.key === 'Escape') {
+                    closeDropdown();
+                    input.blur();
+                } else if (e.key === 'Tab') {
+                    closeDropdown();
+                }
+            });
+
+            function updateHighlight(visibleItems) {
+                visibleItems.forEach((el, i) => {
+                    if (i === highlightedIndex) {
+                        el.classList.add('highlighted');
+                        el.scrollIntoView({ block: 'nearest' });
+                    } else {
+                        el.classList.remove('highlighted');
+                    }
+                });
+            }
+
+            // Arrow toggle
+            arrowSpan.parentElement.style.cursor = 'pointer';
+            arrowSpan.parentElement.style.pointerEvents = 'auto';
+            arrowSpan.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (wrapper.classList.contains('open')) {
+                    closeDropdown();
+                } else {
+                    input.focus();
+                }
+            });
+
+            // Clear button
+            clearBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                select.value = '';
+                updateDisplayFromSelect();
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+                select.dispatchEvent(new Event('input', { bubbles: true }));
+                input.focus();
+                openDropdown();
+            });
+
+            // Click outside
+            document.addEventListener('click', function(e) {
+                if (!wrapper.contains(e.target)) {
+                    closeDropdown();
+                }
+            });
+
+            // Synchronize with external changes
+            select.addEventListener('change', function() {
+                updateDisplayFromSelect();
+            });
+
+            const observer = new MutationObserver(function() {
+                extractItems();
+                updateDisplayFromSelect();
+            });
+            observer.observe(select, { childList: true, subtree: true, attributes: true, attributeFilter: ['selected', 'value'] });
+
+            // Form validation handling
+            const parentForm = select.form;
+            if (parentForm && select.dataset.ssRequired === 'true') {
+                parentForm.addEventListener('submit', function(e) {
+                    if (!select.value || select.value === '' || select.value.startsWith('new_')) {
+                        e.preventDefault();
+                        input.focus();
+                        input.style.borderColor = '#ef4444';
+                        input.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.2)';
+                        openDropdown();
+
+                        let tip = wrapper.querySelector('.ss-required-tip');
+                        if (!tip) {
+                            tip = document.createElement('div');
+                            tip.className = 'ss-required-tip';
+                            tip.style.cssText = 'color: #dc2626; font-size: 0.75rem; font-weight: 700; margin-top: 3px;';
+                            tip.textContent = 'Please choose an option from the list.';
+                            wrapper.appendChild(tip);
+                        }
+                    }
+                });
+            }
+
+            // Initial population
+            extractItems();
+            updateDisplayFromSelect();
+        }
+
+        window.initSearchableSelects = function(root = document) {
+            root.querySelectorAll('select').forEach(sel => {
+                if (isAllotmentSelect(sel)) {
+                    initSearchableSelect(sel);
+                }
+            });
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => window.initSearchableSelects());
+        } else {
+            window.initSearchableSelects();
+        }
+    })();
+
 </script>
 @stack('scripts')
 </body>

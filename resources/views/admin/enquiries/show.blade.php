@@ -71,8 +71,8 @@
 
                     <div><span style="color: var(--slate-500); font-size: 0.8rem; text-transform: uppercase; font-weight: 700;">Phone / Mobile:</span></div>
                     <div style="font-weight: 700; color: var(--dark-900); margin-bottom: 0.5rem;">
-                        <a href="tel:{{ $enquiry->phone }}" style="color: #2563EB; text-decoration: none;">
-                            📞 {{ $enquiry->phone }}
+                        <a href="tel:{{ $enquiry->phone }}" style="color: #2563EB; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                            <x-icon name="phone" :size="12" /> {{ $enquiry->phone }}
                         </a>
                     </div>
 
@@ -99,20 +99,20 @@
                 </div>
                 <div style="font-size: 0.925rem; line-height: 1.6;">
                     <div><span style="color: var(--slate-500); font-size: 0.8rem; text-transform: uppercase; font-weight: 700;">Pickup:</span></div>
-                    <div style="font-weight: 800; color: var(--dark-950); margin-bottom: 0.4rem;">
-                        🟢 {{ $enquiry->pickup_location }}
+                    <div style="font-weight: 800; color: var(--dark-950); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 6px;">
+                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10B981;"></span> {{ $enquiry->pickup_location }}
                     </div>
 
                     @if($enquiry->via_location)
                         <div><span style="color: var(--slate-500); font-size: 0.8rem; text-transform: uppercase; font-weight: 700;">Via Halt:</span></div>
-                        <div style="font-weight: 700; color: #D97706; margin-bottom: 0.4rem;">
-                            🟡 {{ $enquiry->via_location }}
+                        <div style="font-weight: 700; color: #D97706; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 6px;">
+                            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #F59E0B;"></span> {{ $enquiry->via_location }}
                         </div>
                     @endif
 
                     <div><span style="color: var(--slate-500); font-size: 0.8rem; text-transform: uppercase; font-weight: 700;">Destination:</span></div>
-                    <div style="font-weight: 800; color: var(--dark-950); margin-bottom: 0.4rem;">
-                        🔴 {{ $enquiry->destination }}
+                    <div style="font-weight: 800; color: var(--dark-950); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 6px;">
+                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #EF4444;"></span> {{ $enquiry->destination }}
                     </div>
 
                     <div class="grid grid-2 gap-2 mt-2 pt-2" style="border-top: 1px dashed var(--slate-200); font-size: 0.85rem;">
@@ -135,8 +135,8 @@
         @if($enquiry->message)
             <!-- Customer Message Card -->
             <div class="card mb-4" style="background: #F8FAFC; border-left: 4px solid #3B82F6;">
-                <h4 style="font-size: 0.95rem; font-weight: 800; margin: 0 0 0.5rem 0; color: #1E3A8A;">
-                    💬 Customer Inquiry Message / Requirements
+                <h4 style="font-size: 0.95rem; font-weight: 800; margin: 0 0 0.5rem 0; color: #1E3A8A; display: flex; align-items: center; gap: 6px;">
+                    <x-icon name="message-square" :size="16" /> Customer Inquiry Message / Requirements
                 </h4>
                 <div style="font-size: 0.9rem; color: #334155; white-space: pre-line; line-height: 1.5;">
                     {{ $enquiry->message }}
@@ -148,7 +148,9 @@
     <!-- Right 1 Col: Management & Follow-up Notes -->
     <div>
         <div class="card mb-4">
-            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1.25rem;">📝 Enquiry Management</h3>
+            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 6px;">
+                <x-icon name="edit" :size="16" /> Enquiry Management
+            </h3>
 
             <form action="{{ route('admin.enquiries.update', $enquiry->id) }}" method="POST">
                 @csrf
@@ -180,16 +182,16 @@
                     <textarea name="new_followup_note" id="new_followup_note" class="form-control" rows="3" placeholder="Enter quotation given, customer response, discount offered, etc..."></textarea>
                 </div>
 
-                <button type="submit" class="btn btn-primary btn-block" style="width: 100%;">
-                    💾 Update Enquiry Status & Notes
+                <button type="submit" class="btn btn-primary btn-block" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <x-icon name="check" :size="15" /> Update Enquiry Status & Notes
                 </button>
             </form>
         </div>
 
         @if($enquiry->notes)
             <div class="card mb-4" style="background: #FFFBEB; border: 1px solid #FDE68A;">
-                <h4 style="font-size: 0.95rem; font-weight: 800; margin: 0 0 0.5rem 0; color: #92400E;">
-                    📋 History & Staff Follow-up Logs
+                <h4 style="font-size: 0.95rem; font-weight: 800; margin: 0 0 0.5rem 0; color: #92400E; display: flex; align-items: center; gap: 6px;">
+                    <x-icon name="clipboard-list" :size="16" /> History & Staff Follow-up Logs
                 </h4>
                 <div style="font-size: 0.85rem; color: #78350F; white-space: pre-line; line-height: 1.5; font-family: monospace;">
                     {{ $enquiry->notes }}

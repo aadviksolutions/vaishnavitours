@@ -7,21 +7,21 @@
 <div class="mb-4 d-flex justify-between align-center flex-wrap gap-2">
     <div>
         <h1 style="font-size: 1.65rem; font-weight: 800; margin: 0; color: var(--dark-900);">
-            📊 Business Reports & Analytics
+            Business Reports & Analytics
         </h1>
         <p style="color: var(--slate-500); margin: 2px 0 0 0; font-size: 0.875rem;">
             Real-time business intelligence, category-wise operational ledgers, Excel (.xlsx) and PDF export center.
         </p>
     </div>
     <div class="d-flex align-center gap-2">
-        <a href="{{ route('admin.reports.export.excel', request()->all()) }}" class="btn btn-outline btn-sm" style="color: #059669; border-color: #10B981; font-weight: 700;">
-            📥 Download Excel (.xlsx)
+        <a href="{{ route('admin.reports.export.excel', request()->all()) }}" class="btn btn-outline btn-sm" style="color: #059669; border-color: #10B981; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+            <x-icon name="download" :size="13" /> Download Excel (.xlsx)
         </a>
-        <a href="{{ route('admin.reports.export.pdf', request()->all()) }}" class="btn btn-outline btn-sm" style="color: #DC2626; border-color: #EF4444; font-weight: 700;">
-            📄 Download PDF (.pdf)
+        <a href="{{ route('admin.reports.export.pdf', request()->all()) }}" class="btn btn-outline btn-sm" style="color: #DC2626; border-color: #EF4444; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+            <x-icon name="file-text" :size="13" /> Download PDF (.pdf)
         </a>
-        <a href="{{ route('admin.reports.print', request()->all()) }}" target="_blank" class="btn btn-primary btn-sm" style="font-weight: 700;">
-            🖨️ Print View
+        <a href="{{ route('admin.reports.print', request()->all()) }}" target="_blank" class="btn btn-primary btn-sm" style="font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+            <x-icon name="printer" :size="13" /> Print View
         </a>
     </div>
 </div>
@@ -131,7 +131,7 @@
                 </div>
                 <div style="min-width: 160px;">
                     <label class="form-label" style="font-size: 0.75rem; margin-bottom: 2px;">Assigned Vehicle</label>
-                    <select name="vehicle_id" class="form-select form-select-sm">
+                    <select name="vehicle_id" class="searchable-select form-select form-select-sm">
                         <option value="">All Vehicles</option>
                         @foreach($vehicles as $v)
                             <option value="{{ $v->id }}" {{ request('vehicle_id') == $v->id ? 'selected' : '' }}>{{ $v->name }} ({{ $v->registration_number }})</option>
@@ -140,7 +140,7 @@
                 </div>
                 <div style="min-width: 150px;">
                     <label class="form-label" style="font-size: 0.75rem; margin-bottom: 2px;">Assigned Driver</label>
-                    <select name="driver_id" class="form-select form-select-sm">
+                    <select name="driver_id" class="searchable-select form-select form-select-sm">
                         <option value="">All Drivers</option>
                         @foreach($drivers as $d)
                             <option value="{{ $d->id }}" {{ request('driver_id') == $d->id ? 'selected' : '' }}>{{ $d->name }}</option>
@@ -168,7 +168,7 @@
                 </div>
                 <div style="min-width: 140px;">
                     <label class="form-label" style="font-size: 0.75rem; margin-bottom: 2px;">Vehicle Category</label>
-                    <select name="vehicle_type" class="form-select form-select-sm">
+                    <select name="vehicle_type" class="searchable-select form-select form-select-sm">
                         <option value="">All Categories</option>
                         @foreach(['Hatchback', 'Sedan', 'SUV', 'Innova Crysta', 'Tempo Traveller', 'Ambulance'] as $vt)
                             <option value="{{ $vt }}" {{ request('vehicle_type') === $vt ? 'selected' : '' }}>{{ $vt }}</option>
@@ -306,7 +306,7 @@
 
             <div style="margin-left: auto; display: flex; gap: 8px;">
                 <button type="submit" class="btn btn-dark btn-sm" style="font-weight: 700;">
-                    🔍 Apply Filters
+                    Apply Filters
                 </button>
                 <a href="{{ route('admin.reports.index', ['category' => $currentCategory]) }}" class="btn btn-outline btn-sm">
                     Reset
@@ -323,7 +323,7 @@
             <div class="kpi-card" style="border-left: 4px solid {{ $kpi['color'] ?? 'var(--primary)' }};">
                 <div class="d-flex justify-between align-center mb-1">
                     <span class="kpi-label">{{ $kpi['label'] }}</span>
-                    <span style="font-size: 1.1rem;">{{ $kpi['icon'] ?? '📊' }}</span>
+                    <span style="font-size: 1.1rem;"><x-icon name="trending-up" :size="16" /></span>
                 </div>
                 <div class="kpi-value" style="color: {{ $kpi['color'] ?? 'var(--dark-900)' }};">
                     {{ $kpi['value'] }}
@@ -350,14 +350,14 @@
         </div>
 
         <div class="d-flex align-center gap-2">
-            <a href="{{ route('admin.reports.export.excel', request()->all()) }}" class="btn btn-outline btn-sm" style="color: #059669; border-color: #10B981; font-weight: 700;">
-                📥 Excel (.xlsx)
+            <a href="{{ route('admin.reports.export.excel', request()->all()) }}" class="btn btn-outline btn-sm" style="color: #059669; border-color: #10B981; font-weight: 700; display: inline-flex; align-items: center; gap: 3px;">
+                <x-icon name="download" :size="12" /> Excel (.xlsx)
             </a>
-            <a href="{{ route('admin.reports.export.pdf', request()->all()) }}" class="btn btn-outline btn-sm" style="color: #DC2626; border-color: #EF4444; font-weight: 700;">
-                📄 PDF
+            <a href="{{ route('admin.reports.export.pdf', request()->all()) }}" class="btn btn-outline btn-sm" style="color: #DC2626; border-color: #EF4444; font-weight: 700; display: inline-flex; align-items: center; gap: 3px;">
+                <x-icon name="file-text" :size="12" /> PDF
             </a>
-            <a href="{{ route('admin.reports.print', request()->all()) }}" target="_blank" class="btn btn-secondary btn-sm" style="font-weight: 700;">
-                🖨️ Print
+            <a href="{{ route('admin.reports.print', request()->all()) }}" target="_blank" class="btn btn-secondary btn-sm" style="font-weight: 700; display: inline-flex; align-items: center; gap: 3px;">
+                <x-icon name="printer" :size="12" /> Print
             </a>
         </div>
     </div>
@@ -410,7 +410,7 @@
                 @empty
                     <tr>
                         <td colspan="{{ count($data['columns']) + 1 }}" class="text-center py-5">
-                            <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">📭</div>
+                            <div style="margin-bottom: 0.5rem; display: flex; justify-content: center;"><x-icon name="file-text" :size="32" class="text-slate-300" /></div>
                             <h4 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.25rem;">No Matching Records Found</h4>
                             <p style="color: var(--slate-500); font-size: 0.875rem; margin: 0;">
                                 No database records found in <strong>{{ $categoryMeta['title'] }}</strong> for the selected date range and filter criteria.

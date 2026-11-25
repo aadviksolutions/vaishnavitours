@@ -23,13 +23,13 @@
 
 @if(session('success'))
     <div class="alert alert-success mb-3" style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 0.75rem 1rem; border-radius: 6px; font-size: 13px;">
-        ✓ {{ session('success') }}
+        <span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="check" :size="15" /> {{ session('success') }}</span>
     </div>
 @endif
 
 @if(session('error'))
     <div class="alert alert-danger mb-3" style="background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; padding: 0.75rem 1rem; border-radius: 6px; font-size: 13px;">
-        ⚠️ {{ session('error') }}
+        <span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="alert-triangle" :size="15" /> {{ session('error') }}</span>
     </div>
 @endif
 
@@ -233,7 +233,7 @@
     <div style="background: #fff; border-radius: 8px; width: 100%; max-width: 520px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto;">
         <div class="d-flex justify-between align-center mb-3">
             <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--dark-900);">Add New Vehicle Category</h3>
-            <button type="button" onclick="closeModal('addCategoryModal')" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
+            <button type="button" onclick="closeModal('addCategoryModal')" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">&times;</button>
         </div>
         <form action="{{ route('admin.vehicle-categories.store') }}" method="POST">
             @csrf
@@ -310,7 +310,7 @@
     <div style="background: #fff; border-radius: 8px; width: 100%; max-width: 520px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto;">
         <div class="d-flex justify-between align-center mb-3">
             <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--dark-900);">Edit Vehicle Category</h3>
-            <button type="button" onclick="closeModal('editCategoryModal')" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
+            <button type="button" onclick="closeModal('editCategoryModal')" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">&times;</button>
         </div>
         <form id="editCategoryForm" method="POST">
             @csrf
@@ -387,7 +387,7 @@
             <div>
                 <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--dark-900);">Add Model to <span id="add_model_cat_name" style="color: var(--primary);"></span></h3>
             </div>
-            <button type="button" onclick="closeModal('addModelModal')" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
+            <button type="button" onclick="closeModal('addModelModal')" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">&times;</button>
         </div>
         <form id="addModelForm" method="POST">
             @csrf
@@ -425,7 +425,7 @@
     <div style="background: #fff; border-radius: 8px; width: 100%; max-width: 460px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
         <div class="d-flex justify-between align-center mb-3">
             <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--dark-900);">Edit Vehicle Model</h3>
-            <button type="button" onclick="closeModal('editModelModal')" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
+            <button type="button" onclick="closeModal('editModelModal')" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">&times;</button>
         </div>
         <form id="editModelForm" method="POST">
             @csrf

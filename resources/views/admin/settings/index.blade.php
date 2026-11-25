@@ -11,7 +11,7 @@
 
 @if(session('success'))
     <div class="alert alert-success mb-4">
-        ✅ {{ session('success') }}
+        <span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="check" :size="15" /> {{ session('success') }}</span>
     </div>
 @endif
 
@@ -25,7 +25,7 @@
                 <div class="d-flex justify-between align-center mb-3">
                     <div>
                         <h3 style="font-size: 1.15rem; font-weight: 800; color: #92400E; margin: 0; display: flex; align-items: center; gap: 8px;">
-                            🎉 Special Promotional Offer & Website Front-Page Banner
+                            <span style="display:inline-flex;align-items:center;gap:6px;"><x-icon name="sparkles" :size="16" class="text-amber-500" /> Special Promotional Offer & Website Front-Page Banner</span>
                         </h3>
                         <p style="font-size: 0.8rem; color: #B45309; margin: 4px 0 0 0;">
                             Change, remove, or update promotional discounts & festive offers anytime. Automatically appears on the website front page when active.
@@ -44,10 +44,10 @@
                         <label for="special_offer_enabled" class="form-label" style="font-weight: 700; color: #78350F;">Offer Status on Website *</label>
                         <select name="special_offer_enabled" id="special_offer_enabled" class="form-select" style="font-weight: 700; border-color: #FCD34D;">
                             <option value="1" {{ ($settings['special_offer_enabled']->value ?? '0') === '1' ? 'selected' : '' }}>
-                                ✅ Active (Show Promotional Banner on Website Front Page)
+                                Active (Show Promotional Banner on Website Front Page)
                             </option>
                             <option value="0" {{ ($settings['special_offer_enabled']->value ?? '0') === '0' ? 'selected' : '' }}>
-                                🚫 Inactive (Hide Offer Banner from Website)
+                                Inactive (Hide Offer Banner from Website)
                             </option>
                         </select>
                     </div>
@@ -95,7 +95,7 @@
 
             <!-- Brand & Contact -->
             <div class="card mb-4">
-                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">🏢 Brand & Company Profile</h3>
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;"><span style="display:inline-flex;align-items:center;gap:6px;"><x-icon name="building" :size="16" /> Brand & Company Profile</span></h3>
 
                 <div class="grid grid-2 gap-3 mb-3">
                     <div class="form-group">
@@ -124,7 +124,7 @@
 
             <!-- Helplines -->
             <div class="card mb-4">
-                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">📞 Official Contact & Support Numbers</h3>
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;"><span style="display:inline-flex;align-items:center;gap:6px;"><x-icon name="phone" :size="16" /> Official Contact & Support Numbers</span></h3>
 
                 <div class="grid grid-2 gap-3 mb-3">
                     <div class="form-group">
@@ -153,7 +153,7 @@
 
             <!-- Social Media Profiles -->
             <div class="card mb-4">
-                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">🌐 Official Social Media Profiles</h3>
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;"><span style="display:inline-flex;align-items:center;gap:6px;"><x-icon name="globe" :size="16" /> Official Social Media Profiles</span></h3>
 
                 <div class="grid grid-3 gap-3">
                     <div class="form-group">
@@ -175,7 +175,7 @@
 
             <!-- Head Office Address & GST -->
             <div class="card mb-4">
-                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">📍 Bilaspur Head Office Address</h3>
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;"><span style="display:inline-flex;align-items:center;gap:6px;"><x-icon name="map-pin" :size="16" /> Bilaspur Head Office Address</span></h3>
 
                 <div class="grid grid-2 gap-3 mb-3">
                     <div class="form-group">
@@ -243,7 +243,7 @@
                 <div class="d-flex justify-between align-center mb-3">
                     <div>
                         <h3 style="font-size: 1.15rem; font-weight: 800; color: #92400E; margin: 0; display: flex; align-items: center; gap: 8px;">
-                            📱 Official UPI ID &amp; QR Code (Punjab National Bank)
+                            <span style="display:inline-flex;align-items:center;gap:6px;"><x-icon name="credit-card" :size="16" /> Official UPI ID &amp; QR Code (Punjab National Bank)</span>
                         </h3>
                         <p style="font-size: 0.8rem; color: #B45309; margin: 4px 0 0 0;">
                             This UPI ID and QR code are automatically shared on customer payment links, WhatsApp booking options, and the public checkout portal.
@@ -301,7 +301,7 @@
                         Google Business Profile &amp; Reviews Integration
                     </h3>
                     <span class="badge" style="background: #DEF7EC; color: #03543F; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 9999px;">
-                        ✓ Verified Listing
+                        <span style="display:inline-flex;align-items:center;gap:3px;"><x-icon name="check" :size="11" /> Verified Listing</span>
                     </span>
                 </div>
 
@@ -380,7 +380,7 @@
             <div class="card mb-4" style="border: 2px solid #BFDBFE; background: #FFFFFF;">
                 <div class="d-flex justify-between align-center mb-3">
                     <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
-                        <span>🗺️</span>
+                        <span><x-icon name="compass" :size="18" /></span>
                         Google Maps Platform, Places &amp; Routes API Configuration
                     </h3>
                     <span class="badge" style="background: #EFF6FF; color: #1D4ED8; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 9999px;">
@@ -391,7 +391,7 @@
                 <!-- API Setup Guide Alert -->
                 <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 12px 16px; margin-bottom: 1.25rem;">
                     <strong style="color: #166534; font-size: 0.85rem; display: block; margin-bottom: 4px;">
-                        🔑 Required Google Cloud Console APIs &amp; Security Restrictions:
+                        Required Google Cloud Console APIs &amp; Security Restrictions:
                     </strong>
                     <div style="font-size: 0.785rem; color: #15803D; line-height: 1.5;">
                         <ul style="margin: 0; padding-left: 1.2rem;">
@@ -443,7 +443,7 @@
 
             <!-- Booking Policy Terms -->
             <div class="card mb-4">
-                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">📄 Booking Policy Terms & Conditions</h3>
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;"><span style="display:inline-flex;align-items:center;gap:6px;"><x-icon name="file-text" :size="16" /> Booking Policy Terms & Conditions</span></h3>
 
                 <div class="form-group">
                     <label for="booking_terms" class="form-label">Standard Customer Policy (Printed on Invoices)</label>
@@ -454,7 +454,7 @@
             {{-- WhatsApp / OpenWA Integration --}}
             <div class="card mb-4" style="border: 2px solid #25D366;">
                 <div class="d-flex align-items-center gap-2 mb-3">
-                    <span style="font-size:1.5rem;">📱</span>
+                    <span style="display:inline-flex;align-items:center;"><x-icon name="phone" :size="22" /></span>
                     <div>
                         <h3 style="font-size: 1.15rem; font-weight: 800; margin:0;">WhatsApp Notifications (OpenWA)</h3>
                         <p style="font-size:0.8rem;color:var(--slate-500);margin:0;">
@@ -506,7 +506,7 @@
 
             <div class="d-flex justify-end gap-2 mb-5">
                 <button type="submit" class="btn btn-primary" style="min-width: 200px;">
-                    💾 Save All Settings
+                    <span style="display:inline-flex;align-items:center;gap:5px;"><x-icon name="check" :size="16" /> Save All Settings</span>
                 </button>
             </div>
 
@@ -516,7 +516,7 @@
         <!-- Right 1 Col: Quick Info -->
         <div>
             <div class="card mb-4" style="background: var(--slate-50);">
-                <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 0.5rem;">🏢 Vaishnavi Tours HQ</h4>
+                <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 0.5rem;"><span style="display:inline-flex;align-items:center;gap:5px;"><x-icon name="building" :size="15" /> Vaishnavi Tours HQ</span></h4>
                 <p style="font-size: 0.825rem; color: var(--slate-600); line-height: 1.5; margin-bottom: 0.75rem;">
                     The contact numbers and addresses configured here are automatically synchronized across:
                 </p>

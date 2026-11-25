@@ -17,7 +17,7 @@
             </div>
             <h3 style="font-size: 1.2rem; font-weight: 800; margin: 0;">{{ $user->name }}</h3>
             <div style="color: var(--slate-500); font-size: 0.85rem; margin-top: 2px;">{{ $user->email }}</div>
-            <div style="color: var(--slate-500); font-size: 0.85rem;">📞 {{ $user->phone }}</div>
+            <div style="color: var(--slate-500); font-size: 0.85rem;"><x-icon name="phone" :size="13" class="me-1 inline" /> {{ $user->phone }}</div>
             
             <div style="border-top: 1px solid var(--slate-200); margin-top: 1.25rem; padding-top: 1.25rem; text-align: left;">
                 <div class="d-flex justify-between mb-2" style="font-size: 0.85rem;">
@@ -63,7 +63,7 @@
 
             <!-- Personal Contact Details -->
             <div class="card mb-4">
-                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">👤 Personal Contact Details</h3>
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;"><x-icon name="user" :size="18" class="me-1 inline" /> Personal Contact Details</h3>
                 
                 <div class="grid grid-2 gap-3 mb-3">
                     <div class="form-group">
@@ -93,7 +93,7 @@
 
             <!-- Billing & Frequent Pickup Address -->
             <div class="card mb-4">
-                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">📍 Default Pickup / Billing Address</h3>
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;"><x-icon name="map-pin" :size="18" class="me-1 inline" /> Default Pickup / Billing Address</h3>
 
                 <div class="form-group mb-3">
                     <label for="address" class="form-label">Street Address / House No. / Landmark</label>
@@ -120,7 +120,7 @@
 
             <!-- Security & Password Update -->
             <div class="card mb-4">
-                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 0.5rem;">🔒 Change Password</h3>
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 0.5rem;"><x-icon name="lock" :size="18" class="me-1 inline" /> Change Password</h3>
                 <p style="color: var(--slate-500); font-size: 0.85rem; margin-bottom: 1.25rem;">Leave blank if you do not wish to change your password.</p>
 
                 <div class="form-group mb-3">
@@ -143,7 +143,7 @@
 
             <div class="d-flex justify-end gap-2">
                 <a href="{{ route('customer.dashboard') }}" class="btn btn-outline">Cancel</a>
-                <button type="submit" class="btn btn-primary" style="min-width: 160px;">💾 Save All Changes</button>
+                <button type="submit" class="btn btn-primary" style="min-width: 160px;"><x-icon name="save" :size="14" class="me-1 inline" /> Save All Changes</button>
             </div>
         </form>
     </div>

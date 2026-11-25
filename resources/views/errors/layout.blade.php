@@ -145,7 +145,7 @@
             </a>
             <div class="d-flex align-center gap-2">
                 <a href="tel:{{ config('vaishnavi.phone_primary_tel', '+919244784443') }}" style="color: #F59E0B; font-weight: 700; text-decoration: none; font-size: 0.95rem;">
-                    📞 Call Us: {{ config('vaishnavi.phone_primary', '9244784443') }}
+                    <x-icon name="phone" :size="14" class="me-1 inline" /> Call Us: {{ config('vaishnavi.phone_primary', '9244784443') }}
                 </a>
             </div>
         </div>
@@ -160,13 +160,13 @@
 
             <div class="error-actions">
                 <a href="{{ route('home') }}" class="btn-error-primary">
-                    🏠 Back to Home
+                    <x-icon name="home" :size="14" class="me-1 inline" /> Back to Home
                 </a>
                 <a href="{{ route('booking') }}" class="btn-error-secondary">
-                    🚖 Book a Cab
+                    <x-icon name="car" :size="14" class="me-1 inline" /> Book a Cab
                 </a>
                 <a href="{{ route('contact') }}" class="btn-error-secondary">
-                    💬 Contact Us
+                    <x-icon name="message-circle" :size="14" class="me-1 inline" /> Contact Us
                 </a>
             </div>
         </div>

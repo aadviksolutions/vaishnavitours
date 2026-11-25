@@ -20,7 +20,7 @@
             </div>
             <div class="d-flex gap-2">
                 <a href="{{ route('booking') }}" class="btn btn-primary btn-lg">
-                    🚖 Book a New Cab
+                    <x-icon name="car" :size="14" class="me-1 inline" /> Book a New Cab
                 </a>
             </div>
         </div>
@@ -64,16 +64,16 @@
                         Trip Status: {{ $upcomingTrip->booking_status }}
                     </span>
                     <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--dark-900);">
-                        Upcoming Trip: {{ $upcomingTrip->pickup_location }} ➔ {{ $upcomingTrip->destination }}
+                        Upcoming Trip: {{ $upcomingTrip->pickup_location }} &rarr; {{ $upcomingTrip->destination }}
                     </h2>
                 </div>
                 <div class="d-flex gap-2">
                     <a href="{{ route('customer.bookings.show', $upcomingTrip->id) }}" class="btn btn-primary">
-                        📍 Track Trip Details & Chauffeur →
+                        <x-icon name="navigation" :size="13" class="me-1 inline" /> Track Trip Details & Chauffeur &rarr;
                     </a>
                     @if($upcomingTrip->invoice)
                         <a href="{{ route('invoice.show', $upcomingTrip->id) }}" class="btn btn-outline" target="_blank">
-                            🧾 Invoice
+                            <x-icon name="receipt" :size="13" class="me-1 inline" /> Invoice
                         </a>
                     @endif
                 </div>
@@ -129,7 +129,7 @@
                     <span style="color: var(--slate-500); font-size: 0.75rem; text-transform: uppercase; font-weight: 700;">Driver Contact</span>
                     <div style="font-weight: 700; color: var(--dark-900);">
                         @if($upcomingTrip->driver)
-                            📞 <a href="tel:{{ $upcomingTrip->driver->mobile }}" style="color: inherit; text-decoration: none;">{{ $upcomingTrip->driver->mobile }}</a>
+                            <x-icon name="phone" :size="12" class="me-1 inline" /> <a href="tel:{{ $upcomingTrip->driver->mobile }}" style="color: inherit; text-decoration: none;">{{ $upcomingTrip->driver->mobile }}</a>
                         @else
                             <span style="color: var(--slate-400);">Pending Allocation</span>
                         @endif
@@ -140,7 +140,7 @@
             <!-- Dynamic Trip Timeline (Section 12) -->
             <div style="background: #ffffff; border: 1.5px solid rgba(245,158,11,0.3); border-radius: 8px; padding: 1.25rem;">
                 <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: var(--slate-500); margin-bottom: 0.75rem;">
-                    📍 Journey Progress Timeline (Real-Time Database Status)
+                    <x-icon name="route" :size="16" class="me-1 inline" /> Journey Progress Timeline (Real-Time Database Status)
                 </div>
 
                 @php
@@ -167,7 +167,7 @@
                         @endphp
                         <div style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem;">
                             @if($isDone)
-                                <span style="color: #059669; font-weight: 800; font-size: 1.1rem;">✓</span>
+                                <span style="color: #059669; display: inline-flex; align-items: center;"><x-icon name="check" :size="16" /></span>
                                 <span style="color: #059669; font-weight: 700;">{{ $title }}</span>
                             @elseif($isCurrent)
                                 <span style="color: #D97706; font-weight: 800; font-size: 1.25rem;">●</span>
@@ -178,7 +178,7 @@
                             @endif
 
                             @if(!$loop->last)
-                                <span style="color: var(--slate-300); margin-left: 6px;">➔</span>
+                                <span style="color: var(--slate-300); margin-left: 6px;">&rarr;</span>
                             @endif
                         </div>
                     @endforeach
@@ -220,7 +220,7 @@
                                             </a>
                                         </td>
                                         <td>
-                                            <div style="font-weight: 700;">{{ $b->pickup_location }} ➔ {{ $b->destination }}</div>
+                                            <div style="font-weight: 700;">{{ $b->pickup_location }} &rarr; {{ $b->destination }}</div>
                                             <div style="font-size: 0.75rem; color: var(--slate-500);">{{ $b->trip_type }}</div>
                                         </td>
                                         <td>{{ $b->travel_date->format('d M, Y') }}</td>
@@ -278,7 +278,7 @@
                     <div style="font-size: 0.8rem; color: var(--slate-500); margin-bottom: 0.75rem;">Our dispatch desk is always ready to help 24/7.</div>
                     <div class="d-flex gap-2">
                         <a href="tel:{{ config('vaishnavi.phone_primary_tel') }}" class="btn btn-primary btn-sm" style="flex: 1; text-align: center;">📞 Call: {{ config('vaishnavi.phone_primary') }}</a>
-                        <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" class="btn btn-outline btn-sm" style="flex: 1; text-align: center; border-color: #25D366; color: #166534;">💬 WhatsApp</a>
+                        <a href="{{ config('vaishnavi.whatsapp_link') }}" target="_blank" class="btn btn-outline btn-sm" style="flex: 1; text-align: center; border-color: #25D366; color: #166534;"><x-icon name="message-circle" :size="13" class="me-1 inline" /> WhatsApp</a>
                     </div>
                 </div>
             </div>

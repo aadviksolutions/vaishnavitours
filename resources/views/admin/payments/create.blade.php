@@ -39,7 +39,7 @@
                         <option value="">-- Choose Booking --</option>
                         @foreach($bookings as $b)
                             <option value="{{ $b->id }}" data-due="{{ $b->balance_amount }}" {{ (old('booking_id') == $b->id || $selectedBookingId == $b->id) ? 'selected' : '' }}>
-                                #{{ $b->booking_id }} - {{ $b->customer->name ?? 'Guest' }} ({{ $b->pickup_location }} ➔ {{ $b->destination }}) - Due: ₹{{ number_format($b->balance_amount, 2) }}
+                                #{{ $b->booking_id }} - {{ $b->customer->name ?? 'Guest' }} ({{ $b->pickup_location }} &rarr; {{ $b->destination }}) - Due: ₹{{ number_format($b->balance_amount, 2) }}
                             </option>
                         @endforeach
                     </select>

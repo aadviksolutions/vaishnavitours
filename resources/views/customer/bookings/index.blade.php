@@ -18,13 +18,13 @@
 
     @if(session('success'))
         <div class="alert alert-success mb-3">
-            ✓ {{ session('success') }}
+            <x-icon name="check" :size="14" class="me-1 inline" /> {{ session('success') }}
         </div>
     @endif
 
     @if(session('error'))
         <div class="alert alert-danger mb-3">
-            ⚠️ {{ session('error') }}
+            <x-icon name="alert-triangle" :size="14" class="me-1 inline" /> {{ session('error') }}
         </div>
     @endif
 
@@ -63,7 +63,7 @@
     <div class="card">
         @if($bookings->isEmpty())
             <div style="text-align: center; padding: 3.5rem 1rem;">
-                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🚖</div>
+                <div style="margin-bottom: 0.5rem;"><x-icon name="car" :size="40" style="color: var(--slate-300);" /></div>
                 <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--dark-900); margin-bottom: 0.5rem;">No Bookings Found</h3>
                 <p style="color: var(--slate-500); font-size: 0.9rem; margin-bottom: 1.5rem;">
                     You do not have any bookings in this section.
@@ -99,7 +99,7 @@
                                 </td>
                                 <td>
                                     <div style="font-weight: 700; color: var(--dark-900);">
-                                        {{ $booking->pickup_location }} ➔ {{ $booking->destination }}
+                                        {{ $booking->pickup_location }} &rarr; {{ $booking->destination }}
                                     </div>
                                     <div style="font-size: 0.75rem; color: var(--slate-500);">
                                         <span class="badge" style="background: var(--slate-200); color: var(--dark-800); font-size: 0.7rem;">{{ $booking->trip_type }}</span>

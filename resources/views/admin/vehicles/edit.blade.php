@@ -109,7 +109,9 @@
 
                 <div class="card mb-4" style="background: var(--slate-50); border: 1px solid var(--slate-200);">
                     <div class="d-flex justify-between align-center mb-2 flex-wrap gap-2">
-                        <h3 style="font-size: 1.05rem; font-weight: 800; margin: 0;">📑 Compliance & Document Records</h3>
+                        <h3 style="font-size: 1.05rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
+                            <x-icon name="file-text" :size="18" /> Compliance & Document Records
+                        </h3>
                         <span class="badge" style="background: #E0E7FF; color: #3730A3; font-size: 11px;">
                             Optional Documents (Not Mandatory)
                         </span>
@@ -180,8 +182,8 @@
 
                 <div class="d-flex justify-between gap-2">
                     <a href="{{ route('admin.vehicles.show', $vehicle->id) }}" class="btn btn-outline">Cancel</a>
-                    <button type="submit" class="btn btn-primary flex-1">
-                        💾 Update Vehicle
+                    <button type="submit" class="btn btn-primary flex-1" style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <x-icon name="check" :size="16" /> Update Vehicle
                     </button>
                 </div>
             </div>
@@ -194,7 +196,7 @@
     <div style="background: #fff; border-radius: 8px; width: 100%; max-width: 480px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.25);">
         <div class="d-flex justify-between align-center mb-3">
             <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--dark-900);">Add New Vehicle Category</h3>
-            <button type="button" onclick="closeQuickCategoryModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
+            <button type="button" onclick="closeQuickCategoryModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">&times;</button>
         </div>
         <form id="quickCategoryForm" onsubmit="submitQuickCategory(event)">
             <div class="mb-3">
@@ -231,7 +233,7 @@
     <div style="background: #fff; border-radius: 8px; width: 100%; max-width: 450px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.25);">
         <div class="d-flex justify-between align-center mb-3">
             <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--dark-900);">Add New Vehicle Model</h3>
-            <button type="button" onclick="closeQuickModelModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
+            <button type="button" onclick="closeQuickModelModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">&times;</button>
         </div>
         <form id="quickModelForm" onsubmit="submitQuickModel(event)">
             <div class="mb-3">
@@ -349,7 +351,7 @@
                 lastValidCategory = cat.id;
                 closeQuickCategoryModal();
                 onAdminCategoryChange();
-                alert(`✓ Category '${cat.name}' created and selected successfully!`);
+                alert(`Category '${cat.name}' created and selected successfully!`);
             } else {
                 err.textContent = data.message || 'Error creating category.';
                 err.style.display = 'block';
@@ -406,7 +408,7 @@
                 lastValidModel = m.id;
                 closeQuickModelModal();
                 onAdminModelChange();
-                alert(`✓ Model '${m.name}' created and selected successfully!`);
+                alert(`Model '${m.name}' created and selected successfully!`);
             } else {
                 err.textContent = data.message || 'Error creating model.';
                 err.style.display = 'block';

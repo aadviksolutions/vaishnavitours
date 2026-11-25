@@ -7,24 +7,24 @@
 {{-- Navigation Tabs --}}
 <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
     <div>
-        <h1 style="font-size: 1.65rem; font-weight: 800; margin: 0;">📱 WhatsApp Device Linking</h1>
+        <h1 style="font-size: 1.65rem; font-weight: 800; margin: 0;">WhatsApp Device Linking</h1>
         <p style="color: var(--slate-500); font-size: 0.875rem; margin: 2px 0 0 0;">
             Scan the QR code with WhatsApp on your phone to link your sender number.
         </p>
     </div>
     <div class="d-flex gap-2">
-        <a href="{{ route('admin.whatsapp.scan') }}" class="btn btn-primary btn-sm">📲 Scan & Connect</a>
-        <a href="{{ route('admin.whatsapp.templates') }}" class="btn btn-outline-secondary btn-sm">⚙️ Templates</a>
-        <a href="{{ route('admin.whatsapp.logs') }}" class="btn btn-outline-secondary btn-sm">📋 Logs</a>
-        <a href="{{ route('admin.settings.index') }}" class="btn btn-outline-secondary btn-sm">🔧 Settings</a>
+        <a href="{{ route('admin.whatsapp.scan') }}" class="btn btn-primary btn-sm"><span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="phone" :size="13" /> Scan & Connect</span></a>
+        <a href="{{ route('admin.whatsapp.templates') }}" class="btn btn-outline-secondary btn-sm"><span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="settings" :size="13" /> Templates</span></a>
+        <a href="{{ route('admin.whatsapp.logs') }}" class="btn btn-outline-secondary btn-sm"><span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="clipboard-list" :size="13" /> Logs</span></a>
+        <a href="{{ route('admin.settings.index') }}" class="btn btn-outline-secondary btn-sm"><span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="settings" :size="13" /> Settings</span></a>
     </div>
 </div>
 
 @if(session('success'))
-    <div class="alert alert-success mb-4">✅ {{ session('success') }}</div>
+    <div class="alert alert-success mb-4"><span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="check" :size="14" /> {{ session('success') }}</span></div>
 @endif
 @if(session('error'))
-    <div class="alert alert-danger mb-4">❌ {{ session('error') }}</div>
+    <div class="alert alert-danger mb-4"><span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="alert-circle" :size="14" /> {{ session('error') }}</span></div>
 @endif
 
 @php
@@ -88,17 +88,17 @@
                             @csrf
                             <input type="hidden" name="phone" value="{{ $session['phone'] }}">
                             <button type="submit" class="btn btn-primary">
-                                💾 Save as Admin Number
+                                <span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="check" :size="13" /> Save as Admin Number</span>
                             </button>
                         </form>
                     @endif
                     <a href="{{ route('admin.whatsapp.templates') }}" class="btn btn-outline-success">
-                        📤 Send Test Message
+                        <span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="send" :size="13" /> Send Test Message</span>
                     </a>
                     <form method="POST" action="{{ route('admin.whatsapp.logout') }}" onsubmit="return confirm('Disconnect this WhatsApp session? You will need to scan again.');">
                         @csrf
                         <button type="submit" class="btn btn-outline-danger">
-                            🔴 Disconnect Device
+                            <span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="x" :size="13" /> Disconnect Device</span>
                         </button>
                     </form>
                 </div>
@@ -126,7 +126,7 @@
                 </div>
 
                 <button type="button" class="btn btn-outline-secondary btn-sm mt-2" onclick="fetchQrStatus(true)">
-                    🔄 Refresh QR Code Now
+                    <span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="refresh-cw" :size="13" /> Refresh QR Code Now</span>
                 </button>
             </div>
         </div>
@@ -136,12 +136,12 @@
     <div class="col-lg-5">
         <div class="card p-4 mb-4" style="border-radius: 12px;">
             <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">
-                📲 How to Link WhatsApp
+                How to Link WhatsApp
             </h3>
 
             <ol style="padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.8; color: #334155; margin: 0;">
                 <li>Open <strong>WhatsApp</strong> on your mobile phone.</li>
-                <li>Tap <strong>Menu (⋮)</strong> on Android or <strong>Settings (⚙️)</strong> on iPhone.</li>
+                <li>Tap <strong>Menu (⋮)</strong> on Android or <strong>Settings ()</strong> on iPhone.</li>
                 <li>Tap <strong>Linked Devices</strong>.</li>
                 <li>Tap <strong>Link a Device</strong> and point your camera at the QR code on the left.</li>
                 <li>Once scanned, this page will <strong>automatically detect</strong> your phone number!</li>
@@ -151,7 +151,7 @@
         <div class="card p-4" style="border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0;">
             <div class="d-flex justify-content-between align-center mb-2">
                 <h4 style="font-size: 0.95rem; font-weight: 700; margin: 0;">
-                    ⚙️ Gateway URL Configuration
+                    Gateway URL Configuration
                 </h4>
                 @php
                     $currentGw = \App\Models\Setting::get('openwa_base_url') ?: config('services.openwa.base_url', 'http://localhost:2785');
@@ -167,7 +167,7 @@
 
             @if(!$isLocalWeb && $isGwLocal)
                 <div class="alert alert-warning p-2 mb-3" style="font-size: 12px; background: #FFFBEB; border: 1px solid #FCD34D; color: #92400E; border-radius: 6px;">
-                    <strong>⚠️ Live Website Alert:</strong> Aapki website live cloud server par chal rahi hai, isliye live server aapke computer ke <code>http://localhost:2785</code> ko direct access nahi kar sakta. Agar WhatsApp gateway aapke computer par chal raha hai, toh <strong>ngrok</strong> ya <strong>localtunnel</strong> se public URL banayein aur neeche paste karke save karein.
+                    <strong> Live Website Alert:</strong> Aapki website live cloud server par chal rahi hai, isliye live server aapke computer ke <code>http://localhost:2785</code> ko direct access nahi kar sakta. Agar WhatsApp gateway aapke computer par chal raha hai, toh <strong>ngrok</strong> ya <strong>localtunnel</strong> se public URL banayein aur neeche paste karke save karein.
                 </div>
             @endif
 
@@ -183,7 +183,7 @@
                 </div>
                 <div class="d-flex justify-content-between align-center">
                     <button type="submit" class="btn btn-primary btn-sm" style="font-size: 12px; font-weight: 700;">
-                        💾 Save &amp; Connect Gateway
+                        <span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="check" :size="14" /> Save &amp; Connect Gateway</span>
                     </button>
                     <a href="{{ route('admin.settings.index') }}" class="text-secondary" style="font-size: 11.5px;">All Settings →</a>
                 </div>
@@ -192,7 +192,7 @@
             <hr style="margin: 1rem 0; border-color: #E2E8F0;">
 
             <div style="font-size: 11.5px; color: #64748B; line-height: 1.5;">
-                <strong>💡 2 Ways to Run WhatsApp on Live Website:</strong>
+                <strong> 2 Ways to Run WhatsApp on Live Website:</strong>
                 <ol style="padding-left: 1rem; margin: 4px 0 0 0;">
                     <li><strong>Run from Local Computer via Tunnel (2 mins):</strong> Terminal me run karein <code>npx ngrok http 2785</code> ya <code>npx localtunnel --port 2785</code>. Jo <code>https://...</code> link mile, usko upar save karein.</li>
                     <li><strong>24/7 Cloud Host (Recommended):</strong> Gateway code ko Render / Railway / VPS par deploy karein taaki laptop band hone par bhi WhatsApp chalta rahe.</li>
@@ -252,7 +252,7 @@ function fetchQrStatus(forceRefresh = false) {
                 qrBox.style.display = 'block';
                 qrContainer.innerHTML = `
                     <div class="p-4 text-center" style="background:#fef2f2; border:2px dashed #f87171; border-radius:12px; width:280px; min-height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-                        <span style="font-size:2rem; margin-bottom:8px;">⚠️</span>
+                        <span style="font-size:2rem; margin-bottom:8px;"></span>
                         <strong style="color:#991b1b; font-size:0.95rem; margin-bottom:4px;">Gateway Service Offline</strong>
                         <p style="font-size:0.8rem; color:#7f1d1d; margin-bottom:8px; line-height:1.4;">
                             ${data.message || 'OpenWA gateway is not running or unreachable at the configured URL.'}

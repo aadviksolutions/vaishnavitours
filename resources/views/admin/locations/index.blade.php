@@ -19,8 +19,8 @@
 </div>
 
 @if(session('success'))
-    <div class="alert alert-success mb-3" style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 0.75rem 1rem; border-radius: 6px;">
-        ✓ {{ session('success') }}
+    <div class="alert alert-success mb-3" style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 0.75rem 1rem; border-radius: 6px; display: flex; align-items: center; gap: 6px;">
+        <x-icon name="check" :size="15" /> {{ session('success') }}
     </div>
 @endif
 

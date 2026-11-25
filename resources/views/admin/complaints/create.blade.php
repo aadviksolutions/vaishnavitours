@@ -52,7 +52,7 @@
         <div class="grid grid-2 gap-2 mb-3">
             <div id="driverSelectGroup">
                 <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Target Driver *</label>
-                <select name="driver_id" id="driverSelect" class="form-select form-select-sm">
+                <select name="driver_id" id="driverSelect" class="searchable-select form-select form-select-sm">
                     <option value="">Select Chauffeur</option>
                     @foreach($drivers as $d)
                         <option value="{{ $d->id }}">{{ $d->name }} ({{ $d->mobile }})</option>
@@ -61,7 +61,7 @@
             </div>
             <div id="vehicleSelectGroup" style="display: none;">
                 <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Target Vehicle *</label>
-                <select name="vehicle_id" id="vehicleSelect" class="form-select form-select-sm">
+                <select name="vehicle_id" id="vehicleSelect" class="searchable-select form-select form-select-sm">
                     <option value="">Select Fleet Vehicle</option>
                     @foreach($vehicles as $v)
                         <option value="{{ $v->id }}">{{ $v->name }} ({{ $v->registration_number }})</option>
@@ -91,11 +91,11 @@
             <div>
                 <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px;">Rating (1 to 5 Stars)</label>
                 <select name="rating" class="form-select form-select-sm">
-                    <option value="1">⭐ 1 - Very Poor / Serious Issue</option>
-                    <option value="2">⭐⭐ 2 - Unsatisfactory</option>
-                    <option value="3">⭐⭐⭐ 3 - Average</option>
-                    <option value="4">⭐⭐⭐⭐ 4 - Good</option>
-                    <option value="5" selected>⭐⭐⭐⭐⭐ 5 - Excellent</option>
+                    <option value="1">1 - Very Poor / Serious Issue</option>
+                    <option value="2">2 - Unsatisfactory</option>
+                    <option value="3">3 - Average</option>
+                    <option value="4">4 - Good</option>
+                    <option value="5" selected>5 - Excellent</option>
                 </select>
             </div>
         </div>

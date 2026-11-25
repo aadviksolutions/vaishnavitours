@@ -14,21 +14,21 @@
             ⭐ {{ number_format($averageRating, 1) }} / 5.0 ({{ $totalCount }} Total Reviews)
         </span>
 
-        <button type="button" class="btn btn-primary btn-sm" onclick="toggleAddReviewForm()" style="font-weight: 600;">
-            ➕ Add Google Review
+        <button type="button" class="btn btn-primary btn-sm" onclick="toggleAddReviewForm()" style="font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+            <x-icon name="plus" :size="14" /> Add Google Review
         </button>
 
         <form method="POST" action="{{ route('admin.feedback.sync-google') }}" style="display: inline;">
             @csrf
-            <button type="submit" class="btn btn-outline btn-sm" style="font-weight: 600; color: #1E40AF; border-color: #93C5FD; background: #EFF6FF;">
-                ⚡ Sync Official 5-Star Reviews
+            <button type="submit" class="btn btn-outline btn-sm" style="font-weight: 600; color: #1E40AF; border-color: #93C5FD; background: #EFF6FF; display: inline-flex; align-items: center; gap: 4px;">
+                <x-icon name="zap" :size="14" /> Sync Official 5-Star Reviews
             </button>
         </form>
 
         <form method="POST" action="{{ route('admin.feedback.clean-spam') }}" style="display: inline;" onsubmit="return confirm('Clean all spam, scam links, and non-5-star bot submissions?');">
             @csrf
-            <button type="submit" class="btn btn-outline btn-sm" style="font-weight: 600; color: #DC2626; border-color: #FCA5A5; background: #FEF2F2;">
-                🧹 Clean Spam Reviews
+            <button type="submit" class="btn btn-outline btn-sm" style="font-weight: 600; color: #DC2626; border-color: #FCA5A5; background: #FEF2F2; display: inline-flex; align-items: center; gap: 4px;">
+                <x-icon name="trash-2" :size="14" /> Clean Spam Reviews
             </button>
         </form>
     </div>
@@ -41,7 +41,7 @@
             <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0; color: var(--dark-900);">Add Verified Google Review</h3>
             <p style="font-size: 0.8rem; color: var(--slate-500); margin: 2px 0 0 0;">Add genuine customer feedback directly from your official Google Business Profile.</p>
         </div>
-        <button type="button" class="btn btn-outline btn-sm" onclick="toggleAddReviewForm()">✕ Close</button>
+        <button type="button" class="btn btn-outline btn-sm" onclick="toggleAddReviewForm()">&times; Close</button>
     </div>
 
     <form method="POST" action="{{ route('admin.feedback.store') }}">
@@ -60,8 +60,8 @@
             <div class="form-group">
                 <label class="form-label" style="font-weight: 700;">Rating *</label>
                 <select name="rating" class="form-select" required>
-                    <option value="5" selected>★★★★★ - 5 Stars (Recommended)</option>
-                    <option value="4">★★★★☆ - 4 Stars</option>
+                    <option value="5" selected>5 Stars (Recommended)</option>
+                    <option value="4">4 Stars</option>
                 </select>
             </div>
         </div>
@@ -93,8 +93,8 @@
                 <span style="font-weight: 600; color: var(--dark-800);">Publish immediately on website homepage &amp; feedback page</span>
             </label>
 
-            <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1.5rem; font-weight: 700;">
-                ✓ Save &amp; Publish Review
+            <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1.5rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
+                <x-icon name="check" :size="15" /> Save &amp; Publish Review
             </button>
         </div>
     </form>
@@ -142,8 +142,10 @@
                             @endif
                         </td>
                         <td>
-                            <div style="color: #F59E0B; font-weight: 800; font-size: 0.9rem; white-space: nowrap;">
-                                {{ str_repeat('★', $item->rating) }}{{ str_repeat('☆', 5 - $item->rating) }}
+                            <div style="color: #F59E0B; font-weight: 800; font-size: 0.9rem; white-space: nowrap; display: inline-flex; align-items: center; gap: 2px;">
+                                @for($i = 0; $i < $item->rating; $i++)
+                                    <x-icon name="star" :size="13" class="text-amber-500 fill-amber-500" />
+                                @endfor
                                 <span style="color: var(--dark-900); font-size: 0.8rem; margin-left: 4px;">({{ $item->rating }}/5)</span>
                             </div>
                         </td>
@@ -154,7 +156,7 @@
                         </td>
                         <td>
                             @if($item->is_public)
-                                <span class="badge badge-success">✓ Published</span>
+                                <span class="badge badge-success" style="display: inline-flex; align-items: center; gap: 3px;"><x-icon name="check" :size="11" /> Published</span>
                             @else
                                 <span class="badge badge-secondary">Pending Approval</span>
                             @endif

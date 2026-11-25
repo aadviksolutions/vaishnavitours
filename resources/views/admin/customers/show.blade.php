@@ -14,7 +14,7 @@
     </div>
     <div class="d-flex gap-2">
         <a href="{{ route('admin.customers.edit', $user->id) }}" class="btn btn-primary" style="font-weight: 700;">
-            ✏️ Edit Profile
+            <x-icon name="edit" :size="13" class="me-1 inline" /> Edit Profile
         </a>
     </div>
 </div>
@@ -116,7 +116,7 @@
     <div style="grid-column: span 2;">
         <!-- Bookings History -->
         <div class="card mb-4">
-            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem;">🚖 Bookings History</h3>
+            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem;"><x-icon name="car" :size="18" class="me-1 inline" /> Bookings History</h3>
 
             <div class="table-responsive">
                 <table class="table">
@@ -138,7 +138,7 @@
                                         #{{ $b->booking_id }}
                                     </a>
                                 </td>
-                                <td>{{ $b->pickup_location }} ➔ {{ $b->destination }}</td>
+                                <td>{{ $b->pickup_location }} &rarr; {{ $b->destination }}</td>
                                 <td>{{ $b->travel_date ? $b->travel_date->format('d M Y') : '' }}</td>
                                 <td style="font-weight: 800;">₹{{ number_format($b->total_amount, 2) }}</td>
                                 <td>
@@ -162,7 +162,7 @@
 
         <!-- Payments Ledger -->
         <div class="card">
-            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem;">💳 Payments Ledger</h3>
+            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem;"><x-icon name="credit-card" :size="18" class="me-1 inline" /> Payments Ledger</h3>
 
             <div class="table-responsive">
                 <table class="table">

@@ -162,7 +162,7 @@
                                 @if($inv->booking?->via_location)
                                     <span style="color: var(--slate-400);">via {{ $inv->booking->via_location }}</span>
                                 @endif
-                                ➔ {{ $inv->booking->destination ?? 'N/A' }}
+                                &rarr; {{ $inv->booking->destination ?? 'N/A' }}
                             </div>
                             <div style="font-size: 11px; color: var(--slate-500);">{{ $inv->booking->trip_type ?? '' }}</div>
                         </td>

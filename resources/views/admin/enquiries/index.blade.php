@@ -104,7 +104,9 @@
                     <td>
                         <div style="font-weight: 700; color: var(--dark-900);">{{ $item->name }}</div>
                         <div style="font-size: 11px;">
-                            <a href="tel:{{ $item->phone }}" style="color: #2563EB;">📞 {{ $item->phone }}</a>
+                            <a href="tel:{{ $item->phone }}" style="color: #2563EB; display: inline-flex; align-items: center; gap: 4px;">
+                                <x-icon name="phone" :size="12" /> {{ $item->phone }}
+                            </a>
                         </div>
                     </td>
                     <td>
@@ -181,7 +183,7 @@
     <div style="background: #fff; border-radius: 8px; width: 100%; max-width: 580px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
         <div class="d-flex justify-between align-center mb-3">
             <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--dark-900);">Record Manual / Corporate Enquiry</h3>
-            <button type="button" onclick="document.getElementById('manualEnquiryModal').style.display='none'" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
+            <button type="button" onclick="document.getElementById('manualEnquiryModal').style.display='none'" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">&times;</button>
         </div>
         <form action="{{ route('admin.enquiries.store-manual') }}" method="POST">
             @csrf

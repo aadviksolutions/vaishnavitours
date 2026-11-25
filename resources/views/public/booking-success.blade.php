@@ -121,13 +121,13 @@
                     <!-- PNB UPI Quick Box -->
                     <div style="background: #FFFDF5; border: 1.5px solid #FCD34D; border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
                         <div>
-                            <strong style="color: #92400E; font-size: 0.9rem;">📱 Instant UPI Payment Available (PNB QR Code):</strong>
+                            <strong style="color: #92400E; font-size: 0.9rem;">Instant UPI Payment Available (PNB QR Code):</strong>
                             <div style="font-size: 0.8rem; color: #78350F; margin-top: 2px;">
                                 Merchant: <strong>VAISHNAVI TOURS</strong> • UPI ID: <strong style="font-family: monospace;">{{ \App\Models\Setting::get('upi_id', '9179484443m@pnb') }}</strong>
                             </div>
                         </div>
                         <a href="{{ route('payment.pay', $booking->id) }}" class="btn btn-sm" style="background: #059669; border-color: #059669; color: #fff; font-weight: 800;">
-                            🖼️ Scan &amp; Pay via UPI QR →
+                            <x-icon name="qr-code" :size="14" class="me-1 inline" /> Scan &amp; Pay via UPI QR &rarr;
                         </a>
                     </div>
 
@@ -193,7 +193,7 @@
             @elseif($booking->payment_status === 'Paid')
                 <div style="background: #F0FDF4; border: 1.5px solid #BBF7D0; border-radius: var(--radius-md); padding: 1.25rem; text-align: center; margin-bottom: 2rem;">
                     <span style="color: #166534; font-weight: 800; font-size: 1.05rem;">
-                        ✓ Payment of ₹{{ number_format($booking->paid_amount, 2) }} Verified & Confirmed
+                        <x-icon name="check" :size="14" class="me-1 inline" /> Payment of ₹{{ number_format($booking->paid_amount, 2) }} Verified & Confirmed
                     </span>
                 </div>
             @endif

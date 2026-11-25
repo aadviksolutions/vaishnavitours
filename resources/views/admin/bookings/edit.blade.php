@@ -76,7 +76,7 @@
                             <input type="text" 
                                    id="customer_search_input" 
                                    class="form-control" 
-                                   placeholder="🔍 Type Name or Mobile number to switch customer..." 
+                                   placeholder="Type Name or Mobile number to switch customer..." 
                                    autocomplete="off"
                                    style="padding-left: 38px; padding-right: 36px; height: 42px; border-radius: 8px; font-size: 0.875rem; border: 1.5px solid var(--slate-300);">
                             <button type="button" 
@@ -159,7 +159,7 @@
                                 <input type="text" 
                                        id="corporate_search_input" 
                                        class="form-control form-control-sm" 
-                                       placeholder="🔍 Search saved corporate by Company Name, Contact Person, Mobile, GSTIN..." 
+                                       placeholder="Search saved corporate by Company Name, Contact Person, Mobile, GSTIN..." 
                                        autocomplete="off"
                                        style="padding-left: 32px; padding-right: 30px; border: 1.5px solid #DDD6FE; border-radius: 6px; font-size: 12.5px;"
                                        onkeyup="handleCorporateSearch(this.value)">
@@ -191,7 +191,7 @@
                                             data-address="{{ $cc['billing_address'] }}"
                                             data-user-id="{{ $cc['user_id'] }}"
                                             {{ old('company_name', $booking->corporate_company_name) === $cc['company_name'] ? 'selected' : '' }}>
-                                        {{ $cc['company_name'] }} — {{ $cc['contact_person'] ?: 'No contact' }} ({{ $cc['phone'] ? '📞 ' . $cc['phone'] : ($cc['gstin'] ? 'GST: ' . $cc['gstin'] : 'Saved') }})
+                                        {{ $cc['company_name'] }} — {{ $cc['contact_person'] ?: 'No contact' }} ({{ $cc['phone'] ? '' . $cc['phone'] : ($cc['gstin'] ? 'GST: ' . $cc['gstin'] : 'Saved') }})
                                     </option>
                                 @endforeach
                             </select>
@@ -261,7 +261,7 @@
                                 <input type="text" 
                                        id="travel_partner_search_input" 
                                        class="form-control form-control-sm" 
-                                       placeholder="🔍 Search saved partner by Agency Name, Mobile, Email..." 
+                                       placeholder="Search saved partner by Agency Name, Mobile, Email..." 
                                        autocomplete="off"
                                        style="padding-left: 32px; padding-right: 30px; border: 1.5px solid #FDE68A; border-radius: 6px; font-size: 12.5px;"
                                        onkeyup="handleTravelPartnerSearch(this.value)">
@@ -292,7 +292,7 @@
                                             data-commission="{{ $tp['commission'] }}"
                                             data-notes="{{ $tp['notes'] }}"
                                             {{ old('travel_partner_name', $booking->travel_partner_name) === $tp['name'] ? 'selected' : '' }}>
-                                        {{ $tp['name'] }} ({{ $tp['phone'] ? '📞 ' . $tp['phone'] : 'Saved' }}{{ $tp['commission'] ? ' • Comm: ₹' . $tp['commission'] : '' }})
+                                        {{ $tp['name'] }} ({{ $tp['phone'] ? '' . $tp['phone'] : 'Saved' }}{{ $tp['commission'] ? ' • Comm: ₹' . $tp['commission'] : '' }})
                                     </option>
                                 @endforeach
                             </select>
@@ -351,7 +351,7 @@
                     <select name="trip_type" id="trip_type" class="form-select" onchange="onAdminEditTripTypeChange()" required>
                         @php
                             $types = [
-                                'One-Way' => '🚗 Oneway trip',
+                                'One-Way' => 'Oneway trip',
                                 'Round-Trip' => '🔄 Round trip',
                                 'Tour Package' => '🌴 Tour Package',
                                 'Ambulance' => '🚑 Ambulance',
@@ -513,17 +513,17 @@
                                 + Add New Vehicle
                             </button>
                         </div>
-                        <select name="vehicle_id" id="vehicle_id" class="form-select" onchange="onAdminVehicleSelectChange(this)">
+                        <select name="vehicle_id" id="vehicle_id" class="searchable-select form-select" onchange="onAdminVehicleSelectChange(this)">
                             <option value="">-- No Vehicle Assigned --</option>
                             <option value="new_vehicle" style="font-weight: 700; color: #2563EB; background: #EFF6FF;">+ Add New Vehicle</option>
-                            <optgroup label="🏢 Own Company Fleet">
+                            <optgroup label="Own Company Fleet">
                                 @foreach($vehicles->where('is_third_party', false) as $veh)
                                     <option value="{{ $veh->id }}" {{ old('vehicle_id', $booking->vehicle_id) == $veh->id ? 'selected' : '' }}>
                                         {{ $veh->name }} - {{ $veh->registration_number }} ({{ $veh->vehicle_type }} • {{ $veh->status }})
                                     </option>
                                 @endforeach
                             </optgroup>
-                            <optgroup label="🤝 Third Party Vehicles (Travel Partner)">
+                            <optgroup label="Third Party Vehicles (Travel Partner)">
                                 @foreach($vehicles->where('is_third_party', true) as $tpVeh)
                                     <option value="{{ $tpVeh->id }}" {{ old('vehicle_id', $booking->vehicle_id) == $tpVeh->id ? 'selected' : '' }}>
                                         {{ $tpVeh->registration_number }} - {{ $tpVeh->name }} (Partner: {{ $tpVeh->vendor_name ?: 'Partner' }})
@@ -540,7 +540,7 @@
                                 + Add New Driver
                             </button>
                         </div>
-                        <select name="driver_id" id="driver_id" class="form-select" onchange="onAdminDriverSelectChange(this)">
+                        <select name="driver_id" id="driver_id" class="searchable-select form-select" onchange="onAdminDriverSelectChange(this)">
                             <option value="">-- No Driver Assigned --</option>
                             <option value="new_driver" style="font-weight: 700; color: #059669; background: #ECFDF5;">+ Add New Driver</option>
                             @foreach($drivers as $drv)
@@ -607,7 +607,7 @@
     <div style="background: #fff; border-radius: 8px; width: 100%; max-width: 500px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto;">
         <div class="d-flex justify-between align-center mb-3">
             <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--dark-900);">Quick Add Fleet Vehicle</h3>
-            <button type="button" onclick="closeQuickVehicleModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
+            <button type="button" onclick="closeQuickVehicleModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">&times;</button>
         </div>
         <form id="quickVehicleForm" onsubmit="submitQuickVehicle(event)">
             <div class="mb-3">
@@ -664,7 +664,7 @@
             <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: #065F46; display: flex; align-items: center; gap: 8px;">
                 <x-icon name="user-check" :size="18" /> Add &amp; Assign New Driver
             </h3>
-            <button type="button" onclick="closeQuickDriverModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
+            <button type="button" onclick="closeQuickDriverModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">&times;</button>
         </div>
         <form id="quickDriverForm" onsubmit="submitQuickDriver(event)">
             <div class="mb-3">
@@ -736,7 +736,7 @@
                     <div style="font-weight: 700; color: #1E293B;">${c.company_name}</div>
                     <div style="font-size: 11px; color: var(--slate-500); display: flex; gap: 8px; flex-wrap: wrap;">
                         <span>👤 ${c.contact_person || 'No contact'}</span>
-                        ${c.phone ? `<span>📞 ${c.phone}</span>` : ''}
+                        ${c.phone ? `<span>${c.phone}</span>` : ''}
                         ${c.gstin ? `<span>🏛️ GST: ${c.gstin}</span>` : ''}
                     </div>
                 </div>`;
@@ -848,7 +848,7 @@
                 html += `<div onclick="selectTravelPartner(${origIdx})" style="padding: 8px 12px; border-bottom: 1px solid var(--slate-100); cursor: pointer; font-size: 12px; transition: background 0.15s;" onmouseover="this.style.background='#FFFBEB'" onmouseout="this.style.background='transparent'">
                     <div style="font-weight: 700; color: #1E293B;">${p.name}</div>
                     <div style="font-size: 11px; color: var(--slate-500); display: flex; gap: 8px; flex-wrap: wrap;">
-                        ${p.phone ? `<span>📞 ${p.phone}</span>` : ''}
+                        ${p.phone ? `<span>${p.phone}</span>` : ''}
                         ${p.email ? `<span>✉️ ${p.email}</span>` : ''}
                         ${p.commission ? `<span>💵 Comm: ₹${p.commission}</span>` : ''}
                     </div>
@@ -898,7 +898,7 @@
         const card = document.getElementById('travel_partner_selected_card');
         const text = document.getElementById('travel_partner_selected_text');
         if (card && text) {
-            text.textContent = `✓ Selected Partner: ${p.name} (${p.phone ? '📞 ' + p.phone : 'Saved Partner'})`;
+            text.textContent = `✓ Selected Partner: ${p.name} (${p.phone ? '' + p.phone : 'Saved Partner'})`;
             card.style.display = 'block';
             card.style.background = '#ECFDF5';
             card.style.borderColor = '#A7F3D0';
@@ -1513,7 +1513,7 @@
                     ${phoneHtml ? `
                     <div style="flex-shrink: 0;">
                         <span style="background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; padding: 2px 7px; border-radius: 6px; font-size: 0.775rem; font-weight: 700; font-family: monospace;">
-                            📞 ${phoneHtml}
+                            ${phoneHtml}
                         </span>
                     </div>` : ''}
                 `;
@@ -1621,7 +1621,7 @@
                 if (selectedNameDisplay) selectedNameDisplay.textContent = c.name;
                 if (selectedDetailDisplay) {
                     const details = [
-                        c.phone ? `📞 ${c.phone}` : '',
+                        c.phone ? `${c.phone}` : '',
                         c.email ? `✉️ ${c.email}` : ''
                     ].filter(Boolean).join('  ·  ');
                     selectedDetailDisplay.textContent = details;

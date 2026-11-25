@@ -18,13 +18,15 @@
     </div>
 
     <div class="d-flex align-center gap-2">
-        <a href="{{ route('admin.drivers.edit', $driver->id) }}" class="btn btn-primary btn-sm">
-            ✏️ Edit Chauffeur
+        <a href="{{ route('admin.drivers.edit', $driver->id) }}" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 4px;">
+            <x-icon name="edit" :size="14" /> Edit Chauffeur
         </a>
         <form action="{{ route('admin.drivers.destroy', $driver->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove this driver record?');">
             @csrf
             @method('DELETE')
-            <button type="submit" class="btn btn-danger btn-sm">🗑️ Delete</button>
+            <button type="submit" class="btn btn-danger btn-sm" style="display: inline-flex; align-items: center; gap: 4px;">
+                <x-icon name="trash-2" :size="14" /> Delete
+            </button>
         </form>
     </div>
 </div>
@@ -33,7 +35,9 @@
     <!-- Left 2 Cols: Driver Details & Trips -->
     <div style="grid-column: span 2;">
         <div class="card mb-4">
-            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">👨‍✈️ Chauffeur Credentials</h3>
+            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 6px;">
+                <x-icon name="user" :size="18" /> Chauffeur Credentials
+            </h3>
 
             <div class="grid grid-3 gap-3 mb-3">
                 <div style="background: var(--slate-50); padding: 1rem; border-radius: var(--radius-md);">
@@ -54,7 +58,7 @@
 
                 <div style="background: var(--slate-50); padding: 1rem; border-radius: var(--radius-md);">
                     <div style="font-size: 0.75rem; color: var(--slate-500); text-transform: uppercase;">Passenger Rating</div>
-                    <div style="font-weight: 800; font-size: 1.25rem; color: #d97706; margin-top: 4px;">⭐ {{ number_format($driver->rating, 1) }} / 5.0</div>
+                    <div style="font-weight: 800; font-size: 1.25rem; color: #d97706; margin-top: 4px; display: flex; align-items: center; gap: 4px;"><x-icon name="star" :size="16" class="text-amber-500 fill-amber-500" /> {{ number_format($driver->rating, 1) }} / 5.0</div>
                 </div>
             </div>
 
@@ -73,7 +77,9 @@
 
         <!-- Recent Booking Assignments -->
         <div class="card">
-            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem;">📋 Completed & Assigned Trips</h3>
+            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem; display: flex; align-items: center; gap: 6px;">
+                <x-icon name="clipboard-list" :size="18" /> Completed & Assigned Trips
+            </h3>
             
             <div class="table-responsive">
                 <table class="table">
@@ -95,7 +101,7 @@
                                     </a>
                                 </td>
                                 <td>{{ $b->customer->name ?? 'Customer' }}</td>
-                                <td>{{ $b->pickup_location }} ➔ {{ $b->destination }}</td>
+                                <td>{{ $b->pickup_location }} &rarr; {{ $b->destination }}</td>
                                 <td>{{ $b->travel_date ? $b->travel_date->format('d M Y') : '' }}</td>
                                 <td>
                                     <span class="badge badge-sm badge-secondary">{{ $b->booking_status }}</span>
@@ -111,8 +117,8 @@
         <!-- Driver Quality Reviews & Complaints (Section 3 requirement) -->
         <div class="card mb-4" style="background: #fff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 1.25rem; margin-top: 1rem;">
             <div class="d-flex justify-between align-center mb-2">
-                <h3 style="font-size: 14px; font-weight: 700; margin: 0; color: var(--dark-900);">
-                    ⭐ Chauffeur Conduct & Quality Audit Reviews
+                <h3 style="font-size: 14px; font-weight: 700; margin: 0; color: var(--dark-900); display: flex; align-items: center; gap: 6px;">
+                    <x-icon name="star" :size="15" class="text-amber-500 fill-amber-500" /> Chauffeur Conduct & Quality Audit Reviews
                 </h3>
                 <a href="{{ route('admin.complaints.create') }}" class="btn btn-outline btn-sm" style="font-size: 11px;">
                     + Log Driver Review
@@ -133,7 +139,7 @@
                         @forelse($driver->complaints as $dc)
                             <tr>
                                 <td>{{ \Carbon\Carbon::parse($dc->complaint_date)->format('d M Y') }}</td>
-                                <td style="font-weight: 700;">⭐ {{ $dc->rating }}/5</td>
+                                <td style="font-weight: 700; display: flex; align-items: center; gap: 3px;"><x-icon name="star" :size="12" class="text-amber-500 fill-amber-500" /> {{ $dc->rating }}/5</td>
                                 <td>
                                     <strong>{{ $dc->title }}</strong>
                                     <div style="font-size: 11px; color: var(--slate-500);">{{ Str::limit($dc->description, 50) }}</div>
@@ -155,7 +161,9 @@
     <!-- Right 1 Col: Assigned Vehicle Card -->
     <div>
         <div class="card mb-4">
-            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem;">🚗 Default Assigned Vehicle</h3>
+            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem; display: flex; align-items: center; gap: 6px;">
+                <x-icon name="car" :size="18" /> Default Assigned Vehicle
+            </h3>
 
             @if($driver->assignedVehicle)
                 <div style="font-size: 1.1rem; font-weight: 800; color: var(--dark-900);">{{ $driver->assignedVehicle->name }}</div>

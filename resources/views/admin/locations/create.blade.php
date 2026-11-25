@@ -29,7 +29,7 @@
             <div class="d-flex justify-between align-center mb-1">
                 <label style="font-size: 12px; font-weight: 600; margin: 0;">City / Area Name *</label>
                 <button type="button" id="btnLocationSelectMap" class="btn btn-xs btn-outline" style="font-size: 11px; padding: 2px 7px; color: #2563EB; border-color: #BFDBFE; background: #EFF6FF;">
-                    🗺️ Select on Map
+                    <x-icon name="map" :size="13" class="me-1 inline" /> Select on Map
                 </button>
             </div>
             <input type="text" name="name" id="locNameInput" class="form-control form-control-sm" placeholder="e.g. Korba, Champa, Janjgir, Raigarh" required>

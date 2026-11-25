@@ -20,7 +20,7 @@
 
 @if(session('success'))
     <div class="alert alert-success mb-3" style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 0.75rem 1rem; border-radius: 6px;">
-        ✓ {{ session('success') }}
+        <span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="check" :size="15" /> {{ session('success') }}</span>
     </div>
 @endif
 
@@ -97,7 +97,7 @@
     <div style="background: #fff; border-radius: 8px; width: 100%; max-width: 480px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
         <div class="d-flex justify-between align-center mb-3">
             <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--dark-900);">Add New Booking Category</h3>
-            <button type="button" onclick="document.getElementById('addCategoryModal').style.display='none'" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
+            <button type="button" onclick="document.getElementById('addCategoryModal').style.display='none'" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">&times;</button>
         </div>
         <form action="{{ route('admin.booking-categories.store') }}" method="POST">
             @csrf
@@ -132,7 +132,7 @@
     <div style="background: #fff; border-radius: 8px; width: 100%; max-width: 480px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
         <div class="d-flex justify-between align-center mb-3">
             <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--dark-900);">Edit Booking Category</h3>
-            <button type="button" onclick="document.getElementById('editCategoryModal').style.display='none'" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
+            <button type="button" onclick="document.getElementById('editCategoryModal').style.display='none'" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">&times;</button>
         </div>
         <form id="editCategoryForm" method="POST">
             @csrf

@@ -30,7 +30,9 @@
         <!-- Left 2 Cols: Details -->
         <div style="grid-column: span 2;">
             <div class="card mb-4">
-                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">👨‍✈️ Personal & Commercial License Details</h3>
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px;">
+                    <x-icon name="user" :size="18" /> Personal & Commercial License Details
+                </h3>
 
                 <div class="grid grid-2 gap-3 mb-3">
                     <div class="form-group">
@@ -83,11 +85,13 @@
         <!-- Right 1 Col: Vehicle Attachment & Duty Status -->
         <div>
             <div class="card mb-4">
-                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem;">🚗 Allocation & Status</h3>
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px;">
+                    <x-icon name="car" :size="18" /> Allocation & Status
+                </h3>
 
                 <div class="form-group mb-3">
                     <label for="assigned_vehicle_id" class="form-label">Default Vehicle Assignment</label>
-                    <select name="assigned_vehicle_id" id="assigned_vehicle_id" class="form-select">
+                    <select name="assigned_vehicle_id" id="assigned_vehicle_id" class="searchable-select form-select">
                         <option value="">-- Pool Driver (No Fixed Vehicle) --</option>
                         @foreach($vehicles as $v)
                             <option value="{{ $v->id }}" {{ old('assigned_vehicle_id', $driver->assigned_vehicle_id) == $v->id ? 'selected' : '' }}>
@@ -109,8 +113,8 @@
 
                 <div class="d-flex justify-between gap-2">
                     <a href="{{ route('admin.drivers.show', $driver->id) }}" class="btn btn-outline">Cancel</a>
-                    <button type="submit" class="btn btn-primary flex-1">
-                        💾 Update Driver
+                    <button type="submit" class="btn btn-primary flex-1" style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <x-icon name="check" :size="16" /> Update Driver
                     </button>
                 </div>
             </div>

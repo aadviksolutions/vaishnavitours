@@ -6,27 +6,27 @@
 @section('content')
 <div class="mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
     <div>
-        <h1 style="font-size:1.65rem;font-weight:800;margin:0;">📱 WhatsApp Notification Templates</h1>
+        <h1 style="font-size:1.65rem;font-weight:800;margin:0;">WhatsApp Notification Templates</h1>
         <p style="color:var(--slate-500);font-size:0.875rem;margin:2px 0 0 0;">Customise every automatic WhatsApp message sent to customers and admins.</p>
     </div>
     <div class="d-flex gap-2 flex-wrap">
-        <a href="{{ route('admin.whatsapp.scan') }}" class="btn btn-primary btn-sm">📲 Link WhatsApp (Scan QR)</a>
-        <a href="{{ route('admin.whatsapp.logs') }}" class="btn btn-secondary btn-sm">📋 Message Logs</a>
-        <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#testModal">🚀 Send Test</button>
+        <a href="{{ route('admin.whatsapp.scan') }}" class="btn btn-primary btn-sm"><span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="phone" :size="13" /> Link WhatsApp (Scan QR)</span></a>
+        <a href="{{ route('admin.whatsapp.logs') }}" class="btn btn-secondary btn-sm"><span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="clipboard-list" :size="13" /> Message Logs</span></a>
+        <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#testModal"><span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="send" :size="13" /> Send Test</span></button>
     </div>
 </div>
 
 @if(session('success'))
-    <div class="alert alert-success mb-4">✅ {{ session('success') }}</div>
+    <div class="alert alert-success mb-4"><span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="check" :size="14" /> {{ session('success') }}</span></div>
 @endif
 @if(session('error'))
-    <div class="alert alert-danger mb-4">❌ {{ session('error') }}</div>
+    <div class="alert alert-danger mb-4"><span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="alert-circle" :size="14" /> {{ session('error') }}</span></div>
 @endif
 
 {{-- Variable Reference Card --}}
 <div class="card mb-4" style="background: linear-gradient(135deg,#f0fdf4,#dcfce7); border:1px solid #86efac;">
     <div class="d-flex align-items-start gap-3">
-        <span style="font-size:2rem;">💡</span>
+        <span style="font-size:2rem;"></span>
         <div>
             <strong>Using Template Variables</strong>
             <p style="font-size:0.85rem;margin:4px 0 0 0;color:#166534;">
@@ -69,7 +69,7 @@
                     id="cust_{{ $template->id }}" value="1"
                     {{ $template->send_to_customer ? 'checked' : '' }}>
                 <label class="form-check-label small fw-semibold" for="cust_{{ $template->id }}">
-                    👤 Send to Customer
+                    Send to Customer
                 </label>
             </div>
             <div class="form-check">
@@ -77,7 +77,7 @@
                     id="adm_{{ $template->id }}" value="1"
                     {{ $template->send_to_admin ? 'checked' : '' }}>
                 <label class="form-check-label small fw-semibold" for="adm_{{ $template->id }}">
-                    🛡️ Send to Admin (copy)
+                    Send to Admin (copy)
                 </label>
             </div>
         </div>
@@ -101,10 +101,10 @@
         </div>
 
         <div class="d-flex gap-2 justify-content-end">
-            <button type="submit" class="btn btn-primary btn-sm">💾 Save Template</button>
+            <button type="submit" class="btn btn-primary btn-sm"><span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="check" :size="13" /> Save Template</span></button>
             <button type="button" class="btn btn-outline-secondary btn-sm"
                 onclick="resetTemplate({{ $template->id }}, '{{ route('admin.whatsapp.templates.reset', $template) }}')">
-                🔄 Reset to Default
+                <span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="refresh-cw" :size="13" /> Reset to Default</span>
             </button>
         </div>
     </form>
@@ -119,7 +119,7 @@
             <form method="POST" action="{{ route('admin.whatsapp.send-test') }}">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title" id="testModalLabel">🚀 Send Test WhatsApp Message</h5>
+                    <h5 class="modal-title" id="testModalLabel"><span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="send" :size="13" /> Send Test</span> WhatsApp Message</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -137,7 +137,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success">📤 Send Test</button>
+                    <button type="submit" class="btn btn-success">Send Test</button>
                 </div>
             </form>
         </div>

@@ -24,25 +24,25 @@
 
     <div class="d-flex align-center gap-2">
         @if($trip->booking)
-            <a href="{{ route('admin.bookings.show', $trip->booking_id) }}" class="btn btn-outline btn-sm">
-                🚖 View Booking {{ $trip->booking->booking_id }}
+            <a href="{{ route('admin.bookings.show', $trip->booking_id) }}" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 4px;">
+                <x-icon name="car" :size="14" /> View Booking {{ $trip->booking->booking_id }}
             </a>
-            <a href="{{ route('admin.invoices.show', $trip->booking->invoice?->id ?? 1) }}" class="btn btn-outline btn-sm" target="_blank">
-                🧾 Tax Invoice
+            <a href="{{ route('admin.invoices.show', $trip->booking->invoice?->id ?? 1) }}" class="btn btn-outline btn-sm" target="_blank" style="display: inline-flex; align-items: center; gap: 4px;">
+                <x-icon name="receipt" :size="14" /> Tax Invoice
             </a>
         @endif
     </div>
 </div>
 
 @if(session('success'))
-    <div class="alert alert-success mb-3" style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 0.75rem 1rem; border-radius: 6px;">
-        ✓ {{ session('success') }}
+    <div class="alert alert-success mb-3" style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 0.75rem 1rem; border-radius: 6px; display: flex; align-items: center; gap: 6px;">
+        <x-icon name="check" :size="15" /> {{ session('success') }}
     </div>
 @endif
 
 @if(session('error'))
-    <div class="alert alert-danger mb-3" style="background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; padding: 0.75rem 1rem; border-radius: 6px;">
-        ✕ {{ session('error') }}
+    <div class="alert alert-danger mb-3" style="background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; padding: 0.75rem 1rem; border-radius: 6px; display: flex; align-items: center; gap: 6px;">
+        <x-icon name="alert-circle" :size="15" /> {{ session('error') }}
     </div>
 @endif
 
@@ -73,8 +73,8 @@
                     <input type="number" name="end_odometer" class="form-control form-control-sm" value="{{ $trip->end_odometer }}" placeholder="e.g. 45340">
                 </div>
                 <div>
-                    <button type="submit" class="btn btn-sm w-100" style="background: #059669; border: 1px solid #059669; font-weight: 700; height: 38px; color: #fff; font-size: 12.5px; cursor: pointer;">
-                        ✓ Complete Trip & Free Fleet Now
+                    <button type="submit" class="btn btn-sm w-100" style="background: #059669; border: 1px solid #059669; font-weight: 700; height: 38px; color: #fff; font-size: 12.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <x-icon name="check" :size="15" /> Complete Trip & Free Fleet Now
                     </button>
                 </div>
             </div>
@@ -98,8 +98,8 @@
         </div>
         <div>
             @if($trip->trip_status === 'Closed')
-                <span class="badge badge-success" style="font-size: 12px; padding: 4px 10px;">
-                    ✓ Closed on {{ $trip->closed_at?->format('d M Y, h:i A') }}
+                <span class="badge badge-success" style="font-size: 12px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px;">
+                    <x-icon name="check" :size="12" /> Closed on {{ $trip->closed_at?->format('d M Y, h:i A') }}
                 </span>
             @else
                 <span class="badge badge-warning" style="font-size: 12px; padding: 4px 10px;">
@@ -190,7 +190,7 @@
                 <div>
                     <span style="color: var(--slate-500); font-size: 11px; text-transform: uppercase; font-weight: 600;">Customer</span>
                     <div style="font-weight: 700; margin-top: 2px;">{{ $trip->booking?->customer?->name ?? 'Guest User' }}</div>
-                    <div style="font-size: 11px; color: var(--slate-600);">📞 {{ $trip->booking?->customer?->phone ?? '' }}</div>
+                    <div style="font-size: 11px; color: var(--slate-600); display: flex; align-items: center; gap: 4px; margin-top: 2px;"><x-icon name="phone" :size="11" /> {{ $trip->booking?->customer?->phone ?? '' }}</div>
                 </div>
                 <div>
                     <span style="color: var(--slate-500); font-size: 11px; text-transform: uppercase; font-weight: 600;">Travel Schedule</span>
@@ -234,11 +234,11 @@
                     <div style="font-size: 14px; font-weight: 700; margin-top: 4px; color: var(--dark-950);">
                         {{ $trip->driver->name }}
                     </div>
-                    <div style="font-size: 12px; font-weight: 600; color: var(--dark-900);">
-                        📞 {{ $trip->driver->mobile }}
+                    <div style="font-size: 12px; font-weight: 600; color: var(--dark-900); display: flex; align-items: center; gap: 4px; margin-top: 2px;">
+                        <x-icon name="phone" :size="12" /> {{ $trip->driver->mobile }}
                     </div>
-                    <div style="font-size: 11px; color: var(--slate-500); margin-top: 4px;">
-                        License: {{ $trip->driver->license_number }} (⭐ {{ $trip->driver->rating }})
+                    <div style="font-size: 11px; color: var(--slate-500); margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+                        License: {{ $trip->driver->license_number ?: 'Not specified' }} (<x-icon name="star" :size="11" class="text-amber-500 fill-amber-500" /> {{ $trip->driver->rating }})
                     </div>
                 @else
                     <div style="color: #dc2626; font-size: 12px; margin-top: 4px;">No driver assigned</div>
@@ -250,8 +250,8 @@
     <!-- Right Col: Update Status & Odometer -->
     <div>
         <div class="card mb-3" style="background: #fff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 1rem;">
-            <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 0.75rem; color: var(--dark-950);">
-                ⚡ Update Journey & Odometer
+            <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 0.75rem; color: var(--dark-950); display: flex; align-items: center; gap: 6px;">
+                <x-icon name="zap" :size="15" class="text-amber-500" /> Update Journey & Odometer
             </h3>
 
             <form action="{{ route('admin.trips.update', $trip->id) }}" method="POST">

@@ -6,14 +6,14 @@
 @section('content')
 <div class="mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
     <div>
-        <h1 style="font-size:1.65rem;font-weight:800;margin:0;">📋 WhatsApp Message Logs</h1>
+        <h1 style="font-size:1.65rem;font-weight:800;margin:0;"><x-icon name="clipboard-list" :size="24" class="me-1 inline" style="color: var(--primary);" /> WhatsApp Message Logs</h1>
         <p style="color:var(--slate-500);font-size:0.875rem;margin:2px 0 0 0;">
             All WhatsApp messages sent — to customers and admin copies.
         </p>
     </div>
     <div class="d-flex gap-2">
-        <a href="{{ route('admin.whatsapp.scan') }}" class="btn btn-outline-primary btn-sm">📲 Link WhatsApp</a>
-        <a href="{{ route('admin.whatsapp.templates') }}" class="btn btn-primary btn-sm">⚙️ Manage Templates</a>
+        <a href="{{ route('admin.whatsapp.scan') }}" class="btn btn-outline-primary btn-sm"><x-icon name="send" :size="13" class="me-1 inline" /> Link WhatsApp</a>
+        <a href="{{ route('admin.whatsapp.templates') }}" class="btn btn-primary btn-sm"><x-icon name="settings" :size="13" class="me-1 inline" /> Manage Templates</a>
     </div>
 </div>
 
@@ -24,9 +24,9 @@
             <label class="form-label small fw-semibold">Status</label>
             <select name="status" class="form-control form-control-sm">
                 <option value="">All Statuses</option>
-                <option value="sent" {{ request('status') === 'sent' ? 'selected' : '' }}>✅ Sent</option>
-                <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>❌ Failed</option>
-                <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>⏳ Pending</option>
+                <option value="sent" {{ request('status') === 'sent' ? 'selected' : '' }}><span style="display:inline-flex;align-items:center;gap:3px;"><x-icon name="check" :size="12" /> Sent</span></option>
+                <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}><span style="display:inline-flex;align-items:center;gap:3px;"><x-icon name="x" :size="12" /> Failed</span></option>
+                <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
             </select>
         </div>
         <div class="form-group mb-0">
@@ -44,12 +44,12 @@
             <label class="form-label small fw-semibold">Recipient</label>
             <select name="recipient_type" class="form-control form-control-sm">
                 <option value="">All</option>
-                <option value="customer" {{ request('recipient_type') === 'customer' ? 'selected' : '' }}>👤 Customer</option>
-                <option value="admin" {{ request('recipient_type') === 'admin' ? 'selected' : '' }}>🛡️ Admin</option>
-                <option value="manual" {{ request('recipient_type') === 'manual' ? 'selected' : '' }}>✏️ Manual</option>
+                <option value="customer" {{ request('recipient_type') === 'customer' ? 'selected' : '' }}><span style="display:inline-flex;align-items:center;gap:3px;"><x-icon name="user" :size="11" /> Customer</span></option>
+                <option value="admin" {{ request('recipient_type') === 'admin' ? 'selected' : '' }}><span style="display:inline-flex;align-items:center;gap:3px;"><x-icon name="shield" :size="11" /> Admin</span></option>
+                <option value="manual" {{ request('recipient_type') === 'manual' ? 'selected' : '' }}><span style="display:inline-flex;align-items:center;gap:3px;"><x-icon name="edit" :size="11" /> Manual</span></option>
             </select>
         </div>
-        <button type="submit" class="btn btn-primary btn-sm">🔍 Filter</button>
+        <button type="submit" class="btn btn-primary btn-sm">Filter</button>
         <a href="{{ route('admin.whatsapp.logs') }}" class="btn btn-secondary btn-sm">Clear</a>
     </form>
 </div>
@@ -60,17 +60,17 @@
         <div style="font-size:2rem;font-weight:800;color:#16a34a;">
             {{ $logs->getCollection()->where('status','sent')->count() }} / {{ $logs->total() }}
         </div>
-        <div style="color:#15803d;font-size:0.85rem;font-weight:600;">✅ Sent (this page / total)</div>
+        <div style="color:#15803d;font-size:0.85rem;font-weight:600;"><span style="display:inline-flex;align-items:center;gap:3px;"><x-icon name="check" :size="12" /> Sent</span> (this page / total)</div>
     </div>
     <div class="card text-center" style="background:linear-gradient(135deg,#fef2f2,#fee2e2);border:1px solid #fca5a5;">
         <div style="font-size:2rem;font-weight:800;color:#dc2626;">
             {{ $logs->getCollection()->where('status','failed')->count() }}
         </div>
-        <div style="color:#b91c1c;font-size:0.85rem;font-weight:600;">❌ Failed (this page)</div>
+        <div style="color:#b91c1c;font-size:0.85rem;font-weight:600;"><span style="display:inline-flex;align-items:center;gap:3px;"><x-icon name="x" :size="12" /> Failed</span> (this page)</div>
     </div>
     <div class="card text-center" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #93c5fd;">
         <div style="font-size:2rem;font-weight:800;color:#2563eb;">{{ $logs->total() }}</div>
-        <div style="color:#1d4ed8;font-size:0.85rem;font-weight:600;">📊 Total Messages</div>
+        <div style="color:#1d4ed8;font-size:0.85rem;font-weight:600;"><span style="display:inline-flex;align-items:center;gap:4px;"><x-icon name="trending-up" :size="13" /> Total Messages</span></div>
     </div>
 </div>
 
@@ -78,7 +78,7 @@
 <div class="card">
     @if($logs->isEmpty())
         <div class="text-center py-5">
-            <div style="font-size:3rem;">📭</div>
+            <div style="margin-bottom:0.5rem;"><x-icon name="mail" :size="36" class="text-slate-300" /></div>
             <h3 class="mt-3">No messages logged yet</h3>
             <p style="color:var(--slate-500);">WhatsApp messages will appear here once notifications are sent.</p>
         </div>
@@ -108,11 +108,11 @@
                         </td>
                         <td>
                             @if($log->recipient_type === 'customer')
-                                <span class="badge" style="background:#dbeafe;color:#1e40af;">👤 Customer</span>
+                                <span class="badge" style="background:#dbeafe;color:#1e40af;"><span style="display:inline-flex;align-items:center;gap:3px;"><x-icon name="user" :size="11" /> Customer</span></span>
                             @elseif($log->recipient_type === 'admin')
-                                <span class="badge" style="background:#fef9c3;color:#713f12;">🛡️ Admin</span>
+                                <span class="badge" style="background:#fef9c3;color:#713f12;"><span style="display:inline-flex;align-items:center;gap:3px;"><x-icon name="shield" :size="11" /> Admin</span></span>
                             @else
-                                <span class="badge" style="background:#f3f4f6;color:#374151;">✏️ Manual</span>
+                                <span class="badge" style="background:#f3f4f6;color:#374151;"><span style="display:inline-flex;align-items:center;gap:3px;"><x-icon name="edit" :size="11" /> Manual</span></span>
                             @endif
                         </td>
                         <td style="font-family:monospace;font-size:0.78rem;">
@@ -120,11 +120,11 @@
                         </td>
                         <td>
                             @if($log->status === 'sent')
-                                <span class="badge" style="background:#dcfce7;color:#166534;">✅ Sent</span>
+                                <span class="badge" style="background:#dcfce7;color:#166534;"><span style="display:inline-flex;align-items:center;gap:3px;"><x-icon name="check" :size="12" /> Sent</span></span>
                             @elseif($log->status === 'failed')
-                                <span class="badge" style="background:#fee2e2;color:#991b1b;" title="{{ $log->response }}">❌ Failed</span>
+                                <span class="badge" style="background:#fee2e2;color:#991b1b;" title="{{ $log->response }}"><span style="display:inline-flex;align-items:center;gap:3px;"><x-icon name="x" :size="12" /> Failed</span></span>
                             @else
-                                <span class="badge" style="background:#fef3c7;color:#92400e;">⏳ Pending</span>
+                                <span class="badge" style="background:#fef3c7;color:#92400e;"><x-icon name="clock" :size="12" class="me-1 inline" /> Pending</span>
                             @endif
                         </td>
                         <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"

@@ -19,8 +19,8 @@
 </div>
 
 @if(session('success'))
-    <div class="alert alert-success mb-3" style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 0.75rem 1rem; border-radius: 6px;">
-        ✓ {{ session('success') }}
+    <div class="alert alert-success mb-3" style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 0.75rem 1rem; border-radius: 6px; display: flex; align-items: center; gap: 6px;">
+        <x-icon name="check" :size="15" /> {{ session('success') }}
     </div>
 @endif
 
@@ -102,7 +102,7 @@
                         <td>
                             @if($c->complaint_type === 'driver' && $c->driver)
                                 <div style="font-weight: 600;">{{ $c->driver->name }}</div>
-                                <div style="font-size: 10.5px; color: var(--slate-500);">📞 {{ $c->driver->mobile }}</div>
+                                <div style="font-size: 10.5px; color: var(--slate-500); display: flex; align-items: center; gap: 3px;"><x-icon name="phone" :size="11" /> {{ $c->driver->mobile }}</div>
                             @elseif($c->complaint_type === 'vehicle' && $c->vehicle)
                                 <div style="font-weight: 600;">{{ $c->vehicle->name }}</div>
                                 <div style="font-size: 10.5px; font-family: monospace; color: #2563EB;">{{ $c->vehicle->registration_number }}</div>
@@ -125,7 +125,7 @@
                         </td>
                         <td>
                             <span style="font-weight: 700; color: {{ $c->rating <= 2 ? '#DC2626' : ($c->rating >= 4 ? '#059669' : '#D97706') }};">
-                                ⭐ {{ $c->rating }}/5
+                                <x-icon name="star" :size="13" style="color: #f59e0b; vertical-align: -1px;" /> {{ $c->rating }}/5
                             </span>
                         </td>
                         <td style="max-width: 250px;">

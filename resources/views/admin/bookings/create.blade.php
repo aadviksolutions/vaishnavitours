@@ -103,7 +103,7 @@
                         <input type="text" 
                                id="corporate_search_input" 
                                class="form-control form-control-sm" 
-                               placeholder="🔍 Search saved corporate by Company Name, Contact Person, Mobile, GSTIN..." 
+                               placeholder="Search saved corporate by Company Name, Contact Person, Mobile, GSTIN..." 
                                autocomplete="off"
                                style="padding-left: 32px; padding-right: 30px; border: 1.5px solid #DDD6FE; border-radius: 6px; font-size: 12.5px;"
                                onkeyup="handleCorporateSearch(this.value)">
@@ -134,7 +134,7 @@
                                     data-gstin="{{ $cc['gstin'] }}"
                                     data-address="{{ $cc['billing_address'] }}"
                                     data-user-id="{{ $cc['user_id'] }}">
-                                {{ $cc['company_name'] }} — {{ $cc['contact_person'] ?: 'No contact' }} ({{ $cc['phone'] ? '📞 ' . $cc['phone'] : ($cc['gstin'] ? 'GST: ' . $cc['gstin'] : 'Saved') }})
+                                {{ $cc['company_name'] }} — {{ $cc['contact_person'] ?: 'No contact' }} ({{ $cc['phone'] ? '' . $cc['phone'] : ($cc['gstin'] ? 'GST: ' . $cc['gstin'] : 'Saved') }})
                             </option>
                         @endforeach
                     </select>
@@ -200,7 +200,7 @@
                         <input type="text" 
                                id="travel_partner_search_input" 
                                class="form-control form-control-sm" 
-                               placeholder="🔍 Search saved partner by Agency Name, Mobile, Email..." 
+                               placeholder="Search saved partner by Agency Name, Mobile, Email..." 
                                autocomplete="off"
                                style="padding-left: 32px; padding-right: 30px; border: 1.5px solid #FDE68A; border-radius: 6px; font-size: 12.5px;"
                                onkeyup="handleTravelPartnerSearch(this.value)">
@@ -230,7 +230,7 @@
                                     data-address="{{ $tp['address'] }}"
                                     data-commission="{{ $tp['commission'] }}"
                                     data-notes="{{ $tp['notes'] }}">
-                                {{ $tp['name'] }} ({{ $tp['phone'] ? '📞 ' . $tp['phone'] : 'Saved' }}{{ $tp['commission'] ? ' • Comm: ₹' . $tp['commission'] : '' }})
+                                {{ $tp['name'] }} ({{ $tp['phone'] ? '' . $tp['phone'] : 'Saved' }}{{ $tp['commission'] ? ' • Comm: ₹' . $tp['commission'] : '' }})
                             </option>
                         @endforeach
                     </select>
@@ -288,7 +288,7 @@
                     <!-- Mode Switch Buttons -->
                     <div class="d-flex gap-1" style="background: var(--slate-100); padding: 4px; border-radius: 8px;">
                         <button type="button" id="modePartnerBtn" class="btn btn-sm" onclick="setCustomerMode('partner')" style="border-radius: 6px; font-weight: 700; font-size: 0.8rem; padding: 5px 14px; transition: all 0.2s; display: none;">
-                            🤝 Travel Partner Details
+                            <span style="display:inline-flex;align-items:center;gap:5px;"><x-icon name="handshake" :size="16" /> Travel Partner Details</span>
                         </button>
                         <button type="button" id="modeExistingBtn" class="btn btn-sm" onclick="setCustomerMode('existing')" style="border-radius: 6px; font-weight: 700; font-size: 0.8rem; padding: 5px 14px; transition: all 0.2s;">
                             Existing Customer
@@ -389,7 +389,7 @@
                                 <input type="text" 
                                        id="customer_search_input" 
                                        class="form-control" 
-                                       placeholder="🔍 Type Name or Mobile number to search existing customer..." 
+                                       placeholder="Type Name or Mobile number to search existing customer..." 
                                        autocomplete="off"
                                        style="padding-left: 38px; padding-right: 36px; height: 42px; border-radius: 8px; font-size: 0.875rem; border: 1.5px solid var(--slate-300);">
                                 <button type="button" 
@@ -497,7 +497,7 @@
                         <label for="rate_category" class="form-label" style="font-weight: 700;">Trip Type / Service *</label>
                         <select name="rate_category" id="rate_category" class="form-select" onchange="onTripTypeChange()" required>
                             <option value="outstation" {{ old('rate_category', isset($prefill) && $prefill->booking_type === 'Round-Trip' ? 'round_trip' : 'outstation') === 'outstation' ? 'selected' : '' }}>
-                                🚗 Oneway trip
+                                Oneway trip
                             </option>
                             <option value="round_trip" {{ old('rate_category') === 'round_trip' ? 'selected' : '' }}>
                                 🔄 Round trip
@@ -708,7 +708,7 @@
                         <label style="border: 2px solid {{ old('vehicle_assignment_source', 'own') === 'own' ? '#2563EB' : 'var(--slate-200)' }}; background: {{ old('vehicle_assignment_source', 'own') === 'own' ? '#EFF6FF' : '#fff' }}; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 10px; flex: 1; min-width: 220px;" id="lblVehicleSourceOwn">
                             <input type="radio" name="vehicle_assignment_source" value="own" {{ old('vehicle_assignment_source', 'own') === 'own' ? 'checked' : '' }} onchange="toggleVehicleSource('own')">
                             <div>
-                                <strong style="color: #1E40AF; display: block; font-size: 13.5px;">🏢 Own Vehicle (Company Fleet)</strong>
+                                <strong style="color: #1E40AF; display: block; font-size: 13.5px;">Own Vehicle (Company Fleet)</strong>
                                 <span style="font-size: 11px; color: var(--slate-500);">Assign from Vaishnavi Tours owned fleet & regular drivers</span>
                             </div>
                         </label>
@@ -716,7 +716,7 @@
                         <label style="border: 2px solid {{ old('vehicle_assignment_source') === 'third_party' ? '#D97706' : 'var(--slate-200)' }}; background: {{ old('vehicle_assignment_source') === 'third_party' ? '#FFFBEB' : '#fff' }}; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 10px; flex: 1; min-width: 220px;" id="lblVehicleSourceThirdParty">
                             <input type="radio" name="vehicle_assignment_source" value="third_party" {{ old('vehicle_assignment_source') === 'third_party' ? 'checked' : '' }} onchange="toggleVehicleSource('third_party')">
                             <div>
-                                <strong style="color: #B45309; display: block; font-size: 13.5px;">🤝 Third Party Vehicle (Travel Partner)</strong>
+                                <strong style="color: #B45309; display: block; font-size: 13.5px;">Third Party Vehicle (Travel Partner)</strong>
                                 <span style="font-size: 11px; color: var(--slate-500);">Travel partner vehicle — Only vehicle number required, no documents needed</span>
                             </div>
                         </label>
@@ -733,7 +733,7 @@
                                     + Add New Vehicle
                                 </button>
                             </div>
-                            <select name="vehicle_id" id="vehicle_id" class="form-select" onchange="onAdminVehicleSelectChange(this)">
+                            <select name="vehicle_id" id="vehicle_id" class="searchable-select form-select" onchange="onAdminVehicleSelectChange(this)">
                                 <option value="">-- Assign Later --</option>
                                 <option value="new_vehicle" style="font-weight: 700; color: #2563EB; background: #EFF6FF;">+ Add New Vehicle</option>
                                 @foreach($vehicles->where('is_third_party', false) as $veh)
@@ -751,7 +751,7 @@
                                     + Add New Driver
                                 </button>
                             </div>
-                            <select name="driver_id" id="driver_id" class="form-select" onchange="onAdminDriverSelectChange(this)">
+                            <select name="driver_id" id="driver_id" class="searchable-select form-select" onchange="onAdminDriverSelectChange(this)">
                                 <option value="">-- Assign Later --</option>
                                 <option value="new_driver" style="font-weight: 700; color: #059669; background: #ECFDF5;">+ Add New Driver</option>
                                 @foreach($drivers as $drv)
@@ -784,7 +784,7 @@
                             <label for="existing_tp_vehicle_id" class="form-label" style="font-size: 0.8rem; font-weight: 700; color: #78350F;">
                                 Select Existing Partner Vehicle (Or enter new details below)
                             </label>
-                            <select name="existing_tp_vehicle_id" id="existing_tp_vehicle_id" class="form-select form-select-sm" onchange="onExistingTpVehicleSelect(this)">
+                            <select name="existing_tp_vehicle_id" id="existing_tp_vehicle_id" class="searchable-select form-select form-select-sm" onchange="onExistingTpVehicleSelect(this)">
                                 <option value="">-- Enter New Third-Party Vehicle Details Below --</option>
                                 @foreach($vehicles->where('is_third_party', true) as $tpVeh)
                                     <option value="{{ $tpVeh->id }}" 
@@ -906,7 +906,7 @@
     <div style="background: #fff; border-radius: 8px; width: 100%; max-width: 500px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto;">
         <div class="d-flex justify-between align-center mb-3">
             <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--dark-900);">Quick Add Fleet Vehicle</h3>
-            <button type="button" onclick="closeQuickVehicleModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
+            <button type="button" onclick="closeQuickVehicleModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">&times;</button>
         </div>
         <form id="quickVehicleForm" onsubmit="submitQuickVehicle(event)">
             <div class="mb-3">
@@ -961,7 +961,7 @@
     <div style="background: #fff; border-radius: 8px; width: 100%; max-width: 480px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.25);">
         <div class="d-flex justify-between align-center mb-3">
             <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--dark-900);">Add New Vehicle Category</h3>
-            <button type="button" onclick="closeQuickCategoryModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
+            <button type="button" onclick="closeQuickCategoryModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">&times;</button>
         </div>
         <form id="quickCategoryForm" onsubmit="submitQuickCategory(event)">
             <div class="mb-3">
@@ -1000,7 +1000,7 @@
             <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: #065F46; display: flex; align-items: center; gap: 8px;">
                 <x-icon name="user-check" :size="18" /> Add &amp; Assign New Driver
             </h3>
-            <button type="button" onclick="closeQuickDriverModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">✕</button>
+            <button type="button" onclick="closeQuickDriverModal()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">&times;</button>
         </div>
         <form id="quickDriverForm" onsubmit="submitQuickDriver(event)">
             <div class="mb-3">
@@ -1075,7 +1075,7 @@
                     <div style="font-weight: 700; color: #1E293B;">${c.company_name}</div>
                     <div style="font-size: 11px; color: var(--slate-500); display: flex; gap: 8px; flex-wrap: wrap;">
                         <span>👤 ${c.contact_person || 'No contact'}</span>
-                        ${c.phone ? `<span>📞 ${c.phone}</span>` : ''}
+                        ${c.phone ? `<span>${c.phone}</span>` : ''}
                         ${c.gstin ? `<span>🏛️ GST: ${c.gstin}</span>` : ''}
                     </div>
                 </div>`;
@@ -1197,7 +1197,7 @@
                 html += `<div onclick="selectTravelPartner(${origIdx})" style="padding: 8px 12px; border-bottom: 1px solid var(--slate-100); cursor: pointer; font-size: 12px; transition: background 0.15s;" onmouseover="this.style.background='#FFFBEB'" onmouseout="this.style.background='transparent'">
                     <div style="font-weight: 700; color: #1E293B;">${p.name}</div>
                     <div style="font-size: 11px; color: var(--slate-500); display: flex; gap: 8px; flex-wrap: wrap;">
-                        ${p.phone ? `<span>📞 ${p.phone}</span>` : ''}
+                        ${p.phone ? `<span>${p.phone}</span>` : ''}
                         ${p.email ? `<span>✉️ ${p.email}</span>` : ''}
                         ${p.commission ? `<span>💵 Comm: ₹${p.commission}</span>` : ''}
                     </div>
@@ -1247,7 +1247,7 @@
         const card = document.getElementById('travel_partner_selected_card');
         const text = document.getElementById('travel_partner_selected_text');
         if (card && text) {
-            text.textContent = `✓ Selected Partner: ${p.name} (${p.phone ? '📞 ' + p.phone : 'Saved Partner'})`;
+            text.textContent = `✓ Selected Partner: ${p.name} (${p.phone ? '' + p.phone : 'Saved Partner'})`;
             card.style.display = 'block';
             card.style.background = '#ECFDF5';
             card.style.borderColor = '#A7F3D0';
@@ -1866,10 +1866,10 @@
 
         if (dName) {
             dName.innerHTML = tpName 
-                ? `🏢 ${escapePartnerHtml(tpName)}` 
+                ? `${escapePartnerHtml(tpName)}` 
                 : '<span style="color: #DC2626; font-size: 0.95rem;">⚠️ No Travel Partner selected yet in Section 1 above</span>';
         }
-        if (dPhone) dPhone.textContent = tpPhone ? `📞 ${tpPhone}` : '--';
+        if (dPhone) dPhone.textContent = tpPhone ? `${tpPhone}` : '--';
         if (dEmail) dEmail.textContent = tpEmail ? `✉️ ${tpEmail}` : '--';
         if (dAddress) dAddress.textContent = tpAddress ? `📍 ${tpAddress}` : '--';
     }
@@ -2109,7 +2109,7 @@
                     ${phoneHtml ? `
                     <div style="flex-shrink: 0;">
                         <span style="background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; padding: 2px 7px; border-radius: 6px; font-size: 0.775rem; font-weight: 700; font-family: monospace;">
-                            📞 ${phoneHtml}
+                            ${phoneHtml}
                         </span>
                     </div>` : ''}
                 `;
@@ -2231,7 +2231,7 @@
                 if (selectedNameDisplay) selectedNameDisplay.textContent = c.name;
                 if (selectedDetailDisplay) {
                     const details = [
-                        c.phone ? `📞 ${c.phone}` : '',
+                        c.phone ? `${c.phone}` : '',
                         c.email ? `✉️ ${c.email}` : ''
                     ].filter(Boolean).join('  ·  ');
                     selectedDetailDisplay.textContent = details;

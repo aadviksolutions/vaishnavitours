@@ -23,13 +23,13 @@
 
     <div class="d-flex align-center gap-2">
         <a href="{{ route('invoice.show', $booking->id) }}" class="btn btn-outline btn-sm" target="_blank">
-            🧾 View Tax Invoice
+            <x-icon name="receipt" :size="13" class="me-1 inline" /> View Tax Invoice
         </a>
         @if($booking->cancellation_status === 'Requested' && $booking->booking_status !== 'Cancelled')
             <span class="badge badge-warning">Cancellation Requested</span>
         @elseif(!in_array($booking->booking_status, ['Trip Started', 'On The Way', 'Completed', 'Cancelled']))
             <button type="button" class="btn btn-danger btn-sm" onclick="document.getElementById('cancelModal').style.display='flex'">
-                ✕ Request Cancellation
+                &times; Request Cancellation
             </button>
         @endif
     </div>
@@ -37,19 +37,19 @@
 
 @if(session('success'))
     <div class="alert alert-success mb-3">
-        ✓ {{ session('success') }}
+        <x-icon name="check" :size="14" class="me-1 inline" /> {{ session('success') }}
     </div>
 @endif
 
 @if(session('error'))
     <div class="alert alert-danger mb-3">
-        ⚠️ {{ session('error') }}
+        <x-icon name="alert-triangle" :size="14" class="me-1 inline" /> {{ session('error') }}
     </div>
 @endif
 
 @if($booking->cancellation_status === 'Requested' && $booking->booking_status !== 'Cancelled')
     <div class="alert alert-warning mb-4" style="border-left: 4px solid var(--primary);">
-        <strong>⏳ Cancellation Request Pending Dispatch Approval:</strong> {{ $booking->cancellation_reason }}
+        <strong><x-icon name="clock" :size="13" class="me-1 inline" /> Cancellation Request Pending Dispatch Approval:</strong> {{ $booking->cancellation_reason }}
         <div style="font-size: 0.8rem; color: var(--slate-600); margin-top: 2px;">
             Our support desk has received your cancellation request and will confirm shortly.
         </div>
@@ -59,7 +59,7 @@
 <!-- Live Trip Lifecycle Status Timeline -->
 <div class="card mb-4" style="overflow-x: auto;">
     <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px;">
-        <span>📍</span> Live Journey Timeline
+        <x-icon name="route" :size="18" class="me-1 inline" /> Live Journey Timeline
     </h3>
 
     @php
@@ -71,7 +71,7 @@
 
     @if($isCancelled)
         <div class="alert alert-danger" style="margin-bottom: 0;">
-            <strong>🚫 This booking was cancelled.</strong>
+            <strong><x-icon name="circle-x" :size="14" class="me-1 inline" /> This booking was cancelled.</strong>
             @if($booking->cancellation_reason)
                 <p style="margin: 0.25rem 0 0 0; font-size: 0.875rem;">Reason: {{ $booking->cancellation_reason }}</p>
             @endif
@@ -101,7 +101,7 @@
     <div style="grid-column: span 2;">
         <!-- Route & Schedule Card -->
         <div class="card mb-4">
-            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem;">🚖 Route & Schedule Information</h3>
+            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem;"><x-icon name="car" :size="18" class="me-1 inline" /> Route & Schedule Information</h3>
             
             <div class="grid grid-2 gap-3 mb-3">
                 <div style="background: var(--slate-50); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--primary);">
@@ -146,7 +146,7 @@
 
         <!-- Assigned Vehicle & Chauffeur Card -->
         <div class="card mb-4">
-            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1.25rem;">🚗 Assigned Vehicle & Chauffeur</h3>
+            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1.25rem;"><x-icon name="car" :size="18" class="me-1 inline" /> Assigned Vehicle & Chauffeur</h3>
 
             <div class="grid grid-2 gap-4">
                 <!-- Vehicle Info -->
@@ -171,7 +171,7 @@
                         </div>
                     @else
                         <div style="text-align: center; padding: 1.5rem 0; color: var(--slate-500);">
-                            <div style="font-size: 2rem;">⏳</div>
+                            <x-icon name="clock" :size="32" style="color: var(--slate-400);" />
                             <div style="font-weight: 600; margin-top: 4px;">Vehicle assignment in progress</div>
                             <small>Assigned shortly before trip departure</small>
                         </div>
@@ -184,19 +184,19 @@
                     @if($booking->driver)
                         <div class="d-flex align-center gap-3">
                             <div style="width: 54px; height: 54px; border-radius: 50%; background: var(--dark-900); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 800;">
-                                👨‍✈️
+                                <x-icon name="user" :size="20" />
                             </div>
                             <div>
                                 <h4 style="margin: 0; font-size: 1.05rem; font-weight: 800;">{{ $booking->driver->name }}</h4>
                                 <div style="color: var(--slate-500); font-size: 0.825rem;">Verified Commercial Chauffeur • ⭐ {{ $booking->driver->rating ?? '5.0' }}</div>
                                 <a href="tel:{{ $booking->driver->mobile }}" class="btn btn-primary btn-sm mt-1" style="display: inline-flex; align-items: center; gap: 4px;">
-                                    📞 Call: {{ $booking->driver->mobile }}
+                                    <x-icon name="phone" :size="12" class="me-1 inline" /> Call: {{ $booking->driver->mobile }}
                                 </a>
                             </div>
                         </div>
                     @else
                         <div style="text-align: center; padding: 1.5rem 0; color: var(--slate-500);">
-                            <div style="font-size: 2rem;">⏳</div>
+                            <x-icon name="clock" :size="32" style="color: var(--slate-400);" />
                             <div style="font-weight: 600; margin-top: 4px;">Chauffeur assignment in progress</div>
                             <small>Driver contact will appear right here</small>
                         </div>
@@ -207,7 +207,7 @@
 
         <!-- Status History Audit Trail (Section 6) -->
         <div class="card">
-            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem;">📋 Activity & Status Timeline</h3>
+            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem;"><x-icon name="clipboard-list" :size="18" class="me-1 inline" /> Activity & Status Timeline</h3>
             <div style="border-left: 2px solid var(--slate-200); margin-left: 10px; padding-left: 20px;">
                 @forelse($booking->statusHistories as $history)
                     <div style="position: relative; margin-bottom: 1.25rem;">
@@ -235,13 +235,13 @@
         <!-- Booking Compliance & Terms Acceptance Card -->
         <div class="card mb-4" style="border-left: 4px solid #10B981; background: #ffffff;">
             <div class="d-flex align-center gap-2 mb-3">
-                <span style="font-size: 1.15rem; color: #10B981;">📜</span>
+                <x-icon name="file-text" :size="16" style="color: #10B981;" />
                 <h3 style="font-size: 1.05rem; font-weight: 800; margin: 0; color: var(--dark-950);">Agreed Policy Terms</h3>
             </div>
             <div style="font-size: 0.875rem; display: flex; flex-direction: column; gap: 0.6rem;">
                 <div class="d-flex justify-between align-center">
                     <span style="color: var(--slate-600);">Terms Accepted:</span>
-                    <span class="badge badge-sm badge-success" style="font-weight: 700;">✓ Yes (Confirmed)</span>
+                    <span class="badge badge-sm badge-success" style="font-weight: 700;"><x-icon name="check" :size="12" class="me-1 inline" /> Yes (Confirmed)</span>
                 </div>
                 <div class="d-flex justify-between align-center">
                     <span style="color: var(--slate-600);">Accepted On:</span>
@@ -263,7 +263,7 @@
 
         <!-- Fare & Payment Card (Section 17: Customer Payment View) -->
         <div class="card mb-4">
-            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem;">💳 Fare & Billing</h3>
+            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem;"><x-icon name="credit-card" :size="18" class="me-1 inline" /> Fare & Billing</h3>
 
             <div style="background: var(--slate-50); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.25rem; border: 1px solid var(--slate-200);">
                 <div class="d-flex justify-between align-center mb-2" style="font-size: 0.95rem;">
@@ -329,20 +329,20 @@
                     @endphp
                     <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem;">
                         <a href="{{ route('payment.pay', ['booking' => $booking->id, 'mode' => 'full']) }}" class="btn btn-primary btn-block" style="text-align: center; font-weight: 800; padding: 0.75rem 1rem;">
-                            💳 Pay Full Balance (₹{{ number_format($booking->balance_amount, 2) }})
+                            <x-icon name="credit-card" :size="14" class="me-1 inline" /> Pay Full Balance (₹{{ number_format($booking->balance_amount, 2) }})
                         </a>
                         @if((float) $booking->advance_paid < $advanceAmount && $advanceAmount < (float) $booking->balance_amount)
                             <a href="{{ route('payment.pay', ['booking' => $booking->id, 'mode' => 'advance']) }}" class="btn btn-outline btn-block" style="text-align: center; font-weight: 700; border-color: var(--primary); color: var(--primary); padding: 0.6rem 1rem;">
-                                ⚡ Pay 25% Advance (₹{{ number_format($advanceAmount, 0) }})
+                                <x-icon name="zap" :size="14" class="me-1 inline" /> Pay 25% Advance (₹{{ number_format($advanceAmount, 0) }})
                             </a>
                         @endif
                     </div>
                     <div style="font-size: 0.75rem; color: var(--slate-500); text-align: center; margin-bottom: 0.75rem;">
-                        💵 Or choose <strong>Pay Later</strong> to pay directly to the chauffeur (Cash / UPI) during the trip.
+                        <x-icon name="wallet" :size="14" class="me-1 inline" /> Or choose <strong>Pay Later</strong> to pay directly to the chauffeur (Cash / UPI) during the trip.
                     </div>
                 @endif
                 <a href="{{ route('invoice.show', $booking->id) }}" class="btn btn-outline btn-block" style="text-align: center;" target="_blank">
-                    🧾 View / Print Tax Invoice
+                    <x-icon name="receipt" :size="14" class="me-1 inline" /> View / Print Tax Invoice
                 </a>
             </div>
         </div>
@@ -362,7 +362,7 @@
                 <a href="tel:{{ config('vaishnavi.phone_secondary_tel') }}" style="color: var(--primary); font-weight: 700; font-size: 1.1rem; text-decoration: none;">{{ config('vaishnavi.phone_secondary') }}</a>
             </div>
             <a href="https://wa.me/919244784443?text={{ urlencode('Hi Vaishnavi Tours, I need assistance regarding Booking #' . $booking->booking_id) }}" target="_blank" class="btn btn-primary btn-block btn-sm" style="text-align: center;">
-                💬 Chat on WhatsApp
+                <x-icon name="message-circle" :size="14" class="me-1 inline" /> Chat on WhatsApp
             </a>
         </div>
     </div>

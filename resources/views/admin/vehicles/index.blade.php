@@ -103,17 +103,17 @@
                             @if(!empty($expiringDocs))
                                 @foreach($expiringDocs as $docName => $info)
                                     @if($info['status'] === 'expired')
-                                        <div style="font-size: 0.72rem; color: #DC2626; font-weight: 700; white-space: nowrap;">
-                                            ⚠️ {{ $docName }} Expired
+                                        <div style="font-size: 0.72rem; color: #DC2626; font-weight: 700; white-space: nowrap; display: flex; align-items: center; gap: 3px;">
+                                            <x-icon name="alert-triangle" :size="11" /> {{ $docName }} Expired
                                         </div>
                                     @else
-                                        <div style="font-size: 0.72rem; color: #D97706; font-weight: 700; white-space: nowrap;">
-                                            ⏳ {{ $docName }} in {{ $info['days'] }}d
+                                        <div style="font-size: 0.72rem; color: #D97706; font-weight: 700; white-space: nowrap; display: flex; align-items: center; gap: 3px;">
+                                            <x-icon name="clock" :size="11" /> {{ $docName }} in {{ $info['days'] }}d
                                         </div>
                                     @endif
                                 @endforeach
                             @elseif($veh->insurance_expiry || $veh->fitness_expiry || $veh->permit_expiry || $veh->puc_expiry)
-                                <span style="font-size: 0.75rem; color: #059669; font-weight: 700;">✓ Valid</span>
+                                <span style="font-size: 0.75rem; color: #059669; font-weight: 700; display: inline-flex; align-items: center; gap: 3px;"><x-icon name="check" :size="12" /> Valid</span>
                             @else
                                 <span style="font-size: 0.75rem; color: var(--slate-400);">Not set</span>
                             @endif
@@ -124,7 +124,7 @@
                                     #{{ $activeBooking->booking_id }}
                                 </div>
                                 <div style="font-size: 0.75rem; color: var(--slate-500);">
-                                    {{ Str::limit($activeBooking->pickup_location, 12) }} ➔ {{ Str::limit($activeBooking->destination, 12) }}
+                                    {{ Str::limit($activeBooking->pickup_location, 12) }} &rarr; {{ Str::limit($activeBooking->destination, 12) }}
                                 </div>
                             @else
                                 <span style="color: var(--slate-400); font-size: 0.8rem;">None (Ready for dispatch)</span>

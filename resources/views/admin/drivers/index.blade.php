@@ -17,8 +17,8 @@
 </div>
 
 @if(session('success'))
-    <div class="alert alert-success mb-3" style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 0.75rem 1rem; border-radius: 6px;">
-        ✓ {{ session('success') }}
+    <div class="alert alert-success mb-3" style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 0.75rem 1rem; border-radius: 6px; display: flex; align-items: center; gap: 6px;">
+        <x-icon name="check" :size="15" /> {{ session('success') }}
     </div>
 @endif
 
@@ -72,7 +72,7 @@
 
             <select name="sort" class="form-select form-select-sm" style="min-width: 160px;">
                 <option value="latest" {{ request('sort') === 'latest' ? 'selected' : '' }}>Sort: Recently Added</option>
-                <option value="rating_desc" {{ request('sort') === 'rating_desc' ? 'selected' : '' }}>Sort: Highest Rating (⭐)</option>
+                <option value="rating_desc" {{ request('sort') === 'rating_desc' ? 'selected' : '' }}>Sort: Highest Rating</option>
                 <option value="name_asc" {{ request('sort') === 'name_asc' ? 'selected' : '' }}>Sort: Name (A-Z)</option>
                 <option value="experience" {{ request('sort') === 'experience' ? 'selected' : '' }}>Sort: Experience</option>
             </select>
@@ -108,7 +108,7 @@
                         <td>
                             <div class="d-flex align-center gap-2">
                                 <div style="width: 32px; height: 32px; border-radius: 50%; background: #0F172A; color: #F59E0B; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">
-                                    👨‍✈️
+                                    <x-icon name="user" :size="16" />
                                 </div>
                                 <div>
                                     <a href="{{ route('admin.drivers.show', $driver->id) }}" style="font-weight: 700; color: var(--dark-900);">
@@ -118,7 +118,7 @@
                             </div>
                         </td>
                         <td>
-                            <div style="font-weight: 600; color: #2563EB;">📞 {{ $driver->mobile }}</div>
+                            <div style="font-weight: 600; color: #2563EB; display: flex; align-items: center; gap: 4px;"><x-icon name="phone" :size="12" /> {{ $driver->mobile }}</div>
                             @if($driver->alternate_mobile)
                                 <div style="font-size: 10.5px; color: var(--slate-500);">Alt: {{ $driver->alternate_mobile }}</div>
                             @endif
@@ -135,15 +135,15 @@
                         </td>
                         <td>
                             @if($driver->assignedVehicle)
-                                <div style="font-size: 12px; font-weight: 600; color: var(--dark-900);">🚗 {{ $driver->assignedVehicle->name }}</div>
+                                <div style="font-size: 12px; font-weight: 600; color: var(--dark-900); display: flex; align-items: center; gap: 4px;"><x-icon name="car" :size="13" /> {{ $driver->assignedVehicle->name }}</div>
                                 <div style="font-size: 10.5px; font-family: monospace; color: #2563EB;">{{ $driver->assignedVehicle->registration_number }}</div>
                             @else
                                 <span class="badge badge-secondary" style="font-size: 10.5px;">Pool Driver (Unassigned)</span>
                             @endif
                         </td>
                         <td>
-                            <span style="font-weight: 700; color: #D97706;">
-                                ⭐ {{ number_format($driver->rating ?: 5.0, 1) }}/5
+                            <span style="font-weight: 700; color: #D97706; display: inline-flex; align-items: center; gap: 3px;">
+                                <x-icon name="star" :size="12" class="text-amber-500 fill-amber-500" /> {{ number_format($driver->rating ?: 5.0, 1) }}/5
                             </span>
                         </td>
                         <td>
@@ -155,7 +155,7 @@
                                     {{ $cCount }} {{ Str::plural('Issue', $cCount) }}
                                 </a>
                             @else
-                                <span style="font-size: 11px; color: #059669;">✓ Clean</span>
+                                <span style="font-size: 11px; color: #059669; display: inline-flex; align-items: center; gap: 3px;"><x-icon name="check" :size="12" /> Clean</span>
                             @endif
                         </td>
                         <td>

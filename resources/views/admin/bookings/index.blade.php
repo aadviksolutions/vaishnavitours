@@ -91,7 +91,7 @@
                 <strong style="color: #0F172A; font-family: monospace;">{{ $bookings->count() }}</strong>
             </div>
             <div style="border-left: 1px solid #E2E8F0; padding-left: 0.75rem; display: flex; align-items: center; gap: 6px;">
-                <span style="color: #D97706;">⚠️ Unassigned Fleet/Driver:</span>
+                <span style="color: #D97706; display: inline-flex; align-items: center; gap: 4px;"><x-icon name="alert-triangle" :size="12" /> Unassigned Fleet/Driver:</span>
                 <strong style="color: #B45309; font-family: monospace;">
                     {{ $bookings->filter(fn($b) => !$b->vehicle_id || !$b->driver_id)->count() }}
                 </strong>
@@ -107,10 +107,10 @@
         <!-- Sheet Actions (Export CSV & Quick Print) -->
         <div class="d-flex align-center gap-2">
             <button type="button" onclick="exportBookingsToCSV()" class="btn btn-outline btn-sm" style="font-size: 11.5px; height: 30px; padding: 0 0.65rem; border-color: #CBD5E1; color: #1E293B; background: #F8FAFC;" title="Download current view as CSV spreadsheet">
-                📥 Export Sheet (.csv)
+                <span style="display: inline-flex; align-items: center; gap: 4px;"><x-icon name="download" :size="12" /> Export Sheet (.csv)</span>
             </button>
             <button type="button" onclick="window.print()" class="btn btn-outline btn-sm" style="font-size: 11.5px; height: 30px; padding: 0 0.65rem; border-color: #CBD5E1; color: #1E293B; background: #F8FAFC;" title="Print this bookings table">
-                🖨️ Print
+                <span style="display: inline-flex; align-items: center; gap: 4px;"><x-icon name="printer" :size="12" /> Print</span>
             </button>
         </div>
     </div>
@@ -263,7 +263,7 @@
                                         title="{{ $booking->vehicle ? 'Allocated: ' . $booking->vehicle->name . ' (' . $booking->vehicle->registration_number . ') — Click to change' : 'Click to allocate vehicle' }}">
                                     @if($booking->vehicle)
                                         <span class="cell-assigned-name">{{ $booking->vehicle->name }}</span>
-                                        <span class="cell-edit-badge" title="Change">✎</span>
+                                        <span class="cell-edit-badge" title="Change" style="display: inline-flex; align-items: center;"><x-icon name="edit" :size="11" /></span>
                                     @else
                                         <span class="unassigned-text">Unassigned</span>
                                     @endif
@@ -283,10 +283,10 @@
                                 <button type="button" 
                                         onclick="openAssignModal('{{ $booking->id }}', 'driver')" 
                                         class="btn-cell-assign {{ $booking->driver ? 'is-assigned' : 'is-unassigned' }}" 
-                                        title="{{ $booking->driver ? 'Assigned: ' . $booking->driver->name . ' (📞 ' . $booking->driver->mobile . ') — Click to change' : 'Click to assign driver' }}">
+                                        title="{{ $booking->driver ? 'Assigned: ' . $booking->driver->name . ' (' . $booking->driver->mobile . ') — Click to change' : 'Click to assign driver' }}">
                                     @if($booking->driver)
                                         <span class="cell-assigned-name">{{ $booking->driver->name }}</span>
-                                        <span class="cell-edit-badge" title="Change">✎</span>
+                                        <span class="cell-edit-badge" title="Change" style="display: inline-flex; align-items: center;"><x-icon name="edit" :size="11" /></span>
                                     @else
                                         <span class="unassigned-text">Unassigned</span>
                                     @endif
@@ -366,8 +366,8 @@
         <div class="custom-modal-content" style="max-width: 560px;">
             <div class="d-flex justify-between align-center mb-3 pb-2" style="border-bottom: 1px solid var(--slate-200);">
                 <div class="d-flex align-center gap-2">
-                    <div style="background: #EFF6FF; color: #1D4ED8; width: 34px; height: 34px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-size: 18px;">
-                        🚖
+                    <div style="background: #EFF6FF; color: #1D4ED8; width: 34px; height: 34px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;">
+                        <x-icon name="car" :size="18" />
                     </div>
                     <div>
                         <h3 style="font-size: 1.05rem; font-weight: 800; margin: 0; color: var(--dark-900);">
@@ -378,7 +378,7 @@
                         </div>
                     </div>
                 </div>
-                <button type="button" onclick="closeModal('assignModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--slate-400);">✕</button>
+                <button type="button" onclick="closeModal('assignModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--slate-400);">&times;</button>
             </div>
 
             <!-- Trip Summary Info Box -->
@@ -388,7 +388,7 @@
                         <span style="color: var(--slate-500);">Passenger:</span> 
                         <strong>{{ $booking->customer->name ?? 'Guest User' }}</strong>
                         @if(!empty($booking->customer?->phone))
-                            <span style="color: var(--slate-600); font-size: 0.75rem;">(📞 {{ $booking->customer->phone }})</span>
+                            <span style="color: var(--slate-600); font-size: 0.75rem;">({{ $booking->customer->phone }})</span>
                         @endif
                     </div>
                     <div>
@@ -399,7 +399,7 @@
                 <div class="grid grid-2 gap-2">
                     <div>
                         <span style="color: var(--slate-500);">Route:</span> 
-                        <strong>{{ $booking->pickup_location }} ➔ {{ $booking->destination }}</strong>
+                        <strong>{{ $booking->pickup_location }} &rarr; {{ $booking->destination }}</strong>
                     </div>
                     <div>
                         <span style="color: var(--slate-500);">Travel Schedule:</span> 
@@ -420,22 +420,22 @@
                         </span>
                         @if($booking->vehicle)
                             <span style="color: #059669; font-weight: 600; font-size: 0.75rem;">
-                                ✓ Assigned: {{ $booking->vehicle->name }}
+                                Assigned: {{ $booking->vehicle->name }}
                             </span>
                         @else
                             <span style="color: #dc2626; font-weight: 600; font-size: 0.75rem;">
-                                ⚠️ Currently Unassigned
+                                Currently Unassigned
                             </span>
                         @endif
                     </label>
-                    <select name="vehicle_id" id="assignVehicleSelect{{ $booking->id }}" class="form-select" style="font-size: 0.85rem;">
+                    <select name="vehicle_id" id="assignVehicleSelect{{ $booking->id }}" class="searchable-select form-select" style="font-size: 0.85rem;">
                         <option value="">-- {{ $booking->vehicle ? 'Keep Assigned: ' . $booking->vehicle->name . ' (' . $booking->vehicle->registration_number . ')' : 'Choose Available Vehicle' }} --</option>
                         @if($booking->vehicle)
                             <option value="{{ $booking->vehicle->id }}" selected>
-                                ★ Current: {{ $booking->vehicle->name }} ({{ $booking->vehicle->registration_number }}) - [{{ $booking->vehicle->status }}]
+                                Current: {{ $booking->vehicle->name }} ({{ $booking->vehicle->registration_number }}) - [{{ $booking->vehicle->status }}]
                             </option>
                         @endif
-                        <optgroup label="🏢 Available Own Fleet">
+                        <optgroup label="Available Own Fleet">
                             @foreach($availableVehicles->where('is_third_party', false) as $v)
                                 @if(!$booking->vehicle || $v->id !== $booking->vehicle_id)
                                     <option value="{{ $v->id }}">
@@ -445,7 +445,7 @@
                             @endforeach
                         </optgroup>
                         @if($availableVehicles->where('is_third_party', true)->isNotEmpty())
-                            <optgroup label="🤝 Available Third-Party Partner Vehicles (No docs required)">
+                            <optgroup label="Available Third-Party Partner Vehicles (No docs required)">
                                 @foreach($availableVehicles->where('is_third_party', true) as $v)
                                     @if(!$booking->vehicle || $v->id !== $booking->vehicle_id)
                                         <option value="{{ $v->id }}">
@@ -480,11 +480,11 @@
                         <div class="d-flex align-center gap-2">
                             @if($booking->driver)
                                 <span style="color: #059669; font-weight: 600; font-size: 0.75rem;">
-                                    ✓ Assigned: {{ $booking->driver->name }}
+                                    Assigned: {{ $booking->driver->name }}
                                 </span>
                             @else
                                 <span style="color: #dc2626; font-weight: 600; font-size: 0.75rem;">
-                                    ⚠️ Currently Unassigned
+                                    Currently Unassigned
                                 </span>
                             @endif
                             <button type="button" onclick="openIndexQuickDriverModal('assignDriverSelect{{ $booking->id }}')" style="background: none; border: none; color: #059669; font-weight: 700; font-size: 11px; cursor: pointer; text-decoration: underline; padding: 0;">
@@ -492,19 +492,19 @@
                             </button>
                         </div>
                     </div>
-                    <select name="driver_id" id="assignDriverSelect{{ $booking->id }}" class="form-select driver-select-field" onchange="onIndexDriverSelectChange(this)" style="font-size: 0.85rem;">
+                    <select name="driver_id" id="assignDriverSelect{{ $booking->id }}" class="searchable-select form-select driver-select-field" onchange="onIndexDriverSelectChange(this)" style="font-size: 0.85rem;">
                         <option value="">-- {{ $booking->driver ? 'Keep Assigned: ' . $booking->driver->name : 'Choose Available Chauffeur' }} --</option>
                         <option value="new_driver" style="font-weight: 700; color: #059669; background: #ECFDF5;">+ Add New Driver</option>
                         @if($booking->driver)
                             <option value="{{ $booking->driver->id }}" selected>
-                                ★ Current: {{ $booking->driver->name }} (📞 {{ $booking->driver->mobile }}) - [{{ $booking->driver->status }}]
+                                Current: {{ $booking->driver->name }} ({{ $booking->driver->mobile }}) - [{{ $booking->driver->status }}]
                             </option>
                         @endif
                         <optgroup label="Available Chauffeurs">
                             @foreach($availableDrivers as $d)
                                 @if(!$booking->driver || $d->id !== $booking->driver_id)
                                     <option value="{{ $d->id }}">
-                                        {{ $d->name }} (📞 {{ $d->mobile }}) - Rating: {{ $d->rating }}⭐ [{{ $d->status }}]
+                                        {{ $d->name }} ({{ $d->mobile }}) - Rating: {{ $d->rating }} [{{ $d->status }}]
                                     </option>
                                 @endif
                             @endforeach
@@ -513,7 +513,7 @@
                             <optgroup label="Other Drivers (On Trip / Off Duty)">
                                 @foreach($allDrivers->where('status', '!=', 'Available')->where('id', '!=', $booking->driver_id) as $d)
                                     <option value="{{ $d->id }}" disabled>
-                                        {{ $d->name }} (📞 {{ $d->mobile }}) - [{{ $d->status }}]
+                                        {{ $d->name }} ({{ $d->mobile }}) - [{{ $d->status }}]
                                     </option>
                                 @endforeach
                             </optgroup>
@@ -539,7 +539,7 @@
         <div class="custom-modal-content">
             <div class="d-flex justify-between align-center mb-3">
                 <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0;">Assign Vehicle - {{ $booking->booking_id }}</h3>
-                <button type="button" onclick="closeModal('vehicleModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;">✕</button>
+                <button type="button" onclick="closeModal('vehicleModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--slate-400);">&times;</button>
             </div>
             <form action="{{ route('admin.bookings.assign-vehicle', $booking->id) }}" method="POST">
                 @csrf
@@ -548,7 +548,7 @@
                 </p>
                 <div class="form-group mb-3">
                     <label class="form-label">Available Vehicles (No Maintenance / Inactive)</label>
-                    <select name="vehicle_id" class="form-select" required>
+                    <select name="vehicle_id" class="searchable-select form-select" required>
                         <option value="">-- Choose Available Vehicle --</option>
                         @foreach($availableVehicles as $v)
                             <option value="{{ $v->id }}" {{ $booking->vehicle_id == $v->id ? 'selected' : '' }}>
@@ -570,7 +570,7 @@
         <div class="custom-modal-content">
             <div class="d-flex justify-between align-center mb-3">
                 <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0;">Assign Chauffeur - {{ $booking->booking_id }}</h3>
-                <button type="button" onclick="closeModal('driverModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;">✕</button>
+                <button type="button" onclick="closeModal('driverModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--slate-400);">&times;</button>
             </div>
             <form action="{{ route('admin.bookings.assign-driver', $booking->id) }}" method="POST">
                 @csrf
@@ -584,12 +584,12 @@
                             + Add New Driver
                         </button>
                     </div>
-                    <select name="driver_id" id="driverSelectSolo{{ $booking->id }}" class="form-select driver-select-field" onchange="onIndexDriverSelectChange(this)" required>
+                    <select name="driver_id" id="driverSelectSolo{{ $booking->id }}" class="searchable-select form-select driver-select-field" onchange="onIndexDriverSelectChange(this)" required>
                         <option value="">-- Choose Available Driver --</option>
                         <option value="new_driver" style="font-weight: 700; color: #059669; background: #ECFDF5;">+ Add New Driver</option>
                         @foreach($availableDrivers as $d)
                             <option value="{{ $d->id }}" {{ $booking->driver_id == $d->id ? 'selected' : '' }}>
-                                {{ $d->name }} (📞 {{ $d->mobile }}) - Rating: {{ $d->rating }}⭐ [{{ $d->status }}]
+                                {{ $d->name }} ({{ $d->mobile }}) - Rating: {{ $d->rating }} [{{ $d->status }}]
                             </option>
                         @endforeach
                     </select>
@@ -607,7 +607,7 @@
         <div class="custom-modal-content">
             <div class="d-flex justify-between align-center mb-3">
                 <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0;">Update Fare Amount - {{ $booking->booking_id }}</h3>
-                <button type="button" onclick="closeModal('amountModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;">✕</button>
+                <button type="button" onclick="closeModal('amountModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--slate-400);">&times;</button>
             </div>
             <form action="{{ route('admin.bookings.amount', $booking->id) }}" method="POST">
                 @csrf
@@ -633,7 +633,7 @@
         <div class="custom-modal-content">
             <div class="d-flex justify-between align-center mb-3">
                 <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0;">Record Payment - {{ $booking->booking_id }}</h3>
-                <button type="button" onclick="closeModal('paymentModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;">✕</button>
+                <button type="button" onclick="closeModal('paymentModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--slate-400);">&times;</button>
             </div>
             <form action="{{ route('admin.bookings.payment', $booking->id) }}" method="POST">
                 @csrf
@@ -672,7 +672,7 @@
         <div class="custom-modal-content">
             <div class="d-flex justify-between align-center mb-3">
                 <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0;">Transition Status - {{ $booking->booking_id }}</h3>
-                <button type="button" onclick="closeModal('statusModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;">✕</button>
+                <button type="button" onclick="closeModal('statusModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--slate-400);">&times;</button>
             </div>
             <form action="{{ route('admin.bookings.status', $booking->id) }}" method="POST">
                 @csrf
@@ -701,7 +701,7 @@
         <div class="custom-modal-content">
             <div class="d-flex justify-between align-center mb-3">
                 <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0; color: #dc2626;">Cancel Booking - {{ $booking->booking_id }}</h3>
-                <button type="button" onclick="closeModal('cancelModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;">✕</button>
+                <button type="button" onclick="closeModal('cancelModal{{ $booking->id }}')" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--slate-400);">&times;</button>
             </div>
             <form action="{{ route('admin.bookings.cancel', $booking->id) }}" method="POST">
                 @csrf
@@ -742,7 +742,7 @@
                     <div style="font-size: 0.75rem; color: #64748B;">Instantly add and assign without leaving this page</div>
                 </div>
             </div>
-            <button type="button" onclick="closeIndexQuickDriverModal()" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748B;">✕</button>
+            <button type="button" onclick="closeIndexQuickDriverModal()" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748B;">&times;</button>
         </div>
 
         <form id="indexQuickDriverForm" onsubmit="submitIndexQuickDriver(event)">
@@ -771,7 +771,7 @@
             <div class="d-flex justify-end gap-2 pt-2" style="border-top: 1px solid #E2E8F0;">
                 <button type="button" class="btn btn-outline btn-sm" onclick="closeIndexQuickDriverModal()">Cancel</button>
                 <button type="submit" id="idxQuickDriverSubmitBtn" class="btn btn-success btn-sm" style="background: #059669; border-color: #059669; font-weight: 700;">
-                    ✓ Add &amp; Select Driver
+                    Add &amp; Select Driver
                 </button>
             </div>
         </form>
@@ -1161,7 +1161,7 @@ async function submitIndexQuickDriver(e) {
         document.querySelectorAll('select.driver-select-field, select[name="driver_id"]').forEach(sel => {
             const opt = document.createElement('option');
             opt.value = driver.id;
-            opt.textContent = `${driver.name} (📞 ${driver.mobile}) - ★ Available`;
+            opt.textContent = `${driver.name} (${driver.mobile}) - Available`;
             // Insert right after the 'new_driver' option if present
             const newDriverOpt = sel.querySelector('option[value="new_driver"]');
             if (newDriverOpt && newDriverOpt.nextSibling) {
@@ -1180,7 +1180,7 @@ async function submitIndexQuickDriver(e) {
         }
 
         closeIndexQuickDriverModal();
-        alert(`✓ Driver "${driver.name}" successfully registered and selected!`);
+        alert(`Driver "${driver.name}" successfully registered and selected!`);
     } catch (err) {
         if (errBox) {
             errBox.textContent = err.message;
@@ -1189,7 +1189,7 @@ async function submitIndexQuickDriver(e) {
     } finally {
         if (btn) {
             btn.disabled = false;
-            btn.textContent = '✓ Add & Select Driver';
+            btn.textContent = 'Add & Select Driver';
         }
     }
 }

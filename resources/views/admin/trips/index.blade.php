@@ -24,8 +24,8 @@
 </div>
 
 @if(session('success'))
-    <div class="alert alert-success mb-3" style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 0.75rem 1rem; border-radius: 6px;">
-        ✓ {{ session('success') }}
+    <div class="alert alert-success mb-3" style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 0.75rem 1rem; border-radius: 6px; display: flex; align-items: center; gap: 6px;">
+        <x-icon name="check" :size="15" /> {{ session('success') }}
     </div>
 @endif
 
@@ -115,7 +115,7 @@
                                 @if($trip->booking?->via_location)
                                     <span style="color: var(--slate-400);">via {{ $trip->booking->via_location }}</span>
                                 @endif
-                                ➔ {{ $trip->booking?->destination ?? 'Raipur' }}
+                                &rarr; {{ $trip->booking?->destination ?? 'Raipur' }}
                             </div>
                         </td>
                         <td style="white-space: nowrap;">
@@ -149,7 +149,7 @@
                                 $balance = (float) ($trip->booking?->balance_amount ?? 0);
                             @endphp
                             @if($trip->trip_status === 'Closed')
-                                <span class="badge badge-dark" style="font-size: 10.5px;">✓ Closed</span>
+                                <span class="badge badge-dark" style="font-size: 10.5px; display: inline-flex; align-items: center; gap: 3px;"><x-icon name="check" :size="11" /> Closed</span>
                             @else
                                 @if($balance > 0)
                                     <span class="badge badge-danger" style="font-size: 10.5px;">Due: ₹{{ number_format($balance, 2) }}</span>
@@ -160,7 +160,7 @@
                         </td>
                         <td style="text-align: right; white-space: nowrap;">
                             @if($trip->status !== 'Completed' && $trip->journey_status !== 'Journey Completed' && $trip->status !== 'Cancelled')
-                                <button type="button" class="btn btn-sm" style="padding: 2px 8px; font-size: 11px; font-weight: 700; background: #059669; border: 1px solid #059669; color: #fff;" 
+                                <button type="button" class="btn btn-sm" style="padding: 2px 8px; font-size: 11px; font-weight: 700; background: #059669; border: 1px solid #059669; color: #fff; display: inline-flex; align-items: center; gap: 4px;" 
                                     onclick="openCompleteTripModal(
                                         '{{ route('admin.trips.complete', $trip->id) }}',
                                         '#TRIP-{{ str_pad($trip->id, 4, '0', STR_PAD_LEFT) }}',
@@ -171,7 +171,7 @@
                                         '{{ addslashes($trip->route_notes ?: 'Trip completed successfully.') }}',
                                         {{ $balance }}
                                     )" title="Mark Trip Completed & Release Fleet">
-                                    ✓ Complete Trip
+                                    <x-icon name="check" :size="12" /> Complete Trip
                                 </button>
                             @endif
                             <a href="{{ route('admin.trips.show', $trip->id) }}" class="btn btn-primary btn-sm" style="padding: 2px 7px; font-size: 11px;">
@@ -212,18 +212,18 @@
 <div id="globalCompleteTripModal" class="custom-modal" style="display: none;">
     <div class="custom-modal-content">
         <div class="d-flex justify-between align-center mb-3">
-            <h3 id="completeTripTitle" style="font-size: 15px; font-weight: 700; margin: 0; color: #065F46;">
-                ✓ Complete Trip
+            <h3 id="completeTripTitle" style="font-size: 15px; font-weight: 700; margin: 0; color: #065F46; display: flex; align-items: center; gap: 6px;">
+                <x-icon name="check" :size="16" /> Complete Trip
             </h3>
-            <button type="button" onclick="closeAnyModal('globalCompleteTripModal')" style="background: none; border: none; font-size: 18px; cursor: pointer;">✕</button>
+            <button type="button" onclick="closeAnyModal('globalCompleteTripModal')" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">&times;</button>
         </div>
         <form id="completeTripForm" action="" method="POST">
             @csrf
 
             <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 6px; padding: 0.75rem; margin-bottom: 0.75rem; font-size: 12px; color: #166534;">
-                <div style="font-weight: 700; margin-bottom: 4px;">🚀 Instant Fleet & Driver Release:</div>
-                <div>• Vehicle: <strong id="completeTripVehText">None</strong> ➔ Will become <span class="badge badge-success" style="font-size: 10px;">Available</span></div>
-                <div>• Driver: <strong id="completeTripDrvText">None</strong> ➔ Will become <span class="badge badge-success" style="font-size: 10px;">Available</span></div>
+                <div style="font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 5px;"><x-icon name="zap" :size="14" class="text-emerald-700" /> Instant Fleet & Driver Release:</div>
+                <div>• Vehicle: <strong id="completeTripVehText">None</strong> &rarr; Will become <span class="badge badge-success" style="font-size: 10px;">Available</span></div>
+                <div>• Driver: <strong id="completeTripDrvText">None</strong> &rarr; Will become <span class="badge badge-success" style="font-size: 10px;">Available</span></div>
             </div>
 
             <div class="grid grid-2 gap-2 mb-2">
@@ -243,13 +243,13 @@
             </div>
 
             <div id="completeTripBalanceBox" style="display: none; font-size: 11px; color: #92400E; background: #FEF3C7; border: 1px solid #FCD34D; padding: 6px 10px; border-radius: 4px; margin-bottom: 0.75rem;">
-                ℹ️ Remaining balance: <strong id="completeTripBalanceText">₹0.00</strong>. Completing the trip will free the vehicle and driver immediately, while keeping the payment record open for billing.
+                <span style="display: inline-flex; align-items: center; gap: 4px; font-weight: 600;"><x-icon name="info" :size="13" /> Remaining balance:</span> <strong id="completeTripBalanceText">₹0.00</strong>. Completing the trip will free the vehicle and driver immediately, while keeping the payment record open for billing.
             </div>
 
             <div class="d-flex justify-end gap-2">
                 <button type="button" class="btn btn-outline btn-sm" onclick="closeAnyModal('globalCompleteTripModal')">Cancel</button>
-                <button type="submit" class="btn btn-sm" style="background: #059669; border-color: #059669; font-weight: 700; color: #fff;">
-                    ✓ Confirm Complete & Free Fleet
+                <button type="submit" class="btn btn-sm" style="background: #059669; border-color: #059669; font-weight: 700; color: #fff; display: inline-flex; align-items: center; gap: 4px;">
+                    <x-icon name="check" :size="13" /> Confirm Complete & Free Fleet
                 </button>
             </div>
         </form>
@@ -261,7 +261,7 @@
     <div class="custom-modal-content">
         <div class="d-flex justify-between align-center mb-3">
             <h3 id="odometerTripTitle" style="font-size: 15px; font-weight: 700; margin: 0;">Update Trip</h3>
-            <button type="button" onclick="closeAnyModal('globalOdometerModal')" style="background: none; border: none; font-size: 18px; cursor: pointer;">✕</button>
+            <button type="button" onclick="closeAnyModal('globalOdometerModal')" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">&times;</button>
         </div>
         <form id="odometerForm" action="" method="POST">
             @csrf
@@ -342,7 +342,7 @@
 <script>
 function openCompleteTripModal(actionUrl, tripCode, vehText, drvText, startOdo, endOdo, notes, balance) {
     document.getElementById('completeTripForm').action = actionUrl;
-    document.getElementById('completeTripTitle').textContent = '✓ Complete Trip ' + tripCode;
+    document.getElementById('completeTripTitle').textContent = 'Complete Trip ' + tripCode;
     document.getElementById('completeTripVehText').textContent = vehText;
     document.getElementById('completeTripDrvText').textContent = drvText;
     document.getElementById('completeTripStartOdo').value = startOdo || '';

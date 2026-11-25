@@ -50,8 +50,8 @@
                        target="_blank"
                        rel="noopener noreferrer"
                        class="btn btn-primary"
-                       style="background: #1A73E8; border-color: #1A73E8; font-size: 0.85rem; padding: 0.5rem 1rem;">
-                        ✍ Write a Review on Google
+                       style="background: #1A73E8; border-color: #1A73E8; font-size: 0.85rem; padding: 0.5rem 1rem; display: inline-flex; align-items: center; gap: 6px;">
+                        <x-icon name="edit" :size="15" /> Write a Review on Google
                     </a>
                     <a href="{{ \App\Models\Setting::get('google_all_reviews_url', config('vaishnavi.google_all_reviews_url')) }}"
                        target="_blank"
@@ -131,9 +131,9 @@
                         <div class="form-group">
                             <label class="form-label">Rating *</label>
                             <select name="rating" class="form-select" required>
-                                <option value="5" selected>★★★★★ - Excellent (5 Stars)</option>
-                                <option value="4">★★★★☆ - Very Good (4 Stars)</option>
-                                <option value="3">★★★☆☆ - Average (3 Stars)</option>
+                                <option value="5" selected>5 Stars - Excellent</option>
+                                <option value="4">4 Stars - Very Good</option>
+                                <option value="3">3 Stars - Average</option>
                             </select>
                         </div>
 

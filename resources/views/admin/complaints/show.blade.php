@@ -19,8 +19,8 @@
 </div>
 
 @if(session('success'))
-    <div class="alert alert-success mb-3" style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 0.75rem 1rem; border-radius: 6px;">
-        ✓ {{ session('success') }}
+    <div class="alert alert-success mb-3" style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 0.75rem 1rem; border-radius: 6px; display: flex; align-items: center; gap: 6px;">
+        <x-icon name="check" :size="15" /> {{ session('success') }}
     </div>
 @endif
 
@@ -30,7 +30,7 @@
             <div class="d-flex justify-between align-center mb-2">
                 <h3 style="font-size: 15px; font-weight: 700; margin: 0; color: var(--dark-900);">{{ $complaint->title }}</h3>
                 <span style="font-size: 14px; font-weight: 700; color: {{ $complaint->rating <= 2 ? '#DC2626' : '#059669' }};">
-                    ⭐ {{ $complaint->rating }} / 5 Stars
+                    <x-icon name="star" :size="15" style="color: #f59e0b; vertical-align: -2px;" /> {{ $complaint->rating }} / 5 Stars
                 </span>
             </div>
             <p style="font-size: 13px; color: var(--slate-700); line-height: 1.5; background: var(--slate-50); padding: 0.85rem; border-radius: 6px;">
@@ -41,7 +41,7 @@
                 <div>
                     <span style="color: var(--slate-500); font-weight: 600; font-size: 11px; text-transform: uppercase;">Customer Details</span>
                     <div style="font-weight: 700;">{{ $complaint->customer_name }}</div>
-                    <div style="color: var(--slate-600);">📞 {{ $complaint->customer_phone }}</div>
+                    <div style="color: var(--slate-600); display: flex; align-items: center; gap: 4px; margin-top: 2px;"><x-icon name="phone" :size="12" /> {{ $complaint->customer_phone }}</div>
                 </div>
                 <div>
                     <span style="color: var(--slate-500); font-weight: 600; font-size: 11px; text-transform: uppercase;">Entity Audited</span>

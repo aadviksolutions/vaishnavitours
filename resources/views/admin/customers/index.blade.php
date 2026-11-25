@@ -25,7 +25,7 @@
             Full Registration Page →
         </a>
         <button type="button" class="btn btn-primary btn-sm" onclick="openAddCustomerModal('individual')" style="font-weight: 700;">
-            + Add Customer / Partner
+            <x-icon name="plus" :size="13" class="me-1 inline" /> Add Customer / Partner
         </button>
     </div>
 </div>
@@ -169,7 +169,7 @@
                         </td>
                         <td style="text-align: right; white-space: nowrap;">
                             <a href="{{ route('admin.customers.edit', $c->id) }}" class="btn btn-outline btn-sm me-1" style="padding: 0.25rem 0.65rem; font-size: 0.775rem;">
-                                ✏️ Edit
+                                <x-icon name="edit" :size="13" class="me-1 inline" /> Edit
                             </a>
                             <a href="{{ route('admin.customers.show', $c->id) }}" class="btn btn-outline btn-sm" style="padding: 0.25rem 0.65rem; font-size: 0.775rem;">
                                 View Profile →

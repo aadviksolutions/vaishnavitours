@@ -182,8 +182,8 @@
                     <!-- Main Section: Official PNB UPI QR Code & Direct UPI Apps (Recommended) -->
                     <div style="background: linear-gradient(180deg, #FFFFFF 0%, #FFFDF5 100%); border: 2.5px solid #F59E0B; border-radius: var(--radius-lg); padding: 1.75rem; box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.15); margin-bottom: 1.5rem;">
                         <div style="text-align: center; border-bottom: 1px dashed var(--slate-200); padding-bottom: 1rem; margin-bottom: 1.25rem;">
-                            <span class="badge" style="background: #FEF3C7; color: #92400E; font-size: 0.75rem; font-weight: 800; padding: 4px 12px; letter-spacing: 0.5px; text-transform: uppercase;">
-                                ⚡ FASTEST &amp; RECOMMENDED (0% EXTRA CHARGES)
+                            <span class="badge" style="background: #FEF3C7; color: #92400E; font-size: 0.75rem; font-weight: 800; padding: 4px 12px; letter-spacing: 0.5px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px;">
+                                <x-icon name="zap" :size="13" class="text-amber-600" /> FASTEST &amp; RECOMMENDED (0% EXTRA CHARGES)
                             </span>
                             <h3 style="font-size: 1.35rem; font-weight: 900; color: #78350F; margin: 0.4rem 0 0.25rem 0;">
                                 Scan &amp; Pay via Official Bank UPI QR Code
@@ -214,8 +214,8 @@
                                         <span id="upiIdText" style="font-family: monospace; font-size: 1.15rem; font-weight: 900; color: #0F172A; letter-spacing: 0.5px;">
                                             {{ $upiId ?? '9179484443m@pnb' }}
                                         </span>
-                                        <button type="button" class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText('{{ $upiId ?? '9179484443m@pnb' }}'); alert('UPI ID copied to clipboard: {{ $upiId ?? '9179484443m@pnb' }}');" style="padding: 4px 10px; font-weight: 700; font-size: 0.775rem;">
-                                            📋 Copy UPI ID
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText('{{ $upiId ?? '9179484443m@pnb' }}'); alert('UPI ID copied to clipboard: {{ $upiId ?? '9179484443m@pnb' }}');" style="padding: 4px 10px; font-weight: 700; font-size: 0.775rem; display: inline-flex; align-items: center; gap: 4px;">
+                                            <x-icon name="clipboard" :size="13" /> Copy UPI ID
                                         </button>
                                     </div>
                                     <div style="font-size: 0.75rem; color: var(--slate-500); margin-top: 4px;">
@@ -226,15 +226,15 @@
                                 <!-- Mobile Direct 1-Click Pay Link -->
                                 <div style="margin-bottom: 1rem;">
                                     <a id="mobileUpiBtn" href="upi://pay?pa={{ $upiId ?? '9179484443m@pnb' }}&pn={{ urlencode($upiMerchantName ?? 'VAISHNAVI TOURS') }}&am={{ $defaultMode === 'advance' ? $advance : $balance }}&cu=INR&tn={{ urlencode('Booking #' . $booking->booking_id) }}" class="btn btn-lg w-100" style="background: #059669; border-color: #059669; color: #fff; font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3); text-decoration: none;">
-                                        <span>⚡ Pay ₹<span class="upi-amount-display">{{ number_format($defaultMode === 'advance' ? $advance : $balance, 2) }}</span> in UPI App</span>
+                                        <span>Pay ₹<span class="upi-amount-display">{{ number_format($defaultMode === 'advance' ? $advance : $balance, 2) }}</span> in UPI App</span>
                                     </a>
                                     <small style="font-size: 0.725rem; color: var(--slate-500); display: block; text-align: center; margin-top: 4px;">
                                         (Click on mobile to open PhonePe / GPay / Paytm directly)
                                     </small>
                                 </div>
 
-                                <div style="font-size: 0.775rem; color: var(--slate-600); line-height: 1.4;">
-                                    ✓ <strong>Zero Convenience Fee</strong> • Direct bank transfer to Vaishnavi Tours PNB Account.
+                                <div style="font-size: 0.775rem; color: var(--slate-600); line-height: 1.4; display: flex; align-items: center; gap: 4px;">
+                                    <x-icon name="check" :size="13" class="text-emerald-600" /> <span><strong>Zero Convenience Fee</strong> &bull; Direct bank transfer to Vaishnavi Tours PNB Account.</span>
                                 </div>
                             </div>
                         </div>
@@ -265,8 +265,8 @@
                                     <label class="form-label" style="font-size: 0.775rem; font-weight: 700; color: #166534;">Payer / Sender Name (Optional)</label>
                                     <input type="text" name="sender_name" class="form-control form-control-sm" value="{{ $booking->customer?->name }}" placeholder="Your name or UPI account name">
                                 </div>
-                                <button type="submit" class="btn btn-sm w-100" style="background: #16A34A; border-color: #16A34A; color: #fff; font-weight: 800; font-size: 0.95rem; padding: 0.65rem 1rem;">
-                                    ✓ Submit UPI Confirmation &amp; Lock Booking
+                                <button type="submit" class="btn btn-sm w-100" style="background: #16A34A; border-color: #16A34A; color: #fff; font-weight: 800; font-size: 0.95rem; padding: 0.65rem 1rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                    <x-icon name="check" :size="16" /> Submit UPI Confirmation &amp; Lock Booking
                                 </button>
                             </form>
                         </div>
@@ -314,8 +314,8 @@
                     </p>
                     <form action="{{ route('payment.pay-later', $booking->id) }}" method="POST">
                         @csrf
-                        <button type="submit" class="btn btn-primary btn-lg" style="padding: 0.85rem 2.25rem; font-size: 1.05rem; font-weight: 800;">
-                            ✓ Confirm Booking with Pay Later
+                        <button type="submit" class="btn btn-primary btn-lg" style="padding: 0.85rem 2.25rem; font-size: 1.05rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;">
+                            <x-icon name="check" :size="18" /> Confirm Booking with Pay Later
                         </button>
                     </form>
                 </div>

@@ -95,7 +95,7 @@
 <body>
     <div class="no-print" style="margin-bottom: 15px; display: flex; justify-content: flex-end; gap: 10px;">
         <button onclick="window.print()" style="padding: 7px 16px; background: #2563EB; color: #fff; border: none; border-radius: 5px; font-weight: 700; cursor: pointer; font-size: 12px;">
-            🖨️ Print / Save as PDF
+            <x-icon name="printer" :size="14" class="me-1 inline" /> Print / Save as PDF
         </button>
         <button onclick="window.close()" style="padding: 7px 16px; background: #64748B; color: #fff; border: none; border-radius: 5px; font-weight: 700; cursor: pointer; font-size: 12px;">
             Close

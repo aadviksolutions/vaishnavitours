@@ -50,7 +50,7 @@
                                     @if($price->extra_km_rate !== null)
                                         Extra ₹{{ number_format((float) $price->extra_km_rate, 2) }}/KM
                                     @elseif($route->category !== 'round_trip')
-                                        <span style="color: #b45309; font-weight: 500;">⚠️ Extra KM rate needs configuration</span>
+                                        <span style="color: #b45309; font-weight: 500; display: inline-flex; align-items: center; gap: 4px;"><x-icon name="alert-triangle" :size="12" /> Extra KM rate needs configuration</span>
                                     @endif
                                     @if($price->extra_hour_rate !== null)
                                         · Extra ₹{{ number_format((float) $price->extra_hour_rate, 2) }}/hr

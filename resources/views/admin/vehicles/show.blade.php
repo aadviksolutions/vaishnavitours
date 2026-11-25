@@ -21,20 +21,22 @@
     </div>
 
     <div class="d-flex align-center gap-2">
-        <a href="{{ route('admin.vehicles.edit', $vehicle->id) }}" class="btn btn-primary btn-sm">
-            ✏️ Edit Vehicle
+        <a href="{{ route('admin.vehicles.edit', $vehicle->id) }}" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 4px;">
+            <x-icon name="edit" :size="14" /> Edit Vehicle
         </a>
         <form action="{{ route('admin.vehicles.destroy', $vehicle->id) }}" method="POST" onsubmit="return confirm('Remove this vehicle from the fleet?');">
             @csrf
             @method('DELETE')
-            <button type="submit" class="btn btn-danger btn-sm">🗑️ Remove</button>
+            <button type="submit" class="btn btn-danger btn-sm" style="display: inline-flex; align-items: center; gap: 4px;">
+                <x-icon name="trash-2" :size="14" /> Remove
+            </button>
         </form>
     </div>
 </div>
 
 @if(session('success'))
-    <div class="alert alert-success mb-3" style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 0.75rem 1rem; border-radius: 6px;">
-        ✓ {{ session('success') }}
+    <div class="alert alert-success mb-3" style="background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 0.75rem 1rem; border-radius: 6px; display: flex; align-items: center; gap: 6px;">
+        <x-icon name="check" :size="15" /> {{ session('success') }}
     </div>
 @endif
 
@@ -78,8 +80,8 @@
         @if($vehicle->ownership_type === 'third_party')
             <div class="card mb-3" style="background: #fff; border: 1px solid #FDE68A; border-radius: 8px; padding: 1.25rem;">
                 <div class="d-flex justify-between align-center mb-2">
-                    <h3 style="font-size: 14px; font-weight: 700; margin: 0; color: #92400E;">
-                        🤝 Third-Party Vendor / Owner Accounting
+                    <h3 style="font-size: 14px; font-weight: 700; margin: 0; color: #92400E; display: flex; align-items: center; gap: 6px;">
+                        <x-icon name="handshake" :size="16" /> Third-Party Vendor / Owner Accounting
                     </h3>
                     <span class="badge {{ $vehicle->vendor_payment_status === 'Paid' ? 'badge-success' : 'badge-warning' }}">
                         {{ $vehicle->vendor_payment_status ?: 'Pending' }}
@@ -90,7 +92,7 @@
                     <div>
                         <span style="font-size: 11px; text-transform: uppercase; color: #92400E; font-weight: 600;">Vendor / Owner</span>
                         <div style="font-weight: 700; font-size: 13px;">{{ $vehicle->vendor_name ?: 'Vendor' }}</div>
-                        <div style="font-size: 11px; color: var(--slate-600);">📞 {{ $vehicle->vendor_phone ?: 'N/A' }}</div>
+                        <div style="font-size: 11px; color: var(--slate-600); display: flex; align-items: center; gap: 4px; margin-top: 2px;"><x-icon name="phone" :size="11" /> {{ $vehicle->vendor_phone ?: 'N/A' }}</div>
                     </div>
                     <div>
                         <span style="font-size: 11px; text-transform: uppercase; color: #92400E; font-weight: 600;">Agreed Cost</span>
@@ -173,8 +175,8 @@
         <!-- Vehicle Quality Complaints & Reviews (Section 3 requirement) -->
         <div class="card mb-3" style="background: #fff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 1.25rem;">
             <div class="d-flex justify-between align-center mb-2">
-                <h3 style="font-size: 14px; font-weight: 700; margin: 0; color: var(--dark-900);">
-                    🛠️ Vehicle Quality & Cleanliness Audit Reviews
+                <h3 style="font-size: 14px; font-weight: 700; margin: 0; color: var(--dark-900); display: flex; align-items: center; gap: 6px;">
+                    <x-icon name="shield-check" :size="16" /> Vehicle Quality & Cleanliness Audit Reviews
                 </h3>
                 <a href="{{ route('admin.complaints.create') }}" class="btn btn-outline btn-sm" style="font-size: 11px;">
                     + Log Vehicle Issue
@@ -195,7 +197,7 @@
                         @forelse($vehicle->complaints as $vc)
                             <tr>
                                 <td>{{ \Carbon\Carbon::parse($vc->complaint_date)->format('d M Y') }}</td>
-                                <td style="font-weight: 700;">⭐ {{ $vc->rating }}/5</td>
+                                <td style="font-weight: 700;"><x-icon name="star" :size="13" style="color: #f59e0b; vertical-align: -1px;" /> {{ $vc->rating }}/5</td>
                                 <td>
                                     <strong>{{ $vc->title }}</strong>
                                     <div style="font-size: 11px; color: var(--slate-500);">{{ Str::limit($vc->description, 50) }}</div>
@@ -215,7 +217,9 @@
 
         <!-- Trip History -->
         <div class="card" style="background: #fff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 1.25rem;">
-            <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 0.75rem;">📋 Booking & Trip History</h3>
+            <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 6px;">
+                <x-icon name="clipboard-list" :size="16" /> Booking & Trip History
+            </h3>
             <div class="table-responsive">
                 <table class="data-table" style="width: 100%; font-size: 12px;">
                     <thead>
@@ -237,7 +241,7 @@
                                     </a>
                                 </td>
                                 <td>{{ $b->customer->name ?? 'Customer' }}</td>
-                                <td>{{ $b->pickup_location }} ➔ {{ $b->destination }}</td>
+                                <td>{{ $b->pickup_location }} &rarr; {{ $b->destination }}</td>
                                 <td>{{ $b->travel_date ? $b->travel_date->format('d M Y') : '' }}</td>
                                 <td><span class="badge badge-secondary">{{ $b->booking_status }}</span></td>
                                 <td style="font-weight: 700;">₹{{ number_format($b->total_amount, 2) }}</td>
@@ -258,8 +262,8 @@
         <!-- Compliance & Document Records (Optional) -->
         <div class="card mb-3" style="background: #fff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 1.25rem;">
             <div class="d-flex justify-between align-center mb-2">
-                <h3 style="font-size: 14px; font-weight: 700; margin: 0; color: var(--dark-900);">
-                    📑 Document Records (Optional)
+                <h3 style="font-size: 14px; font-weight: 700; margin: 0; color: var(--dark-900); display: flex; align-items: center; gap: 6px;">
+                    <x-icon name="file-text" :size="16" /> Document Records (Optional)
                 </h3>
                 <span class="badge" style="background: #E0E7FF; color: #3730A3; font-size: 11px; padding: 2px 8px; border-radius: 4px;">
                     Not Mandatory
@@ -305,12 +309,14 @@
 
         <!-- Assigned Driver -->
         <div class="card mb-3" style="background: #fff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 1.25rem;">
-            <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 0.75rem; color: var(--dark-900);">👨‍✈️ Default Assigned Chauffeur</h3>
+            <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 0.75rem; color: var(--dark-900); display: flex; align-items: center; gap: 6px;">
+                <x-icon name="user" :size="16" /> Default Assigned Chauffeur
+            </h3>
 
             @if($vehicle->assignedDriver)
                 <div style="font-size: 14px; font-weight: 700; color: var(--dark-900);">{{ $vehicle->assignedDriver->name }}</div>
-                <div style="color: var(--slate-600); font-size: 12px; margin-top: 2px;">
-                    📞 <a href="tel:{{ $vehicle->assignedDriver->mobile }}">{{ $vehicle->assignedDriver->mobile }}</a>
+                <div style="color: var(--slate-600); font-size: 12px; margin-top: 2px; display: flex; align-items: center; gap: 4px;">
+                    <x-icon name="phone" :size="11" /> <a href="tel:{{ $vehicle->assignedDriver->mobile }}">{{ $vehicle->assignedDriver->mobile }}</a>
                 </div>
                 <div style="color: var(--slate-500); font-size: 11px; margin-top: 2px;">
                     License: {{ $vehicle->assignedDriver->license_number }}

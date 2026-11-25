@@ -316,7 +316,7 @@
                             <td>
                                 <div>
                                     <strong style="color: var(--dark-900);">{{ $bk->pickup_location }}</strong>
-                                    <span style="color: var(--slate-400); margin: 0 4px;">➔</span>
+                                    <span style="color: var(--slate-400); margin: 0 4px;">&rarr;</span>
                                     <strong style="color: #2563EB;">{{ $bk->destination }}</strong>
                                 </div>
                                 <span style="font-size: 0.72rem; color: var(--slate-500);">{{ $bk->trip_type ?: 'Outstation' }}</span>

@@ -8,7 +8,7 @@
     <div>
         <div class="d-flex align-center gap-2">
             <h1 style="font-size: 1.65rem; font-weight: 800; margin: 0; color: var(--dark-950);">
-                🔔 Operations Alerts & Notifications
+                Operations Alerts & Notifications
             </h1>
             @if(isset($unreadCount) && $unreadCount > 0)
                 <span class="badge badge-danger" style="font-size: 0.85rem; font-weight: 800;">
@@ -24,26 +24,26 @@
     @if($notifications->where('is_read', false)->isNotEmpty())
         <form action="{{ route('admin.notifications.mark-read') }}" method="POST">
             @csrf
-            <button type="submit" class="btn btn-outline btn-sm">
-                ✓ Mark All as Read
+            <button type="submit" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 4px;">
+                <x-icon name="check" :size="13" /> Mark All as Read
             </button>
         </form>
     @endif
 </div>
 
 @if(session('success'))
-    <div class="alert alert-success mb-3">
-        ✓ {{ session('success') }}
+    <div class="alert alert-success mb-3" style="display: flex; align-items: center; gap: 6px;">
+        <x-icon name="check" :size="15" /> {{ session('success') }}
     </div>
 @endif
 
 <div class="card" style="max-width: 900px;">
     @forelse($notifications as $notif)
         <div style="display: flex; gap: 1rem; padding: 1.25rem 0; border-bottom: 1px solid var(--slate-100); {{ !$notif->is_read ? 'background: #FFFDF5; margin: 0 -1.5rem; padding-left: 1.5rem; padding-right: 1.5rem;' : '' }}">
-            <div style="width: 44px; height: 44px; border-radius: 50%; background: {{ $notif->type === 'booking' ? '#EFF6FF' : ($notif->type === 'payment' ? '#F0FDF4' : '#FFFBEB') }}; color: {{ $notif->type === 'booking' ? '#2563EB' : ($notif->type === 'payment' ? '#16A34A' : '#D97706') }}; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; flex-shrink: 0;">
-                @if($notif->type === 'booking') 🚖
-                @elseif($notif->type === 'payment') 💳
-                @else 🔔
+            <div style="width: 44px; height: 44px; border-radius: 50%; background: {{ $notif->type === 'booking' ? '#EFF6FF' : ($notif->type === 'payment' ? '#F0FDF4' : '#FFFBEB') }}; color: {{ $notif->type === 'booking' ? '#2563EB' : ($notif->type === 'payment' ? '#16A34A' : '#D97706') }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                @if($notif->type === 'booking') <x-icon name="car" :size="20" />
+                @elseif($notif->type === 'payment') <x-icon name="credit-card" :size="20" />
+                @else <x-icon name="bell" :size="20" />
                 @endif
             </div>
 
@@ -82,7 +82,7 @@
         </div>
     @empty
         <div class="text-center py-5">
-            <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔔</div>
+            <div style="margin-bottom: 0.5rem; display: flex; justify-content: center;"><x-icon name="bell" :size="36" class="text-slate-300" /></div>
             <h3 style="font-weight: 700; color: var(--slate-700);">No notifications yet</h3>
             <p style="color: var(--slate-500); font-size: 0.875rem;">All operation alerts and dispatch events will be recorded here.</p>
         </div>

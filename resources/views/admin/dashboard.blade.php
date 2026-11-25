@@ -536,7 +536,7 @@
                             </td>
                             <td>
                                 <div style="font-weight: 600; color: #172033;">
-                                    {{ $query->pickup_location }} <span style="color: #94A3B8; margin: 0 3px;">➔</span> {{ $query->destination }}
+                                    {{ $query->pickup_location }} <span style="color: #94A3B8; margin: 0 3px;">&rarr;</span> {{ $query->destination }}
                                 </div>
                                 <div style="font-size: 11px; color: #64748B;">
                                     {{ $query->booking_type ?? 'One-Way' }}
@@ -637,7 +637,7 @@
                                 @if($b->via_location)
                                     <span style="color: #94A3B8; font-size: 11px;">via {{ $b->via_location }}</span>
                                 @endif
-                                <span style="color: #94A3B8; margin: 0 3px;">➔</span> {{ $b->destination }}
+                                <span style="color: #94A3B8; margin: 0 3px;">&rarr;</span> {{ $b->destination }}
                             </div>
                             <div style="font-size: 11px; color: #64748B;">
                                 {{ $b->trip_type }} ({{ $b->vehicle_category }})
@@ -693,8 +693,8 @@
                             @if($b->booking_status !== 'Completed' && $b->booking_status !== 'Cancelled')
                                 <form action="{{ route('admin.bookings.complete', $b) }}" method="POST" style="display: inline-block; margin-right: 4px;" onsubmit="return confirm('Mark Trip #{{ $b->booking_id }} as COMPLETED and release assigned vehicle & driver to available?');">
                                     @csrf
-                                    <button type="submit" class="action-btn-neutral" style="background: #ECFDF5; color: #047857 !important; border-color: #6EE7B7; font-size: 11px; padding: 2px 7px; font-weight: 700;" title="Complete Trip & Free Vehicle/Driver">
-                                        ✓ Complete
+                                    <button type="submit" class="action-btn-neutral" style="background: #ECFDF5; color: #047857 !important; border-color: #6EE7B7; font-size: 11px; padding: 2px 7px; font-weight: 700; display: inline-flex; align-items: center; gap: 3px;" title="Complete Trip & Free Vehicle/Driver">
+                                        <x-icon name="check" :size="11" /> Complete
                                     </button>
                                 </form>
                             @endif
@@ -801,7 +801,7 @@
                 <x-icon name="check-circle" :size="18" style="color: #059669;" />
                 1-Click Complete Trip
             </h3>
-            <button type="button" class="btn btn-outline btn-sm" onclick="closeQuickCompleteModal()" style="border: none; font-size: 16px; cursor: pointer;">✕</button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="closeQuickCompleteModal()" style="border: none; font-size: 18px; cursor: pointer; color: var(--slate-400);">&times;</button>
         </div>
 
         <p style="font-size: 12.5px; color: #64748B; margin-top: -0.25rem; margin-bottom: 1.25rem;">
@@ -810,7 +810,7 @@
 
         @if($activeTripsToComplete->isEmpty())
             <div style="background: #F8FAFC; border: 1px dashed #CBD5E1; border-radius: 8px; padding: 1.5rem; text-align: center; color: #64748B; font-size: 13px;">
-                🎉 No active or pending trips right now! All bookings are completed.
+                No active or pending trips right now. All bookings are completed.
             </div>
             <div class="d-flex justify-end mt-3">
                 <button type="button" class="btn btn-outline" onclick="closeQuickCompleteModal()">Close</button>
@@ -827,7 +827,7 @@
                                     data-url="{{ route('admin.bookings.complete', $at->id) }}"
                                     data-veh="{{ $at->vehicle ? $at->vehicle->name . ' (' . $at->vehicle->registration_number . ')' : 'No Vehicle' }}"
                                     data-drv="{{ $at->driver ? $at->driver->name . ' (' . $at->driver->mobile . ')' : 'No Driver' }}">
-                                #{{ $at->booking_id }} — {{ $at->customer?->name ?? 'Guest' }} ({{ $at->pickup_location }} ➔ {{ $at->destination }}) [{{ $at->booking_status }}]
+                                #{{ $at->booking_id }} — {{ $at->customer?->name ?? 'Guest' }} ({{ $at->pickup_location }} &rarr; {{ $at->destination }}) [{{ $at->booking_status }}]
                             </option>
                         @endforeach
                     </select>
@@ -836,7 +836,7 @@
                 <div id="quickCompleteMeta" style="display: none; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 12px; color: #065F46;">
                     <div><strong>Assigned Vehicle:</strong> <span id="qcVehName">—</span></div>
                     <div style="margin-top: 2px;"><strong>Assigned Chauffeur:</strong> <span id="qcDrvName">—</span></div>
-                    <div style="font-size: 11px; color: #047857; margin-top: 4px;">✓ Both vehicle and chauffeur status will be automatically reset to <strong>Available</strong>.</div>
+                    <div style="font-size: 11px; color: #047857; margin-top: 4px; display: flex; align-items: center; gap: 4px;"><x-icon name="check" :size="12" /> Both vehicle and chauffeur status will be automatically reset to <strong>Available</strong>.</div>
                 </div>
 
                 <div class="form-group mb-3">
@@ -846,8 +846,8 @@
 
                 <div class="d-flex justify-between align-center mt-3">
                     <button type="button" class="btn btn-outline" onclick="closeQuickCompleteModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary" style="background: #059669; border-color: #059669; font-weight: 700;">
-                        ✓ Complete Trip &amp; Release
+                    <button type="submit" class="btn btn-primary" style="background: #059669; border-color: #059669; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
+                        <x-icon name="check" :size="14" /> Complete Trip &amp; Release
                     </button>
                 </div>
             </form>
